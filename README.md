@@ -15,7 +15,7 @@
 
 [Алик Нигматуллин](https://github.com/BigBullas) - _Frontend_
 
-[Жиленков Илья](https://github.com/ilyushkaaa) - _Backend_
+[Илья Жиленков](https://github.com/ilyushkaaa) - _Backend_
 
 - UX
 
