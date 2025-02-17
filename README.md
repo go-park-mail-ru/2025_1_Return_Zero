@@ -1,2 +1,25 @@
 # 2025_1_Return_Zero
 Бэкэнд проекта "Spotify" команды "Return Zero"
+
+## Авторы
+
+[Артём Абрамов](https://github.com/zeritonik) - _Frontend-разработчик_
+
+[Иван Сысоев](https://github.com/OlegWhiteRose) - _Frontend-разработчик_
+
+[Роман Инякин](https://github.com/Mockird31) - _Backend-разработчик_
+
+[Александр Гароев](https://github.com/derletzte256) - _Backend-разработчик_
+
+## Менторы
+
+[Алик Нигматуллин](https://github.com/BigBullas) - _Frontend_
+
+[Жиленков Илья](https://github.com/ilyushkaaa) - _Backend_
+
+- UX
+
+
+## Ссылки
+
+[Фронтенд проекта](https://github.com/frontend-park-mail-ru/2025_1_Return_Zero)
