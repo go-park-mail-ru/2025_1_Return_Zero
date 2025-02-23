@@ -23,7 +23,6 @@ func (api *MyHandler) loginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-
 	var u User
 	if err := readJSON(w, r, &u); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
