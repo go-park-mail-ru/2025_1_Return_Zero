@@ -42,6 +42,5 @@ func (api *MyHandler) loginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid input", http.StatusUnauthorized)
 		return
 	}
-
 	api.createSession(w, u.ID)
 }
