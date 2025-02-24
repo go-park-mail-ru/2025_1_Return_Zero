@@ -6,13 +6,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var USER_COUNTER = 0
-
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	return string(bytes), err
-}
-
 func checkPasswordHash(password string, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
@@ -29,17 +22,35 @@ func (api *MyHandler) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// check username
+	var fieldLogin string
 	isRegistred := false
 	for _, user := range api.users {
 		if user.Username == u.Username {
 			isRegistred = true
+			fieldLogin = u.Username
 			break
 		}
 	}
 
-	if !isRegistred || !checkPasswordHash(u.Password, api.users[u.Username].Password) {
+	// check email
+	if !isRegistred {
+		for _, user := range api.users {
+			if user.Email == u.Email {
+				isRegistred = true
+				fieldLogin = u.Email
+				break
+			}
+		}
+	}
+
+	if !isRegistred || !checkPasswordHash(u.Password, api.users[fieldLogin].Password) {
 		http.Error(w, "Invalid input", http.StatusUnauthorized)
 		return
 	}
 	api.createSession(w, u.ID)
+	if err := writeJSON(w, http.StatusOK, "Successfuly logged in", nil); err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 }

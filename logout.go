@@ -1,4 +1,4 @@
-package main 
+package main
 
 import (
 	"net/http"
@@ -23,4 +23,8 @@ func (api *MyHandler) logoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, session)
+	if err := writeJSON(w, http.StatusOK, "Successfuly logged out", nil); err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 }

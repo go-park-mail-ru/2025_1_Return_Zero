@@ -2,18 +2,15 @@ package main
 
 import (
 	"net/http"
-	"regexp"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
-func passwordValidation(password string) bool {
-	if len(password) < 8 {
-		return false
-	}
+var USER_COUNTER = 0
 
-	hasUpper := regexp.MustCompile("[A-Z]").MatchString(password)
-	hasDigit := regexp.MustCompile("[0-9]").MatchString(password)
-
-	return hasUpper && hasDigit
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
 }
 
 func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
@@ -29,15 +26,10 @@ func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, user := range api.users {
-		if user.Username == u.Username {
+		if user.Username == u.Username || user.Email == u.Email {
 			http.Error(w, "User already exist", http.StatusConflict)
 			return
 		}
-	}
-
-	if !passwordValidation(u.Password) {
-		http.Error(w, "Invalid password", http.StatusBadRequest)
-		return
 	}
 
 	hashedPassword, err := hashPassword(u.Password)
@@ -50,9 +42,14 @@ func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
 		ID:       uint(USER_COUNTER),
 		Username: u.Username,
 		Password: hashedPassword,
+		Email:    u.Email,
 	}
 	api.users[u.Username] = newUser
 	USER_COUNTER++
 
 	api.createSession(w, newUser.ID)
+	if err := writeJSON(w, http.StatusOK, "Successfuly logged in", nil); err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 }
