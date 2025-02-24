@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"sync"
 )
 
@@ -30,28 +29,28 @@ func NewAlbumsModel() *AlbumsModel {
 		// TODO: Change to empty album object list after RK1
 		albums: albums,
 		mutex:  sync.RWMutex{},
-		nextID: 0,
+		// TODO: Change to 0 after RK1
+		nextID: 4,
 	}
 }
 
 func (m *AlbumsModel) GetAll(filters Filters) ([]Album, error) {
-	m.mutex.RLock()
-	defer m.mutex.RUnlock()
-
-	offset := filters.offset()
-	limit := filters.limit()
+	offset := filters.Offset
+	limit := filters.Limit
 
 	if offset > len(m.albums) {
-		return nil, errors.New("offset is greater than the number of albums")
+		return []Album{}, nil
 	}
 
 	if offset+limit > len(m.albums) {
 		limit = len(m.albums) - offset
 	}
 
+	m.mutex.RLock()
+	defer m.mutex.RUnlock()
 	albums := m.albums[offset : offset+limit]
 	if len(albums) == 0 {
-		return nil, errors.New("no albums found")
+		return []Album{}, nil
 	}
 
 	return albums, nil

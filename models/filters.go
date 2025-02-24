@@ -6,48 +6,50 @@ import (
 	"strconv"
 )
 
+const (
+	MaxOffset = 10000
+	MaxLimit  = 100
+)
+
 type Filters struct {
-	Page     int
-	PageSize int
+	Offset int
+	Limit  int
 }
 
 func (f Filters) Validate() error {
-	if f.Page < 1 {
-		return errors.New("invalid page number: should be greater than 0")
+
+	if f.Offset > MaxOffset {
+		f.Offset = MaxOffset
 	}
 
-	if f.PageSize < 1 {
-		return errors.New("invalid page size: should be greater than 0")
+	if f.Offset < 0 {
+		return errors.New("invalid offset: should be greater than 0")
 	}
 
-	if f.PageSize > 100 {
-		return errors.New("invalid page size: should be less than 100")
+	if f.Limit > MaxLimit {
+		f.Limit = MaxLimit
+	}
+
+	if f.Limit < 0 {
+		return errors.New("invalid limit: should be greater than 0")
 	}
 
 	return nil
-}
-
-func (f Filters) limit() int {
-	return f.PageSize
-}
-
-func (f Filters) offset() int {
-	return (f.Page - 1) * f.PageSize
 }
 
 // ParseFromQuery parses the filters from URL query parameters
 func ParseFromQuery(r *http.Request) Filters {
 	var f Filters
 
-	if page := r.URL.Query().Get("page"); page != "" {
-		if pageNum, err := strconv.Atoi(page); err == nil {
-			f.Page = pageNum
+	if offset := r.URL.Query().Get("offset"); offset != "" {
+		if offsetNum, err := strconv.Atoi(offset); err == nil {
+			f.Offset = offsetNum
 		}
 	}
 
-	if pageSize := r.URL.Query().Get("page_size"); pageSize != "" {
-		if size, err := strconv.Atoi(pageSize); err == nil {
-			f.PageSize = size
+	if limit := r.URL.Query().Get("limit"); limit != "" {
+		if limitNum, err := strconv.Atoi(limit); err == nil {
+			f.Limit = limitNum
 		}
 	}
 

@@ -17,7 +17,7 @@ definitions:
         type: integer
       image:
         type: string
-      name:
+      title:
         type: string
     type: object
   models.Track:
@@ -28,7 +28,7 @@ definitions:
         type: integer
       image:
         type: string
-      name:
+      title:
         type: string
     type: object
 host: localhost:8080
@@ -44,13 +44,13 @@ paths:
       - application/json
       description: Get a list of albums with optional pagination filters
       parameters:
-      - description: 'Page number (default: 1)'
+      - description: 'Offset (default: 0)'
         in: query
-        name: page
+        name: offset
         type: integer
-      - description: 'Page size (default: 10, max: 100)'
+      - description: 'Limit (default: 10, max: 100)'
         in: query
-        name: page_size
+        name: limit
         type: integer
       produces:
       - application/json
@@ -63,10 +63,6 @@ paths:
             type: array
         "400":
           description: Bad request - invalid filters
-          schema:
-            type: string
-        "404":
-          description: No albums found
           schema:
             type: string
         "500":
@@ -82,13 +78,13 @@ paths:
       - application/json
       description: Get a list of artists with optional pagination filters
       parameters:
-      - description: 'Page number (default: 1)'
+      - description: 'Offset (default: 0)'
         in: query
-        name: page
+        name: offset
         type: integer
-      - description: 'Page size (default: 10, max: 100)'
+      - description: 'Limit (default: 10, max: 100)'
         in: query
-        name: page_size
+        name: limit
         type: integer
       produces:
       - application/json
@@ -101,10 +97,6 @@ paths:
             type: array
         "400":
           description: Bad request - invalid filters
-          schema:
-            type: string
-        "404":
-          description: No artists found
           schema:
             type: string
         "500":
@@ -120,13 +112,13 @@ paths:
       - application/json
       description: Get a list of tracks with optional pagination filters
       parameters:
-      - description: 'Page number (default: 1)'
+      - description: 'Offset (default: 0)'
         in: query
-        name: page
+        name: offset
         type: integer
-      - description: 'Page size (default: 10, max: 100)'
+      - description: 'Limit (default: 10, max: 100)'
         in: query
-        name: page_size
+        name: limit
         type: integer
       produces:
       - application/json
@@ -139,10 +131,6 @@ paths:
             type: array
         "400":
           description: Bad request - invalid filters
-          schema:
-            type: string
-        "404":
-          description: No tracks found
           schema:
             type: string
         "500":

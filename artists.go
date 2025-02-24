@@ -13,45 +13,42 @@ import (
 // @Tags artists
 // @Accept json
 // @Produce json
-// @Param page query integer false "Page number (default: 1)"
-// @Param page_size query integer false "Page size (default: 10, max: 100)"
+// @Param offset query integer false "Offset (default: 0)"
+// @Param limit query integer false "Limit (default: 10, max: 100)"
 // @Success 200 {array} models.Artist "List of artists"
 // @Failure 400 {string} string "Bad request - invalid filters"
-// @Failure 404 {string} string "No artists found"
 // @Failure 500 {string} string "Internal server error"
 // @Router /artists [get]
-func getArtistsHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) getArtists(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var input struct {
-		models.Filters
-	}
-
-	var err error
+	var filters models.Filters
 
 	qs := r.URL.Query()
-	input.Page, err = readInt(qs, "page", 1)
+	offset, err := readInt(qs, "offset", DefaultOffset)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	input.PageSize, err = readInt(qs, "page_size", 10)
+	limit, err := readInt(qs, "limit", DefaultLimit)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := input.Validate(); err != nil {
+	filters.Offset = offset
+	filters.Limit = limit
+
+	if err := filters.Validate(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	model := models.NewArtistsModel()
-	artists, err := model.GetAll(input.Filters)
+	artists, err := app.models.Artists.GetAll(filters)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -60,8 +57,7 @@ func getArtistsHandler(w http.ResponseWriter, r *http.Request) {
 	headers := make(http.Header)
 	headers.Set("X-Total-Count", strconv.Itoa(len(artists)))
 
-	err = writeJSON(w, http.StatusOK, artists, headers)
-	if err != nil {
+	if err := writeJSON(w, http.StatusOK, artists, headers); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

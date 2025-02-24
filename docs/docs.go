@@ -31,14 +31,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Page number (default: 1)",
-                        "name": "page",
+                        "description": "Offset (default: 0)",
+                        "name": "offset",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Page size (default: 10, max: 100)",
-                        "name": "page_size",
+                        "description": "Limit (default: 10, max: 100)",
+                        "name": "limit",
                         "in": "query"
                     }
                 ],
@@ -54,12 +54,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request - invalid filters",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "No albums found",
                         "schema": {
                             "type": "string"
                         }
@@ -89,14 +83,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Page number (default: 1)",
-                        "name": "page",
+                        "description": "Offset (default: 0)",
+                        "name": "offset",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Page size (default: 10, max: 100)",
-                        "name": "page_size",
+                        "description": "Limit (default: 10, max: 100)",
+                        "name": "limit",
                         "in": "query"
                     }
                 ],
@@ -112,12 +106,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request - invalid filters",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "No artists found",
                         "schema": {
                             "type": "string"
                         }
@@ -147,14 +135,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Page number (default: 1)",
-                        "name": "page",
+                        "description": "Offset (default: 0)",
+                        "name": "offset",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Page size (default: 10, max: 100)",
-                        "name": "page_size",
+                        "description": "Limit (default: 10, max: 100)",
+                        "name": "limit",
                         "in": "query"
                     }
                 ],
@@ -170,12 +158,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request - invalid filters",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "No tracks found",
                         "schema": {
                             "type": "string"
                         }
@@ -217,7 +199,7 @@ const docTemplate = `{
                 "image": {
                     "type": "string"
                 },
-                "name": {
+                "title": {
                     "type": "string"
                 }
             }
@@ -234,7 +216,7 @@ const docTemplate = `{
                 "image": {
                     "type": "string"
                 },
-                "name": {
+                "title": {
                     "type": "string"
                 }
             }

@@ -17,8 +17,7 @@ func readJSON(w http.ResponseWriter, r *http.Request, v interface{}) error {
 
 	decoder := json.NewDecoder(r.Body)
 
-	err := decoder.Decode(v)
-	if err != nil {
+	if err := decoder.Decode(v); err != nil {
 		var syntaxError *json.SyntaxError
 		var unmarshalTypeError *json.UnmarshalTypeError
 		var invalidUnmarshalError *json.InvalidUnmarshalError
@@ -41,8 +40,7 @@ func readJSON(w http.ResponseWriter, r *http.Request, v interface{}) error {
 		}
 	}
 
-	err = decoder.Decode(&struct{}{})
-	if err != io.EOF {
+	if err := decoder.Decode(&struct{}{}); err != io.EOF {
 		return errors.New("body must only contain a single JSON value")
 	}
 
@@ -74,7 +72,7 @@ func readInt(qs url.Values, key string, defaultValue int) (int, error) {
 
 	i, err := strconv.Atoi(str)
 	if err != nil {
-		return defaultValue, err
+		return 0, err
 	}
 
 	return i, nil
