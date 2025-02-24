@@ -11,6 +11,18 @@ func checkPasswordHash(password string, hash string) bool {
 	return err == nil
 }
 
+// @Summary Log in a user
+// @Description Authenticate a user using their username/email and password
+// @Tags login
+// @Accept json
+// @Produce json
+// @Param user body User true "User credentials (username/email and password)"
+// @Success 200 {string} string "Successfully logged in"
+// @Failure 400 {string} string "Bad request - invalid input"
+// @Failure 401 {string} string "Unauthorized - invalid credentials"
+// @Failure 405 {string} string "Method not allowed"
+// @Failure 500 {string} string "Internal server error"
+// @Router /login [post]
 func (api *MyHandler) loginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

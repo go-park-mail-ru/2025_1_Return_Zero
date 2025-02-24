@@ -13,6 +13,18 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
+// @Summary Sign up a new user
+// @Description Register a new user with a username, email, and password
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param user body User true "User information for registration"
+// @Success 200 {string} string "Successfully logged in"
+// @Failure 400 {string} string "Bad request - invalid input or password"
+// @Failure 405 {string} string "Method not allowed"
+// @Failure 409 {string} string "Conflict - user already exists"
+// @Failure 500 {string} string "Internal server error"
+// @Router /signup [post]
 func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

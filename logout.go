@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+// @Summary Log out a user
+// @Description Terminate the user's session and clear the session cookie
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 200 {string} string "Successfully logged out"
+// @Failure 401 {string} string "Unauthorized - no valid session"
+// @Failure 500 {string} string "Internal server error"
+// @Router /logout [post]
 func (api *MyHandler) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
