@@ -52,6 +52,18 @@ func generateSessionID() string {
 	return base64.StdEncoding.EncodeToString(b)
 }
 
+// checkSession verifies the user's session based on the "session_id" cookie.
+//
+// @Summary Check user session
+// @Description Validates the session by checking the "session_id" cookie and retrieving user information.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} UserToFront "User session is valid"
+// @Failure 401 {string} string "Invalid cookie or unauthorized"
+// @Failure 404 {string} string "User not found"
+// @Failure 500 {string} string "Internal server error"
+// @Router /session/check [get]
 func (api *MyHandler) checkSession(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
