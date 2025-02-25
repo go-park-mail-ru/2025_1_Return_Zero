@@ -1,9 +1,7 @@
 package main
 
 import (
-	"net/http"
 	"sync"
-	"time"
 )
 
 type User struct {
@@ -13,33 +11,23 @@ type User struct {
 	Email    string `json:"email"`
 }
 
+type UserToFront struct {
+	ID       uint   `json:"id"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+}
+
 type MyHandler struct {
-	sessions map[string]uint
+	sessions map[string]*Session
 	users    map[string]*User
 	mu       sync.Mutex
 }
 
 func NewMyHandler() *MyHandler {
 	h := &MyHandler{
-		sessions: make(map[string]uint, 10),
+		sessions: make(map[string]*Session),
 		users:    make(map[string]*User),
 	}
 	go h.cleanupSessions()
 	return h
-}
-
-func (api *MyHandler) createSession(w http.ResponseWriter, ID uint) {
-	SID := generateSessionID()
-	api.mu.Lock()
-	api.sessions[SID] = ID
-	api.mu.Unlock()
-
-	cookie := &http.Cookie{
-		Name:     "session_id",
-		Value:    SID,
-		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: true,
-	}
-	http.SetCookie(w, cookie)
-	w.WriteHeader(http.StatusCreated)
 }

@@ -26,11 +26,6 @@ func hashPassword(password string) (string, error) {
 // @Failure 500 {string} string "Internal server error"
 // @Router /signup [post]
 func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var u User
 	if err := readJSON(w, r, &u); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
@@ -38,7 +33,7 @@ func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, user := range api.users {
-		if user.Username == u.Username || user.Email == u.Email {
+		if user.Email == u.Email {
 			http.Error(w, "User already exist", http.StatusConflict)
 			return
 		}
@@ -60,7 +55,12 @@ func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
 	USER_COUNTER++
 
 	api.createSession(w, newUser.ID)
-	if err := writeJSON(w, http.StatusOK, "Successfuly logged in", nil); err != nil {
+	sendUser := &UserToFront{
+		ID:       newUser.ID,
+		Username: newUser.Username,
+		Email:    newUser.Email,
+	}
+	if err := writeJSON(w, http.StatusOK, sendUser, nil); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}

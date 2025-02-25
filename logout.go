@@ -16,7 +16,7 @@ import (
 // @Router /logout [post]
 func (api *MyHandler) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	session, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
+	if err != nil {
 		http.Error(w, "No cookie", http.StatusUnauthorized)
 		return
 	}

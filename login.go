@@ -24,39 +24,18 @@ func checkPasswordHash(password string, hash string) bool {
 // @Failure 500 {string} string "Internal server error"
 // @Router /login [post]
 func (api *MyHandler) loginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	var u User
 	if err := readJSON(w, r, &u); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
-	// check username
-	var fieldLogin string
-	isRegistred := false
-	for _, user := range api.users {
-		if user.Username == u.Username {
-			isRegistred = true
-			fieldLogin = u.Username
-			break
-		}
+	user, isRegistered := api.users[u.Username]
+	if !isRegistered {
+		user, isRegistered = api.users[u.Email]
 	}
 
-	// check email
-	if !isRegistred {
-		for _, user := range api.users {
-			if user.Email == u.Email {
-				isRegistred = true
-				fieldLogin = u.Email
-				break
-			}
-		}
-	}
-
-	if !isRegistred || !checkPasswordHash(u.Password, api.users[fieldLogin].Password) {
+	if !isRegistered || !checkPasswordHash(u.Password, user.Password) {
 		http.Error(w, "Invalid input", http.StatusUnauthorized)
 		return
 	}
