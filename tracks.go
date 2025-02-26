@@ -7,7 +7,11 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/models"
 )
 
-// TODO: Write unit tests
+type TracksHandler struct {
+	Model *models.TracksModel
+}
+
+// List TODO: Write unit tests
 // @Summary Get tracks
 // @Description Get a list of tracks with optional pagination filters
 // @Tags tracks
@@ -19,7 +23,7 @@ import (
 // @Failure 400 {string} string "Bad request - invalid filters"
 // @Failure 500 {string} string "Internal server error"
 // @Router /tracks [get]
-func (app *application) getTracks(w http.ResponseWriter, r *http.Request) {
+func (handler *TracksHandler) List(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -48,7 +52,7 @@ func (app *application) getTracks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tracks, err := app.models.Tracks.GetAll(filters)
+	tracks, err := handler.Model.GetAll(filters)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return

@@ -2,21 +2,17 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-
 	_ "github.com/go-park-mail-ru/2025_1_Return_Zero/docs"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/models"
+	"github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
+	"net/http"
 )
 
 const (
 	DefaultOffset = 0
 	DefaultLimit  = 10
 )
-
-type application struct {
-	models *models.Models
-}
 
 // @title Return Zero API
 // @version 1.0
@@ -25,14 +21,27 @@ type application struct {
 // TODO: change host to the production host
 // @BasePath /
 func main() {
-	app := &application{
-		models: models.NewModels(),
+	r := mux.NewRouter()
+
+	tracksHandler := &TracksHandler{
+		Model: models.NewTracksModel(),
 	}
 
-	fmt.Println("Server starting on port 8080...")
-	http.HandleFunc("/docs/", httpSwagger.WrapHandler)
-	http.HandleFunc("/tracks", app.getTracks)
-	http.HandleFunc("/albums", app.getAlbums)
-	http.HandleFunc("/artists", app.getArtists)
-	http.ListenAndServe(":8080", nil)
+	albumsHandler := &AlbumsHandler{
+		Model: models.NewAlbumsModel(),
+	}
+
+	artistsHandler := &ArtistsHandler{
+		Model: models.NewArtistsModel(),
+	}
+
+	fmt.Println("Server starting on port 8081...")
+	r.HandleFunc("/docs/", httpSwagger.WrapHandler)
+	r.HandleFunc("/tracks", tracksHandler.List).Methods("GET")
+	r.HandleFunc("/albums", albumsHandler.List).Methods("GET")
+	r.HandleFunc("/artists", artistsHandler.List).Methods("GET")
+	err := http.ListenAndServe(":8081", r)
+	if err != nil {
+		fmt.Println(err)
+	}
 }
