@@ -24,6 +24,10 @@ type AlbumsModel struct {
 	nextID int
 }
 
+func (m *AlbumsModel) SetTracks(albums []Album) {
+	m.albums = albums
+}
+
 func NewAlbumsModel() *AlbumsModel {
 	return &AlbumsModel{
 		// TODO: Change to empty album object list after RK1
@@ -34,12 +38,12 @@ func NewAlbumsModel() *AlbumsModel {
 	}
 }
 
-func (m *AlbumsModel) GetAll(filters Filters) ([]Album, error) {
+func (m *AlbumsModel) GetAll(filters Filters) []Album {
 	offset := filters.Offset
 	limit := filters.Limit
 
 	if offset > len(m.albums) {
-		return []Album{}, nil
+		return []Album{}
 	}
 
 	if offset+limit > len(m.albums) {
@@ -50,8 +54,8 @@ func (m *AlbumsModel) GetAll(filters Filters) ([]Album, error) {
 	defer m.mutex.RUnlock()
 	albums := m.albums[offset : offset+limit]
 	if len(albums) == 0 {
-		return []Album{}, nil
+		return []Album{}
 	}
 
-	return albums, nil
+	return albums
 }

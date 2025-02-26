@@ -24,11 +24,6 @@ type TracksHandler struct {
 // @Failure 500 {string} string "Internal server error"
 // @Router /tracks [get]
 func (handler *TracksHandler) List(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
 	var filters models.Filters
 
 	qs := r.URL.Query()
@@ -52,11 +47,7 @@ func (handler *TracksHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tracks, err := handler.Model.GetAll(filters)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
+	tracks := handler.Model.GetAll(filters)
 
 	headers := make(http.Header)
 	headers.Set("X-Total-Count", strconv.Itoa(len(tracks)))

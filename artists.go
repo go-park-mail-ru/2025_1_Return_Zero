@@ -47,11 +47,7 @@ func (handler *ArtistsHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	artists, err := handler.Model.GetAll(filters)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
+	artists := handler.Model.GetAll(filters)
 
 	headers := make(http.Header)
 	headers.Set("X-Total-Count", strconv.Itoa(len(artists)))

@@ -47,11 +47,7 @@ func (handler *AlbumsHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	albums, err := handler.Model.GetAll(filters)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
+	albums := handler.Model.GetAll(filters)
 
 	headers := make(http.Header)
 	headers.Set("X-Total-Count", strconv.Itoa(len(albums)))
