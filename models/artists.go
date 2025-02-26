@@ -24,10 +24,6 @@ type ArtistsModel struct {
 	nextID  int
 }
 
-func (m *ArtistsModel) SetArtists(artists []Artist) {
-	m.artists = artists
-}
-
 func NewArtistsModel() *ArtistsModel {
 	return &ArtistsModel{
 		// TODO: Change to empty artist object list after RK1

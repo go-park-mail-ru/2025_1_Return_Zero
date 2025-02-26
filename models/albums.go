@@ -24,10 +24,6 @@ type AlbumsModel struct {
 	nextID int
 }
 
-func (m *AlbumsModel) SetTracks(albums []Album) {
-	m.albums = albums
-}
-
 func NewAlbumsModel() *AlbumsModel {
 	return &AlbumsModel{
 		// TODO: Change to empty album object list after RK1

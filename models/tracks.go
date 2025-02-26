@@ -40,10 +40,6 @@ type TracksModel struct {
 	nextID int
 }
 
-func (m *TracksModel) SetTracks(tracks []Track) {
-	m.tracks = tracks
-}
-
 func NewTracksModel() *TracksModel {
 	return &TracksModel{
 		// TODO: Change to empty track object list after RK1
