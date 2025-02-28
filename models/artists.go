@@ -34,12 +34,12 @@ func NewArtistsModel() *ArtistsModel {
 	}
 }
 
-func (m *ArtistsModel) GetAll(filters Filters) ([]Artist, error) {
+func (m *ArtistsModel) GetAll(filters Filters) []Artist {
 	offset := filters.Offset
 	limit := filters.Limit
 
 	if offset > len(m.artists) {
-		return []Artist{}, nil
+		return []Artist{}
 	}
 
 	if offset+limit > len(m.artists) {
@@ -51,8 +51,8 @@ func (m *ArtistsModel) GetAll(filters Filters) ([]Artist, error) {
 	artists := m.artists[offset : offset+limit]
 
 	if len(artists) == 0 {
-		return []Artist{}, nil
+		return []Artist{}
 	}
 
-	return artists, nil
+	return artists
 }

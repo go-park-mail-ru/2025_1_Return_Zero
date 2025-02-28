@@ -50,12 +50,12 @@ func NewTracksModel() *TracksModel {
 	}
 }
 
-func (m *TracksModel) GetAll(filters Filters) ([]Track, error) {
+func (m *TracksModel) GetAll(filters Filters) []Track {
 	offset := filters.Offset
 	limit := filters.Limit
 
 	if offset > len(m.tracks) {
-		return []Track{}, nil
+		return []Track{}
 	}
 
 	if offset+limit > len(m.tracks) {
@@ -67,8 +67,8 @@ func (m *TracksModel) GetAll(filters Filters) ([]Track, error) {
 	tracks := m.tracks[offset : offset+limit]
 
 	if len(tracks) == 0 {
-		return []Track{}, nil
+		return []Track{}
 	}
 
-	return tracks, nil
+	return tracks
 }

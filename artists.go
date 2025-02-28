@@ -7,7 +7,11 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/models"
 )
 
-// TODO: Write unit tests
+type ArtistsHandler struct {
+	Model *models.ArtistsModel
+}
+
+// List TODO: Write unit tests
 // @Summary Get artists
 // @Description Get a list of artists with optional pagination filters
 // @Tags artists
@@ -19,12 +23,7 @@ import (
 // @Failure 400 {string} string "Bad request - invalid filters"
 // @Failure 500 {string} string "Internal server error"
 // @Router /artists [get]
-func (app *application) getArtists(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
+func (handler *ArtistsHandler) List(w http.ResponseWriter, r *http.Request) {
 	var filters models.Filters
 
 	qs := r.URL.Query()
@@ -48,11 +47,7 @@ func (app *application) getArtists(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	artists, err := app.models.Artists.GetAll(filters)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
-		return
-	}
+	artists := handler.Model.GetAll(filters)
 
 	headers := make(http.Header)
 	headers.Set("X-Total-Count", strconv.Itoa(len(artists)))

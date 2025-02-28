@@ -59,9 +59,9 @@ func writeJSON(w http.ResponseWriter, status int, data interface{}, headers http
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	w.Write(jsonData)
+	_, err = w.Write(jsonData)
 
-	return nil
+	return err
 }
 
 func readInt(qs url.Values, key string, defaultValue int) (int, error) {
