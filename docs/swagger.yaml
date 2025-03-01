@@ -1,0 +1,143 @@
+basePath: /
+definitions:
+  models.Album:
+    properties:
+      artist:
+        type: string
+      id:
+        type: integer
+      image:
+        type: string
+      title:
+        type: string
+    type: object
+  models.Artist:
+    properties:
+      id:
+        type: integer
+      image:
+        type: string
+      title:
+        type: string
+    type: object
+  models.Track:
+    properties:
+      artist:
+        type: string
+      id:
+        type: integer
+      image:
+        type: string
+      title:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is the API server for Return Zero music app.
+  title: Return Zero API
+  version: "1.0"
+paths:
+  /albums:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of albums with optional pagination filters
+      parameters:
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of albums
+          schema:
+            items:
+              $ref: '#/definitions/models.Album'
+            type: array
+        "400":
+          description: Bad request - invalid filters
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get albums
+      tags:
+      - albums
+  /artists:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of artists with optional pagination filters
+      parameters:
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of artists
+          schema:
+            items:
+              $ref: '#/definitions/models.Artist'
+            type: array
+        "400":
+          description: Bad request - invalid filters
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get artists
+      tags:
+      - artists
+  /tracks:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of tracks with optional pagination filters
+      parameters:
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of tracks
+          schema:
+            items:
+              $ref: '#/definitions/models.Track'
+            type: array
+        "400":
+          description: Bad request - invalid filters
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get tracks
+      tags:
+      - tracks
+swagger: "2.0"
