@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+
 	_ "github.com/go-park-mail-ru/2025_1_Return_Zero/docs"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/models"
 	"github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
-	"net/http"
 )
 
 const (
@@ -35,19 +36,20 @@ func main() {
 		Model: models.NewArtistsModel(),
 	}
 
-	fmt.Println("Server starting on port 8081...")
-	r.HandleFunc("/docs/", httpSwagger.WrapHandler)
+	fmt.Println("Server starting on port 8080...")
+
+	r.PathPrefix("/docs/").Handler(httpSwagger.WrapHandler)
 	r.HandleFunc("/tracks", tracksHandler.List).Methods("GET")
 	r.HandleFunc("/albums", albumsHandler.List).Methods("GET")
 	r.HandleFunc("/artists", artistsHandler.List).Methods("GET")
-  
-	api := NewMyHandler()
-	r.HandleFunc("/login", api.loginHandler).Methods("POST")
-	r.HandleFunc("/logout", api.logoutHandler).Methods("POST")
-	r.HandleFunc("/signup", api.signupHandler).Methods("POST")
-	r.HandleFunc("/user", api.checkSession).Methods("GET")
-	
-	err := http.ListenAndServe(":8081", r)
+
+	userApi := NewMyHandler()
+	r.HandleFunc("/login", userApi.loginHandler).Methods("POST")
+	r.HandleFunc("/logout", userApi.logoutHandler).Methods("POST")
+	r.HandleFunc("/signup", userApi.signupHandler).Methods("POST")
+	r.HandleFunc("/user", userApi.checkSession).Methods("GET")
+
+	err := http.ListenAndServe(":8080", r)
 	if err != nil {
 		fmt.Println(err)
 	}
