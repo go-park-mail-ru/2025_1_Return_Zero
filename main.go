@@ -40,6 +40,13 @@ func main() {
 	r.HandleFunc("/tracks", tracksHandler.List).Methods("GET")
 	r.HandleFunc("/albums", albumsHandler.List).Methods("GET")
 	r.HandleFunc("/artists", artistsHandler.List).Methods("GET")
+  
+	api := NewMyHandler()
+	r.HandleFunc("/login", api.loginHandler).Methods("POST")
+	r.HandleFunc("/logout", api.logoutHandler).Methods("POST")
+	r.HandleFunc("/signup", api.signupHandler).Methods("POST")
+	r.HandleFunc("/user", api.checkSession).Methods("GET")
+	
 	err := http.ListenAndServe(":8081", r)
 	if err != nil {
 		fmt.Println(err)
