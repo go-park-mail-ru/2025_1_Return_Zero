@@ -1,8 +1,10 @@
+files = $(wildcard *.go)
+
 server:
-	go run main.go tracks.go albums.go artists.go helpers.go
+	go run $(files)
 
 build:
-	go build -o bin/server main.go tracks.go albums.go artists.go helpers.go
+	go build -o bin/server $(files)
 
 swag:
 	swag init -g main.go

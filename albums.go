@@ -19,7 +19,7 @@ type AlbumsHandler struct {
 // @Produce json
 // @Param offset query integer false "Offset (default: 0)"
 // @Param limit query integer false "Limit (default: 10, max: 100)"
-// @Success 200 {array} Album "List of albums"
+// @Success 200 {array} models.Album "List of albums"
 // @Failure 400 {string} string "Bad request - invalid filters"
 // @Failure 500 {string} string "Internal server error"
 // @Router /albums [get]
