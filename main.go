@@ -40,7 +40,7 @@ func main() {
 	r.HandleFunc("/tracks", tracksHandler.List).Methods("GET")
 	r.HandleFunc("/albums", albumsHandler.List).Methods("GET")
 	r.HandleFunc("/artists", artistsHandler.List).Methods("GET")
-
+  
 	api := NewMyHandler()
 	r.HandleFunc("/login", api.loginHandler).Methods("POST")
 	r.HandleFunc("/logout", api.logoutHandler).Methods("POST")
