@@ -25,14 +25,23 @@ func checkPasswordHash(password string, hash string) bool {
 // @Router /login [post]
 func (api *MyHandler) loginHandler(w http.ResponseWriter, r *http.Request) {
 	var u User
+	var user *User
+	var isRegistered bool
 	if err := readJSON(w, r, &u); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
-	user, isRegistered := api.users[u.Username]
-	if !isRegistered {
-		user, isRegistered = api.users[u.Email]
+	if u.Username == "" {
+		for _, rangeUser := range api.users {
+			if rangeUser.Email == u.Email {
+				user = rangeUser
+				isRegistered = true
+				break
+			}
+		}
+	} else {
+		user, isRegistered = api.users[u.Username]
 	}
 
 	if !isRegistered || !checkPasswordHash(u.Password, user.Password) {
@@ -40,8 +49,4 @@ func (api *MyHandler) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	api.createSession(w, u.ID)
-	if err := writeJSON(w, http.StatusOK, "Successfuly logged in", nil); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
 }

@@ -8,7 +8,7 @@ import (
 
 var USER_COUNTER = 0
 
-func hashPassword(password string) (string, error) {
+func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
 }
@@ -32,6 +32,11 @@ func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, isRegistred := api.users[u.Username]
+	if isRegistred {
+		http.Error(w, "User already exist", http.StatusConflict)
+		return
+	}
 	for _, user := range api.users {
 		if user.Email == u.Email {
 			http.Error(w, "User already exist", http.StatusConflict)
@@ -39,7 +44,7 @@ func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	hashedPassword, err := hashPassword(u.Password)
+	hashedPassword, err := HashPassword(u.Password)
 	if err != nil {
 		http.Error(w, "Invalid password", http.StatusBadRequest)
 		return
@@ -60,6 +65,7 @@ func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
 		Username: newUser.Username,
 		Email:    newUser.Email,
 	}
+
 	if err := writeJSON(w, http.StatusOK, sendUser, nil); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
