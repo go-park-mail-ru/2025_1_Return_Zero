@@ -55,3 +55,10 @@ func (m *AlbumsModel) GetAll(filters Filters) []Album {
 
 	return albums
 }
+
+// Only for testing purposes
+func (m *AlbumsModel) SetTestData(testAlbums []Album) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	m.albums = testAlbums
+}

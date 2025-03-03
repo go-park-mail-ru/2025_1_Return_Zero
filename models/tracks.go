@@ -72,3 +72,10 @@ func (m *TracksModel) GetAll(filters Filters) []Track {
 
 	return tracks
 }
+
+// Only for testing purposes
+func (m *TracksModel) SetTestData(testTracks []Track) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	m.tracks = testTracks
+}
