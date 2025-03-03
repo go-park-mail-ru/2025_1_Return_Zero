@@ -187,7 +187,7 @@ paths:
       summary: Log out a user
       tags:
       - auth
-  /session/check:
+  /user:
     get:
       consumes:
       - application/json
