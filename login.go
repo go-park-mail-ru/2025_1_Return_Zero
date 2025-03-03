@@ -11,16 +11,15 @@ func checkPasswordHash(password string, hash string) bool {
 	return err == nil
 }
 
-// @Summary Log in a user
-// @Description Authenticate a user using their username/email and password
-// @Tags login
+// @Summary User login
+// @Description Authenticates a user based on provided credentials (either username+password or email+password).
+// @Tags auth
 // @Accept json
 // @Produce json
-// @Param user body User true "User credentials (username/email and password)"
-// @Success 200 {string} string "Successfully logged in"
-// @Failure 400 {string} string "Bad request - invalid input"
-// @Failure 401 {string} string "Unauthorized - invalid credentials"
-// @Failure 405 {string} string "Method not allowed"
+// @Param request body User true "User credentials"
+// @Success 200 {object} UserToFront
+// @Failure 400 {string} string "Invalid request"
+// @Failure 401 {string} string "Invalid input"
 // @Failure 500 {string} string "Internal server error"
 // @Router /login [post]
 func (api *MyHandler) loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,4 +48,15 @@ func (api *MyHandler) loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	api.createSession(w, u.ID)
+
+	sendUser := &UserToFront{
+		ID:       u.ID,
+		Username: u.Username,
+		Email:    u.Email,
+	}
+
+	if err := writeJSON(w, http.StatusOK, sendUser, nil); err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 }

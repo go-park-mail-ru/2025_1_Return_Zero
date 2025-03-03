@@ -13,16 +13,15 @@ func HashPassword(password string) (string, error) {
 	return string(bytes), err
 }
 
-// @Summary Sign up a new user
-// @Description Register a new user with a username, email, and password
+// @Summary Register a new user
+// @Description Creates a new user if the username and email are unique. Hashes the password, saves the user, and creates a session.
 // @Tags auth
-// @Accept json
-// @Produce json
-// @Param user body User true "User information for registration"
-// @Success 200 {string} string "Successfully logged in"
-// @Failure 400 {string} string "Bad request - invalid input or password"
-// @Failure 405 {string} string "Method not allowed"
-// @Failure 409 {string} string "Conflict - user already exists"
+// @Accept  json
+// @Produce  json
+// @Param user body User true "User data for registration"
+// @Success 200 {object} UserToFront "User successfully registered"
+// @Failure 400 {string} string "Invalid request"
+// @Failure 409 {string} string "User already exists"
 // @Failure 500 {string} string "Internal server error"
 // @Router /signup [post]
 func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
