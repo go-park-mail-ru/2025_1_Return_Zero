@@ -56,3 +56,10 @@ func (m *ArtistsModel) GetAll(filters Filters) []Artist {
 
 	return artists
 }
+
+// Only for testing purposes
+func (m *ArtistsModel) SetTestData(testArtists []Artist) {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	m.artists = testArtists
+}
