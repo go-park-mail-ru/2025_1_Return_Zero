@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -151,7 +152,7 @@ func TestListAlbums(t *testing.T) {
 			if testCase.expectedStatus == http.StatusOK {
 				var actualAlbums []models.Album
 				err := json.Unmarshal(rr.Body.Bytes(), &actualAlbums)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, testCase.expectedAlbums, actualAlbums)
 			}
 		})
