@@ -1,10 +1,10 @@
 package main
 
 import (
-	"net/http"
-	"testing"
-	"net/http/httptest"
 	"bytes"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 )
 
 func TestSignup(t *testing.T) {

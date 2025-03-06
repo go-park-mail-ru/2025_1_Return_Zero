@@ -42,7 +42,7 @@ func TestLogin(t *testing.T) {
 			expectedStatus: http.StatusUnauthorized,
 		},
 		{
-			name: 		    "Login with wrong password",
+			name:           "Login with wrong password",
 			requestBody:    `{"password": "vasya322", "email": "supervasya@gmail.com"}`,
 			expectedStatus: http.StatusUnauthorized,
 		},
