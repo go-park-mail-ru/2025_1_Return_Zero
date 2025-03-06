@@ -41,7 +41,7 @@ func (api *MyHandler) createSession(w http.ResponseWriter, ID uint) {
 		Value:    SID,
 		Expires:  expiration,
 		HttpOnly: true,
-		Secure:   true,
+		// Secure:   true,
 	}
 	http.SetCookie(w, cookie)
 	w.WriteHeader(http.StatusCreated)
