@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,7 +12,8 @@ func TestSignup(t *testing.T) {
 	t.Parallel()
 
 	api := NewMyHandler()
-	password, _ := HashPassword("vasya")
+	password, err := HashPassword("vasya")
+	require.NoError(t, err, "failed to hash password")
 	api.users["Vasily"] = &User{
 		ID:       0,
 		Username: "Vasily",
