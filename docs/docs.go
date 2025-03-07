@@ -212,7 +212,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/session/check": {
+        "/user": {
             "get": {
                 "description": "Validates the session by checking the \"session_id\" cookie and retrieving user information.",
                 "consumes": [

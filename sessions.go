@@ -41,6 +41,7 @@ func (api *MyHandler) createSession(w http.ResponseWriter, ID uint) {
 		Value:    SID,
 		Expires:  expiration,
 		HttpOnly: true,
+		Secure:   true,
 	}
 	http.SetCookie(w, cookie)
 	w.WriteHeader(http.StatusCreated)
@@ -63,7 +64,7 @@ func generateSessionID() string {
 // @Failure 401 {string} string "Invalid cookie or unauthorized"
 // @Failure 404 {string} string "User not found"
 // @Failure 500 {string} string "Internal server error"
-// @Router /session/check [get]
+// @Router /user [get]
 func (api *MyHandler) checkSession(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_id")
 	if err != nil {

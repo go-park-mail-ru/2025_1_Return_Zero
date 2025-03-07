@@ -8,21 +8,20 @@ import (
 
 var USER_COUNTER = 0
 
-func hashPassword(password string) (string, error) {
+func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return string(bytes), err
 }
 
-// @Summary Sign up a new user
-// @Description Register a new user with a username, email, and password
+// @Summary Register a new user
+// @Description Creates a new user if the username and email are unique. Hashes the password, saves the user, and creates a session.
 // @Tags auth
-// @Accept json
-// @Produce json
-// @Param user body User true "User information for registration"
-// @Success 200 {string} string "Successfully logged in"
-// @Failure 400 {string} string "Bad request - invalid input or password"
-// @Failure 405 {string} string "Method not allowed"
-// @Failure 409 {string} string "Conflict - user already exists"
+// @Accept  json
+// @Produce  json
+// @Param user body User true "User data for registration"
+// @Success 200 {object} UserToFront "User successfully registered"
+// @Failure 400 {string} string "Invalid request"
+// @Failure 409 {string} string "User already exists"
 // @Failure 500 {string} string "Internal server error"
 // @Router /signup [post]
 func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
@@ -32,6 +31,11 @@ func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	_, isRegistred := api.users[u.Username]
+	if isRegistred {
+		http.Error(w, "User already exist", http.StatusConflict)
+		return
+	}
 	for _, user := range api.users {
 		if user.Email == u.Email {
 			http.Error(w, "User already exist", http.StatusConflict)
@@ -39,7 +43,7 @@ func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	hashedPassword, err := hashPassword(u.Password)
+	hashedPassword, err := HashPassword(u.Password)
 	if err != nil {
 		http.Error(w, "Invalid password", http.StatusBadRequest)
 		return
@@ -60,6 +64,7 @@ func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
 		Username: newUser.Username,
 		Email:    newUser.Email,
 	}
+
 	if err := writeJSON(w, http.StatusOK, sendUser, nil); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
