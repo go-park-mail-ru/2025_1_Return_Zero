@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 
@@ -21,7 +22,18 @@ const (
 // @host localhost:8080
 // TODO: change host to the production host
 // @BasePath /
+
 func main() {
+	port := flag.String("p", ":8080", "server port")
+	flag.Parse()
+	cors := &Cors{
+		AllowOrigins:     []string{"returnzero.ru", "localhost", "*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           86400,
+	}
+
 	r := mux.NewRouter()
 
 	tracksHandler := &TracksHandler{
@@ -36,7 +48,7 @@ func main() {
 		Model: models.NewArtistsModel(),
 	}
 
-	fmt.Println("Server starting on port 8080...")
+	fmt.Printf("Server starting on port %s...\n", *port)
 
 	r.PathPrefix("/docs/").Handler(httpSwagger.WrapHandler)
 	r.HandleFunc("/tracks", tracksHandler.List).Methods("GET")
@@ -49,7 +61,7 @@ func main() {
 	r.HandleFunc("/signup", userApi.signupHandler).Methods("POST")
 	r.HandleFunc("/user", userApi.checkSession).Methods("GET")
 
-	err := http.ListenAndServe(":8080", r)
+	err := http.ListenAndServe(*port, cors.Middleware(r))
 	if err != nil {
 		fmt.Println(err)
 	}

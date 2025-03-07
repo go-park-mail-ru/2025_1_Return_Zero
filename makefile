@@ -1,5 +1,3 @@
-
-
 run:
 	go run .
 
