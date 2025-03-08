@@ -19,7 +19,7 @@ const (
 // @title Return Zero API
 // @version 1.0
 // @description This is the API server for Return Zero music app.
-// @host localhost:8080
+// @host returnzero.ru
 // TODO: change host to the production host
 // @BasePath /
 
@@ -27,9 +27,9 @@ func main() {
 	port := flag.String("p", ":8080", "server port")
 	flag.Parse()
 	cors := &Cors{
-		AllowOrigins:     []string{"returnzero.ru", "localhost", "*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		AllowedOrigins:   []string{"returnzero.ru", "localhost"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
+		AllowedHeaders:   []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		AllowCredentials: true,
 		MaxAge:           86400,
 	}

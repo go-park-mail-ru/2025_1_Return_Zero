@@ -51,7 +51,7 @@ definitions:
       title:
         type: string
     type: object
-host: localhost:8080
+host: returnzero.ru
 info:
   contact: {}
   description: This is the API server for Return Zero music app.

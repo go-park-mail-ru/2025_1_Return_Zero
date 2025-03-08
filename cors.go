@@ -7,9 +7,9 @@ import (
 )
 
 type Cors struct {
-	AllowOrigins     []string
-	AllowMethods     []string
-	AllowHeaders     []string
+	AllowedOrigins   []string
+	AllowedMethods   []string
+	AllowedHeaders   []string
 	AllowCredentials bool
 	MaxAge           int
 }
@@ -24,9 +24,9 @@ func (c *Cors) Middleware(next http.Handler) http.Handler {
 
 		var allowedOrigin string
 
-		for _, o := range c.AllowOrigins {
+		for _, o := range c.AllowedOrigins {
 			if c.AllowCredentials && o == "*" {
-				allowedOrigin = o
+				allowedOrigin = origin
 				break
 			}
 			if o == origin {
@@ -42,8 +42,8 @@ func (c *Cors) Middleware(next http.Handler) http.Handler {
 
 		if r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != "" {
 			w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
-			w.Header().Set("Access-Control-Allow-Methods", strings.Join(c.AllowMethods, ","))
-			w.Header().Set("Access-Control-Allow-Headers", strings.Join(c.AllowHeaders, ","))
+			w.Header().Set("Access-Control-Allow-Methods", strings.Join(c.AllowedMethods, ","))
+			w.Header().Set("Access-Control-Allow-Headers", strings.Join(c.AllowedHeaders, ","))
 
 			w.Header().Set("Access-Control-Max-Age", strconv.Itoa(c.MaxAge))
 
