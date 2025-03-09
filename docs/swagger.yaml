@@ -51,7 +51,7 @@ definitions:
       title:
         type: string
     type: object
-host: localhost:8080
+host: returnzero.ru
 info:
   contact: {}
   description: This is the API server for Return Zero music app.
@@ -187,34 +187,6 @@ paths:
       summary: Log out a user
       tags:
       - auth
-  /user:
-    get:
-      consumes:
-      - application/json
-      description: Validates the session by checking the "session_id" cookie and retrieving
-        user information.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: User session is valid
-          schema:
-            $ref: '#/definitions/main.UserToFront'
-        "401":
-          description: Invalid cookie or unauthorized
-          schema:
-            type: string
-        "404":
-          description: User not found
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Check user session
-      tags:
-      - auth
   /signup:
     post:
       consumes:
@@ -287,4 +259,32 @@ paths:
       summary: Get tracks
       tags:
       - tracks
+  /user:
+    get:
+      consumes:
+      - application/json
+      description: Validates the session by checking the "session_id" cookie and retrieving
+        user information.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User session is valid
+          schema:
+            $ref: '#/definitions/main.UserToFront'
+        "401":
+          description: Invalid cookie or unauthorized
+          schema:
+            type: string
+        "404":
+          description: User not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Check user session
+      tags:
+      - auth
 swagger: "2.0"

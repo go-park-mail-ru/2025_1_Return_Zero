@@ -212,47 +212,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/user": {
-            "get": {
-                "description": "Validates the session by checking the \"session_id\" cookie and retrieving user information.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Check user session",
-                "responses": {
-                    "200": {
-                        "description": "User session is valid",
-                        "schema": {
-                            "$ref": "#/definitions/main.UserToFront"
-                        }
-                    },
-                    "401": {
-                        "description": "Invalid cookie or unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "User not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/signup": {
             "post": {
                 "description": "Register a new user with a username, email, and password",
@@ -362,6 +321,47 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/user": {
+            "get": {
+                "description": "Validates the session by checking the \"session_id\" cookie and retrieving user information.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Check user session",
+                "responses": {
+                    "200": {
+                        "description": "User session is valid",
+                        "schema": {
+                            "$ref": "#/definitions/main.UserToFront"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid cookie or unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -450,7 +450,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "returnzero.ru",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Return Zero API",
