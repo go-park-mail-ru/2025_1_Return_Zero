@@ -43,7 +43,6 @@ func (api *MyHandler) createSession(w http.ResponseWriter, ID uint) {
 		HttpOnly: true,
 	}
 	http.SetCookie(w, cookie)
-	w.WriteHeader(http.StatusCreated)
 }
 
 func generateSessionID() string {
