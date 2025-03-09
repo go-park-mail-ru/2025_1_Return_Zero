@@ -212,47 +212,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/session/check": {
-            "get": {
-                "description": "Validates the session by checking the \"session_id\" cookie and retrieving user information.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Check user session",
-                "responses": {
-                    "200": {
-                        "description": "User session is valid",
-                        "schema": {
-                            "$ref": "#/definitions/main.UserToFront"
-                        }
-                    },
-                    "401": {
-                        "description": "Invalid cookie or unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "User not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/signup": {
             "post": {
                 "description": "Register a new user with a username, email, and password",
@@ -350,6 +309,47 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request - invalid filters",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/user": {
+            "get": {
+                "description": "Validates the session by checking the \"session_id\" cookie and retrieving user information.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Check user session",
+                "responses": {
+                    "200": {
+                        "description": "User session is valid",
+                        "schema": {
+                            "$ref": "#/definitions/main.UserToFront"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid cookie or unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
                         "schema": {
                             "type": "string"
                         }

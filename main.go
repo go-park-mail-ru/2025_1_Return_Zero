@@ -26,8 +26,9 @@ const (
 func main() {
 	port := flag.String("p", ":8080", "server port")
 	flag.Parse()
+
 	cors := &Cors{
-		AllowedOrigins:   []string{"returnzero.ru", "localhost"},
+		AllowedOrigins:   []string{"returnzero.ru", "http://127.0.0.1:3000"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
 		AllowedHeaders:   []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		AllowCredentials: true,
@@ -60,6 +61,14 @@ func main() {
 	r.HandleFunc("/logout", userApi.logoutHandler).Methods("POST")
 	r.HandleFunc("/signup", userApi.signupHandler).Methods("POST")
 	r.HandleFunc("/user", userApi.checkSession).Methods("GET")
+
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./public/index.html")
+	})
+
+	r.HandleFunc("/static/{path:.*}", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./public/"+mux.Vars(r)["path"])
+	})
 
 	err := http.ListenAndServe(*port, cors.Middleware(r))
 	if err != nil {
