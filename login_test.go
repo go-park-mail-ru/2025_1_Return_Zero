@@ -31,12 +31,12 @@ func TestLogin(t *testing.T) {
 		{
 			name:           "Login with username",
 			requestBody:    `{"username": "Vasily", "password": "vasya"}`,
-			expectedStatus: http.StatusCreated,
+			expectedStatus: http.StatusOK,
 		},
 		{
 			name:           "Login with email",
 			requestBody:    `{"password": "vasya", "email": "supervasya@gmail.com"}`,
-			expectedStatus: http.StatusCreated,
+			expectedStatus: http.StatusOK,
 		},
 		{
 			name:           "Login with non-existing email",
