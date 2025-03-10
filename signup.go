@@ -31,6 +31,11 @@ func (api *MyHandler) signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !ValidateData(&u) {
+		http.Error(w, "Invalid data", http.StatusBadRequest)
+		return
+	}
+
 	_, isRegistred := api.users[u.Username]
 	if isRegistred {
 		http.Error(w, "User already exist", http.StatusConflict)

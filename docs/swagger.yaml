@@ -24,6 +24,8 @@ definitions:
     properties:
       artist:
         type: string
+      description:
+        type: string
       id:
         type: integer
       image:
@@ -42,6 +44,8 @@ definitions:
     type: object
   models.Track:
     properties:
+      album:
+        type: string
       artist:
         type: string
       id:
@@ -130,11 +134,12 @@ paths:
     post:
       consumes:
       - application/json
-      description: Authenticate a user using their username/email and password
+      description: Authenticates a user based on provided credentials (either username+password
+        or email+password).
       parameters:
-      - description: User credentials (username/email and password)
+      - description: User credentials
         in: body
-        name: user
+        name: request
         required: true
         schema:
           $ref: '#/definitions/main.User'
@@ -142,28 +147,24 @@ paths:
       - application/json
       responses:
         "200":
-          description: Successfully logged in
+          description: OK
           schema:
-            type: string
+            $ref: '#/definitions/main.UserToFront'
         "400":
-          description: Bad request - invalid input
+          description: Invalid request
           schema:
             type: string
         "401":
-          description: Unauthorized - invalid credentials
-          schema:
-            type: string
-        "405":
-          description: Method not allowed
+          description: Invalid input
           schema:
             type: string
         "500":
           description: Internal server error
           schema:
             type: string
-      summary: Log in a user
+      summary: User login
       tags:
-      - login
+      - auth
   /logout:
     post:
       consumes:
@@ -191,9 +192,10 @@ paths:
     post:
       consumes:
       - application/json
-      description: Register a new user with a username, email, and password
+      description: Creates a new user if the username and email are unique. Hashes
+        the password, saves the user, and creates a session.
       parameters:
-      - description: User information for registration
+      - description: User data for registration
         in: body
         name: user
         required: true
@@ -203,26 +205,22 @@ paths:
       - application/json
       responses:
         "200":
-          description: Successfully logged in
+          description: User successfully registered
           schema:
-            type: string
+            $ref: '#/definitions/main.UserToFront'
         "400":
-          description: Bad request - invalid input or password
-          schema:
-            type: string
-        "405":
-          description: Method not allowed
+          description: Invalid request
           schema:
             type: string
         "409":
-          description: Conflict - user already exists
+          description: User already exists
           schema:
             type: string
         "500":
           description: Internal server error
           schema:
             type: string
-      summary: Sign up a new user
+      summary: Register a new user
       tags:
       - auth
   /tracks:

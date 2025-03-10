@@ -121,7 +121,7 @@ const docTemplate = `{
         },
         "/login": {
             "post": {
-                "description": "Authenticate a user using their username/email and password",
+                "description": "Authenticates a user based on provided credentials (either username+password or email+password).",
                 "consumes": [
                     "application/json"
                 ],
@@ -129,13 +129,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "login"
+                    "auth"
                 ],
-                "summary": "Log in a user",
+                "summary": "User login",
                 "parameters": [
                     {
-                        "description": "User credentials (username/email and password)",
-                        "name": "user",
+                        "description": "User credentials",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -145,25 +145,19 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successfully logged in",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/main.UserToFront"
                         }
                     },
                     "400": {
-                        "description": "Bad request - invalid input",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized - invalid credentials",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "405": {
-                        "description": "Method not allowed",
+                        "description": "Invalid input",
                         "schema": {
                             "type": "string"
                         }
@@ -214,7 +208,7 @@ const docTemplate = `{
         },
         "/signup": {
             "post": {
-                "description": "Register a new user with a username, email, and password",
+                "description": "Creates a new user if the username and email are unique. Hashes the password, saves the user, and creates a session.",
                 "consumes": [
                     "application/json"
                 ],
@@ -224,10 +218,10 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "Sign up a new user",
+                "summary": "Register a new user",
                 "parameters": [
                     {
-                        "description": "User information for registration",
+                        "description": "User data for registration",
                         "name": "user",
                         "in": "body",
                         "required": true,
@@ -238,25 +232,19 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successfully logged in",
+                        "description": "User successfully registered",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/main.UserToFront"
                         }
                     },
                     "400": {
-                        "description": "Bad request - invalid input or password",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "405": {
-                        "description": "Method not allowed",
+                        "description": "Invalid request",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "409": {
-                        "description": "Conflict - user already exists",
+                        "description": "User already exists",
                         "schema": {
                             "type": "string"
                         }
@@ -402,6 +390,9 @@ const docTemplate = `{
                 "artist": {
                     "type": "string"
                 },
+                "description": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -430,6 +421,9 @@ const docTemplate = `{
         "models.Track": {
             "type": "object",
             "properties": {
+                "album": {
+                    "type": "string"
+                },
                 "artist": {
                     "type": "string"
                 },

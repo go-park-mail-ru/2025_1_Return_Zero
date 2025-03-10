@@ -25,7 +25,7 @@ func TestSignup(t *testing.T) {
 		{
 			name:           "Signup",
 			requestBody:    `{"username": "Vladimir", "password": "vova", "email": "vova@mail.ru"}`,
-			expectedStatus: http.StatusCreated,
+			expectedStatus: http.StatusOK,
 		},
 		{
 			name:           "Username existed",
@@ -36,6 +36,21 @@ func TestSignup(t *testing.T) {
 			name:           "Email existed",
 			requestBody:    `{"username": "Vladimir22", "password": "vova2", "email": "supervasya@gmail.com"}`,
 			expectedStatus: http.StatusConflict,
+		},
+		{
+			name:           "Invalid username",
+			requestBody:    `{"username": "b", "password": "Beb1234567", "email": "bebe123456@gmail.com"}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Invalid password",
+			requestBody:    `{"username": "bebe123", "password": "B", "email": "bebe123456@gmail.com"}`,
+			expectedStatus: http.StatusBadRequest,
+		},
+		{
+			name:           "Invalid email",
+			requestBody:    `{"username": "bebe123", "password": "Beb1234567", "email": "bebe123456gmail.com"}`,
+			expectedStatus: http.StatusBadRequest,
 		},
 	}
 
