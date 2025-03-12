@@ -66,9 +66,8 @@ func main() {
 		http.ServeFile(w, r, "./public/index.html")
 	})
 
-	r.HandleFunc("/static/{path:.*}", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./public/"+mux.Vars(r)["path"])
-	})
+	staticFileHandler := http.StripPrefix("/static/", http.FileServer(http.Dir("./public")))
+	r.PathPrefix("/static/").Handler(staticFileHandler)
 
 	err := http.ListenAndServe(*port, cors.Middleware(r))
 	if err != nil {
