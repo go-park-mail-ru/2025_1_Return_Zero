@@ -1,0 +1,288 @@
+basePath: /
+definitions:
+  main.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  main.UserToFront:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      username:
+        type: string
+    type: object
+  models.Album:
+    properties:
+      artist:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      image:
+        type: string
+      title:
+        type: string
+    type: object
+  models.Artist:
+    properties:
+      id:
+        type: integer
+      image:
+        type: string
+      title:
+        type: string
+    type: object
+  models.Track:
+    properties:
+      album:
+        type: string
+      artist:
+        type: string
+      id:
+        type: integer
+      image:
+        type: string
+      title:
+        type: string
+    type: object
+host: returnzero.ru
+info:
+  contact: {}
+  description: This is the API server for Return Zero music app.
+  title: Return Zero API
+  version: "1.0"
+paths:
+  /albums:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of albums with optional pagination filters
+      parameters:
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of albums
+          schema:
+            items:
+              $ref: '#/definitions/models.Album'
+            type: array
+        "400":
+          description: Bad request - invalid filters
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get albums
+      tags:
+      - albums
+  /artists:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of artists with optional pagination filters
+      parameters:
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of artists
+          schema:
+            items:
+              $ref: '#/definitions/models.Artist'
+            type: array
+        "400":
+          description: Bad request - invalid filters
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get artists
+      tags:
+      - artists
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user based on provided credentials (either username+password
+        or email+password).
+      parameters:
+      - description: User credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/main.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.UserToFront'
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+        "401":
+          description: Invalid input
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: User login
+      tags:
+      - auth
+  /logout:
+    post:
+      consumes:
+      - application/json
+      description: Terminate the user's session and clear the session cookie
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully logged out
+          schema:
+            type: string
+        "401":
+          description: Unauthorized - no valid session
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Log out a user
+      tags:
+      - auth
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user if the username and email are unique. Hashes
+        the password, saves the user, and creates a session.
+      parameters:
+      - description: User data for registration
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/main.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User successfully registered
+          schema:
+            $ref: '#/definitions/main.UserToFront'
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+        "409":
+          description: User already exists
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Register a new user
+      tags:
+      - auth
+  /tracks:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of tracks with optional pagination filters
+      parameters:
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of tracks
+          schema:
+            items:
+              $ref: '#/definitions/models.Track'
+            type: array
+        "400":
+          description: Bad request - invalid filters
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get tracks
+      tags:
+      - tracks
+  /user:
+    get:
+      consumes:
+      - application/json
+      description: Validates the session by checking the "session_id" cookie and retrieving
+        user information.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User session is valid
+          schema:
+            $ref: '#/definitions/main.UserToFront'
+        "401":
+          description: Invalid cookie or unauthorized
+          schema:
+            type: string
+        "404":
+          description: User not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Check user session
+      tags:
+      - auth
+swagger: "2.0"
