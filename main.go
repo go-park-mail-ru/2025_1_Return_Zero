@@ -28,7 +28,7 @@ func main() {
 	flag.Parse()
 
 	cors := &Cors{
-		AllowedOrigins:   []string{"returnzero.ru", "http://127.0.0.1:3000"},
+		AllowedOrigins:   []string{"http://returnzero.ru", "http://127.0.0.1:3000", "http://localhost:3000"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
 		AllowedHeaders:   []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		AllowCredentials: true,
