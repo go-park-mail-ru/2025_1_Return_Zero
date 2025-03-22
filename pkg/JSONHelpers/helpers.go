@@ -1,4 +1,4 @@
-package main
+package JSONHelpers
 
 import (
 	"encoding/json"
@@ -11,7 +11,7 @@ import (
 )
 
 // Only for post requests
-func readJSON(w http.ResponseWriter, r *http.Request, v interface{}) error {
+func ReadJSON(w http.ResponseWriter, r *http.Request, v interface{}) error {
 	maxBytes := int64(1024 * 1024)
 	r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
 
@@ -47,7 +47,7 @@ func readJSON(w http.ResponseWriter, r *http.Request, v interface{}) error {
 	return nil
 }
 
-func writeJSON(w http.ResponseWriter, status int, data interface{}, headers http.Header) error {
+func WriteJSON(w http.ResponseWriter, status int, data interface{}, headers http.Header) error {
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func writeJSON(w http.ResponseWriter, status int, data interface{}, headers http
 	return err
 }
 
-func readInt(qs url.Values, key string, defaultValue int) (int, error) {
+func ReadInt(qs url.Values, key string, defaultValue int) (int, error) {
 	str := qs.Get(key)
 	if str == "" {
 		return defaultValue, nil
