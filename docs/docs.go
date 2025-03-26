@@ -67,13 +67,37 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request - invalid filters",
                         "schema": {
-                            "$ref": "#/definitions/model.APIBadRequestErrorResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.APIBadRequestErrorResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/model.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/model.APIInternalServerErrorResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.APIInternalServerErrorResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/model.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }

@@ -119,11 +119,21 @@ paths:
         "400":
           description: Bad request - invalid filters
           schema:
-            $ref: '#/definitions/model.APIBadRequestErrorResponse'
+            allOf:
+            - $ref: '#/definitions/model.APIBadRequestErrorResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/model.ErrorResponse'
+              type: object
         "500":
           description: Internal server error
           schema:
-            $ref: '#/definitions/model.APIInternalServerErrorResponse'
+            allOf:
+            - $ref: '#/definitions/model.APIInternalServerErrorResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/model.ErrorResponse'
+              type: object
       summary: Get albums
       tags:
       - albums

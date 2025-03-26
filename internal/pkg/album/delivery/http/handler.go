@@ -26,8 +26,8 @@ func NewAlbumHandler(usecase album.Usecase) *AlbumHandler {
 // @Param offset query integer false "Offset (default: 0)"
 // @Param limit query integer false "Limit (default: 10, max: 100)"
 // @Success 200 {object} model.APIResponse{body=[]model.Album} "List of albums"
-// @Failure 400 {object} model.APIBadRequestErrorResponse "Bad request - invalid filters"
-// @Failure 500 {object} model.APIInternalServerErrorResponse "Internal server error"
+// @Failure 400 {object} model.APIBadRequestErrorResponse{body=model.ErrorResponse} "Bad request - invalid filters"
+// @Failure 500 {object} model.APIInternalServerErrorResponse{body=model.ErrorResponse} "Internal server error"
 // @Router /albums [get]
 func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 	pagination := middleware.PaginationFromContext(r.Context())
