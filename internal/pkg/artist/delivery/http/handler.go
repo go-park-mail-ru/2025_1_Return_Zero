@@ -3,6 +3,7 @@ package artist
 import (
 	"net/http"
 
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
@@ -17,7 +18,7 @@ func NewArtistHandler(usecase artist.Usecase) *ArtistHandler {
 }
 
 func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
-	pagination := r.Context().Value(model.PaginationKey).(*model.Pagination)
+	pagination := middleware.PaginationFromContext(r.Context())
 
 	artists, err := h.usecase.GetAllArtists(&model.ArtistFilters{
 		Pagination: pagination,

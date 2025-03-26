@@ -3,9 +3,9 @@ package album
 import (
 	"net/http"
 
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 )
 
