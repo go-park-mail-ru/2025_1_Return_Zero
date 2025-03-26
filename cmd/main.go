@@ -4,7 +4,17 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	auth "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/auth"
+
+	albumHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/delivery/http"
+	albumRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/repository"
+	albumUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/usecase"
+	artistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/delivery/http"
+	artistRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/repository"
+	artistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/usecase"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/middleware"
+	trackHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/delivery/http"
+	trackRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/repository"
+	trackUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/usecase"
 	"github.com/gorilla/mux"
 )
 
@@ -15,12 +25,20 @@ func main() {
 	r := mux.NewRouter()
 	fmt.Printf("Server starting on port %s...\n", *port)
 
-	authApi := auth.NewAuthHandler()
-	r.HandleFunc("/signup", authApi.Signup).Methods("POST")
-	r.HandleFunc("/login", authApi.Login).Methods("POST")
-	r.HandleFunc("/logout", authApi.Logout).Methods("POST")
-	r.HandleFunc("/check_user", authApi.CheckUser).Methods("GET")
-	
+	r.Use(middleware.Logger)
+	r.Use(middleware.RequestId)
+	r.Use(middleware.AccessLog)
+
+	r.NotFoundHandler = middleware.NotFoundHandler()
+
+	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackMemoryRepository()))
+	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumMemoryRepository()))
+	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistRepository.NewArtistMemoryRepository()))
+
+	r.Handle("/tracks", middleware.Pagination(trackHandler.GetAllTracks)).Methods("GET")
+	r.Handle("/albums", middleware.Pagination(albumHandler.GetAllAlbums)).Methods("GET")
+	r.Handle("/artists", middleware.Pagination(artistHandler.GetAllArtists)).Methods("GET")
+
 	err := http.ListenAndServe(*port, r)
 	if err != nil {
 		fmt.Println(err)
