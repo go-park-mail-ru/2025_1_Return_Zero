@@ -16,11 +16,39 @@ import (
 	trackRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/repository"
 	trackUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/usecase"
 	"github.com/gorilla/mux"
+	"github.com/spf13/viper"
 )
+
+type Config struct {
+	Cors middleware.Cors
+}
+
+func LoadConfig() (*Config, error) {
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+
+	if err := viper.ReadInConfig(); err != nil {
+		return nil, err
+	}
+
+	var config Config
+	if err := viper.Unmarshal(&config); err != nil {
+		return nil, err
+	}
+
+	return &config, nil
+}
 
 func main() {
 	port := flag.String("p", ":8080", "server port")
 	flag.Parse()
+
+	config, err := LoadConfig()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
 	r := mux.NewRouter()
 	fmt.Printf("Server starting on port %s...\n", *port)
@@ -28,6 +56,7 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.RequestId)
 	r.Use(middleware.AccessLog)
+	r.Use(config.Cors.Middleware)
 
 	r.NotFoundHandler = middleware.NotFoundHandler()
 
@@ -39,7 +68,7 @@ func main() {
 	r.Handle("/albums", middleware.Pagination(albumHandler.GetAllAlbums)).Methods("GET")
 	r.Handle("/artists", middleware.Pagination(artistHandler.GetAllArtists)).Methods("GET")
 
-	err := http.ListenAndServe(*port, r)
+	err = http.ListenAndServe(*port, r)
 	if err != nil {
 		fmt.Println(err)
 	}
