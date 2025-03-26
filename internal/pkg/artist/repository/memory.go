@@ -1,10 +1,15 @@
 package repository
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+)
+
+var (
+	ErrArtistNotFound = errors.New("artist not found")
 )
 
 type ArtistMemoryRepository struct {
@@ -56,4 +61,16 @@ func (r *ArtistMemoryRepository) GetAllArtists(filters *model.ArtistFilters) ([]
 	}
 
 	return artists, nil
+}
+
+func (r *ArtistMemoryRepository) GetArtistByID(id uint) (*model.Artist, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	artist, ok := r.artists[id]
+	if !ok {
+		return nil, ErrArtistNotFound
+	}
+
+	return artist, nil
 }

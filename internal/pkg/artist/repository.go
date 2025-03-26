@@ -6,4 +6,5 @@ import (
 
 type Repository interface {
 	GetAllArtists(filters *model.ArtistFilters) ([]*model.Artist, error)
+	GetArtistByID(id uint) (*model.Artist, error)
 }

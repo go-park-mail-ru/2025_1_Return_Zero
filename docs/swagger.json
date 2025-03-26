@@ -319,6 +319,24 @@
                 "artist": {
                     "$ref": "#/definitions/model.Artist"
                 },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "thumbnail_url": {
+                    "type": "string",
+                    "example": "https://example.com/album.jpg"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Anticyclone"
+                }
+            }
+        },
+        "model.AlbumDB": {
+            "description": "A music album entity",
+            "type": "object",
+            "properties": {
                 "artist_id": {
                     "type": "integer",
                     "example": 1
@@ -370,10 +388,14 @@
             "type": "object",
             "properties": {
                 "album": {
-                    "$ref": "#/definitions/model.Album"
+                    "$ref": "#/definitions/model.AlbumDB"
                 },
                 "artist": {
                     "$ref": "#/definitions/model.Artist"
+                },
+                "duration": {
+                    "type": "integer",
+                    "example": 216
                 },
                 "id": {
                     "type": "integer",

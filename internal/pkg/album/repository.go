@@ -5,5 +5,6 @@ import (
 )
 
 type Repository interface {
-	GetAllAlbums(filters *model.AlbumFilters) ([]*model.Album, error)
+	GetAllAlbums(filters *model.AlbumFilters) ([]*model.AlbumDB, error)
+	GetAlbumByID(id uint) (*model.AlbumDB, error)
 }

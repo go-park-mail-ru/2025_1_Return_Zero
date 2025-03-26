@@ -5,5 +5,5 @@ import (
 )
 
 type Repository interface {
-	GetAllTracks(filters *model.TrackFilters) ([]*model.Track, error)
+	GetAllTracks(filters *model.TrackFilters) ([]*model.TrackDB, error)
 }

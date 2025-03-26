@@ -73,8 +73,8 @@ func main() {
 
 	r.NotFoundHandler = middleware.NotFoundHandler()
 
-	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackMemoryRepository()))
-	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumMemoryRepository()))
+	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackMemoryRepository(), artistRepository.NewArtistMemoryRepository(), albumRepository.NewAlbumMemoryRepository()))
+	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumMemoryRepository(), artistRepository.NewArtistMemoryRepository()))
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistRepository.NewArtistMemoryRepository()))
 
 	r.Handle("/tracks", middleware.Pagination(trackHandler.GetAllTracks)).Methods("GET")

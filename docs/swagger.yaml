@@ -31,6 +31,19 @@ definitions:
     properties:
       artist:
         $ref: '#/definitions/model.Artist'
+      id:
+        example: 1
+        type: integer
+      thumbnail_url:
+        example: https://example.com/album.jpg
+        type: string
+      title:
+        example: Anticyclone
+        type: string
+    type: object
+  model.AlbumDB:
+    description: A music album entity
+    properties:
       artist_id:
         example: 1
         type: integer
@@ -68,9 +81,12 @@ definitions:
     description: A music track entity
     properties:
       album:
-        $ref: '#/definitions/model.Album'
+        $ref: '#/definitions/model.AlbumDB'
       artist:
         $ref: '#/definitions/model.Artist'
+      duration:
+        example: 216
+        type: integer
       id:
         example: 1
         type: integer
