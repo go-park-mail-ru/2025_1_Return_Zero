@@ -1,58 +1,84 @@
 basePath: /
 definitions:
-  main.User:
+  model.APIBadRequestErrorResponse:
+    description: API bad request error response structure
     properties:
-      email:
-        type: string
-      id:
+      body:
+        $ref: '#/definitions/model.ErrorResponse'
+      status:
+        example: 400
         type: integer
-      password:
-        type: string
-      username:
-        type: string
     type: object
-  main.UserToFront:
+  model.APIInternalServerErrorResponse:
+    description: API internal server error response structure
     properties:
-      email:
-        type: string
-      id:
+      body:
+        $ref: '#/definitions/model.ErrorResponse'
+      status:
+        example: 500
         type: integer
-      username:
-        type: string
     type: object
-  models.Album:
+  model.APIResponse:
+    description: API response wrapper
+    properties:
+      body: {}
+      status:
+        example: 200
+        type: integer
+    type: object
+  model.Album:
+    description: A music album entity
     properties:
       artist:
-        type: string
-      description:
-        type: string
-      id:
+        $ref: '#/definitions/model.Artist'
+      artist_id:
+        example: 1
         type: integer
-      image:
+      id:
+        example: 1
+        type: integer
+      thumbnail_url:
+        example: https://example.com/album.jpg
         type: string
       title:
+        example: Anticyclone
         type: string
     type: object
-  models.Artist:
+  model.Artist:
+    description: A music artist entity
     properties:
       id:
+        example: 1
         type: integer
-      image:
+      thumbnail_url:
+        example: https://example.com/artist.jpg
         type: string
       title:
+        example: Inabakumori
         type: string
     type: object
-  models.Track:
+  model.ErrorResponse:
+    description: Error response structure
+    properties:
+      error:
+        example: Something went wrong
+        type: string
+    type: object
+  model.Track:
+    description: A music track entity
     properties:
       album:
-        type: string
+        $ref: '#/definitions/model.Album'
       artist:
-        type: string
+        $ref: '#/definitions/model.Artist'
       id:
+        example: 1
         type: integer
-      image:
+      thumbnail_url:
+        example: https://example.com/image.jpg
         type: string
       title:
+        example: Lagtrain
         type: string
     type: object
 host: returnzero.ru
@@ -82,17 +108,22 @@ paths:
         "200":
           description: List of albums
           schema:
-            items:
-              $ref: '#/definitions/models.Album'
-            type: array
+            allOf:
+            - $ref: '#/definitions/model.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/model.Album'
+                  type: array
+              type: object
         "400":
           description: Bad request - invalid filters
           schema:
-            type: string
+            $ref: '#/definitions/model.APIBadRequestErrorResponse'
         "500":
           description: Internal server error
           schema:
-            type: string
+            $ref: '#/definitions/model.APIInternalServerErrorResponse'
       summary: Get albums
       tags:
       - albums
@@ -116,113 +147,35 @@ paths:
         "200":
           description: List of artists
           schema:
-            items:
-              $ref: '#/definitions/models.Artist'
-            type: array
+            allOf:
+            - $ref: '#/definitions/model.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/model.Artist'
+                  type: array
+              type: object
         "400":
           description: Bad request - invalid filters
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/model.APIBadRequestErrorResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/model.ErrorResponse'
+              type: object
         "500":
           description: Internal server error
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/model.APIInternalServerErrorResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/model.ErrorResponse'
+              type: object
       summary: Get artists
       tags:
       - artists
-  /login:
-    post:
-      consumes:
-      - application/json
-      description: Authenticates a user based on provided credentials (either username+password
-        or email+password).
-      parameters:
-      - description: User credentials
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/main.User'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/main.UserToFront'
-        "400":
-          description: Invalid request
-          schema:
-            type: string
-        "401":
-          description: Invalid input
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: User login
-      tags:
-      - auth
-  /logout:
-    post:
-      consumes:
-      - application/json
-      description: Terminate the user's session and clear the session cookie
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Successfully logged out
-          schema:
-            type: string
-        "401":
-          description: Unauthorized - no valid session
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Log out a user
-      tags:
-      - auth
-  /signup:
-    post:
-      consumes:
-      - application/json
-      description: Creates a new user if the username and email are unique. Hashes
-        the password, saves the user, and creates a session.
-      parameters:
-      - description: User data for registration
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/main.User'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: User successfully registered
-          schema:
-            $ref: '#/definitions/main.UserToFront'
-        "400":
-          description: Invalid request
-          schema:
-            type: string
-        "409":
-          description: User already exists
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Register a new user
-      tags:
-      - auth
   /tracks:
     get:
       consumes:
@@ -243,46 +196,33 @@ paths:
         "200":
           description: List of tracks
           schema:
-            items:
-              $ref: '#/definitions/models.Track'
-            type: array
+            allOf:
+            - $ref: '#/definitions/model.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/model.Track'
+                  type: array
+              type: object
         "400":
           description: Bad request - invalid filters
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/model.APIBadRequestErrorResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/model.ErrorResponse'
+              type: object
         "500":
           description: Internal server error
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/model.APIInternalServerErrorResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/model.ErrorResponse'
+              type: object
       summary: Get tracks
       tags:
       - tracks
-  /user:
-    get:
-      consumes:
-      - application/json
-      description: Validates the session by checking the "session_id" cookie and retrieving
-        user information.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: User session is valid
-          schema:
-            $ref: '#/definitions/main.UserToFront'
-        "401":
-          description: Invalid cookie or unauthorized
-          schema:
-            type: string
-        "404":
-          description: User not found
-          schema:
-            type: string
-        "500":
-          description: Internal server error
-          schema:
-            type: string
-      summary: Check user session
-      tags:
-      - auth
 swagger: "2.0"

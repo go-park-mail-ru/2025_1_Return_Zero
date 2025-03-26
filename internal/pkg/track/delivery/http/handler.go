@@ -17,6 +17,18 @@ func NewTrackHandler(usecase track.Usecase) *TrackHandler {
 	return &TrackHandler{usecase: usecase}
 }
 
+// GetAllTracks godoc
+// @Summary Get tracks
+// @Description Get a list of tracks with optional pagination filters
+// @Tags tracks
+// @Accept json
+// @Produce json
+// @Param offset query integer false "Offset (default: 0)"
+// @Param limit query integer false "Limit (default: 10, max: 100)"
+// @Success 200 {object} model.APIResponse{body=[]model.Track} "List of tracks"
+// @Failure 400 {object} model.APIBadRequestErrorResponse{body=model.ErrorResponse} "Bad request - invalid filters"
+// @Failure 500 {object} model.APIInternalServerErrorResponse{body=model.ErrorResponse} "Internal server error"
+// @Router /tracks [get]
 func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 	pagination := middleware.PaginationFromContext(r.Context())
 

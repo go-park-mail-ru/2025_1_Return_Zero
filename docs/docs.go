@@ -46,22 +46,34 @@ const docTemplate = `{
                     "200": {
                         "description": "List of albums",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Album"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Album"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad request - invalid filters",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/model.APIBadRequestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/model.APIInternalServerErrorResponse"
                         }
                     }
                 }
@@ -98,161 +110,58 @@ const docTemplate = `{
                     "200": {
                         "description": "List of artists",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Artist"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Artist"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad request - invalid filters",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.APIBadRequestErrorResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/model.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/login": {
-            "post": {
-                "description": "Authenticates a user based on provided credentials (either username+password or email+password).",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "User login",
-                "parameters": [
-                    {
-                        "description": "User credentials",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/main.User"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/main.UserToFront"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "401": {
-                        "description": "Invalid input",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/logout": {
-            "post": {
-                "description": "Terminate the user's session and clear the session cookie",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Log out a user",
-                "responses": {
-                    "200": {
-                        "description": "Successfully logged out",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - no valid session",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/signup": {
-            "post": {
-                "description": "Creates a new user if the username and email are unique. Hashes the password, saves the user, and creates a session.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Register a new user",
-                "parameters": [
-                    {
-                        "description": "User data for registration",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/main.User"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "User successfully registered",
-                        "schema": {
-                            "$ref": "#/definitions/main.UserToFront"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "409": {
-                        "description": "User already exists",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.APIInternalServerErrorResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/model.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -289,63 +198,58 @@ const docTemplate = `{
                     "200": {
                         "description": "List of tracks",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Track"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Track"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad request - invalid filters",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.APIBadRequestErrorResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/model.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/user": {
-            "get": {
-                "description": "Validates the session by checking the \"session_id\" cookie and retrieving user information.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Check user session",
-                "responses": {
-                    "200": {
-                        "description": "User session is valid",
-                        "schema": {
-                            "$ref": "#/definitions/main.UserToFront"
-                        }
-                    },
-                    "401": {
-                        "description": "Invalid cookie or unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "User not found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.APIInternalServerErrorResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/model.ErrorResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -353,88 +257,117 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "main.User": {
+        "model.APIBadRequestErrorResponse": {
+            "description": "API bad request error response structure",
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
+                "body": {
+                    "$ref": "#/definitions/model.ErrorResponse"
                 },
-                "id": {
-                    "type": "integer"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
+                "status": {
+                    "type": "integer",
+                    "example": 400
                 }
             }
         },
-        "main.UserToFront": {
+        "model.APIInternalServerErrorResponse": {
+            "description": "API internal server error response structure",
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
+                "body": {
+                    "$ref": "#/definitions/model.ErrorResponse"
                 },
-                "id": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
+                "status": {
+                    "type": "integer",
+                    "example": 500
                 }
             }
         },
-        "models.Album": {
+        "model.APIResponse": {
+            "description": "API response wrapper",
+            "type": "object",
+            "properties": {
+                "body": {},
+                "status": {
+                    "type": "integer",
+                    "example": 200
+                }
+            }
+        },
+        "model.Album": {
+            "description": "A music album entity",
             "type": "object",
             "properties": {
                 "artist": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.Artist"
                 },
-                "description": {
-                    "type": "string"
+                "artist_id": {
+                    "type": "integer",
+                    "example": 1
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
-                "image": {
-                    "type": "string"
+                "thumbnail_url": {
+                    "type": "string",
+                    "example": "https://example.com/album.jpg"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Anticyclone"
                 }
             }
         },
-        "models.Artist": {
+        "model.Artist": {
+            "description": "A music artist entity",
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
-                "image": {
-                    "type": "string"
+                "thumbnail_url": {
+                    "type": "string",
+                    "example": "https://example.com/artist.jpg"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Inabakumori"
                 }
             }
         },
-        "models.Track": {
+        "model.ErrorResponse": {
+            "description": "Error response structure",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Something went wrong"
+                }
+            }
+        },
+        "model.Track": {
+            "description": "A music track entity",
             "type": "object",
             "properties": {
                 "album": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.Album"
                 },
                 "artist": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.Artist"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
-                "image": {
-                    "type": "string"
+                "thumbnail_url": {
+                    "type": "string",
+                    "example": "https://example.com/image.jpg"
                 },
                 "title": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Lagtrain"
                 }
             }
         }

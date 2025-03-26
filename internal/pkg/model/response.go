@@ -1,0 +1,30 @@
+package model
+
+// This file is only used for swagger docs
+
+// APIResponse
+// @Description API response wrapper
+type APIResponse struct {
+	Status int         `json:"status" example:"200" description:"HTTP status code"`
+	Body   interface{} `json:"body" description:"Response data"`
+}
+
+// ErrorResponse
+// @Description Error response structure
+type ErrorResponse struct {
+	Error string `json:"error" example:"Something went wrong" description:"Error message"`
+}
+
+// APIBadRequestErrorResponse
+// @Description API bad request error response structure
+type APIBadRequestErrorResponse struct {
+	Status int           `json:"status" example:"400" description:"HTTP status code"`
+	Body   ErrorResponse `json:"body" description:"Response data with error"`
+}
+
+// APIInternalServerErrorResponse
+// @Description API internal server error response structure
+type APIInternalServerErrorResponse struct {
+	Status int           `json:"status" example:"500" description:"HTTP status code"`
+	Body   ErrorResponse `json:"body" description:"Response data with error"`
+}
