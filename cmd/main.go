@@ -4,7 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	auth "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/auth"
+
+	authRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth/repository"
+	userHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/delivery/http"
+	userRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/repository"
+	userUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/usecase"
 	"github.com/gorilla/mux"
 )
 
@@ -15,12 +19,12 @@ func main() {
 	r := mux.NewRouter()
 	fmt.Printf("Server starting on port %s...\n", *port)
 
-	authApi := auth.NewAuthHandler()
-	r.HandleFunc("/signup", authApi.Signup).Methods("POST")
-	r.HandleFunc("/login", authApi.Login).Methods("POST")
-	r.HandleFunc("/logout", authApi.Logout).Methods("POST")
-	r.HandleFunc("/check_user", authApi.CheckUser).Methods("GET")
-	
+	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(userRepository.NewUserMemoryRepository(), authRepository.NewAuthMemoryRepository()))
+
+	r.HandleFunc("/signup", userHandler.Signup).Methods("POST")
+	r.HandleFunc("/login", userHandler.Login).Methods("POST")
+	r.HandleFunc("/logout", userHandler.Logout).Methods("POST")
+	r.HandleFunc("/user", userHandler.CheckUser).Methods("GET")
 	err := http.ListenAndServe(*port, r)
 	if err != nil {
 		fmt.Println(err)
