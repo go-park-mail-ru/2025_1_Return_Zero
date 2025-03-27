@@ -3,21 +3,21 @@ package repository
 import (
 	"sync"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
 )
 
 type TrackMemoryRepository struct {
 	mu     sync.RWMutex
-	tracks map[uint]*model.TrackDB
+	tracks map[uint]*repoModel.Track
 }
 
 func NewTrackMemoryRepository() track.Repository {
 	repo := &TrackMemoryRepository{
-		tracks: map[uint]*model.TrackDB{},
+		tracks: map[uint]*repoModel.Track{},
 	}
 
-	testTracks := []*model.TrackDB{
+	testTracks := []*repoModel.Track{
 		{ID: 1, Title: "Lagtrain", Thumbnail: "https://i1.sndcdn.com/artworks-HdxXE6BxJ65FHooi-rtiaPw-t500x500.jpg", AlbumID: 1, ArtistID: 1, Duration: 216},
 		{ID: 2, Title: "Lost Umbrella", Thumbnail: "https://i1.sndcdn.com/artworks-Z9Jm9zLWMUzmOePX-TiOdqA-t500x500.jpg", AlbumID: 1, ArtistID: 1, Duration: 216},
 		{ID: 3, Title: "Racing Into The Night", Thumbnail: "https://i1.sndcdn.com/artworks-9fxbzFYK9QjT0aIg-eXpu8Q-t1080x1080.jpg", AlbumID: 2, ArtistID: 2, Duration: 216},
@@ -33,12 +33,12 @@ func NewTrackMemoryRepository() track.Repository {
 	return repo
 }
 
-func (r *TrackMemoryRepository) GetAllTracks(filters *model.TrackFilters) ([]*model.TrackDB, error) {
+func (r *TrackMemoryRepository) GetAllTracks(filters *repoModel.TrackFilters) ([]*repoModel.Track, error) {
 	offset := filters.Pagination.Offset
 	limit := filters.Pagination.Limit
 
 	if offset > len(r.tracks) {
-		return []*model.TrackDB{}, nil
+		return []*repoModel.Track{}, nil
 	}
 
 	if offset+limit > len(r.tracks) {
@@ -47,13 +47,13 @@ func (r *TrackMemoryRepository) GetAllTracks(filters *model.TrackFilters) ([]*mo
 
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	tracks := make([]*model.TrackDB, 0, limit)
+	tracks := make([]*repoModel.Track, 0, limit)
 	for _, track := range r.tracks {
 		tracks = append(tracks, track)
 	}
 
 	if len(tracks) == 0 {
-		return []*model.TrackDB{}, nil
+		return []*repoModel.Track{}, nil
 	}
 
 	return tracks, nil

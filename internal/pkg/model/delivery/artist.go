@@ -1,4 +1,4 @@
-package model
+package delivery
 
 // Artist represents a music artist
 // @Description A music artist entity

@@ -3,10 +3,10 @@ package album
 import (
 	"net/http"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
+	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
 
 type AlbumHandler struct {
@@ -30,14 +30,35 @@ func NewAlbumHandler(usecase album.Usecase) *AlbumHandler {
 // @Failure 500 {object} model.APIInternalServerErrorResponse{body=model.ErrorResponse} "Internal server error"
 // @Router /albums [get]
 func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
-	pagination := middleware.PaginationFromContext(r.Context())
+	pagination, err := helpers.GetPagination(r)
+	if err != nil {
+		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
-	albums, err := h.usecase.GetAllAlbums(&model.AlbumFilters{
-		Pagination: pagination,
+	usecaseAlbums, err := h.usecase.GetAllAlbums(&usecaseModel.AlbumFilters{
+		Pagination: &usecaseModel.Pagination{
+			Offset: pagination.Offset,
+			Limit:  pagination.Limit,
+		},
 	})
 	if err != nil {
 		helpers.WriteJSONError(w, http.StatusInternalServerError, err.Error())
 		return
+	}
+
+	albums := make([]*deliveryModel.Album, 0, len(usecaseAlbums))
+	for _, usecaseAlbum := range usecaseAlbums {
+		albums = append(albums, &deliveryModel.Album{
+			ID:        usecaseAlbum.ID,
+			Title:     usecaseAlbum.Title,
+			Thumbnail: usecaseAlbum.Thumbnail,
+			Artist: &deliveryModel.Artist{
+				ID:        usecaseAlbum.Artist.ID,
+				Title:     usecaseAlbum.Artist.Title,
+				Thumbnail: usecaseAlbum.Artist.Thumbnail,
+			},
+		})
 	}
 
 	helpers.WriteJSON(w, http.StatusOK, albums, nil)

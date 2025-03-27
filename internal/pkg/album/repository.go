@@ -1,10 +1,10 @@
 package album
 
 import (
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 )
 
 type Repository interface {
-	GetAllAlbums(filters *model.AlbumFilters) ([]*model.AlbumDB, error)
-	GetAlbumByID(id uint) (*model.AlbumDB, error)
+	GetAllAlbums(filters *repoModel.AlbumFilters) ([]*repoModel.Album, error)
+	GetAlbumByID(id uint) (*repoModel.Album, error)
 }

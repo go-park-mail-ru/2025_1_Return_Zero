@@ -1,4 +1,4 @@
-package model
+package delivery
 
 // This file is only used for swagger docs
 

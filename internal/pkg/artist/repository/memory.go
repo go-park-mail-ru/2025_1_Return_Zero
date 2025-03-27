@@ -5,24 +5,24 @@ import (
 	"sync"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 )
 
 var (
 	ErrArtistNotFound = errors.New("artist not found")
 )
 
-type ArtistMemoryRepository struct {
+type artistMemoryRepository struct {
 	mu      sync.RWMutex
-	artists map[uint]*model.Artist
+	artists map[uint]*repoModel.Artist
 }
 
 func NewArtistMemoryRepository() artist.Repository {
-	repo := &ArtistMemoryRepository{
-		artists: map[uint]*model.Artist{},
+	repo := &artistMemoryRepository{
+		artists: map[uint]*repoModel.Artist{},
 	}
 
-	testArtists := []*model.Artist{
+	testArtists := []*repoModel.Artist{
 		{ID: 1, Title: "Inabakumori", Thumbnail: "https://i1.sndcdn.com/artworks-000640888066-bwv7e8-t500x500.jpg"},
 		{ID: 2, Title: "YOASOBI", Thumbnail: "https://i.scdn.co/image/ab67616100005174bfdd8a29d0c6bc6950055234"},
 		{ID: 3, Title: "Kenshi Yonezu", Thumbnail: "https://i.scdn.co/image/ab6761610000e5ebd7ca899f6e53b54976a8594b"},
@@ -37,12 +37,12 @@ func NewArtistMemoryRepository() artist.Repository {
 	return repo
 }
 
-func (r *ArtistMemoryRepository) GetAllArtists(filters *model.ArtistFilters) ([]*model.Artist, error) {
+func (r *artistMemoryRepository) GetAllArtists(filters *repoModel.ArtistFilters) ([]*repoModel.Artist, error) {
 	offset := filters.Pagination.Offset
 	limit := filters.Pagination.Limit
 
 	if offset > len(r.artists) {
-		return []*model.Artist{}, nil
+		return []*repoModel.Artist{}, nil
 	}
 
 	if offset+limit > len(r.artists) {
@@ -51,19 +51,19 @@ func (r *ArtistMemoryRepository) GetAllArtists(filters *model.ArtistFilters) ([]
 
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	artists := make([]*model.Artist, 0, limit)
+	artists := make([]*repoModel.Artist, 0, limit)
 	for _, artist := range r.artists {
 		artists = append(artists, artist)
 	}
 
 	if len(artists) == 0 {
-		return []*model.Artist{}, nil
+		return []*repoModel.Artist{}, nil
 	}
 
 	return artists, nil
 }
 
-func (r *ArtistMemoryRepository) GetArtistByID(id uint) (*model.Artist, error) {
+func (r *artistMemoryRepository) GetArtistByID(id uint) (*repoModel.Artist, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

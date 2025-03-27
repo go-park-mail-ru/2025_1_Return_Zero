@@ -1,9 +1,9 @@
 package artist
 
 import (
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
 
 type Usecase interface {
-	GetAllArtists(filters *model.ArtistFilters) ([]*model.Artist, error)
+	GetAllArtists(filters *usecaseModel.ArtistFilters) ([]*usecaseModel.Artist, error)
 }

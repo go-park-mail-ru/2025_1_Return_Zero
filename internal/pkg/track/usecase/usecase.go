@@ -3,7 +3,8 @@ package usecase
 import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
+	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
 )
 
@@ -17,31 +18,48 @@ type trackUsecase struct {
 	albumRepo  album.Repository
 }
 
-func (u trackUsecase) GetAllTracks(filters *model.TrackFilters) ([]*model.Track, error) {
-	tracksDB, err := u.trackRepo.GetAllTracks(filters)
+func (u trackUsecase) GetAllTracks(filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
+	repoFilters := &repoModel.TrackFilters{
+		Pagination: &repoModel.Pagination{
+			Offset: filters.Pagination.Offset,
+			Limit:  filters.Pagination.Limit,
+		},
+	}
+	repoTracks, err := u.trackRepo.GetAllTracks(repoFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	tracks := make([]*model.Track, 0, len(tracksDB))
-	for _, trackDB := range tracksDB {
-		artist, err := u.artistRepo.GetArtistByID(trackDB.ArtistID)
+	tracks := make([]*usecaseModel.Track, 0, len(repoTracks))
+	for _, repoTrack := range repoTracks {
+		repoArtist, err := u.artistRepo.GetArtistByID(repoTrack.ArtistID)
 		if err != nil {
 			return nil, err
 		}
-		track := &model.Track{
-			ID:        trackDB.ID,
-			Title:     trackDB.Title,
-			Thumbnail: trackDB.Thumbnail,
-			Duration:  trackDB.Duration,
+		artist := &usecaseModel.Artist{
+			ID:        repoArtist.ID,
+			Title:     repoArtist.Title,
+			Thumbnail: repoArtist.Thumbnail,
+		}
+
+		track := &usecaseModel.Track{
+			ID:        repoTrack.ID,
+			Title:     repoTrack.Title,
+			Thumbnail: repoTrack.Thumbnail,
+			Duration:  repoTrack.Duration,
 			Artist:    artist,
 		}
 
-		album, err := u.albumRepo.GetAlbumByID(trackDB.AlbumID)
+		album, err := u.albumRepo.GetAlbumByID(repoTrack.AlbumID)
 		if err != nil {
 			return nil, err
 		}
-		track.Album = album
+		track.Album = &usecaseModel.AlbumUnpopulated{
+			ID:        album.ID,
+			Title:     album.Title,
+			Thumbnail: album.Thumbnail,
+			ArtistID:  album.ArtistID,
+		}
 		tracks = append(tracks, track)
 	}
 

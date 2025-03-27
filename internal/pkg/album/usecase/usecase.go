@@ -3,7 +3,8 @@ package usecase
 import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
+	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
 
 func NewUsecase(albumRepository album.Repository, artistRepository artist.Repository) album.Usecase {
@@ -15,22 +16,33 @@ type albumUsecase struct {
 	artistRepo artist.Repository
 }
 
-func (u albumUsecase) GetAllAlbums(filters *model.AlbumFilters) ([]*model.Album, error) {
-	albumsDB, err := u.albumRepo.GetAllAlbums(filters)
+func (u albumUsecase) GetAllAlbums(filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
+	repoFilters := &repoModel.AlbumFilters{
+		Pagination: &repoModel.Pagination{
+			Offset: filters.Pagination.Offset,
+			Limit:  filters.Pagination.Limit,
+		},
+	}
+	repoAlbums, err := u.albumRepo.GetAllAlbums(repoFilters)
 	if err != nil {
 		return nil, err
 	}
-	albums := make([]*model.Album, 0, len(albumsDB))
+	albums := make([]*usecaseModel.Album, 0, len(repoAlbums))
 
-	for _, albumDB := range albumsDB {
-		artist, err := u.artistRepo.GetArtistByID(albumDB.ArtistID)
+	for _, repoAlbum := range repoAlbums {
+		repoArtist, err := u.artistRepo.GetArtistByID(repoAlbum.ArtistID)
 		if err != nil {
 			return nil, err
 		}
-		album := &model.Album{
-			ID:        albumDB.ID,
-			Title:     albumDB.Title,
-			Thumbnail: albumDB.Thumbnail,
+		artist := &usecaseModel.Artist{
+			ID:        repoArtist.ID,
+			Title:     repoArtist.Title,
+			Thumbnail: repoArtist.Thumbnail,
+		}
+		album := &usecaseModel.Album{
+			ID:        repoAlbum.ID,
+			Title:     repoAlbum.Title,
+			Thumbnail: repoAlbum.Thumbnail,
 			Artist:    artist,
 		}
 		albums = append(albums, album)

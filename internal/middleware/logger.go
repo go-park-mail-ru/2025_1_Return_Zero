@@ -8,36 +8,35 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-const (
-	LoggerKey    = "logger"
-	RequestIDKey = "request_id"
-)
+type LoggerKey struct{}
 
-func NewZapLogger() *zap.SugaredLogger {
+func NewZapLogger() (*zap.SugaredLogger, error) {
 	config := zap.NewProductionConfig()
 	config.EncoderConfig.TimeKey = "timestamp"
 	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 
 	logger, err := config.Build()
 	if err != nil {
-		logger, err = zap.NewProduction()
-		if err != nil {
-			panic(err)
-		}
+		return nil, err
 	}
 
-	return logger.Sugar()
+	return logger.Sugar(), nil
 }
 
 func LoggerFromContext(ctx context.Context) *zap.SugaredLogger {
-	logger := ctx.Value(LoggerKey).(*zap.SugaredLogger)
+	logger := ctx.Value(LoggerKey{}).(*zap.SugaredLogger)
 	return logger
 }
 
 func Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger := NewZapLogger()
-		ctx := context.WithValue(r.Context(), LoggerKey, logger)
+		logger, err := NewZapLogger()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), LoggerKey{}, logger)
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)

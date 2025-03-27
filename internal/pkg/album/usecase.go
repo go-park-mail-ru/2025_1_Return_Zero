@@ -1,9 +1,9 @@
 package album
 
 import (
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
 
 type Usecase interface {
-	GetAllAlbums(filters *model.AlbumFilters) ([]*model.Album, error)
+	GetAllAlbums(filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error)
 }

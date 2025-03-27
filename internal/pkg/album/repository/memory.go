@@ -5,24 +5,24 @@ import (
 	"sync"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 )
 
 var (
 	ErrAlbumNotFound = errors.New("album not found")
 )
 
-type AlbumMemoryRepository struct {
+type albumMemoryRepository struct {
 	mu     sync.RWMutex
-	albums map[uint]*model.AlbumDB
+	albums map[uint]*repoModel.Album
 }
 
 func NewAlbumMemoryRepository() album.Repository {
-	repo := &AlbumMemoryRepository{
-		albums: map[uint]*model.AlbumDB{},
+	repo := &albumMemoryRepository{
+		albums: map[uint]*repoModel.Album{},
 	}
 
-	testAlbums := []*model.AlbumDB{
+	testAlbums := []*repoModel.Album{
 		{ID: 1, Title: "Anticyclone", ArtistID: 1, Thumbnail: "https://i.scdn.co/image/ab67616d0000b27325c2a3af824b7dd8cafae97e"},
 		{ID: 2, Title: "THE BOOK", ArtistID: 2, Thumbnail: "https://i.scdn.co/image/ab67616d0000b273684d81c9356531f2a456b1c1"},
 		{ID: 3, Title: "BOOTLEG", ArtistID: 3, Thumbnail: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFG72O6ftYjIepEZw_aMvGYuE5kPvnll6v9g&s"},
@@ -36,12 +36,12 @@ func NewAlbumMemoryRepository() album.Repository {
 	return repo
 }
 
-func (r *AlbumMemoryRepository) GetAllAlbums(filters *model.AlbumFilters) ([]*model.AlbumDB, error) {
+func (r *albumMemoryRepository) GetAllAlbums(filters *repoModel.AlbumFilters) ([]*repoModel.Album, error) {
 	offset := filters.Pagination.Offset
 	limit := filters.Pagination.Limit
 
 	if offset > len(r.albums) {
-		return []*model.AlbumDB{}, nil
+		return []*repoModel.Album{}, nil
 	}
 
 	if offset+limit > len(r.albums) {
@@ -50,19 +50,19 @@ func (r *AlbumMemoryRepository) GetAllAlbums(filters *model.AlbumFilters) ([]*mo
 
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	albums := make([]*model.AlbumDB, 0, limit)
+	albums := make([]*repoModel.Album, 0, limit)
 	for _, album := range r.albums {
 		albums = append(albums, album)
 	}
 
 	if len(albums) == 0 {
-		return []*model.AlbumDB{}, nil
+		return []*repoModel.Album{}, nil
 	}
 
 	return albums, nil
 }
 
-func (r *AlbumMemoryRepository) GetAlbumByID(id uint) (*model.AlbumDB, error) {
+func (r *albumMemoryRepository) GetAlbumByID(id uint) (*repoModel.Album, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

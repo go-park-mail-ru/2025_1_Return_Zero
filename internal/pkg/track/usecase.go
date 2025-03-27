@@ -1,9 +1,9 @@
 package track
 
 import (
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
 
 type Usecase interface {
-	GetAllTracks(filters *model.TrackFilters) ([]*model.Track, error)
+	GetAllTracks(filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error)
 }

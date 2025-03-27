@@ -3,10 +3,10 @@ package artist
 import (
 	"net/http"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
+	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
 
 type ArtistHandler struct {
@@ -30,15 +30,31 @@ func NewArtistHandler(usecase artist.Usecase) *ArtistHandler {
 // @Failure 500 {object} model.APIInternalServerErrorResponse{body=model.ErrorResponse} "Internal server error"
 // @Router /artists [get]
 func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
-	pagination := middleware.PaginationFromContext(r.Context())
+	pagination, err := helpers.GetPagination(r)
+	if err != nil {
+		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
+		return
+	}
 
-	artists, err := h.usecase.GetAllArtists(&model.ArtistFilters{
-		Pagination: pagination,
+	usecaseArtists, err := h.usecase.GetAllArtists(&usecaseModel.ArtistFilters{
+		Pagination: &usecaseModel.Pagination{
+			Offset: pagination.Offset,
+			Limit:  pagination.Limit,
+		},
 	})
+
 	if err != nil {
 		helpers.WriteJSONError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	artists := make([]*deliveryModel.Artist, 0, len(usecaseArtists))
+	for _, usecaseArtist := range usecaseArtists {
+		artists = append(artists, &deliveryModel.Artist{
+			ID:        usecaseArtist.ID,
+			Title:     usecaseArtist.Title,
+			Thumbnail: usecaseArtist.Thumbnail,
+		})
+	}
 	helpers.WriteJSON(w, http.StatusOK, artists, nil)
 }
