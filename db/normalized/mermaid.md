@@ -86,11 +86,6 @@ erDiagram
         BIGINT album_id
     }
 
-    genre_artist {
-        BIGINT genre_id
-        BIGINT artist_id
-    }
-
     favorite_track {
         BIGINT user_id
         BIGINT track_id
