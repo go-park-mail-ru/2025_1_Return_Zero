@@ -83,7 +83,7 @@ CREATE TABLE playlist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT DEFAULT '',
-    user_id BIGINT NOT NULL,
+    user_id BIGINT, -- NULL для подборок
     thumbnail_url TEXT NOT NULL DEFAULT '/default_playlist.png',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
