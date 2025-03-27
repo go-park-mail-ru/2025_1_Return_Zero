@@ -19,28 +19,28 @@ Track:
 {id} → {title, thumbnail_url, album_id, created_at, duration, position}
 
 Track_Artist:
-{track_id, artist_id, role} → {}
+{id} → {track_id, artist_id, role}
 
 Playlist:
-{id} → {title, user_id, description, thumbnail_url, created_at, updated_at}
+{id} → {title, description, user_id, thumbnail_url, created_at, updated_at}
 
 Playlist_Track:
-{playlist_id, track_id} → {position, added_at}
+{id} → {playlist_id, track_id, position, added_at}
 
 Genre_Track:
-{genre_id, track_id} → {}
+{id} → {genre_id, track_id}
 
 Genre_Album:
-{genre_id, album_id} → {}
+{id} → {genre_id, album_id}
 
 Favorite_Track:
-{user_id, track_id} → {added_at}
+{id} → {user_id, track_id, added_at}
 
 Favorite_Album:
-{user_id, album_id} → {added_at}
+{id} → {user_id, album_id, added_at}
 
 Favorite_Artist:
-{user_id, artist_id} → {added_at}
+{id} → {user_id, artist_id, added_at}
 
 Stream:
 {id} → {user_id, track_id, played_at, duration}
@@ -52,7 +52,6 @@ Stream:
 
 ## 2НФ
 - все неключевые атрибуты зависят от первичного ключа
-- в составных ключах типа playlist_track дополнительные атрибуты зависят от всей комбинации ключей
 
 ## 3НФ
 - отсутствуют зависимости неключевых атрибутов от других неключевых атрибутов
@@ -117,22 +116,24 @@ Stream:
 
 ## Track_Artist
 Связь между треком и исполнителем
+- id - id связи
 - track_id - id трека
 - artist_id - id исполнителя
-- role - роль исполнителя в треке
+- role - роль исполнителя в треке (main, featured, producer, writer)
 
 ## Playlist
 Плейлист
 - id - id плейлиста
 - title - название плейлиста
-- user_id - id пользователя
 - description - описание плейлиста
+- user_id - id пользователя (может быть NULL для системных подборок)
 - thumbnail_url - url изображения плейлиста
 - created_at - дата создания плейлиста
 - updated_at - дата обновления плейлиста
 
 ## Playlist_Track
 Связь между плейлистом и треком
+- id - id связи
 - playlist_id - id плейлиста
 - track_id - id трека
 - position - позиция трека в плейлисте
@@ -140,28 +141,33 @@ Stream:
 
 ## Genre_Track
 Связь между жанром и треком
+- id - id связи
 - genre_id - id жанра
 - track_id - id трека
 
 ## Genre_Album
 Связь между жанром и альбомом
+- id - id связи
 - genre_id - id жанра
 - album_id - id альбома
 
 ## Favorite_Track
 Любимый трек
+- id - id записи
 - user_id - id пользователя
 - track_id - id трека
 - added_at - дата добавления трека в любимые
 
 ## Favorite_Album
 Любимый альбом
+- id - id записи
 - user_id - id пользователя
 - album_id - id альбома
 - added_at - дата добавления альбома в любимые
 
 ## Favorite_Artist
 Любимый исполнитель
+- id - id записи
 - user_id - id пользователя
 - artist_id - id исполнителя
 - added_at - дата добавления исполнителя в любимые

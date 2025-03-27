@@ -46,9 +46,9 @@ CREATE TABLE album (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     artist_id BIGINT NOT NULL,
     FOREIGN KEY (artist_id)
-       REFERENCES artist (id)
-       ON DELETE CASCADE
-       ON UPDATE CASCADE,
+        REFERENCES artist (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
     CONSTRAINT album_valid_type_check CHECK (type IN ('album', 'single', 'ep', 'compilation')),
     CONSTRAINT unique_artist_album_check UNIQUE (artist_id, title)
 );
@@ -62,21 +62,28 @@ CREATE TABLE track (
     duration INTEGER NOT NULL,
     position INTEGER NOT NULL,
     FOREIGN KEY (album_id)
-       REFERENCES album (id)
-       ON DELETE CASCADE
-       ON UPDATE CASCADE,
+        REFERENCES album (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
     CONSTRAINT track_valid_duration_check CHECK (duration > 0),
     CONSTRAINT unique_album_track_check UNIQUE (album_id, position)
 );
 
 CREATE TABLE track_artist (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
     track_id BIGINT NOT NULL,
     artist_id BIGINT NOT NULL,
     role TEXT NOT NULL DEFAULT 'main',
-    PRIMARY KEY (track_id, artist_id, role),
-    FOREIGN KEY (track_id) REFERENCES track (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (artist_id) REFERENCES artist (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT track_artist_valid_role_check CHECK (role IN ('main', 'featured', 'producer', 'writer'))
+    FOREIGN KEY (track_id) 
+        REFERENCES track (id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+    FOREIGN KEY (artist_id) 
+        REFERENCES artist (id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+    CONSTRAINT track_artist_valid_role_check CHECK (role IN ('main', 'featured', 'producer', 'writer')),
+    CONSTRAINT unique_track_artist_check UNIQUE (track_id, artist_id, role)
 );
 
 CREATE TABLE playlist (
@@ -88,18 +95,18 @@ CREATE TABLE playlist (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (user_id)
-      REFERENCES user (id)
-      ON DELETE CASCADE
-      ON UPDATE CASCADE,
+        REFERENCES user (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
     CONSTRAINT unique_user_playlist_check UNIQUE (user_id, title)
 );
 
 CREATE TABLE playlist_track (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     playlist_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
     position BIGINT NOT NULL,
     added_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (playlist_id, track_id),
     FOREIGN KEY (playlist_id)
         REFERENCES playlist (id)
         ON DELETE CASCADE
@@ -108,46 +115,61 @@ CREATE TABLE playlist_track (
         REFERENCES track (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-    CONSTRAINT unique_playlist_track_check UNIQUE (playlist_id, position)
-    
+    CONSTRAINT unique_playlist_position_check UNIQUE (playlist_id, position),
+    CONSTRAINT unique_playlist_track_check UNIQUE (playlist_id, track_id)
 );
 
 CREATE TABLE genre_track (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     genre_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
-    PRIMARY KEY (genre_id, track_id),
-    FOREIGN KEY (genre_id) REFERENCES genre (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (track_id) REFERENCES track (id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (genre_id) 
+        REFERENCES genre (id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+    FOREIGN KEY (track_id) 
+        REFERENCES track (id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+    CONSTRAINT unique_genre_track_check UNIQUE (genre_id, track_id)
 );
 
 CREATE TABLE genre_album (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     genre_id BIGINT NOT NULL,
     album_id BIGINT NOT NULL,
-    PRIMARY KEY (genre_id, album_id),
-    FOREIGN KEY (genre_id) REFERENCES genre (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (album_id) REFERENCES album (id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (genre_id) 
+        REFERENCES genre (id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+    FOREIGN KEY (album_id) 
+        REFERENCES album (id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
+    CONSTRAINT unique_genre_album_check UNIQUE (genre_id, album_id)
 );
 
 CREATE TABLE favorite_track (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
     added_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (user_id, track_id),
     FOREIGN KEY (user_id)
-      REFERENCES user (id)
-      ON DELETE CASCADE
-      ON UPDATE CASCADE,
+        REFERENCES user (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
     FOREIGN KEY (track_id)
-      REFERENCES track (id)
-      ON DELETE CASCADE
-      ON UPDATE CASCADE
+        REFERENCES track (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT unique_favorite_track_check UNIQUE (user_id, track_id)
 );
 
 CREATE TABLE favorite_album (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     album_id BIGINT NOT NULL,
     added_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (user_id, album_id),
     FOREIGN KEY (user_id)
         REFERENCES user (id)
         ON DELETE CASCADE
@@ -155,14 +177,15 @@ CREATE TABLE favorite_album (
     FOREIGN KEY (album_id)
         REFERENCES album (id)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT unique_favorite_album_check UNIQUE (user_id, album_id)
 );
 
 CREATE TABLE favorite_artist (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     artist_id BIGINT NOT NULL,
     added_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (user_id, artist_id),
     FOREIGN KEY (user_id)
         REFERENCES user (id)
         ON DELETE CASCADE
@@ -170,7 +193,8 @@ CREATE TABLE favorite_artist (
     FOREIGN KEY (artist_id)
         REFERENCES artist (id)
         ON DELETE CASCADE
-        ON UPDATE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT unique_favorite_artist_check UNIQUE (user_id, artist_id)
 );
 
 CREATE TABLE stream (
@@ -179,7 +203,6 @@ CREATE TABLE stream (
     track_id BIGINT NOT NULL,
     played_at TIMESTAMP NOT NULL DEFAULT NOW(),
     duration INTEGER NOT NULL DEFAULT 0,
-    PRIMARY KEY (id),
     FOREIGN KEY (user_id)
         REFERENCES user (id)
         ON DELETE CASCADE
