@@ -128,14 +128,6 @@ CREATE TABLE genre_album (
     FOREIGN KEY (album_id) REFERENCES album (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE genre_artist (
-    genre_id BIGINT NOT NULL,
-    artist_id BIGINT NOT NULL,
-    PRIMARY KEY (genre_id, artist_id),
-    FOREIGN KEY (genre_id) REFERENCES genre (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (artist_id) REFERENCES artist (id) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
 CREATE TABLE favorite_track (
     user_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,

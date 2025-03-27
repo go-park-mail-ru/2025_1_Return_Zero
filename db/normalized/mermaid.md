@@ -136,9 +136,6 @@ erDiagram
     genre ||--o{ genre_album : "categorizes"
     album ||--o{ genre_album : "categorized as"
     
-    genre ||--o{ genre_artist : "categorizes"
-    artist ||--o{ genre_artist : "categorized as"
-    
     user ||--o{ favorite_track : "favorites"
     track ||--o{ favorite_track : "favorited_by"
     
