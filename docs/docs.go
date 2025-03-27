@@ -48,7 +48,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.APIResponse"
+                                    "$ref": "#/definitions/delivery.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -56,7 +56,7 @@ const docTemplate = `{
                                         "body": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/model.Album"
+                                                "$ref": "#/definitions/delivery.Album"
                                             }
                                         }
                                     }
@@ -69,13 +69,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.APIBadRequestErrorResponse"
+                                    "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "$ref": "#/definitions/model.ErrorResponse"
+                                            "$ref": "#/definitions/delivery.ErrorResponse"
                                         }
                                     }
                                 }
@@ -87,13 +87,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.APIInternalServerErrorResponse"
+                                    "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "$ref": "#/definitions/model.ErrorResponse"
+                                            "$ref": "#/definitions/delivery.ErrorResponse"
                                         }
                                     }
                                 }
@@ -136,7 +136,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.APIResponse"
+                                    "$ref": "#/definitions/delivery.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -144,7 +144,7 @@ const docTemplate = `{
                                         "body": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/model.Artist"
+                                                "$ref": "#/definitions/delivery.Artist"
                                             }
                                         }
                                     }
@@ -157,13 +157,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.APIBadRequestErrorResponse"
+                                    "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "$ref": "#/definitions/model.ErrorResponse"
+                                            "$ref": "#/definitions/delivery.ErrorResponse"
                                         }
                                     }
                                 }
@@ -175,13 +175,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.APIInternalServerErrorResponse"
+                                    "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "$ref": "#/definitions/model.ErrorResponse"
+                                            "$ref": "#/definitions/delivery.ErrorResponse"
                                         }
                                     }
                                 }
@@ -224,7 +224,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.APIResponse"
+                                    "$ref": "#/definitions/delivery.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -232,7 +232,7 @@ const docTemplate = `{
                                         "body": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/model.Track"
+                                                "$ref": "#/definitions/delivery.Track"
                                             }
                                         }
                                     }
@@ -245,13 +245,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.APIBadRequestErrorResponse"
+                                    "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "$ref": "#/definitions/model.ErrorResponse"
+                                            "$ref": "#/definitions/delivery.ErrorResponse"
                                         }
                                     }
                                 }
@@ -263,13 +263,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/model.APIInternalServerErrorResponse"
+                                    "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "$ref": "#/definitions/model.ErrorResponse"
+                                            "$ref": "#/definitions/delivery.ErrorResponse"
                                         }
                                     }
                                 }
@@ -281,12 +281,12 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "model.APIBadRequestErrorResponse": {
+        "delivery.APIBadRequestErrorResponse": {
             "description": "API bad request error response structure",
             "type": "object",
             "properties": {
                 "body": {
-                    "$ref": "#/definitions/model.ErrorResponse"
+                    "$ref": "#/definitions/delivery.ErrorResponse"
                 },
                 "status": {
                     "type": "integer",
@@ -294,12 +294,12 @@ const docTemplate = `{
                 }
             }
         },
-        "model.APIInternalServerErrorResponse": {
+        "delivery.APIInternalServerErrorResponse": {
             "description": "API internal server error response structure",
             "type": "object",
             "properties": {
                 "body": {
-                    "$ref": "#/definitions/model.ErrorResponse"
+                    "$ref": "#/definitions/delivery.ErrorResponse"
                 },
                 "status": {
                     "type": "integer",
@@ -307,7 +307,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.APIResponse": {
+        "delivery.APIResponse": {
             "description": "API response wrapper",
             "type": "object",
             "properties": {
@@ -318,12 +318,12 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Album": {
+        "delivery.Album": {
             "description": "A music album entity",
             "type": "object",
             "properties": {
                 "artist": {
-                    "$ref": "#/definitions/model.Artist"
+                    "$ref": "#/definitions/delivery.AlbumArtist"
                 },
                 "id": {
                     "type": "integer",
@@ -339,29 +339,21 @@ const docTemplate = `{
                 }
             }
         },
-        "model.AlbumDB": {
-            "description": "A music album entity",
+        "delivery.AlbumArtist": {
+            "description": "An artist of an album entity",
             "type": "object",
             "properties": {
-                "artist_id": {
-                    "type": "integer",
-                    "example": 1
-                },
                 "id": {
                     "type": "integer",
                     "example": 1
                 },
-                "thumbnail_url": {
-                    "type": "string",
-                    "example": "https://example.com/album.jpg"
-                },
                 "title": {
                     "type": "string",
-                    "example": "Anticyclone"
+                    "example": "Lagtrain"
                 }
             }
         },
-        "model.Artist": {
+        "delivery.Artist": {
             "description": "A music artist entity",
             "type": "object",
             "properties": {
@@ -379,7 +371,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.ErrorResponse": {
+        "delivery.ErrorResponse": {
             "description": "Error response structure",
             "type": "object",
             "properties": {
@@ -389,15 +381,15 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Track": {
+        "delivery.Track": {
             "description": "A music track entity",
             "type": "object",
             "properties": {
                 "album": {
-                    "$ref": "#/definitions/model.AlbumDB"
+                    "$ref": "#/definitions/delivery.TrackAlbum"
                 },
                 "artist": {
-                    "$ref": "#/definitions/model.Artist"
+                    "$ref": "#/definitions/delivery.TrackArtist"
                 },
                 "duration": {
                     "type": "integer",
@@ -410,6 +402,34 @@ const docTemplate = `{
                 "thumbnail_url": {
                     "type": "string",
                     "example": "https://example.com/image.jpg"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Lagtrain"
+                }
+            }
+        },
+        "delivery.TrackAlbum": {
+            "description": "An album of a track entity",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Lagtrain"
+                }
+            }
+        },
+        "delivery.TrackArtist": {
+            "description": "An artist of a track entity",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
                 },
                 "title": {
                     "type": "string",

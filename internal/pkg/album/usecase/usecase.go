@@ -34,16 +34,14 @@ func (u albumUsecase) GetAllAlbums(filters *usecaseModel.AlbumFilters) ([]*useca
 		if err != nil {
 			return nil, err
 		}
-		artist := &usecaseModel.Artist{
-			ID:        repoArtist.ID,
-			Title:     repoArtist.Title,
-			Thumbnail: repoArtist.Thumbnail,
-		}
 		album := &usecaseModel.Album{
 			ID:        repoAlbum.ID,
 			Title:     repoAlbum.Title,
 			Thumbnail: repoAlbum.Thumbnail,
-			Artist:    artist,
+			Artist: usecaseModel.AlbumArtist{
+				ID:    repoArtist.ID,
+				Title: repoArtist.Title,
+			},
 		}
 		albums = append(albums, album)
 	}

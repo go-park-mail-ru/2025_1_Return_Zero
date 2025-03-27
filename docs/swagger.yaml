@@ -1,24 +1,24 @@
 basePath: /
 definitions:
-  model.APIBadRequestErrorResponse:
+  delivery.APIBadRequestErrorResponse:
     description: API bad request error response structure
     properties:
       body:
-        $ref: '#/definitions/model.ErrorResponse'
+        $ref: '#/definitions/delivery.ErrorResponse'
       status:
         example: 400
         type: integer
     type: object
-  model.APIInternalServerErrorResponse:
+  delivery.APIInternalServerErrorResponse:
     description: API internal server error response structure
     properties:
       body:
-        $ref: '#/definitions/model.ErrorResponse'
+        $ref: '#/definitions/delivery.ErrorResponse'
       status:
         example: 500
         type: integer
     type: object
-  model.APIResponse:
+  delivery.APIResponse:
     description: API response wrapper
     properties:
       body: {}
@@ -26,11 +26,11 @@ definitions:
         example: 200
         type: integer
     type: object
-  model.Album:
+  delivery.Album:
     description: A music album entity
     properties:
       artist:
-        $ref: '#/definitions/model.Artist'
+        $ref: '#/definitions/delivery.AlbumArtist'
       id:
         example: 1
         type: integer
@@ -41,23 +41,17 @@ definitions:
         example: Anticyclone
         type: string
     type: object
-  model.AlbumDB:
-    description: A music album entity
+  delivery.AlbumArtist:
+    description: An artist of an album entity
     properties:
-      artist_id:
-        example: 1
-        type: integer
       id:
         example: 1
         type: integer
-      thumbnail_url:
-        example: https://example.com/album.jpg
-        type: string
       title:
-        example: Anticyclone
+        example: Lagtrain
         type: string
     type: object
-  model.Artist:
+  delivery.Artist:
     description: A music artist entity
     properties:
       id:
@@ -70,20 +64,20 @@ definitions:
         example: Inabakumori
         type: string
     type: object
-  model.ErrorResponse:
+  delivery.ErrorResponse:
     description: Error response structure
     properties:
       error:
         example: Something went wrong
         type: string
     type: object
-  model.Track:
+  delivery.Track:
     description: A music track entity
     properties:
       album:
-        $ref: '#/definitions/model.AlbumDB'
+        $ref: '#/definitions/delivery.TrackAlbum'
       artist:
-        $ref: '#/definitions/model.Artist'
+        $ref: '#/definitions/delivery.TrackArtist'
       duration:
         example: 216
         type: integer
@@ -93,6 +87,26 @@ definitions:
       thumbnail_url:
         example: https://example.com/image.jpg
         type: string
+      title:
+        example: Lagtrain
+        type: string
+    type: object
+  delivery.TrackAlbum:
+    description: An album of a track entity
+    properties:
+      id:
+        example: 1
+        type: integer
+      title:
+        example: Lagtrain
+        type: string
+    type: object
+  delivery.TrackArtist:
+    description: An artist of a track entity
+    properties:
+      id:
+        example: 1
+        type: integer
       title:
         example: Lagtrain
         type: string
@@ -125,30 +139,30 @@ paths:
           description: List of albums
           schema:
             allOf:
-            - $ref: '#/definitions/model.APIResponse'
+            - $ref: '#/definitions/delivery.APIResponse'
             - properties:
                 body:
                   items:
-                    $ref: '#/definitions/model.Album'
+                    $ref: '#/definitions/delivery.Album'
                   type: array
               type: object
         "400":
           description: Bad request - invalid filters
           schema:
             allOf:
-            - $ref: '#/definitions/model.APIBadRequestErrorResponse'
+            - $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
             - properties:
                 body:
-                  $ref: '#/definitions/model.ErrorResponse'
+                  $ref: '#/definitions/delivery.ErrorResponse'
               type: object
         "500":
           description: Internal server error
           schema:
             allOf:
-            - $ref: '#/definitions/model.APIInternalServerErrorResponse'
+            - $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
             - properties:
                 body:
-                  $ref: '#/definitions/model.ErrorResponse'
+                  $ref: '#/definitions/delivery.ErrorResponse'
               type: object
       summary: Get albums
       tags:
@@ -174,30 +188,30 @@ paths:
           description: List of artists
           schema:
             allOf:
-            - $ref: '#/definitions/model.APIResponse'
+            - $ref: '#/definitions/delivery.APIResponse'
             - properties:
                 body:
                   items:
-                    $ref: '#/definitions/model.Artist'
+                    $ref: '#/definitions/delivery.Artist'
                   type: array
               type: object
         "400":
           description: Bad request - invalid filters
           schema:
             allOf:
-            - $ref: '#/definitions/model.APIBadRequestErrorResponse'
+            - $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
             - properties:
                 body:
-                  $ref: '#/definitions/model.ErrorResponse'
+                  $ref: '#/definitions/delivery.ErrorResponse'
               type: object
         "500":
           description: Internal server error
           schema:
             allOf:
-            - $ref: '#/definitions/model.APIInternalServerErrorResponse'
+            - $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
             - properties:
                 body:
-                  $ref: '#/definitions/model.ErrorResponse'
+                  $ref: '#/definitions/delivery.ErrorResponse'
               type: object
       summary: Get artists
       tags:
@@ -223,30 +237,30 @@ paths:
           description: List of tracks
           schema:
             allOf:
-            - $ref: '#/definitions/model.APIResponse'
+            - $ref: '#/definitions/delivery.APIResponse'
             - properties:
                 body:
                   items:
-                    $ref: '#/definitions/model.Track'
+                    $ref: '#/definitions/delivery.Track'
                   type: array
               type: object
         "400":
           description: Bad request - invalid filters
           schema:
             allOf:
-            - $ref: '#/definitions/model.APIBadRequestErrorResponse'
+            - $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
             - properties:
                 body:
-                  $ref: '#/definitions/model.ErrorResponse'
+                  $ref: '#/definitions/delivery.ErrorResponse'
               type: object
         "500":
           description: Internal server error
           schema:
             allOf:
-            - $ref: '#/definitions/model.APIInternalServerErrorResponse'
+            - $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
             - properties:
                 body:
-                  $ref: '#/definitions/model.ErrorResponse'
+                  $ref: '#/definitions/delivery.ErrorResponse'
               type: object
       summary: Get tracks
       tags:

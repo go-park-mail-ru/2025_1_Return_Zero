@@ -25,9 +25,9 @@ func NewAlbumHandler(usecase album.Usecase) *AlbumHandler {
 // @Produce json
 // @Param offset query integer false "Offset (default: 0)"
 // @Param limit query integer false "Limit (default: 10, max: 100)"
-// @Success 200 {object} model.APIResponse{body=[]model.Album} "List of albums"
-// @Failure 400 {object} model.APIBadRequestErrorResponse{body=model.ErrorResponse} "Bad request - invalid filters"
-// @Failure 500 {object} model.APIInternalServerErrorResponse{body=model.ErrorResponse} "Internal server error"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Album} "List of albums"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse{body=delivery.ErrorResponse} "Bad request - invalid filters"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse{body=delivery.ErrorResponse} "Internal server error"
 // @Router /albums [get]
 func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 	pagination, err := helpers.GetPagination(r)
@@ -53,10 +53,9 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 			ID:        usecaseAlbum.ID,
 			Title:     usecaseAlbum.Title,
 			Thumbnail: usecaseAlbum.Thumbnail,
-			Artist: &deliveryModel.Artist{
-				ID:        usecaseAlbum.Artist.ID,
-				Title:     usecaseAlbum.Artist.Title,
-				Thumbnail: usecaseAlbum.Artist.Thumbnail,
+			Artist: deliveryModel.AlbumArtist{
+				ID:    usecaseAlbum.Artist.ID,
+				Title: usecaseAlbum.Artist.Title,
 			},
 		})
 	}

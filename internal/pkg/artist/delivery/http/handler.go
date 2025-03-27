@@ -25,9 +25,9 @@ func NewArtistHandler(usecase artist.Usecase) *ArtistHandler {
 // @Produce json
 // @Param offset query integer false "Offset (default: 0)"
 // @Param limit query integer false "Limit (default: 10, max: 100)"
-// @Success 200 {object} model.APIResponse{body=[]model.Artist} "List of artists"
-// @Failure 400 {object} model.APIBadRequestErrorResponse{body=model.ErrorResponse} "Bad request - invalid filters"
-// @Failure 500 {object} model.APIInternalServerErrorResponse{body=model.ErrorResponse} "Internal server error"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Artist} "List of artists"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse{body=delivery.ErrorResponse} "Bad request - invalid filters"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse{body=delivery.ErrorResponse} "Internal server error"
 // @Router /artists [get]
 func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 	pagination, err := helpers.GetPagination(r)

@@ -25,9 +25,9 @@ func NewTrackHandler(usecase track.Usecase) *TrackHandler {
 // @Produce json
 // @Param offset query integer false "Offset (default: 0)"
 // @Param limit query integer false "Limit (default: 10, max: 100)"
-// @Success 200 {object} model.APIResponse{body=[]model.Track} "List of tracks"
-// @Failure 400 {object} model.APIBadRequestErrorResponse{body=model.ErrorResponse} "Bad request - invalid filters"
-// @Failure 500 {object} model.APIInternalServerErrorResponse{body=model.ErrorResponse} "Internal server error"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Track} "List of tracks"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse{body=delivery.ErrorResponse} "Bad request - invalid filters"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse{body=delivery.ErrorResponse} "Internal server error"
 // @Router /tracks [get]
 func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 	pagination, err := helpers.GetPagination(r)
@@ -50,16 +50,13 @@ func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 			Title:     usecaseTrack.Title,
 			Thumbnail: usecaseTrack.Thumbnail,
 			Duration:  usecaseTrack.Duration,
-			Album: &deliveryModel.AlbumUnpopulated{
-				ID:        usecaseTrack.Album.ID,
-				Title:     usecaseTrack.Album.Title,
-				Thumbnail: usecaseTrack.Album.Thumbnail,
-				ArtistID:  usecaseTrack.Album.ArtistID,
+			Album: deliveryModel.TrackAlbum{
+				ID:    usecaseTrack.Album.ID,
+				Title: usecaseTrack.Album.Title,
 			},
-			Artist: &deliveryModel.Artist{
-				ID:        usecaseTrack.Artist.ID,
-				Title:     usecaseTrack.Artist.Title,
-				Thumbnail: usecaseTrack.Artist.Thumbnail,
+			Artist: deliveryModel.TrackArtist{
+				ID:    usecaseTrack.Artist.ID,
+				Title: usecaseTrack.Artist.Title,
 			},
 		})
 	}
