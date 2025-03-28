@@ -3,18 +3,22 @@ package artist
 import (
 	"net/http"
 
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
+	"go.uber.org/zap"
 )
 
 type ArtistHandler struct {
 	usecase artist.Usecase
+	cfg     *config.Config
 }
 
-func NewArtistHandler(usecase artist.Usecase) *ArtistHandler {
-	return &ArtistHandler{usecase: usecase}
+func NewArtistHandler(usecase artist.Usecase, cfg *config.Config) *ArtistHandler {
+	return &ArtistHandler{usecase: usecase, cfg: cfg}
 }
 
 // GetAllArtists godoc
@@ -26,13 +30,15 @@ func NewArtistHandler(usecase artist.Usecase) *ArtistHandler {
 // @Param offset query integer false "Offset (default: 0)"
 // @Param limit query integer false "Limit (default: 10, max: 100)"
 // @Success 200 {object} delivery.APIResponse{body=[]delivery.Artist} "List of artists"
-// @Failure 400 {object} delivery.APIBadRequestErrorResponse{body=delivery.ErrorResponse} "Bad request - invalid filters"
-// @Failure 500 {object} delivery.APIInternalServerErrorResponse{body=delivery.ErrorResponse} "Internal server error"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid filters"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /artists [get]
 func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
-	pagination, err := helpers.GetPagination(r)
+	logger := middleware.LoggerFromContext(r.Context())
+	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
-		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
+		logger.Error("failed to get pagination", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -44,7 +50,8 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		helpers.WriteJSONError(w, http.StatusInternalServerError, err.Error())
+		logger.Error("failed to get artists", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 
@@ -56,5 +63,5 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 			Thumbnail: usecaseArtist.Thumbnail,
 		})
 	}
-	helpers.WriteJSON(w, http.StatusOK, artists, nil)
+	helpers.WriteSuccessResponse(w, http.StatusOK, artists, nil)
 }

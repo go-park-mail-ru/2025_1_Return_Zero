@@ -3,8 +3,9 @@ definitions:
   delivery.APIBadRequestErrorResponse:
     description: API bad request error response structure
     properties:
-      body:
-        $ref: '#/definitions/delivery.ErrorResponse'
+      error:
+        example: Something went wrong
+        type: string
       status:
         example: 400
         type: integer
@@ -12,8 +13,9 @@ definitions:
   delivery.APIInternalServerErrorResponse:
     description: API internal server error response structure
     properties:
-      body:
-        $ref: '#/definitions/delivery.ErrorResponse'
+      error:
+        example: Something went wrong
+        type: string
       status:
         example: 500
         type: integer
@@ -62,13 +64,6 @@ definitions:
         type: string
       title:
         example: Inabakumori
-        type: string
-    type: object
-  delivery.ErrorResponse:
-    description: Error response structure
-    properties:
-      error:
-        example: Something went wrong
         type: string
     type: object
   delivery.Track:
@@ -149,21 +144,11 @@ paths:
         "400":
           description: Bad request - invalid filters
           schema:
-            allOf:
-            - $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
-            - properties:
-                body:
-                  $ref: '#/definitions/delivery.ErrorResponse'
-              type: object
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
         "500":
           description: Internal server error
           schema:
-            allOf:
-            - $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
-            - properties:
-                body:
-                  $ref: '#/definitions/delivery.ErrorResponse'
-              type: object
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
       summary: Get albums
       tags:
       - albums
@@ -198,21 +183,11 @@ paths:
         "400":
           description: Bad request - invalid filters
           schema:
-            allOf:
-            - $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
-            - properties:
-                body:
-                  $ref: '#/definitions/delivery.ErrorResponse'
-              type: object
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
         "500":
           description: Internal server error
           schema:
-            allOf:
-            - $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
-            - properties:
-                body:
-                  $ref: '#/definitions/delivery.ErrorResponse'
-              type: object
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
       summary: Get artists
       tags:
       - artists
@@ -247,21 +222,11 @@ paths:
         "400":
           description: Bad request - invalid filters
           schema:
-            allOf:
-            - $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
-            - properties:
-                body:
-                  $ref: '#/definitions/delivery.ErrorResponse'
-              type: object
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
         "500":
           description: Internal server error
           schema:
-            allOf:
-            - $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
-            - properties:
-                body:
-                  $ref: '#/definitions/delivery.ErrorResponse'
-              type: object
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
       summary: Get tracks
       tags:
       - tracks

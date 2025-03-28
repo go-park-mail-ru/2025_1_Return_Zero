@@ -1,22 +1,14 @@
 package usecase
 
-type TrackAlbum struct {
-	ID    uint
-	Title string
-}
-
-type TrackArtist struct {
-	ID    uint
-	Title string
-}
-
 type Track struct {
 	ID        uint
 	Title     string
 	Thumbnail string
 	Duration  int
-	Album     TrackAlbum
-	Artist    TrackArtist
+	AlbumID   uint
+	ArtistID  uint
+	Album     string
+	Artist    string
 }
 
 type TrackFilters struct {

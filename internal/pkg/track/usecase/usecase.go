@@ -37,24 +37,20 @@ func (u trackUsecase) GetAllTracks(filters *usecaseModel.TrackFilters) ([]*useca
 			return nil, err
 		}
 
+		album, err := u.albumRepo.GetAlbumByID(repoTrack.AlbumID)
+		if err != nil {
+			return nil, err
+		}
+
 		track := &usecaseModel.Track{
 			ID:        repoTrack.ID,
 			Title:     repoTrack.Title,
 			Thumbnail: repoTrack.Thumbnail,
 			Duration:  repoTrack.Duration,
-			Artist: usecaseModel.TrackArtist{
-				ID:    repoArtist.ID,
-				Title: repoArtist.Title,
-			},
-		}
-
-		album, err := u.albumRepo.GetAlbumByID(repoTrack.AlbumID)
-		if err != nil {
-			return nil, err
-		}
-		track.Album = usecaseModel.TrackAlbum{
-			ID:    album.ID,
-			Title: album.Title,
+			Artist:    repoArtist.Title,
+			ArtistID:  repoArtist.ID,
+			Album:     album.Title,
+			AlbumID:   album.ID,
 		}
 		tracks = append(tracks, track)
 	}

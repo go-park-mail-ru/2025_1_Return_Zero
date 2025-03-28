@@ -61,37 +61,13 @@
                     "400": {
                         "description": "Bad request - invalid filters",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                         }
                     }
                 }
@@ -149,37 +125,13 @@
                     "400": {
                         "description": "Bad request - invalid filters",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                         }
                     }
                 }
@@ -237,37 +189,13 @@
                     "400": {
                         "description": "Bad request - invalid filters",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                         }
                     }
                 }
@@ -279,8 +207,9 @@
             "description": "API bad request error response structure",
             "type": "object",
             "properties": {
-                "body": {
-                    "$ref": "#/definitions/delivery.ErrorResponse"
+                "error": {
+                    "type": "string",
+                    "example": "Something went wrong"
                 },
                 "status": {
                     "type": "integer",
@@ -292,8 +221,9 @@
             "description": "API internal server error response structure",
             "type": "object",
             "properties": {
-                "body": {
-                    "$ref": "#/definitions/delivery.ErrorResponse"
+                "error": {
+                    "type": "string",
+                    "example": "Something went wrong"
                 },
                 "status": {
                     "type": "integer",
@@ -362,16 +292,6 @@
                 "title": {
                     "type": "string",
                     "example": "Inabakumori"
-                }
-            }
-        },
-        "delivery.ErrorResponse": {
-            "description": "Error response structure",
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string",
-                    "example": "Something went wrong"
                 }
             }
         },

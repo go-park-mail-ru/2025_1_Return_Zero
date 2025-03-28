@@ -7,19 +7,14 @@ import (
 	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 )
 
-const (
-	MaxOffset = 10000
-	MaxLimit  = 100
-)
-
 var (
 	ErrInvalidOffset = errors.New("invalid offset: should be greater than 0")
 	ErrInvalidLimit  = errors.New("invalid limit: should be greater than 0")
 )
 
-func validatePagination(p *deliveryModel.Pagination) error {
-	if p.Offset > MaxOffset {
-		p.Offset = MaxOffset
+func validatePagination(p *deliveryModel.Pagination, cfg *deliveryModel.PaginationConfig) error {
+	if p.Offset > cfg.MaxOffset {
+		p.Offset = cfg.MaxOffset
 	}
 
 	if p.Offset < 0 {
@@ -27,8 +22,8 @@ func validatePagination(p *deliveryModel.Pagination) error {
 		return ErrInvalidOffset
 	}
 
-	if p.Limit > MaxLimit {
-		p.Limit = MaxLimit
+	if p.Limit > cfg.MaxLimit {
+		p.Limit = cfg.MaxLimit
 	}
 
 	if p.Limit < 0 {
@@ -40,15 +35,15 @@ func validatePagination(p *deliveryModel.Pagination) error {
 
 }
 
-func GetPagination(r *http.Request) (*deliveryModel.Pagination, error) {
+func GetPagination(r *http.Request, cfg *deliveryModel.PaginationConfig) (*deliveryModel.Pagination, error) {
 	pagination := &deliveryModel.Pagination{}
 
-	offset, err := ReadInt(r.URL.Query(), "offset", 0)
+	offset, err := ReadInt(r.URL.Query(), "offset", cfg.DefaultOffset)
 	if err != nil {
 		return nil, err
 	}
 
-	limit, err := ReadInt(r.URL.Query(), "limit", 10)
+	limit, err := ReadInt(r.URL.Query(), "limit", cfg.DefaultLimit)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +51,7 @@ func GetPagination(r *http.Request) (*deliveryModel.Pagination, error) {
 	pagination.Offset = offset
 	pagination.Limit = limit
 
-	err = validatePagination(pagination)
+	err = validatePagination(pagination, cfg)
 	if err != nil {
 		return nil, err
 	}

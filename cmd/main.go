@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	_ "github.com/go-park-mail-ru/2025_1_Return_Zero/docs"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/config"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	albumHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/delivery/http"
 	albumRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/repository"
@@ -46,9 +46,9 @@ func main() {
 	r.Use(middleware.AccessLog)
 	r.Use(config.Cors.Middleware)
 
-	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackMemoryRepository(), artistRepository.NewArtistMemoryRepository(), albumRepository.NewAlbumMemoryRepository()))
-	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumMemoryRepository(), artistRepository.NewArtistMemoryRepository()))
-	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistRepository.NewArtistMemoryRepository()))
+	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackMemoryRepository(), artistRepository.NewArtistMemoryRepository(), albumRepository.NewAlbumMemoryRepository()), config)
+	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumMemoryRepository(), artistRepository.NewArtistMemoryRepository()), config)
+	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistRepository.NewArtistMemoryRepository()), config)
 
 	r.HandleFunc("/tracks", trackHandler.GetAllTracks).Methods("GET")
 	r.HandleFunc("/albums", albumHandler.GetAllAlbums).Methods("GET")

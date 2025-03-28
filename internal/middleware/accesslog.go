@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"time"
 )
 
 type statusResponseWriter struct {
@@ -19,6 +20,8 @@ func AccessLog(next http.Handler) http.Handler {
 		logger := LoggerFromContext(r.Context())
 		defer logger.Sync()
 
+		start := time.Now()
+
 		sw := &statusResponseWriter{ResponseWriter: w}
 		next.ServeHTTP(sw, r)
 
@@ -29,6 +32,7 @@ func AccessLog(next http.Handler) http.Handler {
 			"ip", r.RemoteAddr,
 			"user-agent", r.UserAgent(),
 			"status", sw.status,
+			"duration", time.Since(start),
 		)
 	})
 }

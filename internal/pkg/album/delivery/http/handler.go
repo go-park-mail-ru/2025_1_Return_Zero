@@ -3,18 +3,22 @@ package album
 import (
 	"net/http"
 
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
+	"go.uber.org/zap"
 )
 
 type AlbumHandler struct {
 	usecase album.Usecase
+	cfg     *config.Config
 }
 
-func NewAlbumHandler(usecase album.Usecase) *AlbumHandler {
-	return &AlbumHandler{usecase: usecase}
+func NewAlbumHandler(usecase album.Usecase, cfg *config.Config) *AlbumHandler {
+	return &AlbumHandler{usecase: usecase, cfg: cfg}
 }
 
 // GetAllAlbums godoc
@@ -26,13 +30,15 @@ func NewAlbumHandler(usecase album.Usecase) *AlbumHandler {
 // @Param offset query integer false "Offset (default: 0)"
 // @Param limit query integer false "Limit (default: 10, max: 100)"
 // @Success 200 {object} delivery.APIResponse{body=[]delivery.Album} "List of albums"
-// @Failure 400 {object} delivery.APIBadRequestErrorResponse{body=delivery.ErrorResponse} "Bad request - invalid filters"
-// @Failure 500 {object} delivery.APIInternalServerErrorResponse{body=delivery.ErrorResponse} "Internal server error"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid filters"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /albums [get]
 func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
-	pagination, err := helpers.GetPagination(r)
+	logger := middleware.LoggerFromContext(r.Context())
+	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
-		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
+		logger.Error("failed to get pagination", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -43,7 +49,8 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 	if err != nil {
-		helpers.WriteJSONError(w, http.StatusInternalServerError, err.Error())
+		logger.Error("failed to get albums", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 
@@ -53,12 +60,10 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 			ID:        usecaseAlbum.ID,
 			Title:     usecaseAlbum.Title,
 			Thumbnail: usecaseAlbum.Thumbnail,
-			Artist: deliveryModel.AlbumArtist{
-				ID:    usecaseAlbum.Artist.ID,
-				Title: usecaseAlbum.Artist.Title,
-			},
+			Artist:    usecaseAlbum.Artist,
+			ArtistID:  usecaseAlbum.ArtistID,
 		})
 	}
 
-	helpers.WriteJSON(w, http.StatusOK, albums, nil)
+	helpers.WriteSuccessResponse(w, http.StatusOK, albums, nil)
 }

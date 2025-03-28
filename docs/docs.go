@@ -67,37 +67,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request - invalid filters",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                         }
                     }
                 }
@@ -155,37 +131,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request - invalid filters",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                         }
                     }
                 }
@@ -243,37 +195,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request - invalid filters",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.ErrorResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                         }
                     }
                 }
@@ -285,8 +213,9 @@ const docTemplate = `{
             "description": "API bad request error response structure",
             "type": "object",
             "properties": {
-                "body": {
-                    "$ref": "#/definitions/delivery.ErrorResponse"
+                "error": {
+                    "type": "string",
+                    "example": "Something went wrong"
                 },
                 "status": {
                     "type": "integer",
@@ -298,8 +227,9 @@ const docTemplate = `{
             "description": "API internal server error response structure",
             "type": "object",
             "properties": {
-                "body": {
-                    "$ref": "#/definitions/delivery.ErrorResponse"
+                "error": {
+                    "type": "string",
+                    "example": "Something went wrong"
                 },
                 "status": {
                     "type": "integer",
@@ -368,16 +298,6 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "Inabakumori"
-                }
-            }
-        },
-        "delivery.ErrorResponse": {
-            "description": "Error response structure",
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string",
-                    "example": "Something went wrong"
                 }
             }
         },
