@@ -72,6 +72,7 @@ CREATE TABLE track (
     title TEXT NOT NULL,
     CONSTRAINT track_title_length_check CHECK (LENGTH(title) >= 1 AND LENGTH(title) <= 100),
     thumbnail_url TEXT NOT NULL DEFAULT '/default_track.png',
+    file_url TEXT, -- NULL до загрузки
     album_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     duration INTEGER NOT NULL,

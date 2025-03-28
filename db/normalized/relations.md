@@ -16,7 +16,7 @@ Album:
 {id} → {title, type, thumbnail_url, release_date, created_at, artist_id, listeners_count, favorites_count}
 
 Track:
-{id} → {title, thumbnail_url, album_id, created_at, duration, position, listeners_count, favorites_count}
+{id} → {title, thumbnail_url, file_url, album_id, created_at, duration, position, listeners_count, favorites_count}
 
 Track_Artist:
 {id} → {track_id, artist_id, role}
@@ -113,6 +113,7 @@ Stream:
 - id - id трека
 - title - название трека
 - thumbnail_url - url изображения трека
+- file_url - url файла трека
 - album_id - id альбома
 - created_at - дата создания трека
 - duration - длительность трека

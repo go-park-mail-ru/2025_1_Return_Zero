@@ -52,6 +52,7 @@ erDiagram
         BIGINT id PK
         TEXT title
         TEXT thumbnail_url
+        TEXT file_url
         BIGINT album_id FK
         TIMESTAMP created_at
         INTEGER duration
