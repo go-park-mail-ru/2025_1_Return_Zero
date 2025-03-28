@@ -1,13 +1,15 @@
 CREATE TABLE user (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
+    CONSTRAINT email_length_check CHECK (LENGTH(email) >= 5 AND LENGTH(email) <= 30),
+    CONSTRAINT user_valid_email_check CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
     username TEXT NOT NULL UNIQUE,
+    CONSTRAINT username_length_check CHECK (LENGTH(username) >= 3 AND LENGTH(username) <= 20),
     thumbnail_url TEXT NOT NULL DEFAULT '/default_avatar.png',
     password_hash TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    CONSTRAINT user_valid_email_check CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
 );
 
 CREATE TABLE user_settings (
@@ -26,13 +28,16 @@ CREATE TABLE user_settings (
 
 CREATE TABLE genre (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE
+    name TEXT NOT NULL UNIQUE,
+    CONSTRAINT genre_name_length_check CHECK (LENGTH(name) >= 3 AND LENGTH(name) <= 20)
 );
 
 CREATE TABLE artist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     title TEXT NOT NULL,
+    CONSTRAINT artist_title_length_check CHECK (LENGTH(title) >= 1 AND LENGTH(title) <= 100),
     description TEXT NOT NULL DEFAULT '',
+    CONSTRAINT artist_description_length_check CHECK (LENGTH(description) <= 1000),
     listeners_count BIGINT NOT NULL DEFAULT 0,
     favorites_count BIGINT NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -44,9 +49,10 @@ CREATE TABLE artist (
 CREATE TABLE album (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     title TEXT NOT NULL,
+    CONSTRAINT album_title_length_check CHECK (LENGTH(title) >= 1 AND LENGTH(title) <= 100),
     type TEXT NOT NULL DEFAULT 'single',
     thumbnail_url TEXT NOT NULL DEFAULT '/default_album.png',
-    release_date DATE NOT NULL,
+    release_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     artist_id BIGINT NOT NULL,
     listeners_count BIGINT NOT NULL DEFAULT 0,
@@ -64,6 +70,7 @@ CREATE TABLE album (
 CREATE TABLE track (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     title TEXT NOT NULL,
+    CONSTRAINT track_title_length_check CHECK (LENGTH(title) >= 1 AND LENGTH(title) <= 100),
     thumbnail_url TEXT NOT NULL DEFAULT '/default_track.png',
     album_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -101,7 +108,9 @@ CREATE TABLE track_artist (
 CREATE TABLE playlist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     title TEXT NOT NULL,
+    CONSTRAINT playlist_title_length_check CHECK (LENGTH(title) >= 1 AND LENGTH(title) <= 100),
     description TEXT DEFAULT '',
+    CONSTRAINT playlist_description_length_check CHECK (LENGTH(description) <= 1000),
     user_id BIGINT, -- NULL для подборок
     thumbnail_url TEXT NOT NULL DEFAULT '/default_playlist.png',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
