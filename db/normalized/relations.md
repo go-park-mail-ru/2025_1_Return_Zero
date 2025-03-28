@@ -10,13 +10,13 @@ Genre:
 {id} → {name}
 
 Artist:
-{id} → {title, description, created_at, thumbnail_url}
+{id} → {title, description, created_at, thumbnail_url, listeners_count, favorites_count}
 
 Album:
-{id} → {title, type, thumbnail_url, release_date, created_at, artist_id}
+{id} → {title, type, thumbnail_url, release_date, created_at, artist_id, listeners_count, favorites_count}
 
 Track:
-{id} → {title, thumbnail_url, album_id, created_at, duration, position}
+{id} → {title, thumbnail_url, album_id, created_at, duration, position, listeners_count, favorites_count}
 
 Track_Artist:
 {id} → {track_id, artist_id, role}
@@ -91,6 +91,8 @@ Stream:
 - id - id исполнителя
 - title - название исполнителя
 - description - описание исполнителя
+- listeners_count - количество слушателей
+- favorites_count - количество добавлений в избранное
 - created_at - дата создания исполнителя
 - thumbnail_url - url изображения исполнителя
 
@@ -103,6 +105,8 @@ Stream:
 - release_date - дата выпуска альбома
 - created_at - дата создания альбома
 - artist_id - id исполнителя
+- listeners_count - количество слушателей
+- favorites_count - количество добавлений в избранное
 
 ## Track
 Трек
@@ -113,6 +117,8 @@ Stream:
 - created_at - дата создания трека
 - duration - длительность трека
 - position - позиция трека в альбоме
+- listeners_count - количество слушателей
+- favorites_count - количество добавлений в избранное
 
 ## Track_Artist
 Связь между треком и исполнителем

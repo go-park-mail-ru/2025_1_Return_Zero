@@ -33,8 +33,12 @@ CREATE TABLE artist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
+    listeners_count BIGINT NOT NULL DEFAULT 0,
+    favorites_count BIGINT NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    thumbnail_url TEXT NOT NULL DEFAULT '/default_artist.png'
+    thumbnail_url TEXT NOT NULL DEFAULT '/default_artist.png',
+    CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
+    CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
 
 CREATE TABLE album (
@@ -45,12 +49,16 @@ CREATE TABLE album (
     release_date DATE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     artist_id BIGINT NOT NULL,
+    listeners_count BIGINT NOT NULL DEFAULT 0,
+    favorites_count BIGINT NOT NULL DEFAULT 0,
     FOREIGN KEY (artist_id)
         REFERENCES artist (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
     CONSTRAINT album_valid_type_check CHECK (type IN ('album', 'single', 'ep', 'compilation')),
-    CONSTRAINT unique_artist_album_check UNIQUE (artist_id, title)
+    CONSTRAINT unique_artist_album_check UNIQUE (artist_id, title),
+    CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
+    CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
 
 CREATE TABLE track (
@@ -61,12 +69,16 @@ CREATE TABLE track (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     duration INTEGER NOT NULL,
     position INTEGER NOT NULL,
+    listeners_count BIGINT NOT NULL DEFAULT 0,
+    favorites_count BIGINT NOT NULL DEFAULT 0,
     FOREIGN KEY (album_id)
         REFERENCES album (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
     CONSTRAINT track_valid_duration_check CHECK (duration > 0),
-    CONSTRAINT unique_album_track_check UNIQUE (album_id, position)
+    CONSTRAINT unique_album_track_check UNIQUE (album_id, position),
+    CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
+    CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
 
 CREATE TABLE track_artist (
@@ -213,3 +225,151 @@ CREATE TABLE stream (
         ON UPDATE CASCADE,
     CONSTRAINT stream_valid_duration_check CHECK (duration >= 0)
 );
+
+CREATE OR REPLACE FUNCTION update_track_listeners_count()
+RETURNS TRIGGER AS $$
+DECLARE
+    target_id BIGINT;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        target_id := NEW.track_id;
+        UPDATE track SET listeners_count = listeners_count + 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
+    ELSIF TG_OP = 'DELETE' THEN
+        target_id := OLD.track_id;
+        UPDATE track SET listeners_count = listeners_count - 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_track_favorites_count()
+RETURNS TRIGGER AS $$
+DECLARE
+    target_id BIGINT;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        target_id := NEW.track_id;
+        UPDATE track SET favorites_count = favorites_count + 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
+    ELSIF TG_OP = 'DELETE' THEN
+        target_id := OLD.track_id;
+        UPDATE track SET favorites_count = favorites_count - 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_album_favorites_count()
+RETURNS TRIGGER AS $$
+DECLARE
+    target_id BIGINT;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        target_id := NEW.album_id;
+        UPDATE album SET favorites_count = favorites_count + 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
+    ELSIF TG_OP = 'DELETE' THEN
+        target_id := OLD.album_id;
+        UPDATE album SET favorites_count = favorites_count - 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_album_listeners_count()
+RETURNS TRIGGER AS $$
+DECLARE
+    target_id BIGINT;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        SELECT album_id INTO target_id FROM track WHERE id = NEW.track_id FOR UPDATE;
+        UPDATE album SET listeners_count = listeners_count + 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
+    ELSIF TG_OP = 'DELETE' THEN
+        SELECT album_id INTO target_id FROM track WHERE id = OLD.track_id FOR UPDATE;
+        UPDATE album SET listeners_count = listeners_count - 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_artist_favorites_count()
+RETURNS TRIGGER AS $$
+DECLARE
+    target_id BIGINT;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        target_id := NEW.artist_id;
+        UPDATE artist SET favorites_count = favorites_count + 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
+    ELSIF TG_OP = 'DELETE' THEN
+        target_id := OLD.artist_id;
+        UPDATE artist SET favorites_count = favorites_count - 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_artist_listeners_count()
+RETURNS TRIGGER AS $$
+DECLARE
+    artist_ids BIGINT[];
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        SELECT array_agg(DISTINCT ta.artist_id) INTO artist_ids
+        FROM track_artist ta
+        WHERE ta.track_id = NEW.track_id AND (ta.role = 'main' OR ta.role = 'featured')
+        FOR UPDATE;
+        
+        IF artist_ids IS NOT NULL THEN
+            FOREACH target_id IN ARRAY artist_ids LOOP
+                PERFORM pg_advisory_xact_lock(target_id);
+                UPDATE artist
+                SET listeners_count = listeners_count + 1
+                WHERE id = target_id;
+            END LOOP;
+        END IF;
+    ELSIF TG_OP = 'DELETE' THEN
+        SELECT array_agg(DISTINCT ta.artist_id) INTO artist_ids
+        FROM track_artist ta
+        WHERE ta.track_id = OLD.track_id AND (ta.role = 'main' OR ta.role = 'featured')
+        FOR UPDATE;
+        
+        IF artist_ids IS NOT NULL THEN
+            FOREACH target_id IN ARRAY artist_ids LOOP
+                PERFORM pg_advisory_xact_lock(target_id);
+                UPDATE artist
+                SET listeners_count = listeners_count - 1
+                WHERE id = target_id;
+            END LOOP;
+        END IF;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_track_listeners_count_trigger
+    AFTER INSERT OR DELETE ON stream
+    FOR EACH ROW
+    EXECUTE FUNCTION update_track_listeners_count();
+
+CREATE TRIGGER update_album_listeners_count_trigger
+    AFTER INSERT OR DELETE ON stream
+    FOR EACH ROW
+    EXECUTE FUNCTION update_album_listeners_count();
+
+CREATE TRIGGER update_track_favorites_count_trigger
+    AFTER INSERT OR DELETE ON favorite_track
+    FOR EACH ROW
+    EXECUTE FUNCTION update_track_favorites_count();
+
+CREATE TRIGGER update_album_favorites_count_trigger
+    AFTER INSERT OR DELETE ON favorite_album
+    FOR EACH ROW
+    EXECUTE FUNCTION update_album_favorites_count();
+
+CREATE TRIGGER update_artist_favorites_count_trigger
+    AFTER INSERT OR DELETE ON favorite_artist
+    FOR EACH ROW
+    EXECUTE FUNCTION update_artist_favorites_count();
+
+CREATE TRIGGER update_artist_listeners_count_trigger
+    AFTER INSERT OR DELETE ON stream
+    FOR EACH ROW
+    EXECUTE FUNCTION update_artist_listeners_count(); 

@@ -30,6 +30,8 @@ erDiagram
         BIGINT id PK
         TEXT title
         TEXT description
+        BIGINT listeners_count
+        BIGINT favorites_count
         TIMESTAMP created_at
         TEXT thumbnail_url
     }
@@ -42,6 +44,8 @@ erDiagram
         DATE release_date
         TIMESTAMP created_at
         BIGINT artist_id FK
+        BIGINT listeners_count
+        BIGINT favorites_count
     }
 
     track {
@@ -52,6 +56,8 @@ erDiagram
         TIMESTAMP created_at
         INTEGER duration
         INTEGER position
+        BIGINT listeners_count
+        BIGINT favorites_count
     }
 
     track_artist {
