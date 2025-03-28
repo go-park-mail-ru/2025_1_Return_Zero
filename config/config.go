@@ -6,10 +6,24 @@ import (
 	"github.com/spf13/viper"
 )
 
+type PostgresConfig struct {
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	User     string `mapstructure:"user"`
+	Password string `mapstructure:"password"`
+	Database string `mapstructure:"database"`
+}
+
+type RedisConfig struct {
+	Host string `mapstructure:"host"`
+	Port int    `mapstructure:"port"`
+}
 type Config struct {
 	Cors       middleware.Cors
 	Port       string `mapstructure:"port"`
 	Pagination deliveryModel.PaginationConfig
+	Postgres   PostgresConfig
+	Redis      RedisConfig
 }
 
 func LoadConfig() (*Config, error) {
