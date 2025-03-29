@@ -1,4 +1,4 @@
-CREATE TABLE user (
+CREATE TABLE IF NOT EXISTS user (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
     CONSTRAINT email_length_check CHECK (LENGTH(email) >= 5 AND LENGTH(email) <= 30),
@@ -12,7 +12,7 @@ CREATE TABLE user (
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
 );
 
-CREATE TABLE user_settings (
+CREATE TABLE IF NOT EXISTS user_settings (
     user_id BIGINT NOT NULL PRIMARY KEY,
     is_public_playlists BOOLEAN NOT NULL DEFAULT FALSE,
     is_public_minutes_listened BOOLEAN NOT NULL DEFAULT FALSE,
@@ -26,13 +26,13 @@ CREATE TABLE user_settings (
         ON UPDATE CASCADE
 );
 
-CREATE TABLE genre (
+CREATE TABLE IF NOT EXISTS genre (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
     CONSTRAINT genre_name_length_check CHECK (LENGTH(name) >= 3 AND LENGTH(name) <= 20)
 );
 
-CREATE TABLE artist (
+CREATE TABLE IF NOT EXISTS artist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     title TEXT NOT NULL,
     CONSTRAINT artist_title_length_check CHECK (LENGTH(title) >= 1 AND LENGTH(title) <= 100),
@@ -46,7 +46,7 @@ CREATE TABLE artist (
     CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
 
-CREATE TABLE album (
+CREATE TABLE IF NOT EXISTS album (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     title TEXT NOT NULL,
     CONSTRAINT album_title_length_check CHECK (LENGTH(title) >= 1 AND LENGTH(title) <= 100),
@@ -67,7 +67,7 @@ CREATE TABLE album (
     CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
 
-CREATE TABLE track (
+CREATE TABLE IF NOT EXISTS track (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     title TEXT NOT NULL,
     CONSTRAINT track_title_length_check CHECK (LENGTH(title) >= 1 AND LENGTH(title) <= 100),
@@ -89,7 +89,7 @@ CREATE TABLE track (
     CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
 
-CREATE TABLE track_artist (
+CREATE TABLE IF NOT EXISTS track_artist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
     track_id BIGINT NOT NULL,
     artist_id BIGINT NOT NULL,
@@ -106,7 +106,7 @@ CREATE TABLE track_artist (
     CONSTRAINT unique_track_artist_check UNIQUE (track_id, artist_id, role)
 );
 
-CREATE TABLE playlist (
+CREATE TABLE IF NOT EXISTS playlist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     title TEXT NOT NULL,
     CONSTRAINT playlist_title_length_check CHECK (LENGTH(title) >= 1 AND LENGTH(title) <= 100),
@@ -123,7 +123,7 @@ CREATE TABLE playlist (
     CONSTRAINT unique_user_playlist_check UNIQUE (user_id, title)
 );
 
-CREATE TABLE playlist_track (
+CREATE TABLE IF NOT EXISTS playlist_track (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     playlist_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
@@ -141,7 +141,7 @@ CREATE TABLE playlist_track (
     CONSTRAINT unique_playlist_track_check UNIQUE (playlist_id, track_id)
 );
 
-CREATE TABLE genre_track (
+CREATE TABLE IF NOT EXISTS genre_track (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     genre_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
@@ -156,7 +156,7 @@ CREATE TABLE genre_track (
     CONSTRAINT unique_genre_track_check UNIQUE (genre_id, track_id)
 );
 
-CREATE TABLE genre_album (
+CREATE TABLE IF NOT EXISTS genre_album (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     genre_id BIGINT NOT NULL,
     album_id BIGINT NOT NULL,
@@ -171,7 +171,7 @@ CREATE TABLE genre_album (
     CONSTRAINT unique_genre_album_check UNIQUE (genre_id, album_id)
 );
 
-CREATE TABLE favorite_track (
+CREATE TABLE IF NOT EXISTS favorite_track (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
@@ -187,7 +187,7 @@ CREATE TABLE favorite_track (
     CONSTRAINT unique_favorite_track_check UNIQUE (user_id, track_id)
 );
 
-CREATE TABLE favorite_album (
+CREATE TABLE IF NOT EXISTS favorite_album (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     album_id BIGINT NOT NULL,
@@ -203,7 +203,7 @@ CREATE TABLE favorite_album (
     CONSTRAINT unique_favorite_album_check UNIQUE (user_id, album_id)
 );
 
-CREATE TABLE favorite_artist (
+CREATE TABLE IF NOT EXISTS favorite_artist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     artist_id BIGINT NOT NULL,
@@ -219,7 +219,7 @@ CREATE TABLE favorite_artist (
     CONSTRAINT unique_favorite_artist_check UNIQUE (user_id, artist_id)
 );
 
-CREATE TABLE stream (
+CREATE TABLE IF NOT EXISTS stream (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
