@@ -1,15 +1,17 @@
-CREATE TABLE IF NOT EXISTS user (
+-- Write your migrate up statements here
+
+CREATE TABLE IF NOT EXISTS "user" (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
     CONSTRAINT email_length_check CHECK (LENGTH(email) >= 5 AND LENGTH(email) <= 30),
-    CONSTRAINT user_valid_email_check CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+    CONSTRAINT user_valid_email_check CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
     username TEXT NOT NULL UNIQUE,
     CONSTRAINT username_length_check CHECK (LENGTH(username) >= 3 AND LENGTH(username) <= 20),
     thumbnail_url TEXT NOT NULL DEFAULT '/default_avatar.png',
     password_hash TEXT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE TABLE IF NOT EXISTS user_settings (
@@ -21,7 +23,7 @@ CREATE TABLE IF NOT EXISTS user_settings (
     is_public_favorite_albums BOOLEAN NOT NULL DEFAULT FALSE,
     is_public_favorite_artists BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (user_id)
-        REFERENCES user (id)
+        REFERENCES "user" (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 );
@@ -117,7 +119,7 @@ CREATE TABLE IF NOT EXISTS playlist (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (user_id)
-        REFERENCES user (id)
+        REFERENCES "user" (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
     CONSTRAINT unique_user_playlist_check UNIQUE (user_id, title)
@@ -177,7 +179,7 @@ CREATE TABLE IF NOT EXISTS favorite_track (
     track_id BIGINT NOT NULL,
     added_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (user_id)
-        REFERENCES user (id)
+        REFERENCES "user" (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
     FOREIGN KEY (track_id)
@@ -193,7 +195,7 @@ CREATE TABLE IF NOT EXISTS favorite_album (
     album_id BIGINT NOT NULL,
     added_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (user_id)
-        REFERENCES user (id)
+        REFERENCES "user" (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
     FOREIGN KEY (album_id)
@@ -209,7 +211,7 @@ CREATE TABLE IF NOT EXISTS favorite_artist (
     artist_id BIGINT NOT NULL,
     added_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (user_id)
-        REFERENCES user (id)
+        REFERENCES "user" (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
     FOREIGN KEY (artist_id)
@@ -226,7 +228,7 @@ CREATE TABLE IF NOT EXISTS stream (
     played_at TIMESTAMP NOT NULL DEFAULT NOW(),
     duration INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (user_id)
-        REFERENCES user (id)
+        REFERENCES "user" (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
     FOREIGN KEY (track_id)
@@ -320,6 +322,7 @@ CREATE OR REPLACE FUNCTION update_artist_listeners_count()
 RETURNS TRIGGER AS $$
 DECLARE
     artist_ids BIGINT[];
+    target_id BIGINT;
 BEGIN
     IF TG_OP = 'INSERT' THEN
         SELECT array_agg(DISTINCT ta.artist_id) INTO artist_ids
@@ -383,3 +386,35 @@ CREATE TRIGGER update_artist_listeners_count_trigger
     AFTER INSERT OR DELETE ON stream
     FOR EACH ROW
     EXECUTE FUNCTION update_artist_listeners_count(); 
+
+---- create above / drop below ----
+
+DROP TABLE IF EXISTS "user";
+DROP TABLE IF EXISTS user_settings;
+DROP TABLE IF EXISTS genre;
+DROP TABLE IF EXISTS artist;
+DROP TABLE IF EXISTS album;
+DROP TABLE IF EXISTS track;
+DROP TABLE IF EXISTS track_artist;
+DROP TABLE IF EXISTS playlist;
+DROP TABLE IF EXISTS playlist_track;
+DROP TABLE IF EXISTS genre_track;
+DROP TABLE IF EXISTS genre_album;
+DROP TABLE IF EXISTS favorite_track;
+DROP TABLE IF EXISTS favorite_album;
+DROP TABLE IF EXISTS favorite_artist;
+DROP TABLE IF EXISTS stream;
+
+DROP TRIGGER IF EXISTS update_track_listeners_count_trigger;
+DROP TRIGGER IF EXISTS update_album_listeners_count_trigger;
+DROP TRIGGER IF EXISTS update_track_favorites_count_trigger;
+DROP TRIGGER IF EXISTS update_album_favorites_count_trigger;
+DROP TRIGGER IF EXISTS update_artist_favorites_count_trigger;
+DROP TRIGGER IF EXISTS update_artist_listeners_count_trigger;
+
+DROP FUNCTION IF EXISTS update_track_listeners_count;
+DROP FUNCTION IF EXISTS update_album_listeners_count;
+DROP FUNCTION IF EXISTS update_track_favorites_count;
+DROP FUNCTION IF EXISTS update_album_favorites_count;
+DROP FUNCTION IF EXISTS update_artist_favorites_count;
+DROP FUNCTION IF EXISTS update_artist_listeners_count;
