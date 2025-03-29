@@ -18,6 +18,7 @@ type RedisConfig struct {
 	Host string `mapstructure:"host"`
 	Port int    `mapstructure:"port"`
 }
+
 type Config struct {
 	Cors       middleware.Cors
 	Port       string `mapstructure:"port"`
