@@ -51,6 +51,14 @@ func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 
 	tracks := make([]*deliveryModel.Track, 0, len(usecaseTracks))
 	for _, usecaseTrack := range usecaseTracks {
+		artists := make([]*deliveryModel.TrackArtist, 0, len(usecaseTrack.Artists))
+		for _, artist := range usecaseTrack.Artists {
+			artists = append(artists, &deliveryModel.TrackArtist{
+				ID:    artist.ID,
+				Title: artist.Title,
+				Role:  artist.Role,
+			})
+		}
 		tracks = append(tracks, &deliveryModel.Track{
 			ID:        usecaseTrack.ID,
 			Title:     usecaseTrack.Title,
@@ -58,8 +66,7 @@ func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 			Duration:  usecaseTrack.Duration,
 			AlbumID:   usecaseTrack.AlbumID,
 			Album:     usecaseTrack.Album,
-			ArtistID:  usecaseTrack.ArtistID,
-			Artist:    usecaseTrack.Artist,
+			Artists:   artists,
 		})
 	}
 	if err != nil {

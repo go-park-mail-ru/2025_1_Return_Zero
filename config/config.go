@@ -7,16 +7,10 @@ import (
 )
 
 type PostgresConfig struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	User     string `mapstructure:"user"`
-	Password string `mapstructure:"password"`
-	Database string `mapstructure:"database"`
-}
-
-type RedisConfig struct {
-	Host string `mapstructure:"host"`
-	Port int    `mapstructure:"port"`
+	DSN          string `mapstructure:"postgres_dsn"`
+	MaxOpenConns int    `mapstructure:"max_open_conns"`
+	MaxIdleConns int    `mapstructure:"max_idle_conns"`
+	MaxLifetime  int    `mapstructure:"max_lifetime"`
 }
 
 type Config struct {
@@ -24,13 +18,13 @@ type Config struct {
 	Port       string `mapstructure:"port"`
 	Pagination deliveryModel.PaginationConfig
 	Postgres   PostgresConfig
-	Redis      RedisConfig
 }
 
 func LoadConfig() (*Config, error) {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
+	viper.AutomaticEnv()
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err

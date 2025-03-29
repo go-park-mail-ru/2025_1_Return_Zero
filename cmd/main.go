@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	_ "github.com/go-park-mail-ru/2025_1_Return_Zero/docs"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/postgres"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	albumHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/delivery/http"
 	albumRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/repository"
@@ -13,6 +14,7 @@ import (
 	artistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/delivery/http"
 	artistRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/repository"
 	artistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/usecase"
+	genreRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/genre/repository"
 	trackHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/delivery/http"
 	trackRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/repository"
 	trackUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/usecase"
@@ -26,14 +28,21 @@ import (
 // @host returnzero.ru
 // @BasePath /
 func main() {
-	config, err := config.LoadConfig()
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
+	db, err := postgres.ConnectPostgres(cfg.Postgres)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer db.Close()
+
 	r := mux.NewRouter()
-	fmt.Printf("Server starting on port %s...\n", config.Port)
+	fmt.Printf("Server starting on port %s...\n", cfg.Port)
 
 	r.PathPrefix("/docs/").Handler(httpSwagger.Handler(
 		httpSwagger.URL("/docs/doc.json"),
@@ -44,11 +53,11 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.RequestId)
 	r.Use(middleware.AccessLog)
-	r.Use(config.Cors.Middleware)
+	r.Use(cfg.Cors.Middleware)
 
-	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackMemoryRepository(), artistRepository.NewArtistMemoryRepository(), albumRepository.NewAlbumMemoryRepository()), config)
-	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumMemoryRepository(), artistRepository.NewArtistMemoryRepository()), config)
-	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistRepository.NewArtistMemoryRepository()), config)
+	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(db), artistRepository.NewArtistPostgresRepository(db), albumRepository.NewAlbumPostgresRepository(db)), cfg)
+	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumPostgresRepository(db), artistRepository.NewArtistPostgresRepository(db), genreRepository.NewGenrePostgresRepository(db)), cfg)
+	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistRepository.NewArtistPostgresRepository(db)), cfg)
 
 	r.HandleFunc("/tracks", trackHandler.GetAllTracks).Methods("GET")
 	r.HandleFunc("/albums", albumHandler.GetAllAlbums).Methods("GET")
@@ -61,7 +70,7 @@ func main() {
 	staticFileHandler := http.StripPrefix("/static/", http.FileServer(http.Dir("./public")))
 	r.PathPrefix("/static/").Handler(staticFileHandler)
 
-	err = http.ListenAndServe(config.Port, r)
+	err = http.ListenAndServe(cfg.Port, r)
 	if err != nil {
 		fmt.Println(err)
 	}

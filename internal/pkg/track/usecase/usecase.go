@@ -32,12 +32,21 @@ func (u trackUsecase) GetAllTracks(filters *usecaseModel.TrackFilters) ([]*useca
 
 	tracks := make([]*usecaseModel.Track, 0, len(repoTracks))
 	for _, repoTrack := range repoTracks {
-		repoArtist, err := u.artistRepo.GetArtistByID(repoTrack.ArtistID)
+		repoArtists, err := u.artistRepo.GetArtistsByTrackID(repoTrack.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		album, err := u.albumRepo.GetAlbumByID(repoTrack.AlbumID)
+		artists := make([]*usecaseModel.TrackArtist, 0, len(repoArtists))
+		for _, repoArtist := range repoArtists {
+			artists = append(artists, &usecaseModel.TrackArtist{
+				ID:    repoArtist.ID,
+				Title: repoArtist.Title,
+				Role:  repoArtist.Role,
+			})
+		}
+
+		albumTitle, err := u.albumRepo.GetAlbumTitleByID(repoTrack.AlbumID)
 		if err != nil {
 			return nil, err
 		}
@@ -47,10 +56,9 @@ func (u trackUsecase) GetAllTracks(filters *usecaseModel.TrackFilters) ([]*useca
 			Title:     repoTrack.Title,
 			Thumbnail: repoTrack.Thumbnail,
 			Duration:  repoTrack.Duration,
-			Artist:    repoArtist.Title,
-			ArtistID:  repoArtist.ID,
-			Album:     album.Title,
-			AlbumID:   album.ID,
+			Artists:   artists,
+			Album:     albumTitle,
+			AlbumID:   repoTrack.AlbumID,
 		}
 		tracks = append(tracks, track)
 	}

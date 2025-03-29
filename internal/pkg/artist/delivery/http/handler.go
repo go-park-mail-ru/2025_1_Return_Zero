@@ -58,9 +58,12 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 	artists := make([]*deliveryModel.Artist, 0, len(usecaseArtists))
 	for _, usecaseArtist := range usecaseArtists {
 		artists = append(artists, &deliveryModel.Artist{
-			ID:        usecaseArtist.ID,
-			Title:     usecaseArtist.Title,
-			Thumbnail: usecaseArtist.Thumbnail,
+			ID:          usecaseArtist.ID,
+			Title:       usecaseArtist.Title,
+			Thumbnail:   usecaseArtist.Thumbnail,
+			Listeners:   usecaseArtist.Listeners,
+			Favorites:   usecaseArtist.Favorites,
+			Description: usecaseArtist.Description,
 		})
 	}
 	helpers.WriteSuccessResponse(w, http.StatusOK, artists, nil)

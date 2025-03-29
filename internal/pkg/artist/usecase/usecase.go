@@ -30,9 +30,12 @@ func (u artistUsecase) GetAllArtists(filters *usecaseModel.ArtistFilters) ([]*us
 	artists := make([]*usecaseModel.Artist, 0, len(repoArtists))
 	for _, repoArtist := range repoArtists {
 		artists = append(artists, &usecaseModel.Artist{
-			ID:        repoArtist.ID,
-			Title:     repoArtist.Title,
-			Thumbnail: repoArtist.Thumbnail,
+			ID:          repoArtist.ID,
+			Title:       repoArtist.Title,
+			Thumbnail:   repoArtist.Thumbnail,
+			Listeners:   repoArtist.Listeners,
+			Favorites:   repoArtist.Favorites,
+			Description: repoArtist.Description,
 		})
 	}
 	return artists, nil

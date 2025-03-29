@@ -1,9 +1,12 @@
 package usecase
 
 type Artist struct {
-	ID        uint
-	Title     string
-	Thumbnail string
+	ID          int64
+	Title       string
+	Description string
+	Thumbnail   string
+	Listeners   int64
+	Favorites   int64
 }
 
 type ArtistFilters struct {

@@ -238,183 +238,20 @@ CREATE TABLE IF NOT EXISTS stream (
     CONSTRAINT stream_valid_duration_check CHECK (duration >= 0)
 );
 
-CREATE OR REPLACE FUNCTION update_track_listeners_count()
-RETURNS TRIGGER AS $$
-DECLARE
-    target_id BIGINT;
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        target_id := NEW.track_id;
-        UPDATE track SET listeners_count = listeners_count + 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
-    ELSIF TG_OP = 'DELETE' THEN
-        target_id := OLD.track_id;
-        UPDATE track SET listeners_count = listeners_count - 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
-    END IF;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION update_track_favorites_count()
-RETURNS TRIGGER AS $$
-DECLARE
-    target_id BIGINT;
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        target_id := NEW.track_id;
-        UPDATE track SET favorites_count = favorites_count + 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
-    ELSIF TG_OP = 'DELETE' THEN
-        target_id := OLD.track_id;
-        UPDATE track SET favorites_count = favorites_count - 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
-    END IF;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION update_album_favorites_count()
-RETURNS TRIGGER AS $$
-DECLARE
-    target_id BIGINT;
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        target_id := NEW.album_id;
-        UPDATE album SET favorites_count = favorites_count + 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
-    ELSIF TG_OP = 'DELETE' THEN
-        target_id := OLD.album_id;
-        UPDATE album SET favorites_count = favorites_count - 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
-    END IF;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION update_album_listeners_count()
-RETURNS TRIGGER AS $$
-DECLARE
-    target_id BIGINT;
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        SELECT album_id INTO target_id FROM track WHERE id = NEW.track_id FOR UPDATE;
-        UPDATE album SET listeners_count = listeners_count + 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
-    ELSIF TG_OP = 'DELETE' THEN
-        SELECT album_id INTO target_id FROM track WHERE id = OLD.track_id FOR UPDATE;
-        UPDATE album SET listeners_count = listeners_count - 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
-    END IF;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION update_artist_favorites_count()
-RETURNS TRIGGER AS $$
-DECLARE
-    target_id BIGINT;
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        target_id := NEW.artist_id;
-        UPDATE artist SET favorites_count = favorites_count + 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
-    ELSIF TG_OP = 'DELETE' THEN
-        target_id := OLD.artist_id;
-        UPDATE artist SET favorites_count = favorites_count - 1 WHERE id = target_id AND pg_try_advisory_xact_lock(target_id);
-    END IF;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION update_artist_listeners_count()
-RETURNS TRIGGER AS $$
-DECLARE
-    artist_ids BIGINT[];
-    target_id BIGINT;
-BEGIN
-    IF TG_OP = 'INSERT' THEN
-        SELECT array_agg(DISTINCT ta.artist_id) INTO artist_ids
-        FROM track_artist ta
-        WHERE ta.track_id = NEW.track_id AND (ta.role = 'main' OR ta.role = 'featured')
-        FOR UPDATE;
-        
-        IF artist_ids IS NOT NULL THEN
-            FOREACH target_id IN ARRAY artist_ids LOOP
-                PERFORM pg_advisory_xact_lock(target_id);
-                UPDATE artist
-                SET listeners_count = listeners_count + 1
-                WHERE id = target_id;
-            END LOOP;
-        END IF;
-    ELSIF TG_OP = 'DELETE' THEN
-        SELECT array_agg(DISTINCT ta.artist_id) INTO artist_ids
-        FROM track_artist ta
-        WHERE ta.track_id = OLD.track_id AND (ta.role = 'main' OR ta.role = 'featured')
-        FOR UPDATE;
-        
-        IF artist_ids IS NOT NULL THEN
-            FOREACH target_id IN ARRAY artist_ids LOOP
-                PERFORM pg_advisory_xact_lock(target_id);
-                UPDATE artist
-                SET listeners_count = listeners_count - 1
-                WHERE id = target_id;
-            END LOOP;
-        END IF;
-    END IF;
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER update_track_listeners_count_trigger
-    AFTER INSERT OR DELETE ON stream
-    FOR EACH ROW
-    EXECUTE FUNCTION update_track_listeners_count();
-
-CREATE TRIGGER update_album_listeners_count_trigger
-    AFTER INSERT OR DELETE ON stream
-    FOR EACH ROW
-    EXECUTE FUNCTION update_album_listeners_count();
-
-CREATE TRIGGER update_track_favorites_count_trigger
-    AFTER INSERT OR DELETE ON favorite_track
-    FOR EACH ROW
-    EXECUTE FUNCTION update_track_favorites_count();
-
-CREATE TRIGGER update_album_favorites_count_trigger
-    AFTER INSERT OR DELETE ON favorite_album
-    FOR EACH ROW
-    EXECUTE FUNCTION update_album_favorites_count();
-
-CREATE TRIGGER update_artist_favorites_count_trigger
-    AFTER INSERT OR DELETE ON favorite_artist
-    FOR EACH ROW
-    EXECUTE FUNCTION update_artist_favorites_count();
-
-CREATE TRIGGER update_artist_listeners_count_trigger
-    AFTER INSERT OR DELETE ON stream
-    FOR EACH ROW
-    EXECUTE FUNCTION update_artist_listeners_count(); 
-
 ---- create above / drop below ----
 
-DROP TABLE IF EXISTS "user";
-DROP TABLE IF EXISTS user_settings;
-DROP TABLE IF EXISTS genre;
-DROP TABLE IF EXISTS artist;
-DROP TABLE IF EXISTS album;
-DROP TABLE IF EXISTS track;
-DROP TABLE IF EXISTS track_artist;
-DROP TABLE IF EXISTS playlist;
-DROP TABLE IF EXISTS playlist_track;
-DROP TABLE IF EXISTS genre_track;
-DROP TABLE IF EXISTS genre_album;
-DROP TABLE IF EXISTS favorite_track;
-DROP TABLE IF EXISTS favorite_album;
-DROP TABLE IF EXISTS favorite_artist;
 DROP TABLE IF EXISTS stream;
-
-DROP TRIGGER IF EXISTS update_track_listeners_count_trigger;
-DROP TRIGGER IF EXISTS update_album_listeners_count_trigger;
-DROP TRIGGER IF EXISTS update_track_favorites_count_trigger;
-DROP TRIGGER IF EXISTS update_album_favorites_count_trigger;
-DROP TRIGGER IF EXISTS update_artist_favorites_count_trigger;
-DROP TRIGGER IF EXISTS update_artist_listeners_count_trigger;
-
-DROP FUNCTION IF EXISTS update_track_listeners_count;
-DROP FUNCTION IF EXISTS update_album_listeners_count;
-DROP FUNCTION IF EXISTS update_track_favorites_count;
-DROP FUNCTION IF EXISTS update_album_favorites_count;
-DROP FUNCTION IF EXISTS update_artist_favorites_count;
-DROP FUNCTION IF EXISTS update_artist_listeners_count;
+DROP TABLE IF EXISTS favorite_artist;
+DROP TABLE IF EXISTS favorite_album;
+DROP TABLE IF EXISTS favorite_track;
+DROP TABLE IF EXISTS genre_album;
+DROP TABLE IF EXISTS genre_track;
+DROP TABLE IF EXISTS playlist_track;
+DROP TABLE IF EXISTS playlist;
+DROP TABLE IF EXISTS track_artist;
+DROP TABLE IF EXISTS track;
+DROP TABLE IF EXISTS album;
+DROP TABLE IF EXISTS artist;
+DROP TABLE IF EXISTS genre;
+DROP TABLE IF EXISTS user_settings;
+DROP TABLE IF EXISTS "user";

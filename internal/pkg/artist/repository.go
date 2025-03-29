@@ -6,5 +6,7 @@ import (
 
 type Repository interface {
 	GetAllArtists(filters *repoModel.ArtistFilters) ([]*repoModel.Artist, error)
-	GetArtistByID(id uint) (*repoModel.Artist, error)
+	GetArtistByID(id int64) (*repoModel.Artist, error)
+	GetArtistTitleByID(id int64) (string, error)
+	GetArtistsByTrackID(id int64) ([]*repoModel.ArtistWithRole, error)
 }

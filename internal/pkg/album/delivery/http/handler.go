@@ -56,9 +56,11 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 
 	albums := make([]*deliveryModel.Album, 0, len(usecaseAlbums))
 	for _, usecaseAlbum := range usecaseAlbums {
+		albumType := deliveryModel.AlbumType(usecaseAlbum.Type)
 		albums = append(albums, &deliveryModel.Album{
 			ID:        usecaseAlbum.ID,
 			Title:     usecaseAlbum.Title,
+			Type:      albumType,
 			Thumbnail: usecaseAlbum.Thumbnail,
 			Artist:    usecaseAlbum.Artist,
 			ArtistID:  usecaseAlbum.ArtistID,
