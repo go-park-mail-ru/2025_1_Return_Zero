@@ -5,5 +5,6 @@ import (
 )
 
 type Usecase interface {
+	GetArtistByID(id int64) (*usecaseModel.ArtistDetailed, error)
 	GetAllArtists(filters *usecaseModel.ArtistFilters) ([]*usecaseModel.Artist, error)
 }

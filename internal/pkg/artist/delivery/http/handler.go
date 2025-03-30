@@ -2,6 +2,7 @@ package artist
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
@@ -9,6 +10,7 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
+	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 )
 
@@ -61,10 +63,30 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 			ID:          usecaseArtist.ID,
 			Title:       usecaseArtist.Title,
 			Thumbnail:   usecaseArtist.Thumbnail,
-			Listeners:   usecaseArtist.Listeners,
-			Favorites:   usecaseArtist.Favorites,
 			Description: usecaseArtist.Description,
 		})
 	}
 	helpers.WriteSuccessResponse(w, http.StatusOK, artists, nil)
+}
+
+func (h *ArtistHandler) GetArtistByID(w http.ResponseWriter, r *http.Request) {
+	logger := middleware.LoggerFromContext(r.Context())
+
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		logger.Error("failed to parse artist ID", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	usecaseArtist, err := h.usecase.GetArtistByID(id)
+	if err != nil {
+		logger.Error("failed to get artist", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+
+	helpers.WriteSuccessResponse(w, http.StatusOK, usecaseArtist, nil)
 }

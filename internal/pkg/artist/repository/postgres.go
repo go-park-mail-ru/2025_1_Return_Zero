@@ -10,13 +10,13 @@ import (
 
 const (
 	GetAllArtistsQuery = `
-		SELECT id, title, description, thumbnail_url, listeners_count, favorites_count
+		SELECT id, title, description, thumbnail_url
 		FROM artist
-		ORDER BY listeners_count DESC, favorites_count DESC, id DESC
+		ORDER BY created_at DESC
 		LIMIT $1 OFFSET $2
 	`
 	GetArtistByIDQuery = `
-		SELECT id, title, description, thumbnail_url, listeners_count, favorites_count
+		SELECT id, title, description, thumbnail_url
 		FROM artist
 		WHERE id = $1
 	`
@@ -30,7 +30,19 @@ const (
 		FROM artist a
 		JOIN track_artist ta ON ta.artist_id = a.id
 		WHERE ta.track_id = $1
-		ORDER BY a.listeners_count DESC, a.favorites_count DESC, a.id DESC
+		ORDER BY a.id DESC
+	`
+	GetArtistListenersCountQuery = `
+		SELECT COUNT(*)
+		FROM stream
+		JOIN track ON stream.track_id = track.id
+		JOIN track_artist ON track.id = track_artist.track_id
+		WHERE track_artist.artist_id = $1
+	`
+	GetArtistFavoritesCountQuery = `
+		SELECT COUNT(*)
+		FROM favorite_artist
+		WHERE artist_id = $1
 	`
 )
 
@@ -52,7 +64,7 @@ func (r *artistPostgresRepository) GetAllArtists(filters *repoModel.ArtistFilter
 	artists := make([]*repoModel.Artist, 0)
 	for rows.Next() {
 		var artist repoModel.Artist
-		err = rows.Scan(&artist.ID, &artist.Title, &artist.Description, &artist.Thumbnail, &artist.Listeners, &artist.Favorites)
+		err = rows.Scan(&artist.ID, &artist.Title, &artist.Description, &artist.Thumbnail)
 		if err != nil {
 			return nil, err
 		}
@@ -66,7 +78,7 @@ func (r *artistPostgresRepository) GetArtistByID(id int64) (*repoModel.Artist, e
 	row := r.db.QueryRow(GetArtistByIDQuery, id)
 
 	var artist repoModel.Artist
-	err := row.Scan(&artist.ID, &artist.Title, &artist.Description, &artist.Thumbnail, &artist.Listeners, &artist.Favorites)
+	err := row.Scan(&artist.ID, &artist.Title, &artist.Description, &artist.Thumbnail)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -111,4 +123,28 @@ func (r *artistPostgresRepository) GetArtistsByTrackID(id int64) ([]*repoModel.A
 	}
 
 	return artists, nil
+}
+
+func (r *artistPostgresRepository) GetArtistListenersCount(id int64) (int64, error) {
+	row := r.db.QueryRow(GetArtistListenersCountQuery, id)
+
+	var count int64
+	err := row.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (r *artistPostgresRepository) GetArtistFavoritesCount(id int64) (int64, error) {
+	row := r.db.QueryRow(GetArtistFavoritesCountQuery, id)
+
+	var count int64
+	err := row.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }

@@ -1,3 +1,8 @@
+ifneq (,$(wildcard ./.env))
+	include .env
+	export
+endif
+
 run:
 	go run cmd/main.go
 
@@ -8,17 +13,17 @@ migrate_up:
 	tern migrate -c db/migrations/tern.conf --migrations db/migrations
 
 migrate_down:
-	tern migrate -c db/migrations/tern.conf --migrations db/migrations -d -1
+	tern migrate -c db/migrations/tern.conf --migrations db/migrations -d 0
 
 populate:
 	make migrate_down
 	make migrate_up
 	go run db/populate/main.go -file db/populate/data.sql
 
-docker_up:
+docker-up:
 	docker compose up
 
-docker_remove:
+docker-remove:
 	docker rm $(docker ps -a -q) && docker volume prune -f
 
 clean:

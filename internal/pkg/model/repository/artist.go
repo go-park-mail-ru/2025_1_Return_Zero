@@ -11,8 +11,6 @@ type Artist struct {
 	Title       string `sql:"title"`
 	Description string `sql:"description"`
 	Thumbnail   string `sql:"thumbnail_url"`
-	Listeners   int64  `sql:"listeners_count"`
-	Favorites   int64  `sql:"favorites_count"`
 }
 
 type ArtistWithRole struct {

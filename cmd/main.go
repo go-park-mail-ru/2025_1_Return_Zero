@@ -62,6 +62,7 @@ func main() {
 	r.HandleFunc("/tracks", trackHandler.GetAllTracks).Methods("GET")
 	r.HandleFunc("/albums", albumHandler.GetAllAlbums).Methods("GET")
 	r.HandleFunc("/artists", artistHandler.GetAllArtists).Methods("GET")
+	r.HandleFunc("/artists/{id}", artistHandler.GetArtistByID).Methods("GET")
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./public/index.html")

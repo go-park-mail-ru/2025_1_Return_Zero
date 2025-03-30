@@ -11,6 +11,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_HOST: ${POSTGRES_HOST}
     ports:
       - '${POSTGRES_PORT}:${POSTGRES_PORT}'
     volumes:
@@ -38,3 +39,22 @@ services:
     ports:
       - '6379:6379'
     tty: true
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: ReturnZeroAPI
+    environment:
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: postgres
+    restart: always
+    ports:
+      - '8080:8080'
+    tty: true
+    depends_on:
+      - postgres
+      - redis

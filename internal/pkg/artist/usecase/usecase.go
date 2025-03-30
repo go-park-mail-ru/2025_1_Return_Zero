@@ -14,6 +14,34 @@ type artistUsecase struct {
 	repo artist.Repository
 }
 
+func (u artistUsecase) GetArtistByID(id int64) (*usecaseModel.ArtistDetailed, error) {
+	repoArtist, err := u.repo.GetArtistByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	listeners, err := u.repo.GetArtistListenersCount(id)
+	if err != nil {
+		return nil, err
+	}
+
+	favorites, err := u.repo.GetArtistFavoritesCount(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &usecaseModel.ArtistDetailed{
+		Artist: usecaseModel.Artist{
+			ID:          repoArtist.ID,
+			Title:       repoArtist.Title,
+			Thumbnail:   repoArtist.Thumbnail,
+			Description: repoArtist.Description,
+		},
+		Listeners: listeners,
+		Favorites: favorites,
+	}, nil
+}
+
 func (u artistUsecase) GetAllArtists(filters *usecaseModel.ArtistFilters) ([]*usecaseModel.Artist, error) {
 	repoFilters := &repoModel.ArtistFilters{
 		Pagination: &repoModel.Pagination{
@@ -33,8 +61,6 @@ func (u artistUsecase) GetAllArtists(filters *usecaseModel.ArtistFilters) ([]*us
 			ID:          repoArtist.ID,
 			Title:       repoArtist.Title,
 			Thumbnail:   repoArtist.Thumbnail,
-			Listeners:   repoArtist.Listeners,
-			Favorites:   repoArtist.Favorites,
 			Description: repoArtist.Description,
 		})
 	}

@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS user_settings (
     is_public_favorite_tracks BOOLEAN NOT NULL DEFAULT FALSE,
     is_public_favorite_albums BOOLEAN NOT NULL DEFAULT FALSE,
     is_public_favorite_artists BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (user_id)
         REFERENCES "user" (id)
         ON DELETE CASCADE
@@ -31,6 +33,8 @@ CREATE TABLE IF NOT EXISTS user_settings (
 CREATE TABLE IF NOT EXISTS genre (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT genre_name_length_check CHECK (LENGTH(name) >= 3 AND LENGTH(name) <= 20)
 );
 
@@ -43,6 +47,7 @@ CREATE TABLE IF NOT EXISTS artist (
     listeners_count BIGINT NOT NULL DEFAULT 0,
     favorites_count BIGINT NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     thumbnail_url TEXT NOT NULL DEFAULT '/default_artist.png',
     CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
     CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
@@ -56,6 +61,7 @@ CREATE TABLE IF NOT EXISTS album (
     thumbnail_url TEXT NOT NULL DEFAULT '/default_album.png',
     release_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     artist_id BIGINT NOT NULL,
     listeners_count BIGINT NOT NULL DEFAULT 0,
     favorites_count BIGINT NOT NULL DEFAULT 0,
@@ -77,6 +83,7 @@ CREATE TABLE IF NOT EXISTS track (
     file_url TEXT NOT NULL DEFAULT '',
     album_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     duration INTEGER NOT NULL,
     position INTEGER NOT NULL,
     listeners_count BIGINT NOT NULL DEFAULT 0,
@@ -96,6 +103,8 @@ CREATE TABLE IF NOT EXISTS track_artist (
     track_id BIGINT NOT NULL,
     artist_id BIGINT NOT NULL,
     role TEXT NOT NULL DEFAULT 'main',
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (track_id) 
         REFERENCES track (id) 
         ON DELETE CASCADE 
@@ -130,7 +139,8 @@ CREATE TABLE IF NOT EXISTS playlist_track (
     playlist_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
     position BIGINT NOT NULL,
-    added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (playlist_id)
         REFERENCES playlist (id)
         ON DELETE CASCADE
@@ -147,6 +157,8 @@ CREATE TABLE IF NOT EXISTS genre_track (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     genre_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (genre_id) 
         REFERENCES genre (id) 
         ON DELETE CASCADE 
@@ -162,6 +174,8 @@ CREATE TABLE IF NOT EXISTS genre_album (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     genre_id BIGINT NOT NULL,
     album_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (genre_id) 
         REFERENCES genre (id) 
         ON DELETE CASCADE 
@@ -177,7 +191,8 @@ CREATE TABLE IF NOT EXISTS favorite_track (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
-    added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (user_id)
         REFERENCES "user" (id)
         ON DELETE CASCADE
@@ -193,7 +208,8 @@ CREATE TABLE IF NOT EXISTS favorite_album (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     album_id BIGINT NOT NULL,
-    added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (user_id)
         REFERENCES "user" (id)
         ON DELETE CASCADE
@@ -209,7 +225,8 @@ CREATE TABLE IF NOT EXISTS favorite_artist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     artist_id BIGINT NOT NULL,
-    added_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (user_id)
         REFERENCES "user" (id)
         ON DELETE CASCADE
@@ -225,7 +242,8 @@ CREATE TABLE IF NOT EXISTS stream (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
-    played_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     duration INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (user_id)
         REFERENCES "user" (id)
@@ -237,6 +255,21 @@ CREATE TABLE IF NOT EXISTS stream (
         ON UPDATE CASCADE,
     CONSTRAINT stream_valid_duration_check CHECK (duration >= 0)
 );
+
+CREATE OR REPLACE FUNCTION create_user_settings()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO user_settings (user_id)
+    VALUES (NEW.id);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_create_user_settings
+AFTER INSERT ON "user"
+FOR EACH ROW
+EXECUTE FUNCTION create_user_settings();
+
 
 ---- create above / drop below ----
 
@@ -255,3 +288,5 @@ DROP TABLE IF EXISTS artist;
 DROP TABLE IF EXISTS genre;
 DROP TABLE IF EXISTS user_settings;
 DROP TABLE IF EXISTS "user";
+DROP TRIGGER IF EXISTS trigger_create_user_settings ON "user";
+DROP FUNCTION IF EXISTS create_user_settings();
