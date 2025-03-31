@@ -1,14 +1,7 @@
-package model
-
-type User struct {
-	ID       uint   `json:"-"`
-	Username string `json:"username"`
-	Password string `json:"password,omitempty"`
-	Email    string `json:"email" valid:"email"`
-}
+package delivery
 
 type UserToFront struct {
-	ID       uint   `json:"-"`
+	ID       int64  `json:"-"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
 }

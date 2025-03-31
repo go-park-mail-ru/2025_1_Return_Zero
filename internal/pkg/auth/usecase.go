@@ -1,11 +1,7 @@
 package auth
 
-import (
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
-)
-
 type Usecase interface { 
-	CreateSession(ID uint) string
+	CreateSession(ID int64) string
 	DeleteSession(SID string)
-	GetSession(SID string) (*model.Session, error)
+	GetSession(SID string) (int64, error)
 }

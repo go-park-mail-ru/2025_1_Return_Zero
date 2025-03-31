@@ -1,12 +1,12 @@
 package user
 
 import (
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
 
 type Usecase interface {
-	CreateUser(regData *model.RegisterData) (*model.UserToFront, string, error)
-	GetUserBySID(SID string) (*model.UserToFront, error)
-	LoginUser(logData *model.LoginData) (*model.UserToFront, string, error)
+	CreateUser(user *usecaseModel.User) (*usecaseModel.User, string, error)
+	GetUserBySID(SID string) (*usecaseModel.User, error)
+	LoginUser(user *usecaseModel.User) (*usecaseModel.User, string, error)
 	Logout(SID string)
 }

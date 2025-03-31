@@ -1,12 +1,20 @@
 package user
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
+	"github.com/asaskevich/govalidator"
+
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
+	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
+)
+
+var (
+	ErrValidationFailed = errors.New("validation failed")
 )
 
 type UserHandler struct {
@@ -19,14 +27,50 @@ func NewUserHandler(usecase user.Usecase) *UserHandler {
 	}
 }
 
+func registerToUsecaseModel(user *deliveryModel.RegisterData) *usecaseModel.User {
+	return &usecaseModel.User{
+		Username: user.Username,
+		Email:    user.Email,
+		Password: user.Password,
+	}
+}
+
+func loginToUsecaseModel(user *deliveryModel.LoginData) *usecaseModel.User {
+	return &usecaseModel.User{
+		Username: user.Username,
+		Email:    user.Email,
+		Password: user.Password,
+	}
+}
+
+func toUserToFront(user *usecaseModel.User) *deliveryModel.UserToFront {
+	return &deliveryModel.UserToFront{
+		Username: user.Username,
+		Email:    user.Email,
+	}
+}
+
+func validateData(data interface{}) (bool, error) {
+	result, err := govalidator.ValidateStruct(data)
+	if err != nil {
+		return false, err
+	}
+	return result, nil
+}
+
 func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
-	regData := &model.RegisterData{}
+	regData := &deliveryModel.RegisterData{}
 	err := helpers.ReadJSON(w, r, regData)
 	if err != nil {
 		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	user, sessionId, err := h.usecase.CreateUser(regData)
+	isValid, err := validateData(regData)
+	if err != nil || !isValid {
+		helpers.WriteJSONError(w, http.StatusBadRequest, ErrValidationFailed.Error())
+		return
+	}
+	user, sessionId, err := h.usecase.CreateUser(registerToUsecaseModel(regData))
 	if err != nil {
 		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
@@ -38,7 +82,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	}
 	http.SetCookie(w, cookie)
-	err = helpers.WriteJSON(w, http.StatusOK, user, nil)
+	err = helpers.WriteJSON(w, http.StatusOK, toUserToFront(user), nil)
 	if err != nil {
 		helpers.WriteJSONError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -46,13 +90,18 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
-	logData := &model.LoginData{}
+	logData := &deliveryModel.LoginData{}
 	err := helpers.ReadJSON(w, r, logData)
 	if err != nil {
 		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	user, sessionId, err := h.usecase.LoginUser(logData)
+	isValid, err := validateData(logData)
+	if err != nil || !isValid {
+		helpers.WriteJSONError(w, http.StatusBadRequest, ErrValidationFailed.Error())
+		return
+	}
+	user, sessionId, err := h.usecase.LoginUser(loginToUsecaseModel(logData))
 	if err != nil {
 		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
@@ -64,7 +113,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	}
 	http.SetCookie(w, cookie)
-	err = helpers.WriteJSON(w, http.StatusOK, user, nil)
+	err = helpers.WriteJSON(w, http.StatusOK, toUserToFront(user), nil)
 	if err != nil {
 		helpers.WriteJSONError(w, http.StatusInternalServerError, err.Error())
 		return
@@ -100,7 +149,7 @@ func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	err = helpers.WriteJSON(w, http.StatusOK, user, nil)
+	err = helpers.WriteJSON(w, http.StatusOK, toUserToFront(user), nil)
 	if err != nil {
 		helpers.WriteJSONError(w, http.StatusInternalServerError, err.Error())
 		return
