@@ -2,6 +2,7 @@ package album
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
@@ -9,6 +10,7 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
+	"github.com/gorilla/mux"
 	"go.uber.org/zap"
 )
 
@@ -58,12 +60,59 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 	for _, usecaseAlbum := range usecaseAlbums {
 		albumType := deliveryModel.AlbumType(usecaseAlbum.Type)
 		albums = append(albums, &deliveryModel.Album{
-			ID:        usecaseAlbum.ID,
-			Title:     usecaseAlbum.Title,
-			Type:      albumType,
-			Thumbnail: usecaseAlbum.Thumbnail,
-			Artist:    usecaseAlbum.Artist,
-			ArtistID:  usecaseAlbum.ArtistID,
+			ID:          usecaseAlbum.ID,
+			Title:       usecaseAlbum.Title,
+			Type:        albumType,
+			Thumbnail:   usecaseAlbum.Thumbnail,
+			Artist:      usecaseAlbum.Artist,
+			ArtistID:    usecaseAlbum.ArtistID,
+			ReleaseDate: usecaseAlbum.ReleaseDate,
+		})
+	}
+
+	helpers.WriteSuccessResponse(w, http.StatusOK, albums, nil)
+}
+
+// GetAlbumsByArtistID godoc
+// @Summary Get albums by artist ID
+// @Description Get a list of albums for a specific artist
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Param id path integer true "Artist ID"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Album} "List of albums"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid artist ID"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /artists/{id}/albums [get]
+func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Request) {
+	logger := middleware.LoggerFromContext(r.Context())
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		logger.Error("failed to parse artist ID", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	usecaseAlbums, err := h.usecase.GetAlbumsByArtistID(id)
+	if err != nil {
+		logger.Error("failed to get albums", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		return
+	}
+
+	albums := make([]*deliveryModel.Album, 0, len(usecaseAlbums))
+	for _, usecaseAlbum := range usecaseAlbums {
+		albumType := deliveryModel.AlbumType(usecaseAlbum.Type)
+		albums = append(albums, &deliveryModel.Album{
+			ID:          usecaseAlbum.ID,
+			Title:       usecaseAlbum.Title,
+			Type:        albumType,
+			Thumbnail:   usecaseAlbum.Thumbnail,
+			Artist:      usecaseAlbum.Artist,
+			ArtistID:    usecaseAlbum.ArtistID,
+			ReleaseDate: usecaseAlbum.ReleaseDate,
 		})
 	}
 

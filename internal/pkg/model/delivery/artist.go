@@ -9,6 +9,8 @@ type Artist struct {
 	Thumbnail   string `json:"thumbnail_url" example:"https://example.com/artist.jpg" description:"URL to the artist thumbnail"`
 }
 
+// ArtistDetailed represents a detailed music artist entity
+// @Description A detailed music artist entity
 type ArtistDetailed struct {
 	Artist
 	Listeners int64 `json:"listeners_count" example:"1000" description:"Number of listeners"`

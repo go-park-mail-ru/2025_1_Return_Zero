@@ -1,5 +1,7 @@
 package usecase
 
+import "time"
+
 type AlbumType string
 
 const (
@@ -10,13 +12,13 @@ const (
 )
 
 type Album struct {
-	ID        int64
-	Title     string
-	Thumbnail string
-	Artist    string
-	ArtistID  int64
-	Type      AlbumType
-	Genres    []string
+	ID          int64
+	Title       string
+	Thumbnail   string
+	Artist      string
+	ArtistID    int64
+	Type        AlbumType
+	ReleaseDate time.Time
 }
 
 type AlbumFilters struct {

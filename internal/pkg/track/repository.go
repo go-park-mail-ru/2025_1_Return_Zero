@@ -6,4 +6,6 @@ import (
 
 type Repository interface {
 	GetAllTracks(filters *repoModel.TrackFilters) ([]*repoModel.Track, error)
+	GetTrackByID(id int64) (*repoModel.TrackWithFileKey, error)
+	GetTracksByArtistID(id int64) ([]*repoModel.Track, error)
 }

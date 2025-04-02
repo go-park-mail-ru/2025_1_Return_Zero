@@ -30,7 +30,12 @@ const (
 		FROM artist a
 		JOIN track_artist ta ON ta.artist_id = a.id
 		WHERE ta.track_id = $1
-		ORDER BY a.id DESC
+		ORDER BY CASE 
+			WHEN ta.role = 'main' THEN 1
+			WHEN ta.role = 'featured' THEN 2
+			WHEN ta.role = 'producer' THEN 3
+			ELSE 4
+		END ASC
 	`
 	GetArtistListenersCountQuery = `
 		SELECT COUNT(*)

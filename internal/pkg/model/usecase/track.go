@@ -16,6 +16,11 @@ type Track struct {
 	Artists   []*TrackArtist
 }
 
+type TrackDetailed struct {
+	Track
+	FileUrl string
+}
+
 type TrackFilters struct {
 	Pagination *Pagination
 }

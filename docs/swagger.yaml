@@ -32,32 +32,69 @@ definitions:
     description: A music album entity
     properties:
       artist:
-        $ref: '#/definitions/delivery.AlbumArtist'
+        type: string
+      artist_id:
+        example: 1
+        type: integer
       id:
         example: 1
         type: integer
+      release_date:
+        example: "2021-01-01"
+        type: string
       thumbnail_url:
         example: https://example.com/album.jpg
         type: string
       title:
         example: Anticyclone
         type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/delivery.AlbumType'
+        example: album
     type: object
-  delivery.AlbumArtist:
-    description: An artist of an album entity
-    properties:
-      id:
-        example: 1
-        type: integer
-      title:
-        example: Lagtrain
-        type: string
-    type: object
+  delivery.AlbumType:
+    enum:
+    - album
+    - ep
+    - compilation
+    - single
+    type: string
+    x-enum-varnames:
+    - AlbumTypeAlbum
+    - AlbumTypeEP
+    - AlbumTypeCompilation
+    - AlbumTypeSingle
   delivery.Artist:
     description: A music artist entity
     properties:
+      description:
+        example: Inabakumori is a Japanese artist
+        type: string
       id:
         example: 1
+        type: integer
+      thumbnail_url:
+        example: https://example.com/artist.jpg
+        type: string
+      title:
+        example: Inabakumori
+        type: string
+    type: object
+  delivery.ArtistDetailed:
+    description: A detailed music artist entity
+    properties:
+      description:
+        example: Inabakumori is a Japanese artist
+        type: string
+      favorites_count:
+        example: 1000
+        type: integer
+      id:
+        example: 1
+        type: integer
+      listeners_count:
+        example: 1000
         type: integer
       thumbnail_url:
         example: https://example.com/artist.jpg
@@ -70,9 +107,14 @@ definitions:
     description: A music track entity
     properties:
       album:
-        $ref: '#/definitions/delivery.TrackAlbum'
-      artist:
-        $ref: '#/definitions/delivery.TrackArtist'
+        type: string
+      album_id:
+        example: 1
+        type: integer
+      artists:
+        items:
+          $ref: '#/definitions/delivery.TrackArtist'
+        type: array
       duration:
         example: 216
         type: integer
@@ -86,22 +128,42 @@ definitions:
         example: Lagtrain
         type: string
     type: object
-  delivery.TrackAlbum:
-    description: An album of a track entity
+  delivery.TrackArtist:
+    description: An artist associated with a track
     properties:
       id:
         example: 1
         type: integer
+      role:
+        example: Main artist
+        type: string
       title:
         example: Lagtrain
         type: string
     type: object
-  delivery.TrackArtist:
-    description: An artist of a track entity
+  delivery.TrackDetailed:
     properties:
+      album:
+        type: string
+      album_id:
+        example: 1
+        type: integer
+      artists:
+        items:
+          $ref: '#/definitions/delivery.TrackArtist'
+        type: array
+      duration:
+        example: 216
+        type: integer
+      file_url:
+        example: https://example.com/track.mp3
+        type: string
       id:
         example: 1
         type: integer
+      thumbnail_url:
+        example: https://example.com/image.jpg
+        type: string
       title:
         example: Lagtrain
         type: string
@@ -191,6 +253,113 @@ paths:
       summary: Get artists
       tags:
       - artists
+  /artists/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific artist by their ID
+      parameters:
+      - description: Artist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Artist details
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.ArtistDetailed'
+              type: object
+        "400":
+          description: Bad request - invalid ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get artist by ID
+      tags:
+      - artists
+  /artists/{id}/albums:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of albums for a specific artist
+      parameters:
+      - description: Artist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of albums
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Album'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid artist ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get albums by artist ID
+      tags:
+      - albums
+  /artists/{id}/tracks:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of tracks by a specific artist with optional pagination
+        filters
+      parameters:
+      - description: Artist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of tracks by artist
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Track'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid ID or filters
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get tracks by artist ID
+      tags:
+      - tracks
   /tracks:
     get:
       consumes:
@@ -228,6 +397,40 @@ paths:
           schema:
             $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
       summary: Get tracks
+      tags:
+      - tracks
+  /tracks/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a specific track by its ID with detailed information
+      parameters:
+      - description: Track ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Track details
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.TrackDetailed'
+              type: object
+        "400":
+          description: Bad request - invalid ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get track by ID
       tags:
       - tracks
 swagger: "2.0"

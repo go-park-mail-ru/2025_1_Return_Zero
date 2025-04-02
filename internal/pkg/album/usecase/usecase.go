@@ -42,12 +42,44 @@ func (u albumUsecase) GetAllAlbums(filters *usecaseModel.AlbumFilters) ([]*useca
 		}
 
 		album := &usecaseModel.Album{
-			ID:        repoAlbum.ID,
-			Title:     repoAlbum.Title,
-			Thumbnail: repoAlbum.Thumbnail,
-			Type:      albumType,
-			Artist:    artistTitle,
-			ArtistID:  repoAlbum.ArtistID,
+			ID:          repoAlbum.ID,
+			Title:       repoAlbum.Title,
+			Thumbnail:   repoAlbum.Thumbnail,
+			Type:        albumType,
+			Artist:      artistTitle,
+			ArtistID:    repoAlbum.ArtistID,
+			ReleaseDate: repoAlbum.ReleaseDate,
+		}
+		albums = append(albums, album)
+	}
+	return albums, nil
+}
+
+func (u albumUsecase) GetAlbumsByArtistID(artistID int64) ([]*usecaseModel.Album, error) {
+	repoAlbums, err := u.albumRepo.GetAlbumsByArtistID(artistID)
+	if err != nil {
+		return nil, err
+	}
+
+	albums := make([]*usecaseModel.Album, 0, len(repoAlbums))
+
+	for _, repoAlbum := range repoAlbums {
+		artistTitle, err := u.artistRepo.GetArtistTitleByID(repoAlbum.ArtistID)
+
+		if err != nil {
+			return nil, err
+		}
+
+		albumType := usecaseModel.AlbumType(repoAlbum.Type)
+
+		album := &usecaseModel.Album{
+			ID:          repoAlbum.ID,
+			Title:       repoAlbum.Title,
+			Thumbnail:   repoAlbum.Thumbnail,
+			Type:        albumType,
+			Artist:      artistTitle,
+			ArtistID:    repoAlbum.ArtistID,
+			ReleaseDate: repoAlbum.ReleaseDate,
 		}
 		albums = append(albums, album)
 	}

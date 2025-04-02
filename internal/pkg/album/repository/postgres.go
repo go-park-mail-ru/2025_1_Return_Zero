@@ -10,13 +10,13 @@ import (
 
 const (
 	GetAllAlbumsQuery = `
-		SELECT id, title, type, thumbnail_url, artist_id
+		SELECT id, title, type, thumbnail_url, artist_id, release_date
 		FROM album
-		ORDER BY listeners_count DESC, favorites_count DESC, release_date DESC, id DESC
+		ORDER BY release_date DESC, id DESC
 		LIMIT $1 OFFSET $2
 	`
 	GetAlbumByIDQuery = `
-		SELECT id, title, thumbnail_url, artist_id
+		SELECT id, title, type, thumbnail_url, artist_id, release_date
 		FROM album
 		WHERE id = $1
 	`
@@ -24,6 +24,12 @@ const (
 		SELECT title
 		FROM album
 		WHERE id = $1
+	`
+	GetAlbumsByArtistIDQuery = `
+		SELECT id, title, type, thumbnail_url, artist_id, release_date
+		FROM album
+		WHERE artist_id = $1
+		ORDER BY release_date DESC, id DESC
 	`
 )
 
@@ -47,7 +53,7 @@ func (r *albumPostgresRepository) GetAllAlbums(filters *repoModel.AlbumFilters) 
 	albums := make([]*repoModel.Album, 0)
 	for rows.Next() {
 		var album repoModel.Album
-		err = rows.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ArtistID)
+		err = rows.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ArtistID, &album.ReleaseDate)
 		if err != nil {
 			return nil, err
 		}
@@ -65,7 +71,7 @@ func (r *albumPostgresRepository) GetAlbumByID(id int64) (*repoModel.Album, erro
 	row := r.db.QueryRow(GetAlbumByIDQuery, id)
 
 	var album repoModel.Album
-	err := row.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ArtistID)
+	err := row.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ArtistID, &album.ReleaseDate)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, repoModel.ErrAlbumNotFound
@@ -89,4 +95,28 @@ func (r *albumPostgresRepository) GetAlbumTitleByID(id int64) (string, error) {
 	}
 
 	return title, nil
+}
+
+func (r *albumPostgresRepository) GetAlbumsByArtistID(artistID int64) ([]*repoModel.Album, error) {
+	rows, err := r.db.Query(GetAlbumsByArtistIDQuery, artistID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	albums := make([]*repoModel.Album, 0)
+	for rows.Next() {
+		var album repoModel.Album
+		err = rows.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ArtistID, &album.ReleaseDate)
+		if err != nil {
+			return nil, err
+		}
+		albums = append(albums, &album)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return albums, nil
 }

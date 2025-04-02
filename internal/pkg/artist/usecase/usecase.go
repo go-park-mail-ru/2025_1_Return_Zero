@@ -7,25 +7,27 @@ import (
 )
 
 func NewUsecase(artistRepository artist.Repository) artist.Usecase {
-	return artistUsecase{repo: artistRepository}
+	return artistUsecase{
+		artistRepo: artistRepository,
+	}
 }
 
 type artistUsecase struct {
-	repo artist.Repository
+	artistRepo artist.Repository
 }
 
 func (u artistUsecase) GetArtistByID(id int64) (*usecaseModel.ArtistDetailed, error) {
-	repoArtist, err := u.repo.GetArtistByID(id)
+	repoArtist, err := u.artistRepo.GetArtistByID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	listeners, err := u.repo.GetArtistListenersCount(id)
+	listeners, err := u.artistRepo.GetArtistListenersCount(id)
 	if err != nil {
 		return nil, err
 	}
 
-	favorites, err := u.repo.GetArtistFavoritesCount(id)
+	favorites, err := u.artistRepo.GetArtistFavoritesCount(id)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +52,7 @@ func (u artistUsecase) GetAllArtists(filters *usecaseModel.ArtistFilters) ([]*us
 		},
 	}
 
-	repoArtists, err := u.repo.GetAllArtists(repoFilters)
+	repoArtists, err := u.artistRepo.GetAllArtists(repoFilters)
 	if err != nil {
 		return nil, err
 	}

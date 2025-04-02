@@ -1,11 +1,5 @@
 package repository
 
-type TrackArtist struct {
-	ID    int64
-	Title string
-	Role  string
-}
-
 type Track struct {
 	ID        int64
 	Title     string
@@ -13,7 +7,11 @@ type Track struct {
 	Duration  int64
 	AlbumID   int64
 	Album     string
-	Artists   []*TrackArtist
+}
+
+type TrackWithFileKey struct {
+	Track
+	FileKey string
 }
 
 type TrackFilters struct {

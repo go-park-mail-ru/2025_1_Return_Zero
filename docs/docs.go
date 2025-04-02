@@ -143,6 +143,180 @@ const docTemplate = `{
                 }
             }
         },
+        "/artists/{id}": {
+            "get": {
+                "description": "Get detailed information about a specific artist by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "artists"
+                ],
+                "summary": "Get artist by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Artist ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Artist details",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.ArtistDetailed"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/artists/{id}/albums": {
+            "get": {
+                "description": "Get a list of albums for a specific artist",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "albums"
+                ],
+                "summary": "Get albums by artist ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Artist ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of albums",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Album"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid artist ID",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/artists/{id}/tracks": {
+            "get": {
+                "description": "Get a list of tracks by a specific artist with optional pagination filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tracks"
+                ],
+                "summary": "Get tracks by artist ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Artist ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of tracks by artist",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Track"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID or filters",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/tracks": {
             "get": {
                 "description": "Get a list of tracks with optional pagination filters",
@@ -206,6 +380,62 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/tracks/{id}": {
+            "get": {
+                "description": "Retrieves a specific track by its ID with detailed information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tracks"
+                ],
+                "summary": "Get track by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Track ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Track details",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.TrackDetailed"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -253,11 +483,19 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "artist": {
-                    "$ref": "#/definitions/delivery.AlbumArtist"
+                    "type": "string"
+                },
+                "artist_id": {
+                    "type": "integer",
+                    "example": 1
                 },
                 "id": {
                     "type": "integer",
                     "example": 1
+                },
+                "release_date": {
+                    "type": "string",
+                    "example": "2021-01-01"
                 },
                 "thumbnail_url": {
                     "type": "string",
@@ -266,30 +504,73 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "Anticyclone"
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/delivery.AlbumType"
+                        }
+                    ],
+                    "example": "album"
                 }
             }
         },
-        "delivery.AlbumArtist": {
-            "description": "An artist of an album entity",
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "title": {
-                    "type": "string",
-                    "example": "Lagtrain"
-                }
-            }
+        "delivery.AlbumType": {
+            "type": "string",
+            "enum": [
+                "album",
+                "ep",
+                "compilation",
+                "single"
+            ],
+            "x-enum-varnames": [
+                "AlbumTypeAlbum",
+                "AlbumTypeEP",
+                "AlbumTypeCompilation",
+                "AlbumTypeSingle"
+            ]
         },
         "delivery.Artist": {
             "description": "A music artist entity",
             "type": "object",
             "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Inabakumori is a Japanese artist"
+                },
                 "id": {
                     "type": "integer",
                     "example": 1
+                },
+                "thumbnail_url": {
+                    "type": "string",
+                    "example": "https://example.com/artist.jpg"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Inabakumori"
+                }
+            }
+        },
+        "delivery.ArtistDetailed": {
+            "description": "A detailed music artist entity",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Inabakumori is a Japanese artist"
+                },
+                "favorites_count": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "listeners_count": {
+                    "type": "integer",
+                    "example": 1000
                 },
                 "thumbnail_url": {
                     "type": "string",
@@ -306,10 +587,17 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "album": {
-                    "$ref": "#/definitions/delivery.TrackAlbum"
+                    "type": "string"
                 },
-                "artist": {
-                    "$ref": "#/definitions/delivery.TrackArtist"
+                "album_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "artists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/delivery.TrackArtist"
+                    }
                 },
                 "duration": {
                     "type": "integer",
@@ -329,13 +617,17 @@ const docTemplate = `{
                 }
             }
         },
-        "delivery.TrackAlbum": {
-            "description": "An album of a track entity",
+        "delivery.TrackArtist": {
+            "description": "An artist associated with a track",
             "type": "object",
             "properties": {
                 "id": {
                     "type": "integer",
                     "example": 1
+                },
+                "role": {
+                    "type": "string",
+                    "example": "Main artist"
                 },
                 "title": {
                     "type": "string",
@@ -343,13 +635,37 @@ const docTemplate = `{
                 }
             }
         },
-        "delivery.TrackArtist": {
-            "description": "An artist of a track entity",
+        "delivery.TrackDetailed": {
             "type": "object",
             "properties": {
+                "album": {
+                    "type": "string"
+                },
+                "album_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "artists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/delivery.TrackArtist"
+                    }
+                },
+                "duration": {
+                    "type": "integer",
+                    "example": 216
+                },
+                "file_url": {
+                    "type": "string",
+                    "example": "https://example.com/track.mp3"
+                },
                 "id": {
                     "type": "integer",
                     "example": 1
+                },
+                "thumbnail_url": {
+                    "type": "string",
+                    "example": "https://example.com/image.jpg"
                 },
                 "title": {
                     "type": "string",

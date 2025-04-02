@@ -69,6 +69,17 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 	helpers.WriteSuccessResponse(w, http.StatusOK, artists, nil)
 }
 
+// GetArtistByID godoc
+// @Summary Get artist by ID
+// @Description Get detailed information about a specific artist by their ID
+// @Tags artists
+// @Accept json
+// @Produce json
+// @Param id path integer true "Artist ID"
+// @Success 200 {object} delivery.APIResponse{body=delivery.ArtistDetailed} "Artist details"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid ID"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /artists/{id} [get]
 func (h *ArtistHandler) GetArtistByID(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 
@@ -88,5 +99,15 @@ func (h *ArtistHandler) GetArtistByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	helpers.WriteSuccessResponse(w, http.StatusOK, usecaseArtist, nil)
+	artistDetailed := &deliveryModel.ArtistDetailed{
+		Artist: deliveryModel.Artist{
+			ID:          usecaseArtist.ID,
+			Title:       usecaseArtist.Title,
+			Thumbnail:   usecaseArtist.Thumbnail,
+			Description: usecaseArtist.Description,
+		},
+		Listeners: usecaseArtist.Listeners,
+		Favorites: usecaseArtist.Favorites,
+	}
+	helpers.WriteSuccessResponse(w, http.StatusOK, artistDetailed, nil)
 }

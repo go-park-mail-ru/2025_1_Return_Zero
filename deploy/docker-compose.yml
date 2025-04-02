@@ -3,7 +3,9 @@
 
 services:
   postgres:
-    image: postgres:16
+    build:
+      context: .
+      dockerfile: ./images/postgres/Dockerfile
     restart: always
     container_name: postgres
     environment:
@@ -18,20 +20,6 @@ services:
       - './_postgres/:/docker-entrypoint-initdb.d/'
     tty: true
 
-  pgadmin:
-    image: dpage/pgadmin4
-    restart: always
-    container_name: pgadmin
-    links:
-        - "postgres:postgres"
-    ports:
-      - 8090:8080
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-      PGADMIN_LISTEN_PORT: 8080
-    tty: true
-
   redis:
     image: 'redis'
     container_name: redis
@@ -43,7 +31,7 @@ services:
   api:
     build:
       context: ..
-      dockerfile: deploy/Dockerfile
+      dockerfile: deploy/images/api/Dockerfile
     container_name: ReturnZeroAPI
     environment:
       POSTGRES_PORT: ${POSTGRES_PORT}
@@ -51,6 +39,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: postgres
+      S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
+      S3_TRACKS_BUCKET: ${S3_TRACKS_BUCKET}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_REGION: ${S3_REGION}
     restart: always
     ports:
       - '8080:8080'

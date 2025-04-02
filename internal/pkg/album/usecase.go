@@ -6,4 +6,5 @@ import (
 
 type Usecase interface {
 	GetAllAlbums(filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error)
+	GetAlbumsByArtistID(artistID int64) ([]*usecaseModel.Album, error)
 }

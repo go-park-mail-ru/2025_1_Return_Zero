@@ -1,5 +1,7 @@
 -- Write your migrate up statements here
 
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
 CREATE TABLE IF NOT EXISTS "user" (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
@@ -256,22 +258,74 @@ CREATE TABLE IF NOT EXISTS stream (
     CONSTRAINT stream_valid_duration_check CHECK (duration >= 0)
 );
 
-CREATE OR REPLACE FUNCTION create_user_settings()
-RETURNS TRIGGER AS $$
-BEGIN
-    INSERT INTO user_settings (user_id)
-    VALUES (NEW.id);
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+CREATE MATERIALIZED VIEW artist_stats AS
+SELECT 
+    a.id AS artist_id,
+    COUNT(DISTINCT s.user_id) AS listeners_count,
+    COUNT(DISTINCT fa.user_id) AS favorites_count
+FROM 
+    artist a
+LEFT JOIN 
+    track_artist ta ON a.id = ta.artist_id
+LEFT JOIN 
+    track t ON ta.track_id = t.id
+LEFT JOIN 
+    stream s ON t.id = s.track_id
+LEFT JOIN 
+    favorite_artist fa ON a.id = fa.artist_id
+GROUP BY 
+    a.id, a.title;
 
-CREATE TRIGGER trigger_create_user_settings
-AFTER INSERT ON "user"
-FOR EACH ROW
-EXECUTE FUNCTION create_user_settings();
+SELECT cron.schedule(
+    'refresh_artist_stats', 
+    '0 */1 * * *', 
+    $$REFRESH MATERIALIZED VIEW artist_stats$$);
 
+CREATE MATERIALIZED VIEW album_stats AS
+SELECT 
+    a.id AS album_id,
+    COUNT(DISTINCT s.user_id) AS listeners_count,
+    COUNT(DISTINCT fa.user_id) AS favorites_count
+FROM 
+    album a
+LEFT JOIN 
+    track t ON a.id = t.album_id
+LEFT JOIN 
+    stream s ON t.id = s.track_id
+LEFT JOIN 
+    favorite_album fa ON a.id = fa.album_id
+GROUP BY 
+    a.id, a.title;
+
+SELECT cron.schedule(
+    'refresh_album_stats', 
+    '0 */1 * * *', 
+    $$REFRESH MATERIALIZED VIEW album_stats$$);
+
+CREATE MATERIALIZED VIEW track_stats AS
+SELECT 
+    t.id AS track_id,
+    COUNT(DISTINCT s.user_id) AS listeners_count,
+    COUNT(DISTINCT fa.user_id) AS favorites_count
+FROM 
+    track t
+LEFT JOIN 
+    stream s ON t.id = s.track_id
+LEFT JOIN 
+    favorite_track fa ON t.id = fa.track_id
+GROUP BY 
+    t.id, t.title;
+
+SELECT cron.schedule(
+    'refresh_track_stats', 
+    '0 */1 * * *', 
+    $$REFRESH MATERIALIZED VIEW track_stats$$);
 
 ---- create above / drop below ----
+
+DROP MATERIALIZED VIEW IF EXISTS artist_stats;
+DROP MATERIALIZED VIEW IF EXISTS album_stats;
+DROP MATERIALIZED VIEW IF EXISTS track_stats;
 
 DROP TABLE IF EXISTS stream;
 DROP TABLE IF EXISTS favorite_artist;
@@ -288,5 +342,7 @@ DROP TABLE IF EXISTS artist;
 DROP TABLE IF EXISTS genre;
 DROP TABLE IF EXISTS user_settings;
 DROP TABLE IF EXISTS "user";
-DROP TRIGGER IF EXISTS trigger_create_user_settings ON "user";
-DROP FUNCTION IF EXISTS create_user_settings();
+
+SELECT cron.unschedule('refresh_artist_stats') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'refresh_artist_stats');
+SELECT cron.unschedule('refresh_album_stats') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'refresh_album_stats');
+SELECT cron.unschedule('refresh_track_stats') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'refresh_track_stats');

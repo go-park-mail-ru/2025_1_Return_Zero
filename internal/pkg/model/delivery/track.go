@@ -23,3 +23,8 @@ type Track struct {
 	Album     string         `json:"album" description:"Associated album"`
 	Artists   []*TrackArtist `json:"artists" description:"Associated artists"`
 }
+
+type TrackDetailed struct {
+	Track
+	FileUrl string `json:"file_url" example:"https://example.com/track.mp3" description:"URL to the track file"`
+}

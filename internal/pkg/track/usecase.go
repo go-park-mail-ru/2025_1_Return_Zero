@@ -6,4 +6,6 @@ import (
 
 type Usecase interface {
 	GetAllTracks(filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error)
+	GetTrackByID(id int64) (*usecaseModel.TrackDetailed, error)
+	GetTracksByArtistID(id int64) ([]*usecaseModel.Track, error)
 }
