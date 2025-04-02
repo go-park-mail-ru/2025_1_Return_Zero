@@ -28,7 +28,7 @@ const (
 	GetArtistsByTrackIDQuery = `
 		SELECT a.id, a.title, ta.role
 		FROM artist a
-		JOIN track_artist ta ON ta.artist_id = a.id
+		LEFT JOIN track_artist ta ON ta.artist_id = a.id
 		WHERE ta.track_id = $1
 		ORDER BY CASE 
 			WHEN ta.role = 'main' THEN 1
@@ -40,8 +40,8 @@ const (
 	GetArtistListenersCountQuery = `
 		SELECT COUNT(*)
 		FROM stream
-		JOIN track ON stream.track_id = track.id
-		JOIN track_artist ON track.id = track_artist.track_id
+		LEFT JOIN track ON stream.track_id = track.id
+		LEFT JOIN track_artist ON track.id = track_artist.track_id
 		WHERE track_artist.artist_id = $1
 	`
 	GetArtistFavoritesCountQuery = `
