@@ -7,7 +7,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"time"
-
 	"github.com/gomodule/redigo/redis"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth"
@@ -15,6 +14,10 @@ import (
 
 var (
 	ErrSessionNotFound = errors.New("session not found")
+)
+
+const (
+	SessionTTL = 24 * time.Hour
 )
 
 type AuthRedisRepository struct {
@@ -37,7 +40,7 @@ func generateSessionID() string {
 
 func (r *AuthRedisRepository) CreateSession(ID int64) string {
 	SID := generateSessionID()
-	expiration := 24 * 3600 * time.Second 
+	expiration := int(SessionTTL.Seconds())
 	r.redis.Do("SETEX", SID, expiration, ID)
 	return SID
 }
@@ -49,7 +52,7 @@ func (r *AuthRedisRepository) DeleteSession(SID string) {
 func (r *AuthRedisRepository) GetSession(SID string) (int64, error) {
 	id, err := redis.Int64(r.redis.Do("GET", SID))
 	if err != nil {
-		return 0, err
+		return -1, err
 	}
 	return id, nil
 }

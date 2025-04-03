@@ -1,10 +1,13 @@
 package repository
 
 import (
+	"bytes"
+	"crypto/rand"
 	"database/sql"
+	"encoding/base64"
 	"errors"
 
-	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/crypto/argon2"
 
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
@@ -14,6 +17,7 @@ var (
 	ErrUsernameExist = errors.New("user with this username already exists")
 	ErrEmailExist    = errors.New("user with this email already exists")
 	ErrUserNotFound  = errors.New("user not found")
+	ErrCreateSalt    = errors.New("failed to create salt")
 )
 
 type userPostgresRepository struct {
@@ -43,14 +47,20 @@ const (
 			`
 )
 
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	return string(bytes), err
+func hashPassword(salt []byte, password string) string {
+	hashedPass := argon2.IDKey([]byte(password), salt, 1, 64*1024, 4, 32)
+	combined := append(salt, hashedPass...)
+	return base64.StdEncoding.EncodeToString(combined)
 }
 
-func CheckPasswordHash(password string, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+func checkPasswordHash(encodedHash string, password string) bool {
+	decodedHash, err := base64.StdEncoding.DecodeString(encodedHash)
+	if err != nil {
+		return false
+	}
+	salt := decodedHash[:8]
+	userPassHash := argon2.IDKey([]byte(password), salt, 1, 64*1024, 4, 32)
+	return bytes.Equal(userPassHash, decodedHash[8:])
 }
 
 func NewUserPostgresRepository(db *sql.DB) user.Repository {
@@ -59,6 +69,15 @@ func NewUserPostgresRepository(db *sql.DB) user.Repository {
 	}
 
 	return repo
+}
+
+func createSalt() []byte {
+	salt := make([]byte, 8)
+	_, err := rand.Read(salt)
+	if err != nil {
+		return nil
+	}
+	return salt
 }
 
 func (r *userPostgresRepository) CreateUser(regData *repoModel.User) (*repoModel.User, error) {
@@ -71,13 +90,15 @@ func (r *userPostgresRepository) CreateUser(regData *repoModel.User) (*repoModel
 		return nil, ErrUsernameExist
 	}
 
-	hashedPassword, err := HashPassword(regData.Password)
-	if err != nil {
-		return nil, err
+	salt := createSalt()
+	if salt == nil {
+		return nil, errors.New("failed to create salt")
 	}
+	hashedPassword := hashPassword(salt, regData.Password)
 
 	var userID int64
-	err = r.db.QueryRow(createUserQuery, regData.Username, hashedPassword, regData.Email).Scan(&userID)
+	err = r.db.QueryRow(createUserQuery, regData.Username,
+		hashedPassword, regData.Email).Scan(&userID)
 	if err != nil {
 		return nil, err
 	}
@@ -114,10 +135,9 @@ func (r *userPostgresRepository) LoginUser(logData *repoModel.User) (*repoModel.
 		return nil, err
 	}
 
-	if !CheckPasswordHash(logData.Password, storedHash) {
+	if !checkPasswordHash(storedHash, logData.Password) {
 		return nil, ErrUserNotFound
 	}
 
 	return &user, nil
 }
-

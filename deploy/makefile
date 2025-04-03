@@ -3,9 +3,8 @@ ifneq (,$(wildcard ../.env))
 	export
 endif
 
-deploy-backend:
-	docker compose up -d
-	cd ../ && make populate
+deploy:
+	docker-compose up -d
 
 docker-remove:
 	docker rm $(docker ps) && docker volume prune -f

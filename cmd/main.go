@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"net/http"
 
@@ -16,9 +15,6 @@ import (
 )
 
 func main() {
-	port := flag.String("p", ":8084", "server port")
-	flag.Parse()
-
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		fmt.Println("Error loading config:", err)
@@ -40,7 +36,7 @@ func main() {
 	defer db.Close()
 
 	r := mux.NewRouter()
-	fmt.Printf("Server starting on port %s...\n", *port)
+	fmt.Printf("Server starting on port %s...\n", cfg.Port)
 
 	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(db), authRepository.NewAuthRedisRepository(redisConn)))
 
@@ -48,7 +44,7 @@ func main() {
 	r.HandleFunc("/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/logout", userHandler.Logout).Methods("POST")
 	r.HandleFunc("/user", userHandler.CheckUser).Methods("GET")
-	err = http.ListenAndServe(*port, r)
+	err = http.ListenAndServe(cfg.Port, r)
 	if err != nil {
 		fmt.Println(err)
 	}
