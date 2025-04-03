@@ -28,7 +28,7 @@ const (
 	GetArtistsByTrackIDQuery = `
 		SELECT a.id, a.title, ta.role
 		FROM artist a
-		LEFT JOIN track_artist ta ON ta.artist_id = a.id
+		JOIN track_artist ta ON ta.artist_id = a.id
 		WHERE ta.track_id = $1
 		ORDER BY CASE 
 			WHEN ta.role = 'main' THEN 1
