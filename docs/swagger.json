@@ -7,7 +7,7 @@
         "version": "1.0"
     },
     "host": "returnzero.ru",
-    "basePath": "/",
+    "basePath": "/api/v1",
     "paths": {
         "/albums": {
             "get": {

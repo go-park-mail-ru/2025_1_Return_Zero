@@ -33,7 +33,7 @@ import (
 // @version 1.0
 // @description This is the API server for Return Zero music app.
 // @host returnzero.ru
-// @BasePath /
+// @BasePath /api/v1
 func main() {
 	cfg, err := config.LoadConfig()
 	if err != nil {

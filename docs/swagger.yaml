@@ -1,4 +1,4 @@
-basePath: /
+basePath: /api/v1
 definitions:
   delivery.APIBadRequestErrorResponse:
     description: API bad request error response structure

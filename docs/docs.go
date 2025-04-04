@@ -680,7 +680,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "returnzero.ru",
-	BasePath:         "/",
+	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Return Zero API",
 	Description:      "This is the API server for Return Zero music app.",
