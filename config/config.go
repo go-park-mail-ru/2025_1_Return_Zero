@@ -30,12 +30,18 @@ type S3Config struct {
 	S3_DURATION      time.Duration `mapstructure:"s3_duration"`
 }
 
+type RedisConfig struct {
+	REDIS_HOST string
+	REDIS_PORT string
+}
+
 type Config struct {
 	Cors       middleware.Cors
 	Port       string `mapstructure:"port"`
 	Pagination deliveryModel.PaginationConfig
 	Postgres   PostgresConfig
 	S3         S3Config
+	Redis      RedisConfig
 }
 
 func LoadConfig() (*Config, error) {
@@ -64,5 +70,9 @@ func LoadConfig() (*Config, error) {
 	config.S3.S3_ENDPOINT = os.Getenv("S3_ENDPOINT")
 	config.S3.S3_TRACKS_BUCKET = os.Getenv("S3_TRACKS_BUCKET")
 	config.S3.S3_IMAGES_BUCKET = os.Getenv("S3_IMAGES_BUCKET")
+
+	config.Redis.REDIS_HOST = os.Getenv("REDIS_HOST")
+	config.Redis.REDIS_PORT = os.Getenv("REDIS_PORT")
+
 	return &config, nil
 }
