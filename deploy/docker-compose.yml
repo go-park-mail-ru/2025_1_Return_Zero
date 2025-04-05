@@ -28,7 +28,7 @@ services:
       - '6379:6379'
     tty: true
 
-  api:
+  go-api:
     build:
       context: ..
       dockerfile: deploy/images/api/Dockerfile
@@ -65,5 +65,5 @@ services:
     volumes:
       - '../../public:/usr/share/nginx/static'
     depends_on:
-      - api
+      - go-api
     tty: true
