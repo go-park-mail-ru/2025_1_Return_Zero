@@ -57,7 +57,7 @@ services:
   nginx:
     build:
       context: ./images/nginx
-      dockerfile: deploy/images/nginx/Dockerfile
+      dockerfile: Dockerfile
     container_name: nginx
     restart: always
     ports:
