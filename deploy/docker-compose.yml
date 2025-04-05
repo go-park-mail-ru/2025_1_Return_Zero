@@ -63,7 +63,7 @@ services:
     ports:
       - '8081:80'
     volumes:
-      - '../../public:/usr/share/nginx/static'
+      - '../../dist:/usr/share/nginx/static'
     depends_on:
       - go-api
     tty: true
