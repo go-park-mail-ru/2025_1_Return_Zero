@@ -53,3 +53,17 @@ services:
     depends_on:
       - postgres
       - redis
+
+  nginx:
+    build:
+      context: ./images/nginx
+      dockerfile: deploy/images/nginx/Dockerfile
+    container_name: nginx
+    restart: always
+    ports:
+      - '8081:80'
+    volumes:
+      - '../../public:/usr/share/nginx/static'
+    depends_on:
+      - api
+    tty: true
