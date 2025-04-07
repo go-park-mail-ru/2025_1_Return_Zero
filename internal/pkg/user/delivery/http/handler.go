@@ -3,8 +3,8 @@ package user
 import (
 	"errors"
 	"net/http"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/gorilla/mux"
@@ -162,7 +162,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	h.usecase.Logout(sessionId)
 	cookie.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, cookie)
-	helpers.WriteSuccessResponse(w, http.StatusOK,map[string]string{"msg": "Succesfully loged out"}, nil)
+	helpers.WriteSuccessResponse(w, http.StatusOK, map[string]string{"msg": "Succesfully loged out"}, nil)
 }
 
 // CheckUser godoc
@@ -244,7 +244,7 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, "username not found in URL", nil)
 		return
 	}
-	
+
 	const maxUploadSize = 5 << 20
 	err := r.ParseMultipartForm(maxUploadSize)
 	if err != nil {
@@ -268,18 +268,18 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	contentType := fileHeader.Header.Get("Content-Type")
-    if !strings.HasPrefix(contentType, "image/") {
-        logger.Error("invalid file type", zap.String("contentType", contentType))
-        helpers.WriteErrorResponse(w, http.StatusBadRequest, "only image files are allowed", nil)
-        return
-    }
+	if !strings.HasPrefix(contentType, "image/") {
+		logger.Error("invalid file type", zap.String("contentType", contentType))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, "only image files are allowed", nil)
+		return
+	}
 
 	err = h.usecase.UploadAvatar(username, file)
 	if err != nil {
 		logger.Error("failed to upload avatar", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
-	}	
+	}
 
 	helpers.WriteSuccessResponse(w, http.StatusOK, map[string]string{"msg": "Avatar successfully uploaded"}, nil)
 }

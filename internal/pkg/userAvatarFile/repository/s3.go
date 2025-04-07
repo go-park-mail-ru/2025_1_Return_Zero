@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
@@ -15,47 +14,43 @@ type s3Repository struct {
 	s3         *s3.S3
 	uploader   *s3manager.Uploader
 	bucketName string
-	expiration time.Duration
 }
 
-func NewS3Repository(s3 *s3.S3, bucketName string, expiration time.Duration) *s3Repository {
+func NewS3Repository(s3 *s3.S3, bucketName string) *s3Repository {
 	uploader := s3manager.NewUploaderWithClient(s3)
-	return &s3Repository{s3: s3, bucketName: bucketName,
-		expiration: expiration, uploader: uploader}
+	return &s3Repository{
+		s3:         s3,
+		bucketName: bucketName,
+		uploader:   uploader}
 }
 
-func (r *s3Repository) GetPresignedURL(fileKey string) (string, error) {
+func (r *s3Repository) GetAvatarURL(fileKey string) (string, error) {
 	if fileKey == "" {
 		return "", errors.New("empty S3 key")
 	}
-	path := fmt.Sprintf("avatars/%s", fileKey)
-	input := &s3.GetObjectInput{
-		Bucket: aws.String(r.bucketName),
-		Key:    aws.String(path),
-	}
 
-	req, _ := r.s3.GetObjectRequest(input)
-	url, err := req.Presign(r.expiration)
-	if err != nil {
-		return "", err
-	}
-	
-	return url, nil
+	return fmt.Sprintf(
+		"https://%s.fra1.digitaloceanspaces.com/avatars%s",
+		r.bucketName,
+		fileKey,
+	), nil
 }
 
 func (r *s3Repository) UploadUserAvatar(username string, fileContent io.Reader) (string, error) {
-	fileKey := fmt.Sprintf("avatars/%s.png", username)
+	fileKey := fmt.Sprintf("/%s.png", username)
+	s3Key := fmt.Sprintf("avatars%s", fileKey)
 
 	_, err := r.uploader.Upload(&s3manager.UploadInput{
 		Bucket:      aws.String(r.bucketName),
-		Key:         aws.String(fileKey),
+		Key:         aws.String(s3Key),
 		Body:        fileContent,
 		ContentType: aws.String("image/png"),
+		ACL:         aws.String("public-read"),
 	})
 
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("upload failed: %w", err)
 	}
 
-	return fmt.Sprintf("%s.png", username), nil
+	return fileKey, nil
 }

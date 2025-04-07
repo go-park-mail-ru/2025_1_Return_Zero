@@ -90,7 +90,7 @@ func (u userUsecase) GetAvatar(username string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	presignedUrl, err := u.userFileRepo.GetPresignedURL(avatarUrl)
+	presignedUrl, err := u.userFileRepo.GetAvatarURL(avatarUrl)
 	if err != nil {
 		return "", err
 	}
