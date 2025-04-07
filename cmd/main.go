@@ -25,6 +25,7 @@ import (
 	userHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/delivery/http"
 	userRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/repository"
 	userUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/usecase"
+	userFileRepo "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/userAvatarFile/repository"
 	"github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -78,7 +79,7 @@ func main() {
 	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3_TRACKS_BUCKET, cfg.S3.S3_DURATION)), cfg)
 	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), genreRepository.NewGenrePostgresRepository(postgresConn)), cfg)
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistRepository.NewArtistPostgresRepository(postgresConn)), cfg)
-	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisConn)))
+	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisConn), userFileRepo.NewS3Repository(s3, cfg.S3.S3_IMAGES_BUCKET, cfg.S3.S3_DURATION)))
 
 	r.HandleFunc("/api/v1/tracks", trackHandler.GetAllTracks).Methods("GET")
 	r.HandleFunc("/api/v1/tracks/{id}", trackHandler.GetTrackByID).Methods("GET")
@@ -92,6 +93,8 @@ func main() {
 	r.HandleFunc("/api/v1/auth/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/api/v1/auth/logout", userHandler.Logout).Methods("POST")
 	r.HandleFunc("/api/v1/auth/check", userHandler.CheckUser).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username}/avatar", userHandler.GetUserAvatar).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username}/avatar", userHandler.UploadAvatar).Methods("POST")
 
 	err = http.ListenAndServe(cfg.Port, r)
 	if err != nil {

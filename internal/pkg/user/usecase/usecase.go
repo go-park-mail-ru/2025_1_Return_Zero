@@ -1,22 +1,28 @@
 package usecase
 
 import (
+	"fmt"
+	"io"
+
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth"
-	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
+	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/userAvatarFile"
 )
 
-func NewUserUsecase(userRepo user.Repository, authRepo auth.Repository) user.Usecase {
+func NewUserUsecase(userRepo user.Repository, authRepo auth.Repository, userFileRepo userAvatarFile.Repository) user.Usecase {
 	return userUsecase{
 		userRepo: userRepo,
 		authRepo: authRepo,
+		userFileRepo: userFileRepo,
 	}
 }
 
 type userUsecase struct {
 	userRepo user.Repository
 	authRepo auth.Repository
+	userFileRepo userAvatarFile.Repository
 }
 
 func toUsecaseModel(user *repoModel.User) *usecaseModel.User {
@@ -38,8 +44,10 @@ func (u userUsecase) CreateUser(user *usecaseModel.User) (*usecaseModel.User, st
 	if err != nil {
 		return nil, "", err
 	}
+
+	userUsecase := toUsecaseModel(newUser)
 	sessionID := u.authRepo.CreateSession(newUser.ID)
-	return toUsecaseModel(newUser), sessionID, nil
+	return userUsecase, sessionID, nil
 }
 
 func (u userUsecase) GetUserBySID(SID string) (*usecaseModel.User, error) {
@@ -51,7 +59,10 @@ func (u userUsecase) GetUserBySID(SID string) (*usecaseModel.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	return toUsecaseModel(user), nil
+
+	usecaseUser := toUsecaseModel(user)
+
+	return usecaseUser, nil
 }
 
 func (u userUsecase) LoginUser(user *usecaseModel.User) (*usecaseModel.User, string, error) {
@@ -64,10 +75,38 @@ func (u userUsecase) LoginUser(user *usecaseModel.User) (*usecaseModel.User, str
 	if err != nil {
 		return nil, "", err
 	}
+	usecaseUser := toUsecaseModel(loginUser)
+
 	sessionID := u.authRepo.CreateSession(loginUser.ID)
-	return toUsecaseModel(loginUser), sessionID, nil
+	return usecaseUser, sessionID, nil
 }
 
 func (u userUsecase) Logout(SID string) {
 	u.authRepo.DeleteSession(SID)
+}
+
+func (u userUsecase) GetAvatar(username string) (string, error) {
+	avatarUrl, err := u.userRepo.GetAvatar(username)
+	if err != nil {
+		return "", err
+	}
+	presignedUrl, err := u.userFileRepo.GetPresignedURL(avatarUrl)
+	if err != nil {
+		return "", err
+	}
+
+	return presignedUrl, nil
+}
+
+func (u userUsecase) UploadAvatar(username string, fileAvatar io.Reader) error {
+	fileURL, err := u.userFileRepo.UploadUserAvatar(username, fileAvatar)
+	if err != nil {
+		return err
+	}
+	fmt.Println(fileURL)
+	err = u.userRepo.UploadAvatar(fileURL, username)
+	if err != nil {
+		return err
+	}
+	return nil
 }

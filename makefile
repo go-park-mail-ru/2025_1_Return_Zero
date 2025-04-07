@@ -21,10 +21,13 @@ populate:
 	go run db/populate/main.go -file db/populate/data.sql
 
 docker-up:
-	docker compose up
+	cd deploy/ && make deploy
 
 docker-remove:
-	docker rm $(docker ps -a -q) && docker volume prune -f
+	-docker stop $$(docker ps -q)             
+	-docker rm -f $$(docker ps -aq)           
+	-docker rmi -f $$(docker images -q)
+	-docker image prune -f
 
 clean:
 	$(RM) -rf *.out *.html
