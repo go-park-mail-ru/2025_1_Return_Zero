@@ -59,13 +59,19 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 	albums := make([]*deliveryModel.Album, 0, len(usecaseAlbums))
 	for _, usecaseAlbum := range usecaseAlbums {
 		albumType := deliveryModel.AlbumType(usecaseAlbum.Type)
+		albumArtists := make([]*deliveryModel.AlbumArtist, 0, len(usecaseAlbum.Artists))
+		for _, usecaseArtist := range usecaseAlbum.Artists {
+			albumArtists = append(albumArtists, &deliveryModel.AlbumArtist{
+				ID:    usecaseArtist.ID,
+				Title: usecaseArtist.Title,
+			})
+		}
 		albums = append(albums, &deliveryModel.Album{
 			ID:          usecaseAlbum.ID,
 			Title:       usecaseAlbum.Title,
 			Type:        albumType,
 			Thumbnail:   usecaseAlbum.Thumbnail,
-			Artist:      usecaseAlbum.Artist,
-			ArtistID:    usecaseAlbum.ArtistID,
+			Artists:     albumArtists,
 			ReleaseDate: usecaseAlbum.ReleaseDate,
 		})
 	}
@@ -104,14 +110,21 @@ func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Reques
 
 	albums := make([]*deliveryModel.Album, 0, len(usecaseAlbums))
 	for _, usecaseAlbum := range usecaseAlbums {
+		albumArtists := make([]*deliveryModel.AlbumArtist, 0, len(usecaseAlbum.Artists))
+		for _, usecaseArtist := range usecaseAlbum.Artists {
+			albumArtists = append(albumArtists, &deliveryModel.AlbumArtist{
+				ID:    usecaseArtist.ID,
+				Title: usecaseArtist.Title,
+			})
+		}
+
 		albumType := deliveryModel.AlbumType(usecaseAlbum.Type)
 		albums = append(albums, &deliveryModel.Album{
 			ID:          usecaseAlbum.ID,
 			Title:       usecaseAlbum.Title,
 			Type:        albumType,
 			Thumbnail:   usecaseAlbum.Thumbnail,
-			Artist:      usecaseAlbum.Artist,
-			ArtistID:    usecaseAlbum.ArtistID,
+			Artists:     albumArtists,
 			ReleaseDate: usecaseAlbum.ReleaseDate,
 		})
 	}

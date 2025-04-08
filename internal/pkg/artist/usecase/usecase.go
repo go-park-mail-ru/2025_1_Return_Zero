@@ -22,12 +22,7 @@ func (u artistUsecase) GetArtistByID(id int64) (*usecaseModel.ArtistDetailed, er
 		return nil, err
 	}
 
-	listeners, err := u.artistRepo.GetArtistListenersCount(id)
-	if err != nil {
-		return nil, err
-	}
-
-	favorites, err := u.artistRepo.GetArtistFavoritesCount(id)
+	stats, err := u.artistRepo.GetArtistStats(id)
 	if err != nil {
 		return nil, err
 	}
@@ -39,8 +34,8 @@ func (u artistUsecase) GetArtistByID(id int64) (*usecaseModel.ArtistDetailed, er
 			Thumbnail:   repoArtist.Thumbnail,
 			Description: repoArtist.Description,
 		},
-		Listeners: listeners,
-		Favorites: favorites,
+		Listeners: stats.ListenersCount,
+		Favorites: stats.FavoritesCount,
 	}, nil
 }
 

@@ -11,14 +11,18 @@ const (
 	AlbumTypeCompilation AlbumType = "compilation"
 )
 
+type AlbumArtist struct {
+	ID    int64
+	Title string
+}
+
 type Album struct {
 	ID          int64
 	Title       string
 	Thumbnail   string
-	Artist      string
-	ArtistID    int64
 	Type        AlbumType
 	ReleaseDate time.Time
+	Artists     []*AlbumArtist
 }
 
 type AlbumFilters struct {

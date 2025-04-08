@@ -34,21 +34,28 @@ func (u albumUsecase) GetAllAlbums(filters *usecaseModel.AlbumFilters) ([]*useca
 	albums := make([]*usecaseModel.Album, 0, len(repoAlbums))
 
 	for _, repoAlbum := range repoAlbums {
-		artistTitle, err := u.artistRepo.GetArtistTitleByID(repoAlbum.ArtistID)
-		albumType := usecaseModel.AlbumType(repoAlbum.Type)
-
+		repoArtists, err := u.artistRepo.GetArtistsByAlbumID(repoAlbum.ID)
 		if err != nil {
 			return nil, err
 		}
+
+		albumArtists := make([]*usecaseModel.AlbumArtist, 0, len(repoArtists))
+		for _, repoArtist := range repoArtists {
+			albumArtists = append(albumArtists, &usecaseModel.AlbumArtist{
+				ID:    repoArtist.ID,
+				Title: repoArtist.Title,
+			})
+		}
+
+		albumType := usecaseModel.AlbumType(repoAlbum.Type)
 
 		album := &usecaseModel.Album{
 			ID:          repoAlbum.ID,
 			Title:       repoAlbum.Title,
 			Thumbnail:   repoAlbum.Thumbnail,
 			Type:        albumType,
-			Artist:      artistTitle,
-			ArtistID:    repoAlbum.ArtistID,
 			ReleaseDate: repoAlbum.ReleaseDate,
+			Artists:     albumArtists,
 		}
 		albums = append(albums, album)
 	}
@@ -64,10 +71,17 @@ func (u albumUsecase) GetAlbumsByArtistID(artistID int64) ([]*usecaseModel.Album
 	albums := make([]*usecaseModel.Album, 0, len(repoAlbums))
 
 	for _, repoAlbum := range repoAlbums {
-		artistTitle, err := u.artistRepo.GetArtistTitleByID(repoAlbum.ArtistID)
-
+		repoArtists, err := u.artistRepo.GetArtistsByAlbumID(repoAlbum.ID)
 		if err != nil {
 			return nil, err
+		}
+
+		albumArtists := make([]*usecaseModel.AlbumArtist, 0, len(repoArtists))
+		for _, repoArtist := range repoArtists {
+			albumArtists = append(albumArtists, &usecaseModel.AlbumArtist{
+				ID:    repoArtist.ID,
+				Title: repoArtist.Title,
+			})
 		}
 
 		albumType := usecaseModel.AlbumType(repoAlbum.Type)
@@ -77,9 +91,8 @@ func (u albumUsecase) GetAlbumsByArtistID(artistID int64) ([]*usecaseModel.Album
 			Title:       repoAlbum.Title,
 			Thumbnail:   repoAlbum.Thumbnail,
 			Type:        albumType,
-			Artist:      artistTitle,
-			ArtistID:    repoAlbum.ArtistID,
 			ReleaseDate: repoAlbum.ReleaseDate,
+			Artists:     albumArtists,
 		}
 		albums = append(albums, album)
 	}
