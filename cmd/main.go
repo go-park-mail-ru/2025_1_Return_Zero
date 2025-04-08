@@ -65,8 +65,8 @@ func main() {
 	r := mux.NewRouter()
 	fmt.Printf("Server starting on port %s...\n", cfg.Port)
 
-	r.PathPrefix("/docs/").Handler(httpSwagger.Handler(
-		httpSwagger.URL("/docs/doc.json"),
+	r.PathPrefix("/api/v1/docs/").Handler(httpSwagger.Handler(
+		httpSwagger.URL("/api/v1/docs/doc.json"),
 		httpSwagger.DeepLinking(true),
 		httpSwagger.DocExpansion("none"),
 	))
