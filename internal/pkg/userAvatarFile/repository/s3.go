@@ -54,3 +54,19 @@ func (r *s3Repository) UploadUserAvatar(username string, fileContent io.Reader) 
 
 	return fileKey, nil
 }
+
+func (r *s3Repository) DeleteUserAvatar(username string) error {
+	fileKey := fmt.Sprintf("/%s.png", username)
+	s3Key := fmt.Sprintf("avatars%s", fileKey)
+
+	_, err := r.s3.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: aws.String(r.bucketName),
+		Key:    aws.String(s3Key),
+	})
+
+	if err != nil {
+		return fmt.Errorf("delete failed: %w", err)
+	}
+
+	return nil
+}

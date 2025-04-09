@@ -91,13 +91,16 @@ func main() {
 	r.HandleFunc("/api/v1/artists/{id}", artistHandler.GetArtistByID).Methods("GET")
 	r.HandleFunc("/api/v1/artists/{id}/tracks", trackHandler.GetTracksByArtistID).Methods("GET")
 	r.HandleFunc("/api/v1/artists/{id}/albums", albumHandler.GetAlbumsByArtistID).Methods("GET")
-
+	
 	r.HandleFunc("/api/v1/auth/signup", userHandler.Signup).Methods("POST")
 	r.HandleFunc("/api/v1/auth/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/api/v1/auth/logout", userHandler.Logout).Methods("POST")
 	r.HandleFunc("/api/v1/auth/check", userHandler.CheckUser).Methods("GET")
+
 	r.HandleFunc("/api/v1/user/{username}/avatar", userHandler.GetUserAvatar).Methods("GET")
 	r.HandleFunc("/api/v1/user/{username}/avatar", userHandler.UploadAvatar).Methods("POST")
+	r.HandleFunc("/api/v1/user/{username}/change", userHandler.ChangeUserData).Methods("POST")
+	r.HandleFunc("/api/v1/user/{username}/delete", userHandler.DeleteUser).Methods("DELETE")
 
 	err = http.ListenAndServe(cfg.Port, r)
 	if err != nil {
