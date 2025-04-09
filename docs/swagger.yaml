@@ -122,6 +122,12 @@ definitions:
       username:
         type: string
     type: object
+  delivery.Message:
+    properties:
+      msg:
+        example: object have been successfully created/updated
+        type: string
+    type: object
   delivery.RegisterData:
     description: User registration data
     properties:
@@ -131,6 +137,13 @@ definitions:
         type: string
       username:
         type: string
+    type: object
+  delivery.StreamID:
+    description: An id of a track stream
+    properties:
+      id:
+        example: 1
+        type: integer
     type: object
   delivery.Track:
     description: A music track entity
@@ -510,6 +523,40 @@ paths:
       summary: Register a new user
       tags:
       - users
+  /streams/{id}:
+    put:
+      description: updates listening duration at the end of stream
+      parameters:
+      - description: Stream ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message that stream was updated
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Message'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid ID or filters
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Update stream duration by id
+      tags:
+      - tracks
   /tracks:
     get:
       consumes:
@@ -581,6 +628,41 @@ paths:
           schema:
             $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
       summary: Get track by ID
+      tags:
+      - tracks
+  /tracks/{id}/stream:
+    post:
+      description: Creates stream for track by id, essentially it means saving track
+        to listening history
+      parameters:
+      - description: Track ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ID of created stream
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.StreamID'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid ID or filters
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Create stream for track by id
       tags:
       - tracks
   /users/{username}/avatar:

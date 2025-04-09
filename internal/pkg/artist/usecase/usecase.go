@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
+	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
@@ -27,24 +28,12 @@ func (u artistUsecase) GetArtistByID(id int64) (*usecaseModel.ArtistDetailed, er
 		return nil, err
 	}
 
-	return &usecaseModel.ArtistDetailed{
-		Artist: usecaseModel.Artist{
-			ID:          repoArtist.ID,
-			Title:       repoArtist.Title,
-			Thumbnail:   repoArtist.Thumbnail,
-			Description: repoArtist.Description,
-		},
-		Listeners: stats.ListenersCount,
-		Favorites: stats.FavoritesCount,
-	}, nil
+	return model.ArtistDetailedFromRepositoryToUsecase(repoArtist, stats), nil
 }
 
 func (u artistUsecase) GetAllArtists(filters *usecaseModel.ArtistFilters) ([]*usecaseModel.Artist, error) {
 	repoFilters := &repoModel.ArtistFilters{
-		Pagination: &repoModel.Pagination{
-			Offset: filters.Pagination.Offset,
-			Limit:  filters.Pagination.Limit,
-		},
+		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
 	}
 
 	repoArtists, err := u.artistRepo.GetAllArtists(repoFilters)
@@ -52,14 +41,5 @@ func (u artistUsecase) GetAllArtists(filters *usecaseModel.ArtistFilters) ([]*us
 		return nil, err
 	}
 
-	artists := make([]*usecaseModel.Artist, 0, len(repoArtists))
-	for _, repoArtist := range repoArtists {
-		artists = append(artists, &usecaseModel.Artist{
-			ID:          repoArtist.ID,
-			Title:       repoArtist.Title,
-			Thumbnail:   repoArtist.Thumbnail,
-			Description: repoArtist.Description,
-		})
-	}
-	return artists, nil
+	return model.ArtistsFromRepositoryToUsecase(repoArtists), nil
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 )
@@ -24,6 +25,24 @@ const (
 		JOIN track_artist ta ON track.id = ta.track_id
 		WHERE ta.artist_id = $1 AND (ta.role = 'main' OR ta.role = 'featured')
 		ORDER BY track.created_at DESC, track.id DESC
+	`
+
+	CreateStreamQuery = `
+		INSERT INTO stream (track_id, user_id) 
+		VALUES ($1, $2)
+		RETURNING id
+	`
+
+	GetStreamByIDQuery = `
+ 		SELECT id, user_id, track_id, duration
+		FROM stream
+ 		WHERE id = $1
+	`
+
+	UpdateStreamDurationQuery = `
+		UPDATE stream
+		SET duration = $1
+		WHERE id = $2
 	`
 )
 
@@ -91,4 +110,42 @@ func (r *TrackPostgresRepository) GetTracksByArtistID(artistID int64) ([]*reposi
 	}
 
 	return tracks, nil
+}
+
+func (r *TrackPostgresRepository) CreateStream(createData *repository.TrackStreamCreateData) (int64, error) {
+	var streamID int64
+	err := r.db.QueryRow(CreateStreamQuery, createData.TrackID, createData.UserID).Scan(&streamID)
+	if err != nil {
+		return 0, err
+	}
+
+	return streamID, nil
+}
+
+func (r *TrackPostgresRepository) GetStreamByID(id int64) (*repository.TrackStream, error) {
+	var stream repository.TrackStream
+	err := r.db.QueryRow(GetStreamByIDQuery, id).Scan(&stream.ID, &stream.UserID, &stream.TrackID, &stream.Duration)
+	if err != nil {
+		return nil, err
+	}
+
+	return &stream, nil
+}
+
+func (r *TrackPostgresRepository) UpdateStreamDuration(endedStream *repository.TrackStreamUpdateData) error {
+	result, err := r.db.Exec(UpdateStreamDurationQuery, endedStream.Duration, endedStream.StreamID)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return track.ErrFailedToUpdateStreamDuration
+	}
+
+	return nil
 }

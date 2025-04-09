@@ -8,7 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
-	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
+	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -45,10 +45,7 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 	}
 
 	usecaseArtists, err := h.usecase.GetAllArtists(&usecaseModel.ArtistFilters{
-		Pagination: &usecaseModel.Pagination{
-			Offset: pagination.Offset,
-			Limit:  pagination.Limit,
-		},
+		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
 	})
 
 	if err != nil {
@@ -57,15 +54,7 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	artists := make([]*deliveryModel.Artist, 0, len(usecaseArtists))
-	for _, usecaseArtist := range usecaseArtists {
-		artists = append(artists, &deliveryModel.Artist{
-			ID:          usecaseArtist.ID,
-			Title:       usecaseArtist.Title,
-			Thumbnail:   usecaseArtist.Thumbnail,
-			Description: usecaseArtist.Description,
-		})
-	}
+	artists := model.ArtistsFromUsecaseToDelivery(usecaseArtists)
 	helpers.WriteSuccessResponse(w, http.StatusOK, artists, nil)
 }
 
@@ -99,15 +88,6 @@ func (h *ArtistHandler) GetArtistByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	artistDetailed := &deliveryModel.ArtistDetailed{
-		Artist: deliveryModel.Artist{
-			ID:          usecaseArtist.ID,
-			Title:       usecaseArtist.Title,
-			Thumbnail:   usecaseArtist.Thumbnail,
-			Description: usecaseArtist.Description,
-		},
-		Listeners: usecaseArtist.Listeners,
-		Favorites: usecaseArtist.Favorites,
-	}
+	artistDetailed := model.ArtistDetailedFromUsecaseToDelivery(usecaseArtist)
 	helpers.WriteSuccessResponse(w, http.StatusOK, artistDetailed, nil)
 }

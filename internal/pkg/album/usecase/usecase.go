@@ -4,6 +4,7 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/genre"
+	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
@@ -20,10 +21,7 @@ type albumUsecase struct {
 
 func (u albumUsecase) GetAllAlbums(filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
 	repoFilters := &repoModel.AlbumFilters{
-		Pagination: &repoModel.Pagination{
-			Offset: filters.Pagination.Offset,
-			Limit:  filters.Pagination.Limit,
-		},
+		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
 	}
 
 	repoAlbums, err := u.albumRepo.GetAllAlbums(repoFilters)
@@ -39,25 +37,8 @@ func (u albumUsecase) GetAllAlbums(filters *usecaseModel.AlbumFilters) ([]*useca
 			return nil, err
 		}
 
-		albumArtists := make([]*usecaseModel.AlbumArtist, 0, len(repoArtists))
-		for _, repoArtist := range repoArtists {
-			albumArtists = append(albumArtists, &usecaseModel.AlbumArtist{
-				ID:    repoArtist.ID,
-				Title: repoArtist.Title,
-			})
-		}
-
-		albumType := usecaseModel.AlbumType(repoAlbum.Type)
-
-		album := &usecaseModel.Album{
-			ID:          repoAlbum.ID,
-			Title:       repoAlbum.Title,
-			Thumbnail:   repoAlbum.Thumbnail,
-			Type:        albumType,
-			ReleaseDate: repoAlbum.ReleaseDate,
-			Artists:     albumArtists,
-		}
-		albums = append(albums, album)
+		usecaseAlbum := model.AlbumFromRepositoryToUsecase(repoAlbum, repoArtists)
+		albums = append(albums, usecaseAlbum)
 	}
 	return albums, nil
 }
@@ -76,25 +57,8 @@ func (u albumUsecase) GetAlbumsByArtistID(artistID int64) ([]*usecaseModel.Album
 			return nil, err
 		}
 
-		albumArtists := make([]*usecaseModel.AlbumArtist, 0, len(repoArtists))
-		for _, repoArtist := range repoArtists {
-			albumArtists = append(albumArtists, &usecaseModel.AlbumArtist{
-				ID:    repoArtist.ID,
-				Title: repoArtist.Title,
-			})
-		}
-
-		albumType := usecaseModel.AlbumType(repoAlbum.Type)
-
-		album := &usecaseModel.Album{
-			ID:          repoAlbum.ID,
-			Title:       repoAlbum.Title,
-			Thumbnail:   repoAlbum.Thumbnail,
-			Type:        albumType,
-			ReleaseDate: repoAlbum.ReleaseDate,
-			Artists:     albumArtists,
-		}
-		albums = append(albums, album)
+		usecaseAlbum := model.AlbumFromRepositoryToUsecase(repoAlbum, repoArtists)
+		albums = append(albums, usecaseAlbum)
 	}
 	return albums, nil
 }

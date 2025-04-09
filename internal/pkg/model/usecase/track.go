@@ -16,6 +16,23 @@ type Track struct {
 	Artists   []*TrackArtist
 }
 
+type TrackStreamUpdateData struct {
+	StreamID int64
+	UserID   int64
+	Duration int64
+}
+
+type TrackStreamCreateData struct {
+	TrackID int64
+	UserID  int64
+}
+
+type TrackStream struct {
+	ID       int64
+	TrackID  int64
+	Duration int64
+}
+
 type TrackDetailed struct {
 	Track
 	FileUrl string
