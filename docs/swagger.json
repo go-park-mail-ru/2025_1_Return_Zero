@@ -617,6 +617,109 @@
                 }
             }
         },
+        "/user/{username}": {
+            "put": {
+                "description": "Updates user's profile information such as username, email, or password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Change user profile data",
+                "parameters": [
+                    {
+                        "description": "User data to be updated",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ChangeUserData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User data successfully updated",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.UserToFront"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid user data or validation failure",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes the authenticated user's account. Requires valid session cookie and matching user credentials.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Delete user account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID cookie (session_id=...)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "User credentials for deletion verification",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.UserDelete"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User successfully deleted",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.Message"
+                        }
+                    },
+                    "400": {
+                        "description": "Possible errors: invalid request body, validation failed, credentials mismatch, session cookie missing",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error during user deletion",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/{username}/avatar": {
             "get": {
                 "description": "Retrieves the avatar URL for a specific user",
@@ -721,111 +824,6 @@
                     },
                     "400": {
                         "description": "Bad request - invalid file or username",
-                        "schema": {
-                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/{username}/change": {
-            "post": {
-                "description": "Updates user's profile information such as username, email, or password",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Change user profile data",
-                "parameters": [
-                    {
-                        "description": "User data to be updated",
-                        "name": "data",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/delivery.ChangeUserData"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "User data successfully updated",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.UserToFront"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request - invalid user data or validation failure",
-                        "schema": {
-                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/user/{username}/delete": {
-            "delete": {
-                "description": "Deletes the authenticated user's account. Requires valid session cookie and matching user credentials.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Delete user account",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Session ID cookie (session_id=...)",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "User credentials for deletion verification",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/delivery.UserDelete"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "User successfully deleted",
-                        "schema": {
-                            "$ref": "#/definitions/delivery.Message"
-                        }
-                    },
-                    "400": {
-                        "description": "Possible errors: invalid request body, validation failed, credentials mismatch, session cookie missing",
-                        "schema": {
-                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error during user deletion",
                         "schema": {
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }

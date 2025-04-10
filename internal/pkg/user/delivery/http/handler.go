@@ -325,7 +325,7 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 // @Param data body delivery.ChangeUserData true "User data to be updated"
 // @Success 200 {object} delivery.APIResponse{body=delivery.UserToFront} "User data successfully updated"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid user data or validation failure"
-// @Router /user/{username}/change [post]
+// @Router /user/{username} [put]
 func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 
@@ -368,10 +368,10 @@ func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param Authorization header string true "Session ID cookie (session_id=...)"
 // @Param user body delivery.UserDelete true "User credentials for deletion verification"
-// @Success 200 {object} delivery.Message "User successfully deleted"
+// @Success 200 {object} delivery.APIResponse{body=delivery.Message} "User successfully deleted"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Possible errors: invalid request body, validation failed, credentials mismatch, session cookie missing"
 // @Failure 500 {object} delivery.APIBadRequestErrorResponse "Internal server error during user deletion"
-// @Router /user/{username}/delete [delete]
+// @Router /user/{username} [delete]
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 

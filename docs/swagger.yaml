@@ -611,6 +611,74 @@ paths:
       summary: Get track by ID
       tags:
       - tracks
+  /user/{username}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes the authenticated user's account. Requires valid session
+        cookie and matching user credentials.
+      parameters:
+      - description: Session ID cookie (session_id=...)
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User credentials for deletion verification
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.UserDelete'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User successfully deleted
+          schema:
+            $ref: '#/definitions/delivery.Message'
+        "400":
+          description: 'Possible errors: invalid request body, validation failed,
+            credentials mismatch, session cookie missing'
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error during user deletion
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+      summary: Delete user account
+      tags:
+      - user
+    put:
+      consumes:
+      - application/json
+      description: Updates user's profile information such as username, email, or
+        password
+      parameters:
+      - description: User data to be updated
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.ChangeUserData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User data successfully updated
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.UserToFront'
+              type: object
+        "400":
+          description: Bad request - invalid user data or validation failure
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+      summary: Change user profile data
+      tags:
+      - user
   /user/{username}/avatar:
     get:
       consumes:
@@ -677,75 +745,6 @@ paths:
           schema:
             $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
       summary: Upload user avatar
-      tags:
-      - user
-  /user/{username}/change:
-    post:
-      consumes:
-      - application/json
-      description: Updates user's profile information such as username, email, or
-        password
-      parameters:
-      - description: User data to be updated
-        in: body
-        name: data
-        required: true
-        schema:
-          $ref: '#/definitions/delivery.ChangeUserData'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: User data successfully updated
-          schema:
-            allOf:
-            - $ref: '#/definitions/delivery.APIResponse'
-            - properties:
-                body:
-                  $ref: '#/definitions/delivery.UserToFront'
-              type: object
-        "400":
-          description: Bad request - invalid user data or validation failure
-          schema:
-            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
-      summary: Change user profile data
-      tags:
-      - user
-  /user/{username}/delete:
-    delete:
-      consumes:
-      - application/json
-      description: Deletes the authenticated user's account. Requires valid session
-        cookie and matching user credentials.
-      parameters:
-      - description: Session ID cookie (session_id=...)
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: User credentials for deletion verification
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/delivery.UserDelete'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: User successfully deleted
-          schema:
-            $ref: '#/definitions/delivery.Message'
-        "400":
-          description: 'Possible errors: invalid request body, validation failed,
-            credentials mismatch, session cookie missing'
-          schema:
-            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
-        "500":
-          description: Internal server error during user deletion
-          schema:
-            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
-      summary: Delete user account
       tags:
       - user
 swagger: "2.0"
