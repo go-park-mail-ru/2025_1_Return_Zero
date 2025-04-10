@@ -708,7 +708,19 @@ const docTemplate = `{
                     "200": {
                         "description": "User successfully deleted",
                         "schema": {
-                            "$ref": "#/definitions/delivery.Message"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.Message"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {

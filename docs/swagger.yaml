@@ -635,7 +635,12 @@ paths:
         "200":
           description: User successfully deleted
           schema:
-            $ref: '#/definitions/delivery.Message'
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Message'
+              type: object
         "400":
           description: 'Possible errors: invalid request body, validation failed,
             credentials mismatch, session cookie missing'
