@@ -7,7 +7,7 @@ TRUNCATE TABLE genre_track CASCADE;
 TRUNCATE TABLE track_artist CASCADE;
 
 INSERT INTO artist (title, thumbnail_url, description) VALUES
-	('Inabakumori', 'https://returnzeroimages.fra1.digiYOASOBItaloceanspaces.com/artists/anticyclone.jpg', 'Inabakumori is a Japanese artist'),
+	('Inabakumori', 'https://returnzeroimages.fra1.digitaloceanspaces.com/artists/anticyclone.jpg', 'Inabakumori is a Japanese artist'),
 	('YOASOBI', 'https://returnzeroimages.fra1.digitaloceanspaces.com/artists/yoasobi.jpg', 'YOASOBI is a Japanese artist'),
 	('Kenshi Yonezu', 'https://returnzeroimages.fra1.digitaloceanspaces.com/artists/kenshiyonezu.jpg', 'Kenshi Yonezu is a Japanese artist'),
 	('RADWIMPS', 'https://returnzeroimages.fra1.digitaloceanspaces.com/artists/radwimps.jpg', 'RADWIMPS is a Japanese artist'),
