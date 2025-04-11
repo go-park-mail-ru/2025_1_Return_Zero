@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"net/http"
 
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"

@@ -3,9 +3,15 @@ ifneq (,$(wildcard ../.env))
 	export
 endif
 
+# deploy
 deploy:
-	docker compose up -d
+	docker compose up -d --build
 
+# docker down
+undeploy:
+	docker compose down --volumes --remove-orphans --rmi all
+
+# docker remove
 docker-remove:
 	docker rm $(docker ps) && docker volume prune -f
 

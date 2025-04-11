@@ -17,7 +17,7 @@ services:
     ports:
       - '${POSTGRES_PORT}:${POSTGRES_PORT}'
     volumes:
-      - './_postgres/:/docker-entrypoint-initdb.d/'
+      - 'pgdata:/var/lib/postgresql/data'
     tty: true
 
   redis:
@@ -68,3 +68,7 @@ services:
     depends_on:
       - go-api
     tty: true
+
+volumes:
+  pgdata:
+    driver: local
