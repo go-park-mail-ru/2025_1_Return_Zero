@@ -1,0 +1,58 @@
+# docker-compose up
+# docker rm $(docker ps -a -q) && docker volume prune -f
+
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: ./images/postgres/Dockerfile
+    restart: always
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+    ports:
+      - '${POSTGRES_PORT}:${POSTGRES_PORT}'
+    volumes:
+      - './_postgres/:/docker-entrypoint-initdb.d/'
+    tty: true
+
+  redis:
+    image: 'redis'
+    container_name: redis
+    restart: always
+    environment:
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_HOST: ${REDIS_HOST}
+    ports:
+      - '${REDIS_PORT}:${REDIS_PORT}'
+    tty: true
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/images/api/Dockerfile
+    container_name: ReturnZeroAPI
+    environment:
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: postgres
+      S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
+      S3_TRACKS_BUCKET: ${S3_TRACKS_BUCKET}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_REGION: ${S3_REGION}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+    restart: always
+    ports:
+      - '8080:8080'
+    tty: true
+    depends_on:
+      - postgres
+      - redis
