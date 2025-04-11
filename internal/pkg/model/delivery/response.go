@@ -30,4 +30,3 @@ type APIInternalServerErrorResponse struct {
 
 type Message struct {
 	Message string `json:"msg" example:"object have been successfully created/updated" description:"Message for responses without data"`
-}

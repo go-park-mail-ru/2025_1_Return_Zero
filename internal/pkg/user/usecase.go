@@ -15,4 +15,6 @@ type Usecase interface {
 	Logout(SID string)
 	GetAvatar(username string) (string, error)
 	UploadAvatar(username string, fileAvatar io.Reader) error
+	ChangeUserData(username string, changeData *usecaseModel.ChangeUserData) (*usecaseModel.User, error)
+	DeleteUser(user *usecaseModel.User, SID string) error
 }

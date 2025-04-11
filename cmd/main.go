@@ -100,8 +100,11 @@ func main() {
 	r.HandleFunc("/api/v1/auth/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/api/v1/auth/logout", userHandler.Logout).Methods("POST")
 	r.HandleFunc("/api/v1/auth/check", userHandler.CheckUser).Methods("GET")
+
 	r.HandleFunc("/api/v1/user/{username}/avatar", userHandler.GetUserAvatar).Methods("GET")
 	r.HandleFunc("/api/v1/user/{username}/avatar", userHandler.UploadAvatar).Methods("POST")
+	r.HandleFunc("/api/v1/user/{username}", userHandler.ChangeUserData).Methods("PUT")
+	r.HandleFunc("/api/v1/user/{username}", userHandler.DeleteUser).Methods("DELETE")
 
 	err = http.ListenAndServe(cfg.Port, r)
 	if err != nil {

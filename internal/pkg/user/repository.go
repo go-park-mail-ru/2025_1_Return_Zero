@@ -10,4 +10,6 @@ type Repository interface {
 	LoginUser(user *repoModel.User) (*repoModel.User, error)
 	UploadAvatar(avatarUrl string, username string) error
 	GetAvatar(username string) (string, error)
+	ChangeUserData(changeData *repoModel.ChangeUserData) (*repoModel.User, error)
+	DeleteUser(user *repoModel.User) error
 }

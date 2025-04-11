@@ -7,4 +7,5 @@ import (
 type Repository interface {
 	GetAvatarURL(fileKey string) (string, error)
 	UploadUserAvatar(username string, fileContent io.Reader) (string, error)
+	DeleteUserAvatar(username string) error
 }

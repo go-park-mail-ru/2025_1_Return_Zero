@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"errors"
+	"fmt"
 
 	"golang.org/x/crypto/argon2"
 
@@ -18,6 +19,7 @@ var (
 	ErrEmailExist    = errors.New("user with this email already exists")
 	ErrUserNotFound  = errors.New("user not found")
 	ErrCreateSalt    = errors.New("failed to create salt")
+	ErrWrongPassword = errors.New("wrong password")
 )
 
 type userPostgresRepository struct {
@@ -55,6 +57,30 @@ const (
 			FROM "user"
 			WHERE username = $1
 			`
+	changeUsernameQuery = `
+			UPDATE "user"
+			SET username = $1
+			WHERE username = $2
+			`
+	changeEmailQuery = `
+			UPDATE "user"
+			SET email = $1
+			WHERE username = $2
+			`
+	changePasswordQuery = `
+			UPDATE "user"
+			SET password_hash = $1
+			WHERE username = $2
+			`
+	getPasswordQuery = `
+			SELECT password_hash
+			FROM "user"
+			WHERE username = $1
+	`
+	deleteUserQuery = `
+			DELETE FROM "user"
+			WHERE username = $1 AND email = $2
+	`
 )
 
 func hashPassword(salt []byte, password string) string {
@@ -71,6 +97,19 @@ func checkPasswordHash(encodedHash string, password string) bool {
 	salt := decodedHash[:8]
 	userPassHash := argon2.IDKey([]byte(password), salt, 1, 64*1024, 4, 32)
 	return bytes.Equal(userPassHash, decodedHash[8:])
+}
+
+func (r *userPostgresRepository) getPassword(username string) (string, error) {
+	row := r.db.QueryRow(getPasswordQuery, username)
+	var storedHash string
+	err := row.Scan(&storedHash)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", ErrUserNotFound
+		}
+		return "", err
+	}
+	return storedHash, nil
 }
 
 func NewUserPostgresRepository(db *sql.DB) user.Repository {
@@ -167,6 +206,83 @@ func (r *userPostgresRepository) GetAvatar(username string) (string, error) {
 
 func (r *userPostgresRepository) UploadAvatar(avatarUrl string, username string) error {
 	_, err := r.db.Exec(uploadAvatarQuery, avatarUrl, username)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *userPostgresRepository) changeUsername(username string, newUsername string) error {
+	_, err := r.db.Exec(changeUsernameQuery, newUsername, username)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *userPostgresRepository) changeEmail(username string, newEmail string) error {
+	_, err := r.db.Exec(changeEmailQuery, newEmail, username)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *userPostgresRepository) changePassword(password string, username string, newPassword string) error {
+	storedHash, err := r.getPassword(username)
+	if err != nil {
+		return err
+	}
+	if !checkPasswordHash(storedHash, password) {
+		return ErrWrongPassword
+	}
+	salt := createSalt()
+	newHashedPassword := hashPassword(salt, newPassword)
+	_, err = r.db.Exec(changePasswordQuery, newHashedPassword, username)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *userPostgresRepository) ChangeUserData(changeData *repoModel.ChangeUserData) (*repoModel.User, error) {
+	newUser := &repoModel.User{
+		Username: changeData.Username,
+		Email:    changeData.Email,
+	}
+	if changeData.NewUsername != "" {
+		err := r.changeUsername(changeData.Username, changeData.NewUsername)
+		if err != nil {
+			return nil, err
+		}
+		newUser.Username = changeData.NewUsername
+	}
+	if changeData.NewEmail != "" {
+		err := r.changeEmail(changeData.Username, changeData.NewEmail)
+		if err != nil {
+			return nil, err
+		}
+		newUser.Email = changeData.NewEmail
+	}
+	if changeData.NewPassword != "" {
+		err := r.changePassword(changeData.Password, changeData.Username, changeData.NewPassword)
+		if err != nil {
+			return nil, err
+		}
+	}
+	fmt.Println(newUser)
+	return newUser, nil
+}
+
+func (r *userPostgresRepository) DeleteUser(user *repoModel.User) error {
+	storedHash, err := r.getPassword(user.Username)
+	if err != nil {
+		return err
+	}
+	if !checkPasswordHash(storedHash, user.Password) {
+		return ErrWrongPassword
+	}
+	_, err = r.db.Exec(deleteUserQuery, user.Username, user.Email)
 	if err != nil {
 		return err
 	}
