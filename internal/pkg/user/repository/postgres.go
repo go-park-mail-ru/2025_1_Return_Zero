@@ -7,7 +7,6 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"errors"
-	"fmt"
 
 	"golang.org/x/crypto/argon2"
 
@@ -314,7 +313,6 @@ func (r *userPostgresRepository) ChangeUserData(ctx context.Context, changeData 
 			return nil, err
 		}
 	}
-	fmt.Println(newUser)
 	return newUser, nil
 }
 
