@@ -317,6 +317,251 @@ const docTemplate = `{
                 }
             }
         },
+        "/check": {
+            "get": {
+                "description": "Verifies user's session and returns user information if authenticated",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Check user authentication",
+                "responses": {
+                    "200": {
+                        "description": "User information",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.UserToFront"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - session not found or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "description": "Authenticates a user with provided login credentials and returns a session",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Authenticate user",
+                "parameters": [
+                    {
+                        "description": "User login data",
+                        "name": "login",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.LoginData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User successfully authenticated",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.UserToFront"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid login data",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "description": "Terminates user session and invalidates session cookie",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Log out user",
+                "responses": {
+                    "200": {
+                        "description": "Successfully logged out",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - session not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/signup": {
+            "post": {
+                "description": "Creates a new user account with provided registration data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "User registration data",
+                        "name": "register",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.RegisterData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User successfully registered",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.UserToFront"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid registration data",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/streams/{id}": {
+            "put": {
+                "description": "updates listening duration at the end of stream",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tracks"
+                ],
+                "summary": "Update stream duration by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Stream ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message that stream was updated",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Message"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID or filters",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/tracks": {
             "get": {
                 "description": "Get a list of tracks with optional pagination filters",
@@ -436,6 +681,179 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/tracks/{id}/stream": {
+            "post": {
+                "description": "Creates stream for track by id, essentially it means saving track to listening history",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tracks"
+                ],
+                "summary": "Create stream for track by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Track ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ID of created stream",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.StreamID"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID or filters",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{username}/avatar": {
+            "get": {
+                "description": "Retrieves the avatar URL for a specific user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get user avatar",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Avatar URL",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - username not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Uploads a new avatar image for a specific user",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Upload user avatar",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Avatar image file (max 5MB, image formats only)",
+                        "name": "avatar",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Avatar successfully uploaded",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid file or username",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -482,12 +900,11 @@ const docTemplate = `{
             "description": "A music album entity",
             "type": "object",
             "properties": {
-                "artist": {
-                    "type": "string"
-                },
-                "artist_id": {
-                    "type": "integer",
-                    "example": 1
+                "artists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/delivery.AlbumArtist"
+                    }
                 },
                 "id": {
                     "type": "integer",
@@ -512,6 +929,20 @@ const docTemplate = `{
                         }
                     ],
                     "example": "album"
+                }
+            }
+        },
+        "delivery.AlbumArtist": {
+            "description": "An artist associated with an album",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Inabakumori"
                 }
             }
         },
@@ -579,6 +1010,55 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "Inabakumori"
+                }
+            }
+        },
+        "delivery.LoginData": {
+            "description": "User login data",
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "delivery.Message": {
+            "type": "object",
+            "properties": {
+                "msg": {
+                    "type": "string",
+                    "example": "object have been successfully created/updated"
+                }
+            }
+        },
+        "delivery.RegisterData": {
+            "description": "User registration data",
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "delivery.StreamID": {
+            "description": "An id of a track stream",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
@@ -670,6 +1150,18 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "Lagtrain"
+                }
+            }
+        },
+        "delivery.UserToFront": {
+            "description": "User data",
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         }

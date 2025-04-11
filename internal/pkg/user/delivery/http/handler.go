@@ -68,8 +68,8 @@ func validateData(data interface{}) (bool, error) {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param register body deliveryModel.RegisterData true "User registration data"
-// @Success 200 {object} delivery.APIResponse{body=deliveryModel.UserToFront} "User successfully registered"
+// @Param register body delivery.RegisterData true "User registration data"
+// @Success 200 {object} delivery.APIResponse{body=delivery.UserToFront} "User successfully registered"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid registration data"
 // @Router /signup [post]
 func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
@@ -105,8 +105,8 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param login body deliveryModel.LoginData true "User login data"
-// @Success 200 {object} delivery.APIResponse{body=deliveryModel.UserToFront} "User successfully authenticated"
+// @Param login body delivery.LoginData true "User login data"
+// @Success 200 {object} delivery.APIResponse{body=delivery.UserToFront} "User successfully authenticated"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid login data"
 // @Router /login [post]
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -171,7 +171,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 // @Tags users
 // @Accept json
 // @Produce json
-// @Success 200 {object} delivery.APIResponse{body=deliveryModel.UserToFront} "User information"
+// @Success 200 {object} delivery.APIResponse{body=delivery.UserToFront} "User information"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - session not found or invalid"
 // @Router /check [get]
 func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
@@ -234,7 +234,7 @@ func (h *UserHandler) GetUserAvatar(w http.ResponseWriter, r *http.Request) {
 // @Param avatar formData file true "Avatar image file (max 5MB, image formats only)"
 // @Success 200 {object} delivery.APIResponse{body=map[string]string} "Avatar successfully uploaded"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid file or username"
-// @Router /users/{username}/avatar [post
+// @Router /users/{username}/avatar [post]
 func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	vars := mux.Vars(r)

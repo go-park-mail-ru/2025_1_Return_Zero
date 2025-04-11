@@ -65,8 +65,8 @@ func main() {
 	r := mux.NewRouter()
 	fmt.Printf("Server starting on port %s...\n", cfg.Port)
 
-	r.PathPrefix("/docs/").Handler(httpSwagger.Handler(
-		httpSwagger.URL("/docs/doc.json"),
+	r.PathPrefix("/api/v1/docs/").Handler(httpSwagger.Handler(
+		httpSwagger.URL("/api/v1/docs/doc.json"),
 		httpSwagger.DeepLinking(true),
 		httpSwagger.DocExpansion("none"),
 	))
@@ -86,7 +86,11 @@ func main() {
 
 	r.HandleFunc("/api/v1/tracks", trackHandler.GetAllTracks).Methods("GET")
 	r.HandleFunc("/api/v1/tracks/{id}", trackHandler.GetTrackByID).Methods("GET")
+	r.HandleFunc("/api/v1/tracks/{id}/stream", trackHandler.CreateStream).Methods("POST")
+	r.HandleFunc("/api/v1/streams/{id}", trackHandler.UpdateStreamDuration).Methods("PUT", "PATCH")
+
 	r.HandleFunc("/api/v1/albums", albumHandler.GetAllAlbums).Methods("GET")
+
 	r.HandleFunc("/api/v1/artists", artistHandler.GetAllArtists).Methods("GET")
 	r.HandleFunc("/api/v1/artists/{id}", artistHandler.GetArtistByID).Methods("GET")
 	r.HandleFunc("/api/v1/artists/{id}/tracks", trackHandler.GetTracksByArtistID).Methods("GET")

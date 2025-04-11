@@ -27,3 +27,7 @@ type APIInternalServerErrorResponse struct {
 	Status int    `json:"status" example:"500" description:"HTTP status code"`
 	Error  string `json:"error" example:"Something went wrong" description:"Error message"`
 }
+
+type Message struct {
+	Message string `json:"msg" example:"object have been successfully created/updated" description:"Message for responses without data"`
+}

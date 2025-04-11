@@ -31,11 +31,10 @@ definitions:
   delivery.Album:
     description: A music album entity
     properties:
-      artist:
-        type: string
-      artist_id:
-        example: 1
-        type: integer
+      artists:
+        items:
+          $ref: '#/definitions/delivery.AlbumArtist'
+        type: array
       id:
         example: 1
         type: integer
@@ -52,6 +51,16 @@ definitions:
         allOf:
         - $ref: '#/definitions/delivery.AlbumType'
         example: album
+    type: object
+  delivery.AlbumArtist:
+    description: An artist associated with an album
+    properties:
+      id:
+        example: 1
+        type: integer
+      title:
+        example: Inabakumori
+        type: string
     type: object
   delivery.AlbumType:
     enum:
@@ -102,6 +111,39 @@ definitions:
       title:
         example: Inabakumori
         type: string
+    type: object
+  delivery.LoginData:
+    description: User login data
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  delivery.Message:
+    properties:
+      msg:
+        example: object have been successfully created/updated
+        type: string
+    type: object
+  delivery.RegisterData:
+    description: User registration data
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  delivery.StreamID:
+    description: An id of a track stream
+    properties:
+      id:
+        example: 1
+        type: integer
     type: object
   delivery.Track:
     description: A music track entity
@@ -166,6 +208,14 @@ definitions:
         type: string
       title:
         example: Lagtrain
+        type: string
+    type: object
+  delivery.UserToFront:
+    description: User data
+    properties:
+      email:
+        type: string
+      username:
         type: string
     type: object
 host: returnzero.ru
@@ -360,6 +410,153 @@ paths:
       summary: Get tracks by artist ID
       tags:
       - tracks
+  /check:
+    get:
+      consumes:
+      - application/json
+      description: Verifies user's session and returns user information if authenticated
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User information
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.UserToFront'
+              type: object
+        "400":
+          description: Bad request - session not found or invalid
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+      summary: Check user authentication
+      tags:
+      - users
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user with provided login credentials and returns
+        a session
+      parameters:
+      - description: User login data
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.LoginData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User successfully authenticated
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.UserToFront'
+              type: object
+        "400":
+          description: Bad request - invalid login data
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+      summary: Authenticate user
+      tags:
+      - users
+  /logout:
+    post:
+      consumes:
+      - application/json
+      description: Terminates user session and invalidates session cookie
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully logged out
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad request - session not found
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+      summary: Log out user
+      tags:
+      - users
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user account with provided registration data
+      parameters:
+      - description: User registration data
+        in: body
+        name: register
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.RegisterData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User successfully registered
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.UserToFront'
+              type: object
+        "400":
+          description: Bad request - invalid registration data
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+      summary: Register a new user
+      tags:
+      - users
+  /streams/{id}:
+    put:
+      description: updates listening duration at the end of stream
+      parameters:
+      - description: Stream ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Message that stream was updated
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Message'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid ID or filters
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Update stream duration by id
+      tags:
+      - tracks
   /tracks:
     get:
       consumes:
@@ -433,4 +630,111 @@ paths:
       summary: Get track by ID
       tags:
       - tracks
+  /tracks/{id}/stream:
+    post:
+      description: Creates stream for track by id, essentially it means saving track
+        to listening history
+      parameters:
+      - description: Track ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ID of created stream
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.StreamID'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid ID or filters
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Create stream for track by id
+      tags:
+      - tracks
+  /users/{username}/avatar:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the avatar URL for a specific user
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Avatar URL
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad request - username not found
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get user avatar
+      tags:
+      - users
+    post:
+      consumes:
+      - multipart/form-data
+      description: Uploads a new avatar image for a specific user
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Avatar image file (max 5MB, image formats only)
+        in: formData
+        name: avatar
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Avatar successfully uploaded
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad request - invalid file or username
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+      summary: Upload user avatar
+      tags:
+      - users
 swagger: "2.0"
