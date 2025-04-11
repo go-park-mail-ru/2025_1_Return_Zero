@@ -71,7 +71,7 @@ func main() {
 		httpSwagger.DocExpansion("none"),
 	))
 
-	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisConn), userFileRepo.NewS3Repository(s3, cfg.S3.S3_IMAGES_BUCKET))
+	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisConn), userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket))
 
 	r.Use(middleware.Logger)
 	r.Use(middleware.RequestId)
@@ -79,7 +79,7 @@ func main() {
 	r.Use(middleware.Auth(newUserUsecase))
 	r.Use(cfg.Cors.Middleware)
 
-	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3_TRACKS_BUCKET, cfg.S3.S3_DURATION)), cfg)
+	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration)), cfg)
 	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), genreRepository.NewGenrePostgresRepository(postgresConn)), cfg)
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistRepository.NewArtistPostgresRepository(postgresConn)), cfg)
 	userHandler := userHttp.NewUserHandler(newUserUsecase)
@@ -97,10 +97,11 @@ func main() {
 	r.HandleFunc("/api/v1/auth/logout", userHandler.Logout).Methods("POST")
 	r.HandleFunc("/api/v1/auth/check", userHandler.CheckUser).Methods("GET")
 
-	r.HandleFunc("/api/v1/user/{username}/avatar", userHandler.GetUserAvatar).Methods("GET")
 	r.HandleFunc("/api/v1/user/{username}/avatar", userHandler.UploadAvatar).Methods("POST")
 	r.HandleFunc("/api/v1/user/{username}", userHandler.ChangeUserData).Methods("PUT")
 	r.HandleFunc("/api/v1/user/{username}", userHandler.DeleteUser).Methods("DELETE")
+	r.HandleFunc("/api/v1/user/{username}/privacy", userHandler.ChangeUserPrivacySettings).Methods("PUT")
+	r.HandleFunc("/api/v1/user/{username}", userHandler.GetUserData).Methods("GET")
 
 	err = http.ListenAndServe(cfg.Port, r)
 	if err != nil {

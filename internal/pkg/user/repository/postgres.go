@@ -2,6 +2,7 @@ package repository
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"database/sql"
 	"encoding/base64"
@@ -38,12 +39,12 @@ const (
 			RETURNING id
 			`
 	getUserByIDQuery = `
-			SELECT id, username, email
+			SELECT id, username, email, thumbnail_url
 			FROM "user"
 			WHERE id = $1
 			`
 	loginUserQuery = `
-			SELECT id, username, email, password_hash
+			SELECT id, username, email, password_hash, thumbnail_url
 			FROM "user"
 			WHERE username = $1 OR email = $2
 			`
@@ -81,6 +82,44 @@ const (
 			DELETE FROM "user"
 			WHERE username = $1 AND email = $2
 	`
+	changePrivacySettingsQuery = `
+			UPDATE "user_settings"
+			SET is_public_playlists = $1,
+				is_public_minutes_listened = $2,
+				is_public_favorite_artists = $3,
+				is_public_tracks_listened = $4,
+				is_public_favorite_tracks = $5,
+				is_public_artists_listened = $6
+			WHERE user_id = $7
+	`
+	getIdByUsernameQuery = `
+			SELECT id
+			FROM "user"
+			WHERE username = $1
+	`
+	getUserDataQuery = `
+			SELECT u.username, u.thumbnail_url, 
+				us.is_public_playlists,
+				us.is_public_minutes_listened,
+				us.is_public_favorite_artists,
+				us.is_public_tracks_listened,
+				us.is_public_favorite_tracks,
+				us.is_public_artists_listened
+			FROM "user" u
+			INNER JOIN "user_settings" us ON u.id = us.user_id
+			WHERE u.username = $1
+	`
+	createUserSettingsQuery = `
+            INSERT INTO "user_settings" (
+                user_id, 
+                is_public_playlists, 
+                is_public_minutes_listened, 
+                is_public_favorite_artists, 
+                is_public_tracks_listened, 
+                is_public_favorite_tracks, 
+                is_public_artists_listened
+            ) VALUES ($1, false, false, false, false, false, false)
+    `
 )
 
 func hashPassword(salt []byte, password string) string {
@@ -99,8 +138,8 @@ func checkPasswordHash(encodedHash string, password string) bool {
 	return bytes.Equal(userPassHash, decodedHash[8:])
 }
 
-func (r *userPostgresRepository) getPassword(username string) (string, error) {
-	row := r.db.QueryRow(getPasswordQuery, username)
+func (r *userPostgresRepository) getPassword(ctx context.Context, username string) (string, error) {
+	row := r.db.QueryRowContext(ctx, getPasswordQuery, username)
 	var storedHash string
 	err := row.Scan(&storedHash)
 	if err != nil {
@@ -129,9 +168,9 @@ func createSalt() []byte {
 	return salt
 }
 
-func (r *userPostgresRepository) CreateUser(regData *repoModel.User) (*repoModel.User, error) {
+func (r *userPostgresRepository) CreateUser(ctx context.Context, regData *repoModel.User) (*repoModel.User, error) {
 	var exists bool
-	err := r.db.QueryRow(checkUserExist, regData.Username, regData.Email).Scan(&exists)
+	err := r.db.QueryRowContext(ctx, checkUserExist, regData.Username, regData.Email).Scan(&exists)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
@@ -146,23 +185,28 @@ func (r *userPostgresRepository) CreateUser(regData *repoModel.User) (*repoModel
 	hashedPassword := hashPassword(salt, regData.Password)
 
 	var userID int64
-	err = r.db.QueryRow(createUserQuery, regData.Username,
+	err = r.db.QueryRowContext(ctx, createUserQuery, regData.Username,
 		hashedPassword, regData.Email).Scan(&userID)
 	if err != nil {
 		return nil, err
 	}
 
+	_, err = r.db.ExecContext(ctx, createUserSettingsQuery, userID)
+	if err != nil {
+		return nil, err
+	}
+
 	return &repoModel.User{
-		ID:       userID,
+		ID: 	 userID,
 		Username: regData.Username,
 		Email:    regData.Email,
 	}, nil
 }
 
-func (r *userPostgresRepository) GetUserByID(ID int64) (*repoModel.User, error) {
-	row := r.db.QueryRow(getUserByIDQuery, ID)
+func (r *userPostgresRepository) GetUserByID(ctx context.Context, ID int64) (*repoModel.User, error) {
+	row := r.db.QueryRowContext(ctx, getUserByIDQuery, ID)
 	var user repoModel.User
-	err := row.Scan(&user.ID, &user.Username, &user.Email)
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Thumbnail)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ErrUserNotFound
@@ -172,11 +216,11 @@ func (r *userPostgresRepository) GetUserByID(ID int64) (*repoModel.User, error) 
 	return &user, nil
 }
 
-func (r *userPostgresRepository) LoginUser(logData *repoModel.User) (*repoModel.User, error) {
+func (r *userPostgresRepository) LoginUser(ctx context.Context, logData *repoModel.User) (*repoModel.User, error) {
 	var storedHash string
-	row := r.db.QueryRow(loginUserQuery, logData.Username, logData.Email)
+	row := r.db.QueryRowContext(ctx, loginUserQuery, logData.Username, logData.Email)
 	var user repoModel.User
-	err := row.Scan(&user.ID, &user.Username, &user.Email, &storedHash)
+	err := row.Scan(&user.ID, &user.Username, &user.Email, &storedHash, &user.Thumbnail)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ErrUserNotFound
@@ -191,8 +235,8 @@ func (r *userPostgresRepository) LoginUser(logData *repoModel.User) (*repoModel.
 	return &user, nil
 }
 
-func (r *userPostgresRepository) GetAvatar(username string) (string, error) {
-	row := r.db.QueryRow(getAvatarQuery, username)
+func (r *userPostgresRepository) GetAvatar(ctx context.Context, username string) (string, error) {
+	row := r.db.QueryRowContext(ctx, getAvatarQuery, username)
 	var avatarUrl string
 	err := row.Scan(&avatarUrl)
 	if err != nil {
@@ -204,32 +248,32 @@ func (r *userPostgresRepository) GetAvatar(username string) (string, error) {
 	return avatarUrl, nil
 }
 
-func (r *userPostgresRepository) UploadAvatar(avatarUrl string, username string) error {
-	_, err := r.db.Exec(uploadAvatarQuery, avatarUrl, username)
+func (r *userPostgresRepository) UploadAvatar(ctx context.Context, avatarUrl string, username string) error {
+	_, err := r.db.ExecContext(ctx, uploadAvatarQuery, avatarUrl, username)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *userPostgresRepository) changeUsername(username string, newUsername string) error {
-	_, err := r.db.Exec(changeUsernameQuery, newUsername, username)
+func (r *userPostgresRepository) changeUsername(ctx context.Context, username string, newUsername string) error {
+	_, err := r.db.ExecContext(ctx, changeUsernameQuery, newUsername, username)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *userPostgresRepository) changeEmail(username string, newEmail string) error {
-	_, err := r.db.Exec(changeEmailQuery, newEmail, username)
+func (r *userPostgresRepository) changeEmail(ctx context.Context, username string, newEmail string) error {
+	_, err := r.db.ExecContext(ctx, changeEmailQuery, newEmail, username)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *userPostgresRepository) changePassword(password string, username string, newPassword string) error {
-	storedHash, err := r.getPassword(username)
+func (r *userPostgresRepository) changePassword(ctx context.Context, password string, username string, newPassword string) error {
+	storedHash, err := r.getPassword(ctx, username)
 	if err != nil {
 		return err
 	}
@@ -238,34 +282,34 @@ func (r *userPostgresRepository) changePassword(password string, username string
 	}
 	salt := createSalt()
 	newHashedPassword := hashPassword(salt, newPassword)
-	_, err = r.db.Exec(changePasswordQuery, newHashedPassword, username)
+	_, err = r.db.ExecContext(ctx, changePasswordQuery, newHashedPassword, username)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *userPostgresRepository) ChangeUserData(changeData *repoModel.ChangeUserData) (*repoModel.User, error) {
+func (r *userPostgresRepository) ChangeUserData(ctx context.Context, changeData *repoModel.ChangeUserData) (*repoModel.User, error) {
 	newUser := &repoModel.User{
 		Username: changeData.Username,
 		Email:    changeData.Email,
 	}
 	if changeData.NewUsername != "" {
-		err := r.changeUsername(changeData.Username, changeData.NewUsername)
+		err := r.changeUsername(ctx, changeData.Username, changeData.NewUsername)
 		if err != nil {
 			return nil, err
 		}
 		newUser.Username = changeData.NewUsername
 	}
 	if changeData.NewEmail != "" {
-		err := r.changeEmail(changeData.Username, changeData.NewEmail)
+		err := r.changeEmail(ctx, changeData.Username, changeData.NewEmail)
 		if err != nil {
 			return nil, err
 		}
 		newUser.Email = changeData.NewEmail
 	}
 	if changeData.NewPassword != "" {
-		err := r.changePassword(changeData.Password, changeData.Username, changeData.NewPassword)
+		err := r.changePassword(ctx, changeData.Password, changeData.Username, changeData.NewPassword)
 		if err != nil {
 			return nil, err
 		}
@@ -274,17 +318,67 @@ func (r *userPostgresRepository) ChangeUserData(changeData *repoModel.ChangeUser
 	return newUser, nil
 }
 
-func (r *userPostgresRepository) DeleteUser(user *repoModel.User) error {
-	storedHash, err := r.getPassword(user.Username)
+func (r *userPostgresRepository) DeleteUser(ctx context.Context, user *repoModel.User) error {
+	storedHash, err := r.getPassword(ctx, user.Username)
 	if err != nil {
 		return err
 	}
 	if !checkPasswordHash(storedHash, user.Password) {
 		return ErrWrongPassword
 	}
-	_, err = r.db.Exec(deleteUserQuery, user.Username, user.Email)
+	_, err = r.db.ExecContext(ctx, deleteUserQuery, user.Username, user.Email)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (r *userPostgresRepository) getIdByUsername(ctx context.Context, username string) (int64, error) {
+	row := r.db.QueryRowContext(ctx, getIdByUsernameQuery, username)
+	var userID int64
+	err := row.Scan(&userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, ErrUserNotFound
+		}
+		return 0, err
+	}
+	return userID, nil
+}
+
+func (r *userPostgresRepository) ChangeUserPrivacySettings(ctx context.Context, privacySettings *repoModel.PrivacySettings) error {
+	userId, err := r.getIdByUsername(ctx, privacySettings.Username)
+	if err != nil {
+		return err
+	}
+	_, err = r.db.ExecContext(ctx, changePrivacySettingsQuery,
+		privacySettings.IsPublicPlaylists,
+		privacySettings.IsPublicMinutesListened,
+		privacySettings.IsPublicFavoriteArtists,
+		privacySettings.IsPublicTracksListened,
+		privacySettings.IsPublicFavoriteTracks,
+		privacySettings.IsPublicArtistsListened,
+		userId,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *userPostgresRepository) GetUserData(ctx context.Context, username string) (*repoModel.UserAndSettings, error) {
+	row := r.db.QueryRowContext(ctx, getUserDataQuery, username)
+	var user repoModel.UserAndSettings
+	err := row.Scan(&user.Username, &user.Thumbnail,
+		&user.IsPublicPlaylists, &user.IsPublicMinutesListened,
+		&user.IsPublicFavoriteArtists, &user.IsPublicTracksListened,
+		&user.IsPublicFavoriteTracks, &user.IsPublicArtistsListened,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrUserNotFound
+		}
+		return nil, err
+	}
+	return &user, nil
 }

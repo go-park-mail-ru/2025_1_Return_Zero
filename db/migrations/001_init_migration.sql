@@ -18,12 +18,12 @@ CREATE TABLE IF NOT EXISTS "user" (
 
 CREATE TABLE IF NOT EXISTS user_settings (
     user_id BIGINT NOT NULL PRIMARY KEY,
-    is_public_playlists BOOLEAN NOT NULL DEFAULT FALSE,
+    is_public_playlists BOOLEAN NOT NULL DEFAULT FALSE, 
     is_public_minutes_listened BOOLEAN NOT NULL DEFAULT FALSE,
-    is_public_artists_listened BOOLEAN NOT NULL DEFAULT FALSE,
-    is_public_favorite_tracks BOOLEAN NOT NULL DEFAULT FALSE,
-    is_public_favorite_albums BOOLEAN NOT NULL DEFAULT FALSE,
     is_public_favorite_artists BOOLEAN NOT NULL DEFAULT FALSE,
+    is_public_tracks_listened BOOLEAN NOT NULL DEFAULT FALSE,
+    is_public_favorite_tracks BOOLEAN NOT NULL DEFAULT FALSE,
+    is_public_artists_listened BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (user_id)

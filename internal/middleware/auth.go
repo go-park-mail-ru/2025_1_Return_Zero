@@ -20,14 +20,13 @@ func Auth(userUsecase user.Usecase) func(http.Handler) http.Handler {
 			}
 
 			sessionID := sessionCookie.Value
-			user, err := userUsecase.GetUserBySID(sessionID)
+			user, err := userUsecase.GetUserBySID(r.Context(), sessionID)
 			if err != nil {
 				next.ServeHTTP(w, r)
 				return
 			}
 			ctx := context.WithValue(r.Context(), UserContextKey{}, user)
-			r = r.WithContext(ctx)
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }

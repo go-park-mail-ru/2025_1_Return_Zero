@@ -51,6 +51,7 @@ func toUserToFront(user *usecaseModel.User) *deliveryModel.UserToFront {
 	return &deliveryModel.UserToFront{
 		Username: user.Username,
 		Email:    user.Email,
+		Avatar:   user.AvatarUrl,
 	}
 }
 
@@ -73,6 +74,18 @@ func changeDataToUsecaseModel(changeData *deliveryModel.ChangeUserData) *usecase
 	}
 }
 
+func privacySettingsToUsecaseModel(settings *deliveryModel.PrivacySettings) *usecaseModel.PrivacySettings {
+	return &usecaseModel.PrivacySettings{
+		Username:                settings.Username,
+		IsPublicPlaylists:       settings.IsPublicPlaylists,
+		IsPublicMinutesListened: settings.IsPublicMinutesListened,
+		IsPublicFavoriteArtists: settings.IsPublicFavoriteArtists,
+		IsPublicTracksListened:  settings.IsPublicTracksListened,
+		IsPublicFavoriteTracks:  settings.IsPublicFavoriteTracks,
+		IsPublicArtistsListened: settings.IsPublicArtistsListened,
+	}
+}
+
 func validateData(data interface{}) (bool, error) {
 	result, err := govalidator.ValidateStruct(data)
 	if err != nil {
@@ -87,9 +100,9 @@ func createCookie(name string, value string, expiration time.Time, path string) 
 		Value:    value,
 		Expires:  expiration,
 		HttpOnly: true,
-		Path: 	  path,
+		Path:     path,
 	}
-} 
+}
 
 // Signup godoc
 // @Summary Register a new user
@@ -102,23 +115,30 @@ func createCookie(name string, value string, expiration time.Time, path string) 
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid registration data"
 // @Router /auth/signup [post]
 func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
+
 	regData := &deliveryModel.RegisterData{}
 	err := helpers.ReadJSON(w, r, regData)
 	if err != nil {
+		logger.Error("failed to read registration data", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	if regData.Username == "default_avatar" {
+		logger.Error("username is system word")
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, "Wrong username", nil)
 		return
 	}
 	isValid, err := validateData(regData)
 	if err != nil || !isValid {
+		logger.Error("failed to validate registration data", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
 		return
 	}
-	user, sessionId, err := h.usecase.CreateUser(registerToUsecaseModel(regData))
+	user, sessionId, err := h.usecase.CreateUser(ctx, registerToUsecaseModel(regData))
 	if err != nil {
+		logger.Error("failed to create user", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
@@ -138,7 +158,8 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid login data"
 // @Router /auth/login [post]
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 
 	logData := &deliveryModel.LoginData{}
 	err := helpers.ReadJSON(w, r, logData)
@@ -153,7 +174,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
 		return
 	}
-	user, sessionId, err := h.usecase.LoginUser(loginToUsecaseModel(logData))
+	user, sessionId, err := h.usecase.LoginUser(ctx, loginToUsecaseModel(logData))
 	if err != nil {
 		logger.Error("failed to login user", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
@@ -174,7 +195,8 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - session not found"
 // @Router /auth/logout [post]
 func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
 		logger.Error("failed to get session id", zap.Error(err))
@@ -182,7 +204,12 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sessionId := cookie.Value
-	h.usecase.Logout(sessionId)
+	err = h.usecase.Logout(ctx, sessionId)
+	if err != nil {
+		logger.Error("failed to logout user", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
 	cookie.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, cookie)
 
@@ -203,7 +230,8 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - session not found or invalid"
 // @Router /auth/check [get]
 func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
 		logger.Error("failed to get session id", zap.Error(err))
@@ -211,47 +239,13 @@ func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	sessionId := cookie.Value
-	user, err := h.usecase.GetUserBySID(sessionId)
+	user, err := h.usecase.GetUserBySID(ctx, sessionId)
 	if err != nil {
 		logger.Error("failed to get user by session id", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	helpers.WriteSuccessResponse(w, http.StatusOK, toUserToFront(user), nil)
-}
-
-// GetUserAvatar godoc
-// @Summary Get user avatar
-// @Description Retrieves the avatar URL for a specific user
-// @Tags user
-// @Accept json
-// @Produce json
-// @Param username path string true "Username"
-// @Success 200 {object} delivery.APIResponse{body=delivery.AvatarData} "Avatar URL"
-// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - username not found"
-// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
-// @Router /user/{username}/avatar [get]
-func (h *UserHandler) GetUserAvatar(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
-	vars := mux.Vars(r)
-	username, ok := vars["username"]
-
-	if !ok {
-		logger.Error("username not found in URL")
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "username not found in URL", nil)
-		return
-	}
-
-	presignedUrl, err := h.usecase.GetAvatar(username)
-	if err != nil {
-		logger.Error("failed to get avatar", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
-		return
-	}
-	avatar := &deliveryModel.AvatarData{
-		Avatar: presignedUrl,
-	}
-	helpers.WriteSuccessResponse(w, http.StatusOK, avatar, nil)
 }
 
 // UploadAvatar godoc
@@ -266,12 +260,25 @@ func (h *UserHandler) GetUserAvatar(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid file or username"
 // @Router /user/{username}/avatar [post]
 func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 	vars := mux.Vars(r)
 	username, ok := vars["username"]
 	if !ok {
 		logger.Error("username not found in URL")
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, "username not found in URL", nil)
+		return
+	}
+
+	userAuth, exist := middleware.GetUserFromContext(ctx)
+	if !exist {
+		logger.Error("user not auth")
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
+		return
+	}
+	if userAuth.Username != username {
+		logger.Error("wrong user")
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
 		return
 	}
 
@@ -304,7 +311,7 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.usecase.UploadAvatar(username, file)
+	err = h.usecase.UploadAvatar(ctx, username, file)
 	if err != nil {
 		logger.Error("failed to upload avatar", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
@@ -327,9 +334,10 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid user data or validation failure"
 // @Router /user/{username} [put]
 func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 
-	userAuth, exist := middleware.GetUserFromContext(r.Context())
+	userAuth, exist := middleware.GetUserFromContext(ctx)
 	if !exist {
 		logger.Error("user not auth")
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
@@ -351,7 +359,7 @@ func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	changeDataUsecase := changeDataToUsecaseModel(changeData)
-	newUser, err := h.usecase.ChangeUserData(userAuth.Username, changeDataUsecase)
+	newUser, err := h.usecase.ChangeUserData(ctx, userAuth.Username, changeDataUsecase)
 	if err != nil {
 		logger.Error("failed to change user data", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
@@ -373,9 +381,10 @@ func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} delivery.APIBadRequestErrorResponse "Internal server error during user deletion"
 // @Router /user/{username} [delete]
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 
-	userAuth, exist := middleware.GetUserFromContext(r.Context())
+	userAuth, exist := middleware.GetUserFromContext(ctx)
 	if !exist {
 		logger.Error("user not auth")
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
@@ -412,7 +421,7 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	sessionId := cookie.Value
 
 	usecaseUser := userDeleteToUsecaseModel(userDelete)
-	err = h.usecase.DeleteUser(usecaseUser, sessionId)
+	err = h.usecase.DeleteUser(ctx, usecaseUser, sessionId)
 	if err != nil {
 		logger.Error("failed to delete user", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
@@ -424,4 +433,102 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		Message: "User successfully deleted",
 	}
 	helpers.WriteSuccessResponse(w, http.StatusOK, msg, nil)
+}
+
+// ChangeUserPrivacySettings godoc
+// @Summary Change user privacy settings 
+// @Description Updates user's privacy settings
+// @Tags user 
+// @Accept json 
+// @Produce json 
+// @Param settings body delivery.PrivacySettings true "User privacy settings to be updated" 
+// @Success 200 {object} delivery.APIResponse{body=delivery.Message} "Privacy settings successfully changed" 
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid settings data, validation failure, or unauthorized user" 
+// @Router /user/{username}/privacy [put]
+func (h *UserHandler) ChangeUserPrivacySettings(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
+
+	userAuth, exist := middleware.GetUserFromContext(ctx)
+	if !exist {
+		logger.Error("user not auth")
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
+		return
+	}
+
+	settings := &deliveryModel.PrivacySettings{}
+	err := helpers.ReadJSON(w, r, settings)
+	if err != nil {
+		logger.Error("failed to read privacy settings", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	isValid, err := validateData(settings)
+	if err != nil || !isValid {
+		logger.Error("failed to validate privacy settings", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
+		return
+	}
+
+	if userAuth.Username != settings.Username {
+		logger.Error("wrong user")
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
+		return
+	}
+
+	settingsUsecase := privacySettingsToUsecaseModel(settings)
+	err = h.usecase.ChangeUserPrivacySettings(ctx, settingsUsecase)
+	if err != nil {
+		logger.Error("failed to change privacy settings", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+	msg := &deliveryModel.Message{
+		Message: "Privacy settings successfully changed",
+	}
+	helpers.WriteSuccessResponse(w, http.StatusOK, msg, nil)
+}
+
+// GetUserData godoc 
+// @Summary Get user profile data and privacy settings 
+// @Description Retrieves user's profile information and privacy settings 
+// @Tags user 
+// @Accept json 
+// @Produce json 
+// @Param username path string true "Username" 
+// @Success 200 {object} delivery.APIResponse{body=delivery.UserAndSettings} "User data and privacy settings" 
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - username not found in URL or user not found" 
+// @Router /user/{username} [get]
+func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
+
+	vars := mux.Vars(r)
+	username, ok := vars["username"]
+	if !ok {
+		logger.Error("username not found in URL")
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, "username not found in URL", nil)
+		return
+	}
+
+	userAndSettings, err := h.usecase.GetUserData(ctx, username)
+	if err != nil {
+		logger.Error("failed to get user by username", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	userAndSettingsDelivery := &deliveryModel.UserAndSettings{
+		Username:                userAndSettings.Username,
+		AvatarUrl:               userAndSettings.AvatarUrl,
+		IsPublicPlaylists:       userAndSettings.IsPublicPlaylists,
+		IsPublicMinutesListened: userAndSettings.IsPublicMinutesListened,
+		IsPublicFavoriteArtists: userAndSettings.IsPublicFavoriteArtists,
+		IsPublicTracksListened:  userAndSettings.IsPublicTracksListened,
+		IsPublicFavoriteTracks:  userAndSettings.IsPublicFavoriteTracks,
+		IsPublicArtistsListened: userAndSettings.IsPublicArtistsListened,
+	}
+
+	helpers.WriteSuccessResponse(w, http.StatusOK, userAndSettingsDelivery, nil)
 }

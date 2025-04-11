@@ -12,9 +12,9 @@ import (
 
 func InitS3(cfg config.S3Config) (*s3.S3, error) {
 	s3Config := &aws.Config{
-		Region:           aws.String(cfg.S3_REGION),
-		Credentials:      credentials.NewStaticCredentials(cfg.S3_ACCESS_KEY, cfg.S3_SECRET_KEY, ""),
-		Endpoint:         aws.String(cfg.S3_ENDPOINT),
+		Region:           aws.String(cfg.S3Region),
+		Credentials:      credentials.NewStaticCredentials(cfg.S3AccessKey, cfg.S3SecretKey, ""),
+		Endpoint:         aws.String(cfg.S3Endpoint),
 		S3ForcePathStyle: aws.Bool(false),
 	}
 
