@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -36,11 +37,11 @@ func (r *s3Repository) GetAvatarURL(fileKey string) (string, error) {
 	), nil
 }
 
-func (r *s3Repository) UploadUserAvatar(username string, fileContent io.Reader) (string, error) {
+func (r *s3Repository) UploadUserAvatar(ctx context.Context, username string, fileContent io.Reader) (string, error) {
 	fileKey := fmt.Sprintf("/%s.png", username)
 	s3Key := fmt.Sprintf("avatars%s", fileKey)
 
-	_, err := r.uploader.Upload(&s3manager.UploadInput{
+	_, err := r.uploader.UploadWithContext(ctx, &s3manager.UploadInput{
 		Bucket:      aws.String(r.bucketName),
 		Key:         aws.String(s3Key),
 		Body:        fileContent,
@@ -55,11 +56,11 @@ func (r *s3Repository) UploadUserAvatar(username string, fileContent io.Reader) 
 	return fileKey, nil
 }
 
-func (r *s3Repository) DeleteUserAvatar(username string) error {
+func (r *s3Repository) DeleteUserAvatar(ctx context.Context, username string) error {
 	fileKey := fmt.Sprintf("/%s.png", username)
 	s3Key := fmt.Sprintf("avatars%s", fileKey)
 
-	_, err := r.s3.DeleteObject(&s3.DeleteObjectInput{
+	_, err := r.s3.DeleteObjectWithContext(ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(r.bucketName),
 		Key:    aws.String(s3Key),
 	})

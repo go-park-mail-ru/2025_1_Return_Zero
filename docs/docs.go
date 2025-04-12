@@ -736,6 +736,54 @@ const docTemplate = `{
             }
         },
         "/user/{username}": {
+            "get": {
+                "description": "Retrieves user's profile information and privacy settings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get user profile data and privacy settings",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User data and privacy settings",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.UserAndSettings"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - username not found in URL or user not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            },
             "put": {
                 "description": "Updates user's profile information such as username, email, or password",
                 "consumes": [
@@ -851,60 +899,6 @@ const docTemplate = `{
             }
         },
         "/user/{username}/avatar": {
-            "get": {
-                "description": "Retrieves the avatar URL for a specific user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Get user avatar",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Username",
-                        "name": "username",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Avatar URL",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.AvatarData"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request - username not found",
-                        "schema": {
-                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
-                        }
-                    }
-                }
-            },
             "post": {
                 "description": "Uploads a new avatar image for a specific user",
                 "consumes": [
@@ -954,6 +948,58 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request - invalid file or username",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{username}/privacy": {
+            "put": {
+                "description": "Updates user's privacy settings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Change user privacy settings",
+                "parameters": [
+                    {
+                        "description": "User privacy settings to be updated",
+                        "name": "settings",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.PrivacySettings"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Privacy settings successfully changed",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.Message"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid settings data, validation failure, or unauthorized user",
                         "schema": {
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
@@ -1119,15 +1165,6 @@ const docTemplate = `{
                 }
             }
         },
-        "delivery.AvatarData": {
-            "description": "Contains URL to user's avatar image",
-            "type": "object",
-            "properties": {
-                "avatar_url": {
-                    "type": "string"
-                }
-            }
-        },
         "delivery.ChangeUserData": {
             "description": "Data for user profile update. Requires current credentials and allows new username (3-20 alphanum), new email (5-30 valid format), and new password (4-25 characters)",
             "type": "object",
@@ -1173,6 +1210,32 @@ const docTemplate = `{
                 "msg": {
                     "type": "string",
                     "example": "object have been successfully created/updated"
+                }
+            }
+        },
+        "delivery.PrivacySettings": {
+            "type": "object",
+            "properties": {
+                "is_public_artists_listened": {
+                    "type": "boolean"
+                },
+                "is_public_favorite_artists": {
+                    "type": "boolean"
+                },
+                "is_public_favorite_tracks": {
+                    "type": "boolean"
+                },
+                "is_public_minutes_listened": {
+                    "type": "boolean"
+                },
+                "is_public_playlists": {
+                    "type": "boolean"
+                },
+                "is_public_tracks_listened": {
+                    "type": "boolean"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
@@ -1292,6 +1355,35 @@ const docTemplate = `{
                 }
             }
         },
+        "delivery.UserAndSettings": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "is_public_artists_listened": {
+                    "type": "boolean"
+                },
+                "is_public_favorite_artists": {
+                    "type": "boolean"
+                },
+                "is_public_favorite_tracks": {
+                    "type": "boolean"
+                },
+                "is_public_minutes_listened": {
+                    "type": "boolean"
+                },
+                "is_public_playlists": {
+                    "type": "boolean"
+                },
+                "is_public_tracks_listened": {
+                    "type": "boolean"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "delivery.UserDelete": {
             "type": "object",
             "properties": {
@@ -1310,6 +1402,9 @@ const docTemplate = `{
             "description": "User data",
             "type": "object",
             "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },

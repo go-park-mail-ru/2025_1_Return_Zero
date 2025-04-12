@@ -112,12 +112,6 @@ definitions:
         example: Inabakumori
         type: string
     type: object
-  delivery.AvatarData:
-    description: Contains URL to user's avatar image
-    properties:
-      avatar_url:
-        type: string
-    type: object
   delivery.ChangeUserData:
     description: Data for user profile update. Requires current credentials and allows
       new username (3-20 alphanum), new email (5-30 valid format), and new password
@@ -151,6 +145,23 @@ definitions:
     properties:
       msg:
         example: object have been successfully created/updated
+        type: string
+    type: object
+  delivery.PrivacySettings:
+    properties:
+      is_public_artists_listened:
+        type: boolean
+      is_public_favorite_artists:
+        type: boolean
+      is_public_favorite_tracks:
+        type: boolean
+      is_public_minutes_listened:
+        type: boolean
+      is_public_playlists:
+        type: boolean
+      is_public_tracks_listened:
+        type: boolean
+      username:
         type: string
     type: object
   delivery.RegisterData:
@@ -236,6 +247,25 @@ definitions:
         example: Lagtrain
         type: string
     type: object
+  delivery.UserAndSettings:
+    properties:
+      avatar_url:
+        type: string
+      is_public_artists_listened:
+        type: boolean
+      is_public_favorite_artists:
+        type: boolean
+      is_public_favorite_tracks:
+        type: boolean
+      is_public_minutes_listened:
+        type: boolean
+      is_public_playlists:
+        type: boolean
+      is_public_tracks_listened:
+        type: boolean
+      username:
+        type: string
+    type: object
   delivery.UserDelete:
     properties:
       email:
@@ -248,6 +278,8 @@ definitions:
   delivery.UserToFront:
     description: User data
     properties:
+      avatar_url:
+        type: string
       email:
         type: string
       username:
@@ -740,6 +772,35 @@ paths:
       summary: Delete user account
       tags:
       - user
+    get:
+      consumes:
+      - application/json
+      description: Retrieves user's profile information and privacy settings
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User data and privacy settings
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.UserAndSettings'
+              type: object
+        "400":
+          description: Bad request - username not found in URL or user not found
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+      summary: Get user profile data and privacy settings
+      tags:
+      - user
     put:
       consumes:
       - application/json
@@ -772,39 +833,6 @@ paths:
       tags:
       - user
   /user/{username}/avatar:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves the avatar URL for a specific user
-      parameters:
-      - description: Username
-        in: path
-        name: username
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Avatar URL
-          schema:
-            allOf:
-            - $ref: '#/definitions/delivery.APIResponse'
-            - properties:
-                body:
-                  $ref: '#/definitions/delivery.AvatarData'
-              type: object
-        "400":
-          description: Bad request - username not found
-          schema:
-            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
-      summary: Get user avatar
-      tags:
-      - user
     post:
       consumes:
       - multipart/form-data
@@ -837,6 +865,38 @@ paths:
           schema:
             $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
       summary: Upload user avatar
+      tags:
+      - user
+  /user/{username}/privacy:
+    put:
+      consumes:
+      - application/json
+      description: Updates user's privacy settings
+      parameters:
+      - description: User privacy settings to be updated
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.PrivacySettings'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Privacy settings successfully changed
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Message'
+              type: object
+        "400":
+          description: Bad request - invalid settings data, validation failure, or
+            unauthorized user
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+      summary: Change user privacy settings
       tags:
       - user
 swagger: "2.0"
