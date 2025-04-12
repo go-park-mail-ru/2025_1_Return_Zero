@@ -8,7 +8,7 @@ import (
 )
 
 func ConnectRedis(cfg config.RedisConfig) (redis.Conn, error) {
-	address := fmt.Sprintf("%s:%s", cfg.REDIS_HOST, cfg.REDIS_PORT)
+	address := fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort)
 	redisConn, err := redis.Dial("tcp", address)
 	if err != nil {
 		return nil, err
