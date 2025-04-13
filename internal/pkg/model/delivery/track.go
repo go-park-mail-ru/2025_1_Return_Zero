@@ -40,7 +40,7 @@ type TrackStream struct {
 // TrackStreamUpdateData represents data that will be sent at the end of stream to update duration of the stream
 // @Description an update data for stream
 type TrackStreamUpdateData struct {
-	Duration int64 `json:"duration" example:"216" description:"Stream duration in seconds" valid:"required,min=0"`
+	Duration int64 `json:"duration" example:"216" description:"Stream duration in seconds" valid:"required,gte=0"`
 }
 
 // StreamID represents an id of newly created track stream
