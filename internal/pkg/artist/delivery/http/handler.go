@@ -37,7 +37,8 @@ func NewArtistHandler(usecase artist.Usecase, cfg *config.Config) *ArtistHandler
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /artists [get]
 func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
@@ -45,7 +46,7 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usecaseArtists, err := h.usecase.GetAllArtists(&usecaseModel.ArtistFilters{
+	usecaseArtists, err := h.usecase.GetAllArtists(ctx, &usecaseModel.ArtistFilters{
 		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
 	})
 
@@ -71,7 +72,8 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /artists/{id} [get]
 func (h *ArtistHandler) GetArtistByID(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -82,7 +84,7 @@ func (h *ArtistHandler) GetArtistByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usecaseArtist, err := h.usecase.GetArtistByID(id)
+	usecaseArtist, err := h.usecase.GetArtistByID(ctx, id)
 	if err != nil {
 		logger.Error("failed to get artist", zap.Error(err))
 		switch {

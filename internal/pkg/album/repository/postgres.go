@@ -1,11 +1,14 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
+	"go.uber.org/zap"
 )
 
 const (
@@ -44,9 +47,12 @@ func NewAlbumPostgresRepository(db *sql.DB) album.Repository {
 	}
 }
 
-func (r *albumPostgresRepository) GetAllAlbums(filters *repoModel.AlbumFilters) ([]*repoModel.Album, error) {
+func (r *albumPostgresRepository) GetAllAlbums(ctx context.Context, filters *repoModel.AlbumFilters) ([]*repoModel.Album, error) {
+	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Requesting all albums from db", zap.Any("filters", filters))
 	rows, err := r.db.Query(GetAllAlbumsQuery, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
+		logger.Error("failed to get all albums", zap.Error(err))
 		return nil, err
 	}
 	defer rows.Close()
@@ -56,51 +62,64 @@ func (r *albumPostgresRepository) GetAllAlbums(filters *repoModel.AlbumFilters) 
 		var album repoModel.Album
 		err = rows.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ReleaseDate)
 		if err != nil {
+			logger.Error("failed to scan album", zap.Error(err))
 			return nil, err
 		}
 		albums = append(albums, &album)
 	}
 
 	if err := rows.Err(); err != nil {
+		logger.Error("failed to get all albums", zap.Error(err))
 		return nil, err
 	}
 
 	return albums, nil
 }
 
-func (r *albumPostgresRepository) GetAlbumByID(id int64) (*repoModel.Album, error) {
+func (r *albumPostgresRepository) GetAlbumByID(ctx context.Context, id int64) (*repoModel.Album, error) {
+	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Requesting album by id from db", zap.Int64("id", id))
 	row := r.db.QueryRow(GetAlbumByIDQuery, id)
 
 	var albumObject repoModel.Album
 	err := row.Scan(&albumObject.ID, &albumObject.Title, &albumObject.Type, &albumObject.Thumbnail, &albumObject.ReleaseDate)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+			logger.Error("album not found", zap.Error(err))
 			return nil, album.ErrAlbumNotFound
 		}
+		logger.Error("failed to get album by id", zap.Error(err))
 		return nil, err
 	}
 
 	return &albumObject, nil
 }
 
-func (r *albumPostgresRepository) GetAlbumTitleByID(id int64) (string, error) {
+func (r *albumPostgresRepository) GetAlbumTitleByID(ctx context.Context, id int64) (string, error) {
+	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Requesting album title by id from db", zap.Int64("id", id))
 	row := r.db.QueryRow(GetAlbumTitleByIDQuery, id)
 
 	var title string
 	err := row.Scan(&title)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+			logger.Error("album not found", zap.Error(err))
 			return "", album.ErrAlbumNotFound
 		}
+		logger.Error("failed to get album title by id", zap.Error(err))
 		return "", err
 	}
 
 	return title, nil
 }
 
-func (r *albumPostgresRepository) GetAlbumsByArtistID(artistID int64) ([]*repoModel.Album, error) {
+func (r *albumPostgresRepository) GetAlbumsByArtistID(ctx context.Context, artistID int64) ([]*repoModel.Album, error) {
+	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Requesting albums by artist id from db", zap.Int64("artistID", artistID))
 	rows, err := r.db.Query(GetAlbumsByArtistIDQuery, artistID)
 	if err != nil {
+		logger.Error("failed to get albums by artist id", zap.Error(err))
 		return nil, err
 	}
 	defer rows.Close()
@@ -110,12 +129,14 @@ func (r *albumPostgresRepository) GetAlbumsByArtistID(artistID int64) ([]*repoMo
 		var album repoModel.Album
 		err = rows.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ReleaseDate)
 		if err != nil {
+			logger.Error("failed to scan album", zap.Error(err))
 			return nil, err
 		}
 		albums = append(albums, &album)
 	}
 
 	if err := rows.Err(); err != nil {
+		logger.Error("failed to get albums by artist id", zap.Error(err))
 		return nil, err
 	}
 

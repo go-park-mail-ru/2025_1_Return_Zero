@@ -46,7 +46,8 @@ func NewTrackHandler(usecase track.Usecase, cfg *config.Config) *TrackHandler {
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /tracks [get]
 func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
@@ -54,7 +55,7 @@ func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usecaseTracks, err := h.usecase.GetAllTracks(&usecaseModel.TrackFilters{
+	usecaseTracks, err := h.usecase.GetAllTracks(ctx, &usecaseModel.TrackFilters{
 		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
 	})
 
@@ -86,7 +87,8 @@ func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /tracks/{id} [get]
 func (h *TrackHandler) GetTrackByID(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -97,7 +99,7 @@ func (h *TrackHandler) GetTrackByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usecaseTrack, err := h.usecase.GetTrackByID(id)
+	usecaseTrack, err := h.usecase.GetTrackByID(ctx, id)
 	if err != nil {
 		logger.Error("failed to get track", zap.Error(err))
 		var status int
@@ -129,7 +131,8 @@ func (h *TrackHandler) GetTrackByID(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /artists/{id}/tracks [get]
 func (h *TrackHandler) GetTracksByArtistID(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -140,7 +143,7 @@ func (h *TrackHandler) GetTracksByArtistID(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	usecaseTracks, err := h.usecase.GetTracksByArtistID(id)
+	usecaseTracks, err := h.usecase.GetTracksByArtistID(ctx, id)
 	if err != nil {
 		logger.Error("failed to get tracks", zap.Error(err))
 		switch {
@@ -167,7 +170,8 @@ func (h *TrackHandler) GetTracksByArtistID(w http.ResponseWriter, r *http.Reques
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /tracks/{id}/stream [post]
 func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -177,7 +181,7 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 	}
 
-	user, exists := middleware.GetUserFromContext(r.Context())
+	user, exists := middleware.GetUserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to create stream for unauthorized user")
 		helpers.WriteErrorResponse(w, http.StatusUnauthorized, unauthorizedError, nil)
@@ -190,7 +194,7 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 		UserID:  userID,
 	}
 
-	streamID, err := h.usecase.CreateStream(model.TrackStreamCreateDataFromDeliveryToUsecase(trackStreamCreateData))
+	streamID, err := h.usecase.CreateStream(ctx, model.TrackStreamCreateDataFromDeliveryToUsecase(trackStreamCreateData))
 	if err != nil {
 		logger.Error("failed to save track stream", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
@@ -217,7 +221,8 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /streams/{id} [put]
 func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 
@@ -227,7 +232,7 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 	}
 
-	user, exists := middleware.GetUserFromContext(r.Context())
+	user, exists := middleware.GetUserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to update stream duration for unauthorized user")
 		helpers.WriteErrorResponse(w, http.StatusUnauthorized, unauthorizedError, nil)
@@ -251,7 +256,7 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = h.usecase.UpdateStreamDuration(model.TrackStreamUpdateDataFromDeliveryToUsecase(&streamUpdateData, userID, streamID))
+	err = h.usecase.UpdateStreamDuration(ctx, model.TrackStreamUpdateDataFromDeliveryToUsecase(&streamUpdateData, userID, streamID))
 	if err != nil {
 		logger.Error("failed to update stream duration", zap.Error(err))
 		var status int
