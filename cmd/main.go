@@ -89,7 +89,7 @@ func main() {
 	r.Use(middleware.Auth(newUserUsecase))
 	r.Use(cfg.Cors.Middleware)
 
-	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3_TRACKS_BUCKET, cfg.S3.S3_DURATION), userRepository.NewUserPostgresRepository(postgresConn)), cfg)
+	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration), userRepository.NewUserPostgresRepository(postgresConn)), cfg)
 	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), genreRepository.NewGenrePostgresRepository(postgresConn)), cfg)
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistRepository.NewArtistPostgresRepository(postgresConn)), cfg)
 	userHandler := userHttp.NewUserHandler(newUserUsecase)
