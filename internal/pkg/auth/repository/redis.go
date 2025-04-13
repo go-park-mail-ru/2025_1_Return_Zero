@@ -26,15 +26,7 @@ type AuthRedisRepository struct {
 	redisPool *redis.Pool
 }
 
-func NewAuthRedisRepository(conn redis.Conn) auth.Repository {
-	pool := &redis.Pool{
-		MaxIdle:     3,
-		IdleTimeout: 240 * time.Second,
-		Dial: func() (redis.Conn, error) {
-			return conn, nil
-		},
-	}
-
+func NewAuthRedisRepository(pool *redis.Pool) auth.Repository {
 	repo := &AuthRedisRepository{
 		redisPool: pool,
 	}

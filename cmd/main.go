@@ -75,7 +75,7 @@ func main() {
 		httpSwagger.DocExpansion("none"),
 	))
 
-	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisPool.Get()), userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket))
+	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisPool), userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket))
 
 	r.Use(middleware.Logger)
 	r.Use(middleware.RequestId)
