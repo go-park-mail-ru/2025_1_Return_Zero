@@ -429,7 +429,6 @@ func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 			Username:   userAndSettings.Username,
 			AvatarUrl:  userAndSettings.AvatarUrl,
 			Privacy:    (*deliveryModel.Privacy)(userAndSettings.Privacy),
-			Statistics: (*deliveryModel.Statistics)(userAndSettings.Statistics),
 		}
 	} else {
 		userAndSettingsDelivery = &deliveryModel.UserAndSettings{
