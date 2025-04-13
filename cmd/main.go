@@ -42,12 +42,16 @@ func main() {
 		return
 	}
 
-	redisConn, err := redis.ConnectRedis(cfg.Redis)
+	redisPool := redis.NewRedisPool(cfg.Redis)
+	defer redisPool.Close()
+
+	redisConn := redisPool.Get()
+	err = redisConn.Err()
 	if err != nil {
 		fmt.Println("Error connecting to Redis:", err)
 		return
 	}
-	defer redisConn.Close()
+	redisConn.Close()
 
 	postgresConn, err := postgres.ConnectPostgres(cfg.Postgres)
 	if err != nil {
@@ -71,7 +75,7 @@ func main() {
 		httpSwagger.DocExpansion("none"),
 	))
 
-	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisConn), userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket))
+	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisPool.Get()), userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket))
 
 	r.Use(middleware.Logger)
 	r.Use(middleware.RequestId)
