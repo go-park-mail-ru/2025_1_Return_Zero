@@ -3,14 +3,18 @@ package user
 import (
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/asaskevich/govalidator"
+	"github.com/gorilla/mux"
 
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
+	"go.uber.org/zap"
 )
 
 var (
@@ -58,100 +62,224 @@ func validateData(data interface{}) (bool, error) {
 	return result, nil
 }
 
+// Signup godoc
+// @Summary Register a new user
+// @Description Creates a new user account with provided registration data
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param register body delivery.RegisterData true "User registration data"
+// @Success 200 {object} delivery.APIResponse{body=delivery.UserToFront} "User successfully registered"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid registration data"
+// @Router /signup [post]
 func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	regData := &deliveryModel.RegisterData{}
 	err := helpers.ReadJSON(w, r, regData)
 	if err != nil {
-		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	isValid, err := validateData(regData)
 	if err != nil || !isValid {
-		helpers.WriteJSONError(w, http.StatusBadRequest, ErrValidationFailed.Error())
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
 		return
 	}
 	user, sessionId, err := h.usecase.CreateUser(registerToUsecaseModel(regData))
 	if err != nil {
-		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	cookie := &http.Cookie{
-		Name:  "session_id",
-		Value: sessionId,
-		Expires: time.Now().Add(24 * time.Hour),
+		Name:     "session_id",
+		Value:    sessionId,
+		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
 	}
 	http.SetCookie(w, cookie)
-	err = helpers.WriteJSON(w, http.StatusOK, toUserToFront(user), nil)
-	if err != nil {
-		helpers.WriteJSONError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
+	helpers.WriteSuccessResponse(w, http.StatusOK, toUserToFront(user), nil)
 }
 
+// Login godoc
+// @Summary Authenticate user
+// @Description Authenticates a user with provided login credentials and returns a session
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param login body delivery.LoginData true "User login data"
+// @Success 200 {object} delivery.APIResponse{body=delivery.UserToFront} "User successfully authenticated"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid login data"
+// @Router /login [post]
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	logger := middleware.LoggerFromContext(r.Context())
+
 	logData := &deliveryModel.LoginData{}
 	err := helpers.ReadJSON(w, r, logData)
 	if err != nil {
-		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
+		logger.Error("failed to read login data", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	isValid, err := validateData(logData)
 	if err != nil || !isValid {
-		helpers.WriteJSONError(w, http.StatusBadRequest, ErrValidationFailed.Error())
+		logger.Error("failed to validate login data", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
 		return
 	}
 	user, sessionId, err := h.usecase.LoginUser(loginToUsecaseModel(logData))
 	if err != nil {
-		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
+		logger.Error("failed to login user", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	cookie := &http.Cookie{
-		Name:  "session_id",
-		Value: sessionId,
-		Expires: time.Now().Add(24 * time.Hour),
+		Name:     "session_id",
+		Value:    sessionId,
+		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
 	}
 	http.SetCookie(w, cookie)
-	err = helpers.WriteJSON(w, http.StatusOK, toUserToFront(user), nil)
-	if err != nil {
-		helpers.WriteJSONError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
+	helpers.WriteSuccessResponse(w, http.StatusOK, toUserToFront(user), nil)
 }
 
+// Logout godoc
+// @Summary Log out user
+// @Description Terminates user session and invalidates session cookie
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {object} delivery.APIResponse{body=map[string]string} "Successfully logged out"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - session not found"
+// @Router /logout [post]
 func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	logger := middleware.LoggerFromContext(r.Context())
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
-		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
+		logger.Error("failed to get session id", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	sessionId := cookie.Value
 	h.usecase.Logout(sessionId)
 	cookie.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, cookie)
-	err = helpers.WriteJSON(w, http.StatusOK, "Succesfully logged out", nil)
-	if err != nil {
-		helpers.WriteJSONError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
+	helpers.WriteSuccessResponse(w, http.StatusOK, map[string]string{"msg": "Succesfully loged out"}, nil)
 }
 
+// CheckUser godoc
+// @Summary Check user authentication
+// @Description Verifies user's session and returns user information if authenticated
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {object} delivery.APIResponse{body=delivery.UserToFront} "User information"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - session not found or invalid"
+// @Router /check [get]
 func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
+	logger := middleware.LoggerFromContext(r.Context())
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
-		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
+		logger.Error("failed to get session id", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	sessionId := cookie.Value
 	user, err := h.usecase.GetUserBySID(sessionId)
 	if err != nil {
-		helpers.WriteJSONError(w, http.StatusBadRequest, err.Error())
+		logger.Error("failed to get user by session id", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
-	err = helpers.WriteJSON(w, http.StatusOK, toUserToFront(user), nil)
+	helpers.WriteSuccessResponse(w, http.StatusOK, toUserToFront(user), nil)
+}
+
+// GetUserAvatar godoc
+// @Summary Get user avatar
+// @Description Retrieves the avatar URL for a specific user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param username path string true "Username"
+// @Success 200 {object} delivery.APIResponse{body=map[string]string} "Avatar URL"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - username not found"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /users/{username}/avatar [get]
+func (h *UserHandler) GetUserAvatar(w http.ResponseWriter, r *http.Request) {
+	logger := middleware.LoggerFromContext(r.Context())
+	vars := mux.Vars(r)
+	username, ok := vars["username"]
+
+	if !ok {
+		logger.Error("username not found in URL")
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, "username not found in URL", nil)
+		return
+	}
+
+	presignedUrl, err := h.usecase.GetAvatar(username)
 	if err != nil {
-		helpers.WriteJSONError(w, http.StatusInternalServerError, err.Error())
+		logger.Error("failed to get avatar", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
+
+	helpers.WriteSuccessResponse(w, http.StatusOK, map[string]string{"avatar_link": presignedUrl}, nil)
+}
+
+// UploadAvatar godoc
+// @Summary Upload user avatar
+// @Description Uploads a new avatar image for a specific user
+// @Tags users
+// @Accept multipart/form-data
+// @Produce json
+// @Param username path string true "Username"
+// @Param avatar formData file true "Avatar image file (max 5MB, image formats only)"
+// @Success 200 {object} delivery.APIResponse{body=map[string]string} "Avatar successfully uploaded"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid file or username"
+// @Router /users/{username}/avatar [post]
+func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
+	logger := middleware.LoggerFromContext(r.Context())
+	vars := mux.Vars(r)
+	username, ok := vars["username"]
+	if !ok {
+		logger.Error("username not found in URL")
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, "username not found in URL", nil)
+		return
+	}
+
+	const maxUploadSize = 5 << 20
+	err := r.ParseMultipartForm(maxUploadSize)
+	if err != nil {
+		logger.Error("failed to parse form", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	file, fileHeader, err := r.FormFile("avatar")
+	if err != nil {
+		logger.Error("failed to get file from form", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+	defer file.Close()
+
+	if fileHeader.Size > maxUploadSize {
+		logger.Error("file size exceeds limit", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, "file size exceeds limit", nil)
+		return
+	}
+
+	contentType := fileHeader.Header.Get("Content-Type")
+	if !strings.HasPrefix(contentType, "image/") {
+		logger.Error("invalid file type", zap.String("contentType", contentType))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, "only image files are allowed", nil)
+		return
+	}
+
+	err = h.usecase.UploadAvatar(username, file)
+	if err != nil {
+		logger.Error("failed to upload avatar", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	helpers.WriteSuccessResponse(w, http.StatusOK, map[string]string{"msg": "Avatar successfully uploaded"}, nil)
 }

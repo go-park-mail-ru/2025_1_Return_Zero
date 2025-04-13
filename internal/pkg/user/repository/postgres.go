@@ -45,6 +45,16 @@ const (
 			FROM "user"
 			WHERE username = $1 OR email = $2
 			`
+	uploadAvatarQuery = `
+			UPDATE "user"
+			SET thumbnail_url = $1
+			WHERE username = $2
+			`
+	getAvatarQuery = `
+			SELECT thumbnail_url
+			FROM "user"
+			WHERE username = $1
+			`
 )
 
 func hashPassword(salt []byte, password string) string {
@@ -140,4 +150,25 @@ func (r *userPostgresRepository) LoginUser(logData *repoModel.User) (*repoModel.
 	}
 
 	return &user, nil
+}
+
+func (r *userPostgresRepository) GetAvatar(username string) (string, error) {
+	row := r.db.QueryRow(getAvatarQuery, username)
+	var avatarUrl string
+	err := row.Scan(&avatarUrl)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", ErrUserNotFound
+		}
+		return "", err
+	}
+	return avatarUrl, nil
+}
+
+func (r *userPostgresRepository) UploadAvatar(avatarUrl string, username string) error {
+	_, err := r.db.Exec(uploadAvatarQuery, avatarUrl, username)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -4,7 +4,7 @@ ifneq (,$(wildcard ../.env))
 endif
 
 deploy:
-	docker-compose up -d
+	docker compose up -d --build
 
 docker-remove:
 	docker rm $(docker ps) && docker volume prune -f

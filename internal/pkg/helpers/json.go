@@ -6,6 +6,9 @@ import (
 	"io"
 	"maps"
 	"net/http"
+
+	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
+	"go.uber.org/zap"
 )
 
 const (
@@ -34,18 +37,12 @@ func ReadJSON(w http.ResponseWriter, r *http.Request, v interface{}) error {
 	return nil
 }
 
-func WriteJSON(w http.ResponseWriter, status int, data interface{}, headers http.Header) error {
-	response := struct {
-		Status int         `json:"status"`
-		Body   interface{} `json:"body"`
-	}{
-		Status: status,
-		Body:   data,
-	}
-
-	jsonData, err := json.Marshal(response)
+func WriteJSON(w http.ResponseWriter, status int, data interface{}, headers http.Header) {
+	logger := zap.L().Sugar()
+	jsonData, err := json.Marshal(data)
 	if err != nil {
-		return err
+		logger.Error("failed to marshal json", zap.Error(err))
+		return
 	}
 
 	maps.Copy(w.Header(), headers)
@@ -54,14 +51,25 @@ func WriteJSON(w http.ResponseWriter, status int, data interface{}, headers http
 	w.WriteHeader(DefaultStatus)
 
 	_, err = w.Write(jsonData)
-
-	return err
+	if err != nil {
+		logger.Error("failed to write json", zap.Error(err))
+	}
 }
 
-func WriteJSONError(w http.ResponseWriter, status int, message string) error {
-	return WriteJSON(w, status, struct {
-		Error string `json:"error"`
-	}{
-		Error: message,
-	}, nil)
+func WriteSuccessResponse(w http.ResponseWriter, status int, data interface{}, headers http.Header) {
+	response := deliveryModel.APIResponse{
+		Status: status,
+		Body:   data,
+	}
+
+	WriteJSON(w, status, response, headers)
+}
+
+func WriteErrorResponse(w http.ResponseWriter, status int, message string, headers http.Header) {
+	response := deliveryModel.APIErrorResponse{
+		Status: status,
+		Error:  message,
+	}
+
+	WriteJSON(w, status, response, headers)
 }
