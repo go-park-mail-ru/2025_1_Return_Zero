@@ -308,6 +308,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -553,6 +559,24 @@ const docTemplate = `{
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIForbiddenErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -617,6 +641,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -671,6 +701,12 @@ const docTemplate = `{
                         "description": "Bad request - invalid ID",
                         "schema": {
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
                         }
                     },
                     "500": {
@@ -871,6 +907,20 @@ const docTemplate = `{
                 }
             }
         },
+        "delivery.APIForbiddenErrorResponse": {
+            "description": "API forbidden error response structure",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Forbidden"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 403
+                }
+            }
+        },
         "delivery.APIInternalServerErrorResponse": {
             "description": "API internal server error response structure",
             "type": "object",
@@ -885,6 +935,20 @@ const docTemplate = `{
                 }
             }
         },
+        "delivery.APINotFoundErrorResponse": {
+            "description": "API not found error response structure",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Not found"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 404
+                }
+            }
+        },
         "delivery.APIResponse": {
             "description": "API response wrapper",
             "type": "object",
@@ -893,6 +957,20 @@ const docTemplate = `{
                 "status": {
                     "type": "integer",
                     "example": 200
+                }
+            }
+        },
+        "delivery.APIUnauthorizedErrorResponse": {
+            "description": "API unauthorized error response structure",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Unauthorized"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 401
                 }
             }
         },
@@ -1029,6 +1107,7 @@ const docTemplate = `{
             }
         },
         "delivery.Message": {
+            "description": "Message for responses without data",
             "type": "object",
             "properties": {
                 "msg": {

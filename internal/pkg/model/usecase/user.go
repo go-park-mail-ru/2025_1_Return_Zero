@@ -9,6 +9,6 @@ type User struct {
 	Email     string
 	Username  string
 	Avatar    io.Reader
-	Password  string 
+	Password  string
 	AvatarUrl string
 }

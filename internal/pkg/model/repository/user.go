@@ -7,7 +7,7 @@ var (
 )
 
 type User struct {
-	ID        int64 `sql:"id"`
+	ID        int64  `sql:"id"`
 	Username  string `sql:"username"`
 	Password  string `sql:"password_hash"`
 	Email     string `sql:"email"`
