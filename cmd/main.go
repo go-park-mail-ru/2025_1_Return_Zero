@@ -100,7 +100,6 @@ func main() {
 	r.HandleFunc("/api/v1/user/{username}/avatar", userHandler.UploadAvatar).Methods("POST")
 	r.HandleFunc("/api/v1/user/{username}", userHandler.ChangeUserData).Methods("PUT")
 	r.HandleFunc("/api/v1/user/{username}", userHandler.DeleteUser).Methods("DELETE")
-	r.HandleFunc("/api/v1/user/{username}/privacy", userHandler.ChangeUserPrivacySettings).Methods("PUT")
 	r.HandleFunc("/api/v1/user/{username}", userHandler.GetUserData).Methods("GET")
 
 	err = http.ListenAndServe(cfg.Port, r)
