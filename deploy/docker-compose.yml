@@ -1,6 +1,13 @@
 # docker-compose up
 # docker rm $(docker ps -a -q) && docker volume prune -f
 
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
 services:
   postgres:
     build:
@@ -19,6 +26,8 @@ services:
     volumes:
       - 'pgdata:/var/lib/postgresql/data'
     tty: true
+    networks:
+      - app-network
 
   redis:
     image: 'redis'
@@ -32,6 +41,9 @@ services:
     ports:
       - '6379:6379'
     tty: true
+    networks:
+      app-network:
+        ipv4_address: 172.20.0.10
 
   go-api:
     build:
@@ -59,6 +71,8 @@ services:
     depends_on:
       - postgres
       - redis
+    networks:
+      - app-network
 
   nginx:
     build:
@@ -73,6 +87,8 @@ services:
     depends_on:
       - go-api
     tty: true
+    networks:
+      - app-network
 
 volumes:
   pgdata:
