@@ -10,4 +10,5 @@ type Repository interface {
 	LoginUser(user *repoModel.User) (*repoModel.User, error)
 	UploadAvatar(avatarUrl string, username string) error
 	GetAvatar(username string) (string, error)
+	GetUserIDByUsername(username string) (int64, error)
 }

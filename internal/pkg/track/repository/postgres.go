@@ -49,6 +49,20 @@ const (
 		SET duration = $1
 		WHERE id = $2
 	`
+
+	GetStreamsByUserIDQuery = `
+		SELECT id, user_id, track_id, duration
+		FROM stream
+		WHERE user_id = $1
+		ORDER BY created_at DESC, id DESC
+		LIMIT $2 OFFSET $3
+	`
+
+	GetTracksByIDsQuery = `
+		SELECT id, title, thumbnail_url, duration, album_id
+		FROM track
+		WHERE id = ANY($1)
+	`
 )
 
 type TrackPostgresRepository struct {
@@ -185,4 +199,69 @@ func (r *TrackPostgresRepository) UpdateStreamDuration(ctx context.Context, ende
 	}
 
 	return nil
+}
+
+func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID int64, filters *repository.TrackFilters) ([]*repository.TrackStream, error) {
+	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Requesting streams by user id from db", zap.Int64("userID", userID))
+	rows, err := r.db.Query(GetStreamsByUserIDQuery, userID, filters.Pagination.Limit, filters.Pagination.Offset)
+	if err != nil {
+		logger.Error("failed to get streams by user id", zap.Error(err))
+		return nil, err
+	}
+	defer rows.Close()
+
+	streams := make([]*repository.TrackStream, 0)
+	for rows.Next() {
+		var stream repository.TrackStream
+		err := rows.Scan(&stream.ID, &stream.UserID, &stream.TrackID, &stream.Duration)
+		if err != nil {
+			logger.Error("failed to scan stream", zap.Error(err))
+			return nil, err
+		}
+		streams = append(streams, &stream)
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.Error("failed to get streams by user id", zap.Error(err))
+		return nil, err
+	}
+
+	return streams, nil
+}
+
+func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int64) (map[int64]*repository.Track, error) {
+	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Requesting tracks by ids from db", zap.Any("ids", ids))
+	rows, err := r.db.Query(GetTracksByIDsQuery, ids)
+	if err != nil {
+		logger.Error("failed to get tracks by ids", zap.Error(err))
+		return nil, err
+	}
+	defer rows.Close()
+
+	tracks := make(map[int64]*repository.Track)
+	for rows.Next() {
+		var track repository.Track
+		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID)
+		if err != nil {
+			logger.Error("failed to scan track", zap.Error(err))
+			return nil, err
+		}
+		tracks[track.ID] = &track
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.Error("failed to get tracks by ids", zap.Error(err))
+		return nil, err
+	}
+
+	for id := range tracks {
+		if _, ok := tracks[id]; !ok {
+			logger.Error("track not found", zap.Int64("id", id))
+			return nil, track.ErrTrackNotFound
+		}
+	}
+
+	return tracks, nil
 }

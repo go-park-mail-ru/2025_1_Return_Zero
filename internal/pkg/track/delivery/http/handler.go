@@ -276,3 +276,48 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 
 	helpers.WriteSuccessResponse(w, http.StatusOK, responseMessage, nil)
 }
+
+// GetLastListenedTracks godoc
+// @Summary Get last listened tracks for a user
+// @Description Retrieves a list of tracks last listened by a specific user with pagination
+// @Tags tracks
+// @Accept json
+// @Produce json
+// @Param username path string true "Username"
+// @Param offset query integer false "Offset (default: 0)"
+// @Param limit query integer false "Limit (default: 10, max: 100)"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Track} "List of last listened tracks"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid username or filters"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "User not found"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /users/{username}/history [get]
+func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
+	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
+	if err != nil {
+		logger.Error("failed to get pagination", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	vars := mux.Vars(r)
+	username := vars["username"]
+	if username == "" {
+		logger.Error("username is required")
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, "username is required", nil)
+		return
+	}
+
+	usecaseTracks, err := h.usecase.GetLastListenedTracks(ctx, username, &usecaseModel.TrackFilters{
+		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
+	})
+
+	if err != nil {
+		logger.Error("failed to get last listened tracks", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusNotFound, err.Error(), nil)
+		return
+	}
+
+	helpers.WriteSuccessResponse(w, http.StatusOK, usecaseTracks, nil)
+}

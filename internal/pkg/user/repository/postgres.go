@@ -55,6 +55,11 @@ const (
 			FROM "user"
 			WHERE username = $1
 			`
+	getUserIDByUsernameQuery = `
+			SELECT id
+			FROM "user"
+			WHERE username = $1
+			`
 )
 
 func hashPassword(salt []byte, password string) string {
@@ -171,4 +176,17 @@ func (r *userPostgresRepository) UploadAvatar(avatarUrl string, username string)
 		return err
 	}
 	return nil
+}
+
+func (r *userPostgresRepository) GetUserIDByUsername(username string) (int64, error) {
+	row := r.db.QueryRow(getUserIDByUsernameQuery, username)
+	var userID int64
+	err := row.Scan(&userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, ErrUserNotFound
+		}
+		return 0, err
+	}
+	return userID, nil
 }

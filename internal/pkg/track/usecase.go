@@ -17,4 +17,5 @@ type Usecase interface {
 	GetTracksByArtistID(ctx context.Context, id int64) ([]*usecaseModel.Track, error)
 	CreateStream(ctx context.Context, stream *usecaseModel.TrackStreamCreateData) (int64, error)
 	UpdateStreamDuration(ctx context.Context, endedStream *usecaseModel.TrackStreamUpdateData) error
+	GetLastListenedTracks(ctx context.Context, username string, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error)
 }
