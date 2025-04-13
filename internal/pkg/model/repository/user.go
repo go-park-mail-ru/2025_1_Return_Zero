@@ -21,19 +21,10 @@ type ChangeUserData struct {
 	NewPassword string
 }
 
-type PrivacySettings struct {
-	IsPublicPlaylists       bool `sql:"is_public_playlists"`
-	IsPublicMinutesListened bool `sql:"is_public_minutes_listened"`
-	IsPublicFavoriteArtists bool `sql:"is_public_favorite_artists"`
-	IsPublicTracksListened  bool `sql:"is_public_tracks_listened"`
-	IsPublicFavoriteTracks  bool `sql:"is_public_favorite_tracks"`
-	IsPublicArtistsListened bool `sql:"is_public_artists_listened"`
-}
-
 type UserAndSettings struct {
 	Username                string `sql:"username"`
 	Thumbnail               string `sql:"thumbnail_url"`
-	Email 					string `sql:"email"`
+	Email                   string `sql:"email"`
 	IsPublicPlaylists       bool   `sql:"is_public_playlists"`
 	IsPublicMinutesListened bool   `sql:"is_public_minutes_listened"`
 	IsPublicFavoriteArtists bool   `sql:"is_public_favorite_artists"`
@@ -72,4 +63,21 @@ type UserStats struct {
 	MinutesListened int64 `sql:"minutes_listened"`
 	TracksListened  int64 `sql:"tracks_listened"`
 	ArtistsListened int64 `sql:"artists_listened"`
+}
+
+type UserPrivacySettings struct {
+	IsPublicPlaylists       bool `sql:"is_public_playlists"`
+	IsPublicMinutesListened bool `sql:"is_public_minutes_listened"`
+	IsPublicFavoriteArtists bool `sql:"is_public_favorite_artists"`
+	IsPublicTracksListened  bool `sql:"is_public_tracks_listened"`
+	IsPublicFavoriteTracks  bool `sql:"is_public_favorite_tracks"`
+	IsPublicArtistsListened bool `sql:"is_public_artists_listened"`
+}
+
+type UserFullData struct {
+	Username   string `sql:"username"`
+	Thumbnail  string `sql:"thumbnail_url"`
+	Email      string `sql:"email"`
+	Privacy    *UserPrivacySettings
+	Statistics *UserStats
 }

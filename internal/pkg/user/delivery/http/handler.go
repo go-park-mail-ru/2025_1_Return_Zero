@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
@@ -60,33 +61,6 @@ func userDeleteToUsecaseModel(user *deliveryModel.UserDelete) *usecaseModel.User
 		Username: user.Username,
 		Email:    user.Email,
 		Password: user.Password,
-	}
-}
-
-func changeDataToUsecaseModel(changeData *deliveryModel.UserChangeSettings) *usecaseModel.UserChangeSettings {
-	return &usecaseModel.UserChangeSettings{
-		Password:                changeData.Password,
-		IsPublicPlaylists:       changeData.IsPublicPlaylists,
-		IsPublicMinutesListened: changeData.IsPublicMinutesListened,
-		IsPublicFavoriteArtists: changeData.IsPublicFavoriteArtists,
-		IsPublicTracksListened:  changeData.IsPublicTracksListened,
-		IsPublicFavoriteTracks:  changeData.IsPublicFavoriteTracks,
-		IsPublicArtistsListened: changeData.IsPublicArtistsListened,
-		NewUsername:             changeData.NewUsername,
-		NewEmail:                changeData.NewEmail,
-		NewPassword:             changeData.NewPassword,
-	}
-}
-
-func privacySettingsToUsecaseModel(settings *deliveryModel.PrivacySettings) *usecaseModel.PrivacySettings {
-	return &usecaseModel.PrivacySettings{
-		Username:                settings.Username,
-		IsPublicPlaylists:       settings.IsPublicPlaylists,
-		IsPublicMinutesListened: settings.IsPublicMinutesListened,
-		IsPublicFavoriteArtists: settings.IsPublicFavoriteArtists,
-		IsPublicTracksListened:  settings.IsPublicTracksListened,
-		IsPublicFavoriteTracks:  settings.IsPublicFavoriteTracks,
-		IsPublicArtistsListened: settings.IsPublicArtistsListened,
 	}
 }
 
@@ -401,7 +375,7 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param username path string true "Username"
-// @Success 200 {object} delivery.APIResponse{body=delivery.UserAndSettings} "User data, privacy settings and statistics"
+// @Success 200 {object} delivery.APIResponse{body=delivery.UserFullData} "User data, privacy settings and statistics, -1 - if the statistics field is not allowed to display"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - username not found in URL or user not found"
 // @Router /user/{username} [get]
 func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
@@ -416,30 +390,42 @@ func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userAndSettings, err := h.usecase.GetUserData(ctx, username)
+	userFullDataUsecase, err := h.usecase.GetUserData(ctx, username)
 	if err != nil {
 		logger.Error("failed to get user by username", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
-	userAndSettingsDelivery := &deliveryModel.UserAndSettings{}
-	if username != userAndSettings.Username {
-		userAndSettingsDelivery = &deliveryModel.UserAndSettings{
-			Username:   userAndSettings.Username,
-			AvatarUrl:  userAndSettings.AvatarUrl,
-			Privacy:    (*deliveryModel.Privacy)(userAndSettings.Privacy),
-		}
-	} else {
-		userAndSettingsDelivery = &deliveryModel.UserAndSettings{
-			Username:   userAndSettings.Username,
-			Email:      userAndSettings.Email,
-			AvatarUrl:  userAndSettings.AvatarUrl,
-			Privacy:    (*deliveryModel.Privacy)(userAndSettings.Privacy),
-			Statistics: (*deliveryModel.Statistics)(userAndSettings.Statistics),
+	authUser, isAuth := middleware.GetUserFromContext(ctx)
+
+	UserFullDataDelivery := model.UserFullDataUsecaseToDelivery(userFullDataUsecase)
+
+	isSameUser := isAuth && authUser.Username == userFullDataUsecase.Username
+
+	if !isSameUser {
+		UserFullDataDelivery.Email = ""
+
+		privacySettings := UserFullDataDelivery.Privacy
+		UserFullDataDelivery.Privacy = nil
+
+		if privacySettings != nil && UserFullDataDelivery.Statistics != nil {
+			if !privacySettings.IsPublicMinutesListened {
+				UserFullDataDelivery.Statistics.MinutesListened = -1
+			}
+			if !privacySettings.IsPublicTracksListened {
+				UserFullDataDelivery.Statistics.TracksListened = -1
+			}
+			if !privacySettings.IsPublicArtistsListened {
+				UserFullDataDelivery.Statistics.ArtistsListened = -1
+			}
+			if !privacySettings.IsPublicPlaylists && !privacySettings.IsPublicFavoriteTracks && !privacySettings.IsPublicFavoriteArtists {
+				UserFullDataDelivery.Statistics = nil
+			}
 		}
 	}
-	helpers.WriteSuccessResponse(w, http.StatusOK, userAndSettingsDelivery, nil)
+
+	helpers.WriteSuccessResponse(w, http.StatusOK, UserFullDataDelivery, nil)
 }
 
 // ChangeUserData godoc
@@ -449,7 +435,7 @@ func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param user body delivery.UserChangeSettings true "User data and privacy settings"
-// @Success 200 {object} delivery.APIResponse{body=delivery.UserAndSettings} "Updated user data and privacy settings"
+// @Success 200 {object} delivery.APIResponse{body=delivery.UserFullData} "Updated user data and privacy settings"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid request body, validation failed, or user not found"
 // @Router /user/{username} [put]
 func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
@@ -469,26 +455,23 @@ func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	isValid, err := validateData(userChangeData)
-	if err != nil || !isValid {
+	if err != nil {
+		logger.Error("failed to validate change user data", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+	if !isValid {
 		logger.Error("failed to validate change user data", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
 		return
 	}
-
-	newUser, err := h.usecase.ChangeUserData(ctx, userAuth.Username, changeDataToUsecaseModel(userChangeData))
+	newUser, err := h.usecase.ChangeUserData(ctx, userAuth.Username, model.ChangeDataFromDeliveryToUsecase(userChangeData))
 	if err != nil {
 		logger.Error("failed to change user data", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
-	userAndSettingsDelivery := &deliveryModel.UserAndSettings{
-		Username:   newUser.Username,
-		Email:      newUser.Email,
-		AvatarUrl:  newUser.AvatarUrl,
-		Privacy:    (*deliveryModel.Privacy)(newUser.Privacy),
-		Statistics: (*deliveryModel.Statistics)(newUser.Statistics),
-	}
-
-	helpers.WriteSuccessResponse(w, http.StatusOK, userAndSettingsDelivery, nil)
+	newUserDelivery := model.UserFullDataUsecaseToDelivery(newUser)
+	helpers.WriteSuccessResponse(w, http.StatusOK, newUserDelivery, nil)
 }

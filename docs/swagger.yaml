@@ -272,7 +272,29 @@ definitions:
         example: Lagtrain
         type: string
     type: object
-  delivery.UserAndSettings:
+  delivery.UserChangeSettings:
+    properties:
+      new_email:
+        type: string
+      new_password:
+        type: string
+      new_username:
+        type: string
+      password:
+        type: string
+      privacy:
+        $ref: '#/definitions/delivery.Privacy'
+    type: object
+  delivery.UserDelete:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  delivery.UserFullData:
     properties:
       avatar_url:
         type: string
@@ -282,38 +304,6 @@ definitions:
         $ref: '#/definitions/delivery.Privacy'
       statistics:
         $ref: '#/definitions/delivery.Statistics'
-      username:
-        type: string
-    type: object
-  delivery.UserChangeSettings:
-    properties:
-      is_public_artists_listened:
-        type: boolean
-      is_public_favorite_artists:
-        type: boolean
-      is_public_favorite_tracks:
-        type: boolean
-      is_public_minutes_listened:
-        type: boolean
-      is_public_playlists:
-        type: boolean
-      is_public_tracks_listened:
-        type: boolean
-      new_email:
-        type: string
-      new_password:
-        type: string
-      new_username:
-        type: string
-      password:
-        type: string
-    type: object
-  delivery.UserDelete:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
       username:
         type: string
     type: object
@@ -852,13 +842,14 @@ paths:
       - application/json
       responses:
         "200":
-          description: User data, privacy settings and statistics
+          description: User data, privacy settings and statistics, -1 - if the statistics
+            field is not allowed to display
           schema:
             allOf:
             - $ref: '#/definitions/delivery.APIResponse'
             - properties:
                 body:
-                  $ref: '#/definitions/delivery.UserAndSettings'
+                  $ref: '#/definitions/delivery.UserFullData'
               type: object
         "400":
           description: Bad request - username not found in URL or user not found
@@ -888,7 +879,7 @@ paths:
             - $ref: '#/definitions/delivery.APIResponse'
             - properties:
                 body:
-                  $ref: '#/definitions/delivery.UserAndSettings'
+                  $ref: '#/definitions/delivery.UserFullData'
               type: object
         "400":
           description: Bad request - invalid request body, validation failed, or user

@@ -795,7 +795,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "User data, privacy settings and statistics",
+                        "description": "User data, privacy settings and statistics, -1 - if the statistics field is not allowed to display",
                         "schema": {
                             "allOf": [
                                 {
@@ -805,7 +805,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "$ref": "#/definitions/delivery.UserAndSettings"
+                                            "$ref": "#/definitions/delivery.UserFullData"
                                         }
                                     }
                                 }
@@ -855,7 +855,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "$ref": "#/definitions/delivery.UserAndSettings"
+                                            "$ref": "#/definitions/delivery.UserFullData"
                                         }
                                     }
                                 }
@@ -1454,7 +1454,41 @@ const docTemplate = `{
                 }
             }
         },
-        "delivery.UserAndSettings": {
+        "delivery.UserChangeSettings": {
+            "type": "object",
+            "properties": {
+                "new_email": {
+                    "type": "string"
+                },
+                "new_password": {
+                    "type": "string"
+                },
+                "new_username": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "privacy": {
+                    "$ref": "#/definitions/delivery.Privacy"
+                }
+            }
+        },
+        "delivery.UserDelete": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "delivery.UserFullData": {
             "type": "object",
             "properties": {
                 "avatar_url": {
@@ -1468,55 +1502,6 @@ const docTemplate = `{
                 },
                 "statistics": {
                     "$ref": "#/definitions/delivery.Statistics"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "delivery.UserChangeSettings": {
-            "type": "object",
-            "properties": {
-                "is_public_artists_listened": {
-                    "type": "boolean"
-                },
-                "is_public_favorite_artists": {
-                    "type": "boolean"
-                },
-                "is_public_favorite_tracks": {
-                    "type": "boolean"
-                },
-                "is_public_minutes_listened": {
-                    "type": "boolean"
-                },
-                "is_public_playlists": {
-                    "type": "boolean"
-                },
-                "is_public_tracks_listened": {
-                    "type": "boolean"
-                },
-                "new_email": {
-                    "type": "string"
-                },
-                "new_password": {
-                    "type": "string"
-                },
-                "new_username": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "delivery.UserDelete": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
                 },
                 "username": {
                     "type": "string"
