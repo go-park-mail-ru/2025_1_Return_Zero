@@ -308,6 +308,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -503,6 +509,80 @@ const docTemplate = `{
                 }
             }
         },
+        "/streams/{id}": {
+            "put": {
+                "description": "updates listening duration at the end of stream",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tracks"
+                ],
+                "summary": "Update stream duration by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Stream ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message that stream was updated",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Message"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID or filters",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIForbiddenErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/tracks": {
             "get": {
                 "description": "Get a list of tracks with optional pagination filters",
@@ -558,6 +638,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
@@ -610,6 +696,68 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request - invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tracks/{id}/stream": {
+            "post": {
+                "description": "Creates stream for track by id, essentially it means saving track to listening history",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tracks"
+                ],
+                "summary": "Create stream for track by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Track ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ID of created stream",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.StreamID"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID or filters",
                         "schema": {
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
@@ -894,6 +1042,86 @@ const docTemplate = `{
                     }
                 }
             }
+<<<<<<< HEAD
+=======
+        },
+        "/users/{username}/history": {
+            "get": {
+                "description": "Retrieves a list of tracks last listened by a specific user with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tracks"
+                ],
+                "summary": "Get last listened tracks for a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default: 0)",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit (default: 10, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of last listened tracks",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Track"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid username or filters",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+>>>>>>> origin/temp_for_front
         }
     },
     "definitions": {
@@ -911,6 +1139,20 @@ const docTemplate = `{
                 }
             }
         },
+        "delivery.APIForbiddenErrorResponse": {
+            "description": "API forbidden error response structure",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Forbidden"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 403
+                }
+            }
+        },
         "delivery.APIInternalServerErrorResponse": {
             "description": "API internal server error response structure",
             "type": "object",
@@ -925,6 +1167,20 @@ const docTemplate = `{
                 }
             }
         },
+        "delivery.APINotFoundErrorResponse": {
+            "description": "API not found error response structure",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Not found"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 404
+                }
+            }
+        },
         "delivery.APIResponse": {
             "description": "API response wrapper",
             "type": "object",
@@ -936,16 +1192,29 @@ const docTemplate = `{
                 }
             }
         },
+        "delivery.APIUnauthorizedErrorResponse": {
+            "description": "API unauthorized error response structure",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Unauthorized"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 401
+                }
+            }
+        },
         "delivery.Album": {
             "description": "A music album entity",
             "type": "object",
             "properties": {
-                "artist": {
-                    "type": "string"
-                },
-                "artist_id": {
-                    "type": "integer",
-                    "example": 1
+                "artists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/delivery.AlbumArtist"
+                    }
                 },
                 "id": {
                     "type": "integer",
@@ -970,6 +1239,20 @@ const docTemplate = `{
                         }
                     ],
                     "example": "album"
+                }
+            }
+        },
+        "delivery.AlbumArtist": {
+            "description": "An artist associated with an album",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Inabakumori"
                 }
             }
         },
@@ -1080,9 +1363,37 @@ const docTemplate = `{
             }
         },
         "delivery.Message": {
+            "description": "Message for responses without data",
             "type": "object",
             "properties": {
                 "msg": {
+                    "type": "string",
+                    "example": "object have been successfully created/updated"
+                }
+            }
+        },
+        "delivery.PrivacySettings": {
+            "type": "object",
+            "properties": {
+                "is_public_artists_listened": {
+                    "type": "boolean"
+                },
+                "is_public_favorite_artists": {
+                    "type": "boolean"
+                },
+                "is_public_favorite_tracks": {
+                    "type": "boolean"
+                },
+                "is_public_minutes_listened": {
+                    "type": "boolean"
+                },
+                "is_public_playlists": {
+                    "type": "boolean"
+                },
+                "is_public_tracks_listened": {
+                    "type": "boolean"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -1125,6 +1436,16 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "delivery.StreamID": {
+            "description": "An id of a track stream",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
@@ -1263,6 +1584,7 @@ const docTemplate = `{
             }
         },
         "delivery.UserToFront": {
+            "description": "User data",
             "type": "object",
             "properties": {
                 "avatar_url": {

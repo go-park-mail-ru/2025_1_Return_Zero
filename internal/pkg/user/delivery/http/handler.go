@@ -78,6 +78,18 @@ func changeDataToUsecaseModel(changeData *deliveryModel.UserChangeSettings) *use
 	}
 }
 
+func privacySettingsToUsecaseModel(settings *deliveryModel.PrivacySettings) *usecaseModel.PrivacySettings {
+	return &usecaseModel.PrivacySettings{
+		Username:                settings.Username,
+		IsPublicPlaylists:       settings.IsPublicPlaylists,
+		IsPublicMinutesListened: settings.IsPublicMinutesListened,
+		IsPublicFavoriteArtists: settings.IsPublicFavoriteArtists,
+		IsPublicTracksListened:  settings.IsPublicTracksListened,
+		IsPublicFavoriteTracks:  settings.IsPublicFavoriteTracks,
+		IsPublicArtistsListened: settings.IsPublicArtistsListened,
+	}
+}
+
 func validateData(data interface{}) (bool, error) {
 	result, err := govalidator.ValidateStruct(data)
 	if err != nil {

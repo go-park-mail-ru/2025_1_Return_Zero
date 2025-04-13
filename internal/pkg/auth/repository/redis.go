@@ -23,12 +23,12 @@ const (
 )
 
 type AuthRedisRepository struct {
-	redis redis.Conn
+	redisPool *redis.Pool
 }
 
-func NewAuthRedisRepository(redis redis.Conn) auth.Repository {
+func NewAuthRedisRepository(pool *redis.Pool) auth.Repository {
 	repo := &AuthRedisRepository{
-		redis: redis,
+		redisPool: pool,
 	}
 
 	return repo
@@ -41,9 +41,12 @@ func generateSessionID() string {
 }
 
 func (r *AuthRedisRepository) CreateSession(ctx context.Context, ID int64) (string, error) {
+	conn := r.redisPool.Get()
+	defer conn.Close()
+
 	SID := generateSessionID()
 	expiration := int(SessionTTL.Seconds())
-	_, err := redis.DoContext(r.redis, ctx, "SETEX", SID, expiration, ID)
+	_, err := redis.DoContext(conn, ctx, "SETEX", SID, expiration, ID)
 	if err != nil {
 		return "", err
 	}
@@ -51,7 +54,10 @@ func (r *AuthRedisRepository) CreateSession(ctx context.Context, ID int64) (stri
 }
 
 func (r *AuthRedisRepository) DeleteSession(ctx context.Context, SID string) error {
-	_, err := redis.DoContext(r.redis, ctx, "DEL", SID)
+	conn := r.redisPool.Get()
+	defer conn.Close()
+
+	_, err := redis.DoContext(conn, ctx, "DEL", SID)
 	if err != nil {
 		return err
 	}
@@ -59,7 +65,10 @@ func (r *AuthRedisRepository) DeleteSession(ctx context.Context, SID string) err
 }
 
 func (r *AuthRedisRepository) GetSession(ctx context.Context, SID string) (int64, error) {
-	id, err := redis.Int64(redis.DoContext(r.redis, ctx, "GET", SID))
+	conn := r.redisPool.Get()
+	defer conn.Close()
+
+	id, err := redis.Int64(redis.DoContext(conn, ctx, "GET", SID))
 	if err != nil {
 		return -1, err
 	}

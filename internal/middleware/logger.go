@@ -28,17 +28,17 @@ func LoggerFromContext(ctx context.Context) *zap.SugaredLogger {
 	return logger
 }
 
-func Logger(next http.Handler) http.Handler {
+func Logger(next http.Handler, logger *zap.SugaredLogger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger, err := NewZapLogger()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
 		ctx := context.WithValue(r.Context(), LoggerKey{}, logger)
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func LoggerMiddleware(logger *zap.SugaredLogger) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return Logger(next, logger)
+	}
 }

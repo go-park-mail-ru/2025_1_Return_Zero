@@ -7,7 +7,7 @@ TRUNCATE TABLE genre_track CASCADE;
 TRUNCATE TABLE track_artist CASCADE;
 
 INSERT INTO artist (title, thumbnail_url, description) VALUES
-	('Inabakumori', 'https://returnzeroimages.fra1.digiYOASOBItaloceanspaces.com/artists/anticyclone.jpg', 'Inabakumori is a Japanese artist'),
+	('Inabakumori', 'https://returnzeroimages.fra1.digitaloceanspaces.com/artists/anticyclone.jpg', 'Inabakumori is a Japanese artist'),
 	('YOASOBI', 'https://returnzeroimages.fra1.digitaloceanspaces.com/artists/yoasobi.jpg', 'YOASOBI is a Japanese artist'),
 	('Kenshi Yonezu', 'https://returnzeroimages.fra1.digitaloceanspaces.com/artists/kenshiyonezu.jpg', 'Kenshi Yonezu is a Japanese artist'),
 	('RADWIMPS', 'https://returnzeroimages.fra1.digitaloceanspaces.com/artists/radwimps.jpg', 'RADWIMPS is a Japanese artist'),
@@ -15,13 +15,13 @@ INSERT INTO artist (title, thumbnail_url, description) VALUES
     ('Toaka', 'https://returnzeroimages.fra1.digitaloceanspaces.com/artists/toaka.jpg', 'Toaka is a Japanese artist'),
     ('Ayase', 'https://returnzeroimages.fra1.digitaloceanspaces.com/artists/ayase.jpg', 'Ayase is a Japanese artist');
 
-INSERT INTO album (title, artist_id, thumbnail_url, release_date, type) VALUES
-	('Anticyclone', 1, 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/anticyclone.jpg', '2023-01-01', 'album'),
-	('THE BOOK', 2, 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/thebook.jpg', '2024-01-01', 'album'),
-	('BOOTLEG', 3, 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/bootleg.jpg', '2022-01-01', 'ep'),
-	('Your Name.', 4, 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/yourname.jpg', '2021-01-01', 'album'),
-    ('Official HIGE DANdism', 5, 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/officialhigedandism.jpg', '2020-01-01', 'album'),
-    ('Ghost City Tokyo', 7, 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/ghostcitytokyo.jpg', '2024-01-01', 'album');
+INSERT INTO album (title, thumbnail_url, release_date, type) VALUES
+	('Anticyclone', 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/anticyclone.jpg', '2023-01-01', 'album'),
+	('THE BOOK', 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/thebook.jpg', '2024-01-01', 'album'),
+	('BOOTLEG', 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/bootleg.jpg', '2022-01-01', 'ep'),
+	('Your Name.', 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/yourname.jpg', '2021-01-01', 'album'),
+    ('Official HIGE DANdism', 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/officialhigedandism.jpg', '2020-01-01', 'album'),
+    ('Ghost City Tokyo', 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/ghostcitytokyo.jpg', '2024-01-01', 'album');
 
 INSERT INTO genre (name) VALUES
 	('J-Pop'),
@@ -89,3 +89,15 @@ INSERT INTO track_artist (track_id, artist_id, role) VALUES
     (18, 2, 'main'),
     (19, 2, 'main'),
     (20, 7, 'main');
+
+INSERT INTO album_artist (album_id, artist_id) VALUES
+    (1, 1),
+    (2, 2),
+    (3, 3),
+    (4, 4),
+    (5, 5),
+    (6, 7);
+
+REFRESH MATERIALIZED VIEW artist_stats;
+REFRESH MATERIALIZED VIEW album_stats;
+REFRESH MATERIALIZED VIEW track_stats;

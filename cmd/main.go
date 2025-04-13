@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
@@ -28,6 +27,7 @@ import (
 	userFileRepo "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/userAvatarFile/repository"
 	"github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
+	"go.uber.org/zap"
 )
 
 // @title Return Zero API
@@ -36,57 +36,71 @@ import (
 // @host returnzero.ru
 // @BasePath /api/v1
 func main() {
-	cfg, err := config.LoadConfig()
+	logger, err := middleware.NewZapLogger()
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Error creating logger:", zap.Error(err))
 		return
 	}
 
-	redisConn, err := redis.ConnectRedis(cfg.Redis)
+	cfg, err := config.LoadConfig()
 	if err != nil {
-		fmt.Println("Error connecting to Redis:", err)
+		logger.Error("Error loading config:", zap.Error(err))
 		return
 	}
-	defer redisConn.Close()
+
+	redisPool := redis.NewRedisPool(cfg.Redis)
+	defer redisPool.Close()
+
+	redisConn := redisPool.Get()
+	err = redisConn.Err()
+	if err != nil {
+		logger.Error("Error connecting to Redis:", zap.Error(err))
+		return
+	}
+	redisConn.Close()
 
 	postgresConn, err := postgres.ConnectPostgres(cfg.Postgres)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Error connecting to Postgres:", zap.Error(err))
 		return
 	}
 	defer postgresConn.Close()
 
 	s3, err := s3.InitS3(cfg.S3)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Error initializing S3:", zap.Error(err))
 		return
 	}
 
 	r := mux.NewRouter()
-	fmt.Printf("Server starting on port %s...\n", cfg.Port)
+	logger.Info("Server starting on port %s...", zap.String("port", cfg.Port))
 
-	r.PathPrefix("/docs/").Handler(httpSwagger.Handler(
-		httpSwagger.URL("/docs/doc.json"),
+	r.PathPrefix("/api/v1/docs/").Handler(httpSwagger.Handler(
+		httpSwagger.URL("/api/v1/docs/doc.json"),
 		httpSwagger.DeepLinking(true),
 		httpSwagger.DocExpansion("none"),
 	))
 
-	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisConn), userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket))
+	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisPool), userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket))
 
-	r.Use(middleware.Logger)
+	r.Use(middleware.LoggerMiddleware(logger))
 	r.Use(middleware.RequestId)
 	r.Use(middleware.AccessLog)
 	r.Use(middleware.Auth(newUserUsecase))
 	r.Use(cfg.Cors.Middleware)
 
-	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration)), cfg)
+	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration), userRepository.NewUserPostgresRepository(postgresConn)), cfg)
 	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), genreRepository.NewGenrePostgresRepository(postgresConn)), cfg)
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistRepository.NewArtistPostgresRepository(postgresConn)), cfg)
 	userHandler := userHttp.NewUserHandler(newUserUsecase)
 
 	r.HandleFunc("/api/v1/tracks", trackHandler.GetAllTracks).Methods("GET")
 	r.HandleFunc("/api/v1/tracks/{id}", trackHandler.GetTrackByID).Methods("GET")
+	r.HandleFunc("/api/v1/tracks/{id}/stream", trackHandler.CreateStream).Methods("POST")
+	r.HandleFunc("/api/v1/streams/{id}", trackHandler.UpdateStreamDuration).Methods("PUT", "PATCH")
+
 	r.HandleFunc("/api/v1/albums", albumHandler.GetAllAlbums).Methods("GET")
+
 	r.HandleFunc("/api/v1/artists", artistHandler.GetAllArtists).Methods("GET")
 	r.HandleFunc("/api/v1/artists/{id}", artistHandler.GetArtistByID).Methods("GET")
 	r.HandleFunc("/api/v1/artists/{id}/tracks", trackHandler.GetTracksByArtistID).Methods("GET")
@@ -104,6 +118,6 @@ func main() {
 
 	err = http.ListenAndServe(cfg.Port, r)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Error starting server:", zap.Error(err))
 	}
 }

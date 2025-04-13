@@ -306,7 +306,7 @@ func (r *userPostgresRepository) changePassword(ctx context.Context, password st
 }
 
 func (r *userPostgresRepository) ChangeUserData(ctx context.Context, username string, changeData *repoModel.ChangeUserData) error {
-	id, err := r.GetIdByUsername(ctx, username)
+	id, err := r.GetIDByUsername(ctx, username)
 	if err != nil {
 		return err
 	}
@@ -347,7 +347,7 @@ func (r *userPostgresRepository) DeleteUser(ctx context.Context, user *repoModel
 }
 
 func (r *userPostgresRepository) ChangeUserPrivacySettings(ctx context.Context, username string, privacySettings *repoModel.PrivacySettings) error {
-	id, err := r.GetIdByUsername(ctx, username)
+	id, err := r.GetIDByUsername(ctx, username)
 	if err != nil {
 		return err
 	}
@@ -366,7 +366,7 @@ func (r *userPostgresRepository) ChangeUserPrivacySettings(ctx context.Context, 
 	return nil
 }
 
-func (r *userPostgresRepository) GetIdByUsername(ctx context.Context, username string) (int64, error) {
+func (r *userPostgresRepository) GetIDByUsername(ctx context.Context, username string) (int64, error) {
 	row := r.db.QueryRowContext(ctx, getIdByUsernameQuery, username)
 	var userID int64
 	err := row.Scan(&userID)
@@ -437,7 +437,7 @@ func (r *userPostgresRepository) getNumUniqueArtist(ctx context.Context, id int6
 }
 
 func (r *userPostgresRepository) GetUserStats(ctx context.Context, username string) (*repoModel.UserStats, error) {
-	userID, err := r.GetIdByUsername(ctx, username)
+	userID, err := r.GetIDByUsername(ctx, username)
 	if err != nil {
 		return nil, err
 	}

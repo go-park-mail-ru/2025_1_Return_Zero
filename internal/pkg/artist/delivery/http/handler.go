@@ -1,6 +1,7 @@
 package artist
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -8,7 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
-	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
+	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -36,7 +37,8 @@ func NewArtistHandler(usecase artist.Usecase, cfg *config.Config) *ArtistHandler
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /artists [get]
 func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
@@ -44,11 +46,8 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usecaseArtists, err := h.usecase.GetAllArtists(&usecaseModel.ArtistFilters{
-		Pagination: &usecaseModel.Pagination{
-			Offset: pagination.Offset,
-			Limit:  pagination.Limit,
-		},
+	usecaseArtists, err := h.usecase.GetAllArtists(ctx, &usecaseModel.ArtistFilters{
+		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
 	})
 
 	if err != nil {
@@ -57,15 +56,7 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	artists := make([]*deliveryModel.Artist, 0, len(usecaseArtists))
-	for _, usecaseArtist := range usecaseArtists {
-		artists = append(artists, &deliveryModel.Artist{
-			ID:          usecaseArtist.ID,
-			Title:       usecaseArtist.Title,
-			Thumbnail:   usecaseArtist.Thumbnail,
-			Description: usecaseArtist.Description,
-		})
-	}
+	artists := model.ArtistsFromUsecaseToDelivery(usecaseArtists)
 	helpers.WriteSuccessResponse(w, http.StatusOK, artists, nil)
 }
 
@@ -81,7 +72,8 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /artists/{id} [get]
 func (h *ArtistHandler) GetArtistByID(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -92,22 +84,18 @@ func (h *ArtistHandler) GetArtistByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usecaseArtist, err := h.usecase.GetArtistByID(id)
+	usecaseArtist, err := h.usecase.GetArtistByID(ctx, id)
 	if err != nil {
 		logger.Error("failed to get artist", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		switch {
+		case errors.Is(err, artist.ErrArtistNotFound):
+			helpers.WriteErrorResponse(w, http.StatusNotFound, err.Error(), nil)
+		default:
+			helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		}
 		return
 	}
 
-	artistDetailed := &deliveryModel.ArtistDetailed{
-		Artist: deliveryModel.Artist{
-			ID:          usecaseArtist.ID,
-			Title:       usecaseArtist.Title,
-			Thumbnail:   usecaseArtist.Thumbnail,
-			Description: usecaseArtist.Description,
-		},
-		Listeners: usecaseArtist.Listeners,
-		Favorites: usecaseArtist.Favorites,
-	}
+	artistDetailed := model.ArtistDetailedFromUsecaseToDelivery(usecaseArtist)
 	helpers.WriteSuccessResponse(w, http.StatusOK, artistDetailed, nil)
 }

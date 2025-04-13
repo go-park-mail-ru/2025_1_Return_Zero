@@ -8,7 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
-	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
+	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -36,7 +36,8 @@ func NewAlbumHandler(usecase album.Usecase, cfg *config.Config) *AlbumHandler {
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /albums [get]
 func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
@@ -44,11 +45,8 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usecaseAlbums, err := h.usecase.GetAllAlbums(&usecaseModel.AlbumFilters{
-		Pagination: &usecaseModel.Pagination{
-			Offset: pagination.Offset,
-			Limit:  pagination.Limit,
-		},
+	usecaseAlbums, err := h.usecase.GetAllAlbums(ctx, &usecaseModel.AlbumFilters{
+		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
 	})
 	if err != nil {
 		logger.Error("failed to get albums", zap.Error(err))
@@ -56,19 +54,7 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	albums := make([]*deliveryModel.Album, 0, len(usecaseAlbums))
-	for _, usecaseAlbum := range usecaseAlbums {
-		albumType := deliveryModel.AlbumType(usecaseAlbum.Type)
-		albums = append(albums, &deliveryModel.Album{
-			ID:          usecaseAlbum.ID,
-			Title:       usecaseAlbum.Title,
-			Type:        albumType,
-			Thumbnail:   usecaseAlbum.Thumbnail,
-			Artist:      usecaseAlbum.Artist,
-			ArtistID:    usecaseAlbum.ArtistID,
-			ReleaseDate: usecaseAlbum.ReleaseDate,
-		})
-	}
+	albums := model.AlbumsFromUsecaseToDelivery(usecaseAlbums)
 
 	helpers.WriteSuccessResponse(w, http.StatusOK, albums, nil)
 }
@@ -85,7 +71,8 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /artists/{id}/albums [get]
 func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -95,26 +82,13 @@ func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	usecaseAlbums, err := h.usecase.GetAlbumsByArtistID(id)
+	usecaseAlbums, err := h.usecase.GetAlbumsByArtistID(ctx, id)
 	if err != nil {
 		logger.Error("failed to get albums", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
 		return
 	}
 
-	albums := make([]*deliveryModel.Album, 0, len(usecaseAlbums))
-	for _, usecaseAlbum := range usecaseAlbums {
-		albumType := deliveryModel.AlbumType(usecaseAlbum.Type)
-		albums = append(albums, &deliveryModel.Album{
-			ID:          usecaseAlbum.ID,
-			Title:       usecaseAlbum.Title,
-			Type:        albumType,
-			Thumbnail:   usecaseAlbum.Thumbnail,
-			Artist:      usecaseAlbum.Artist,
-			ArtistID:    usecaseAlbum.ArtistID,
-			ReleaseDate: usecaseAlbum.ReleaseDate,
-		})
-	}
-
+	albums := model.AlbumsFromUsecaseToDelivery(usecaseAlbums)
 	helpers.WriteSuccessResponse(w, http.StatusOK, albums, nil)
 }

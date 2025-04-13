@@ -1,7 +1,10 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
+	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
@@ -16,55 +19,29 @@ type artistUsecase struct {
 	artistRepo artist.Repository
 }
 
-func (u artistUsecase) GetArtistByID(id int64) (*usecaseModel.ArtistDetailed, error) {
-	repoArtist, err := u.artistRepo.GetArtistByID(id)
+func (u artistUsecase) GetArtistByID(ctx context.Context, id int64) (*usecaseModel.ArtistDetailed, error) {
+	repoArtist, err := u.artistRepo.GetArtistByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	listeners, err := u.artistRepo.GetArtistListenersCount(id)
+	stats, err := u.artistRepo.GetArtistStats(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	favorites, err := u.artistRepo.GetArtistFavoritesCount(id)
-	if err != nil {
-		return nil, err
-	}
-
-	return &usecaseModel.ArtistDetailed{
-		Artist: usecaseModel.Artist{
-			ID:          repoArtist.ID,
-			Title:       repoArtist.Title,
-			Thumbnail:   repoArtist.Thumbnail,
-			Description: repoArtist.Description,
-		},
-		Listeners: listeners,
-		Favorites: favorites,
-	}, nil
+	return model.ArtistDetailedFromRepositoryToUsecase(repoArtist, stats), nil
 }
 
-func (u artistUsecase) GetAllArtists(filters *usecaseModel.ArtistFilters) ([]*usecaseModel.Artist, error) {
+func (u artistUsecase) GetAllArtists(ctx context.Context, filters *usecaseModel.ArtistFilters) ([]*usecaseModel.Artist, error) {
 	repoFilters := &repoModel.ArtistFilters{
-		Pagination: &repoModel.Pagination{
-			Offset: filters.Pagination.Offset,
-			Limit:  filters.Pagination.Limit,
-		},
+		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
 	}
 
-	repoArtists, err := u.artistRepo.GetAllArtists(repoFilters)
+	repoArtists, err := u.artistRepo.GetAllArtists(ctx, repoFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	artists := make([]*usecaseModel.Artist, 0, len(repoArtists))
-	for _, repoArtist := range repoArtists {
-		artists = append(artists, &usecaseModel.Artist{
-			ID:          repoArtist.ID,
-			Title:       repoArtist.Title,
-			Thumbnail:   repoArtist.Thumbnail,
-			Description: repoArtist.Description,
-		})
-	}
-	return artists, nil
+	return model.ArtistsFromRepositoryToUsecase(repoArtists), nil
 }

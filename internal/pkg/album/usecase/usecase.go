@@ -1,9 +1,12 @@
 package usecase
 
 import (
+	"context"
+
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/genre"
+	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
@@ -18,15 +21,12 @@ type albumUsecase struct {
 	genreRepo  genre.Repository
 }
 
-func (u albumUsecase) GetAllAlbums(filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
+func (u albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
 	repoFilters := &repoModel.AlbumFilters{
-		Pagination: &repoModel.Pagination{
-			Offset: filters.Pagination.Offset,
-			Limit:  filters.Pagination.Limit,
-		},
+		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
 	}
 
-	repoAlbums, err := u.albumRepo.GetAllAlbums(repoFilters)
+	repoAlbums, err := u.albumRepo.GetAllAlbums(ctx, repoFilters)
 	if err != nil {
 		return nil, err
 	}
@@ -34,29 +34,19 @@ func (u albumUsecase) GetAllAlbums(filters *usecaseModel.AlbumFilters) ([]*useca
 	albums := make([]*usecaseModel.Album, 0, len(repoAlbums))
 
 	for _, repoAlbum := range repoAlbums {
-		artistTitle, err := u.artistRepo.GetArtistTitleByID(repoAlbum.ArtistID)
-		albumType := usecaseModel.AlbumType(repoAlbum.Type)
-
+		repoArtists, err := u.artistRepo.GetArtistsByAlbumID(ctx, repoAlbum.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		album := &usecaseModel.Album{
-			ID:          repoAlbum.ID,
-			Title:       repoAlbum.Title,
-			Thumbnail:   repoAlbum.Thumbnail,
-			Type:        albumType,
-			Artist:      artistTitle,
-			ArtistID:    repoAlbum.ArtistID,
-			ReleaseDate: repoAlbum.ReleaseDate,
-		}
-		albums = append(albums, album)
+		usecaseAlbum := model.AlbumFromRepositoryToUsecase(repoAlbum, repoArtists)
+		albums = append(albums, usecaseAlbum)
 	}
 	return albums, nil
 }
 
-func (u albumUsecase) GetAlbumsByArtistID(artistID int64) ([]*usecaseModel.Album, error) {
-	repoAlbums, err := u.albumRepo.GetAlbumsByArtistID(artistID)
+func (u albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64) ([]*usecaseModel.Album, error) {
+	repoAlbums, err := u.albumRepo.GetAlbumsByArtistID(ctx, artistID)
 	if err != nil {
 		return nil, err
 	}
@@ -64,24 +54,13 @@ func (u albumUsecase) GetAlbumsByArtistID(artistID int64) ([]*usecaseModel.Album
 	albums := make([]*usecaseModel.Album, 0, len(repoAlbums))
 
 	for _, repoAlbum := range repoAlbums {
-		artistTitle, err := u.artistRepo.GetArtistTitleByID(repoAlbum.ArtistID)
-
+		repoArtists, err := u.artistRepo.GetArtistsByAlbumID(ctx, repoAlbum.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		albumType := usecaseModel.AlbumType(repoAlbum.Type)
-
-		album := &usecaseModel.Album{
-			ID:          repoAlbum.ID,
-			Title:       repoAlbum.Title,
-			Thumbnail:   repoAlbum.Thumbnail,
-			Type:        albumType,
-			Artist:      artistTitle,
-			ArtistID:    repoAlbum.ArtistID,
-			ReleaseDate: repoAlbum.ReleaseDate,
-		}
-		albums = append(albums, album)
+		usecaseAlbum := model.AlbumFromRepositoryToUsecase(repoAlbum, repoArtists)
+		albums = append(albums, usecaseAlbum)
 	}
 	return albums, nil
 }

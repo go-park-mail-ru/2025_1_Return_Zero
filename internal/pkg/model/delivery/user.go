@@ -1,5 +1,7 @@
 package delivery
 
+// UserToFront represents user data
+// @Description User data
 type UserToFront struct {
 	ID       int64  `json:"-"`
 	Username string `json:"username"`
