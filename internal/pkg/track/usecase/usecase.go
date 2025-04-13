@@ -140,7 +140,7 @@ func (u trackUsecase) GetLastListenedTracks(ctx context.Context, username string
 		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
 	}
 	logger := middleware.LoggerFromContext(ctx)
-	userID, err := u.userRepo.GetUserIDByUsername(username)
+	userID, err := u.userRepo.GetUserIDByUsername(ctx, username)
 	if err != nil {
 		logger.Error("failed to get user id", zap.Error(err))
 		return nil, err

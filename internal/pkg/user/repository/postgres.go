@@ -196,7 +196,7 @@ func (r *userPostgresRepository) CreateUser(ctx context.Context, regData *repoMo
 	}
 
 	return &repoModel.User{
-		ID: 	 userID,
+		ID:       userID,
 		Username: regData.Username,
 		Email:    regData.Email,
 	}, nil
@@ -331,7 +331,7 @@ func (r *userPostgresRepository) DeleteUser(ctx context.Context, user *repoModel
 	return nil
 }
 
-func (r *userPostgresRepository) getIdByUsername(ctx context.Context, username string) (int64, error) {
+func (r *userPostgresRepository) GetUserIDByUsername(ctx context.Context, username string) (int64, error) {
 	row := r.db.QueryRowContext(ctx, getIdByUsernameQuery, username)
 	var userID int64
 	err := row.Scan(&userID)
@@ -345,7 +345,7 @@ func (r *userPostgresRepository) getIdByUsername(ctx context.Context, username s
 }
 
 func (r *userPostgresRepository) ChangeUserPrivacySettings(ctx context.Context, privacySettings *repoModel.PrivacySettings) error {
-	userId, err := r.getIdByUsername(ctx, privacySettings.Username)
+	userId, err := r.GetUserIDByUsername(ctx, privacySettings.Username)
 	if err != nil {
 		return err
 	}

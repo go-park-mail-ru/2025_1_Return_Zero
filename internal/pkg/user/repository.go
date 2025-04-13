@@ -16,5 +16,5 @@ type Repository interface {
 	DeleteUser(ctx context.Context, user *repoModel.User) error
 	ChangeUserPrivacySettings(ctx context.Context, privacySettings *repoModel.PrivacySettings) error
 	GetUserData(ctx context.Context, username string) (*repoModel.UserAndSettings, error)
-  GetUserIDByUsername(username string) (int64, error)
+	GetUserIDByUsername(ctx context.Context, username string) (int64, error)
 }
