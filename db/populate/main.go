@@ -17,7 +17,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-
+	cfg.Postgres.POSTGRES_HOST = "localhost"
 	db, err := postgres.ConnectPostgres(cfg.Postgres)
 	if err != nil {
 		fmt.Println(err)

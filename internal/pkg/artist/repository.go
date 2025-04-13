@@ -1,7 +1,13 @@
 package artist
 
 import (
+	"errors"
+
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
+)
+
+var (
+	ErrArtistNotFound = errors.New("artist not found")
 )
 
 type Repository interface {
@@ -9,6 +15,6 @@ type Repository interface {
 	GetArtistByID(id int64) (*repoModel.Artist, error)
 	GetArtistTitleByID(id int64) (string, error)
 	GetArtistsByTrackID(id int64) ([]*repoModel.ArtistWithRole, error)
-	GetArtistListenersCount(id int64) (int64, error)
-	GetArtistFavoritesCount(id int64) (int64, error)
+	GetArtistStats(id int64) (*repoModel.ArtistStats, error)
+	GetArtistsByAlbumID(albumID int64) ([]*repoModel.ArtistWithTitle, error)
 }

@@ -64,15 +64,9 @@ CREATE TABLE IF NOT EXISTS album (
     release_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    artist_id BIGINT NOT NULL,
     listeners_count BIGINT NOT NULL DEFAULT 0,
     favorites_count BIGINT NOT NULL DEFAULT 0,
-    FOREIGN KEY (artist_id)
-        REFERENCES artist (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
     CONSTRAINT album_valid_type_check CHECK (type IN ('album', 'single', 'ep', 'compilation')),
-    CONSTRAINT unique_artist_album_check UNIQUE (artist_id, title),
     CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
     CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
@@ -117,6 +111,22 @@ CREATE TABLE IF NOT EXISTS track_artist (
         ON UPDATE CASCADE,
     CONSTRAINT track_artist_valid_role_check CHECK (role IN ('main', 'featured', 'producer', 'writer')),
     CONSTRAINT unique_track_artist_check UNIQUE (track_id, artist_id, role)
+);
+
+CREATE TABLE IF NOT EXISTS album_artist (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    album_id BIGINT NOT NULL,
+    FOREIGN KEY (album_id)
+        REFERENCES album (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    artist_id BIGINT NOT NULL,
+    FOREIGN KEY (artist_id)
+        REFERENCES artist (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT unique_album_artist_check UNIQUE (album_id, artist_id)
 );
 
 CREATE TABLE IF NOT EXISTS playlist (
@@ -335,6 +345,7 @@ DROP TABLE IF EXISTS genre_album;
 DROP TABLE IF EXISTS genre_track;
 DROP TABLE IF EXISTS playlist_track;
 DROP TABLE IF EXISTS playlist;
+DROP TABLE IF EXISTS album_artist;
 DROP TABLE IF EXISTS track_artist;
 DROP TABLE IF EXISTS track;
 DROP TABLE IF EXISTS album;

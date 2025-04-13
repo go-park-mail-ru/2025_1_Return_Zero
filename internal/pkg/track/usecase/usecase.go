@@ -3,6 +3,7 @@ package usecase
 import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
+	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
@@ -22,10 +23,7 @@ type trackUsecase struct {
 
 func (u trackUsecase) GetAllTracks(filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
 	repoFilters := &repoModel.TrackFilters{
-		Pagination: &repoModel.Pagination{
-			Offset: filters.Pagination.Offset,
-			Limit:  filters.Pagination.Limit,
-		},
+		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
 	}
 	repoTracks, err := u.trackRepo.GetAllTracks(repoFilters)
 	if err != nil {
@@ -39,29 +37,12 @@ func (u trackUsecase) GetAllTracks(filters *usecaseModel.TrackFilters) ([]*useca
 			return nil, err
 		}
 
-		artists := make([]*usecaseModel.TrackArtist, 0, len(repoArtists))
-		for _, repoArtist := range repoArtists {
-			artists = append(artists, &usecaseModel.TrackArtist{
-				ID:    repoArtist.ID,
-				Title: repoArtist.Title,
-				Role:  repoArtist.Role,
-			})
-		}
-
 		albumTitle, err := u.albumRepo.GetAlbumTitleByID(repoTrack.AlbumID)
 		if err != nil {
 			return nil, err
 		}
 
-		track := &usecaseModel.Track{
-			ID:        repoTrack.ID,
-			Title:     repoTrack.Title,
-			Thumbnail: repoTrack.Thumbnail,
-			Duration:  repoTrack.Duration,
-			Artists:   artists,
-			Album:     albumTitle,
-			AlbumID:   repoTrack.AlbumID,
-		}
+		track := model.TrackFromRepositoryToUsecase(repoTrack, repoArtists, albumTitle)
 		tracks = append(tracks, track)
 	}
 
@@ -79,15 +60,6 @@ func (u trackUsecase) GetTrackByID(id int64) (*usecaseModel.TrackDetailed, error
 		return nil, err
 	}
 
-	artists := make([]*usecaseModel.TrackArtist, 0, len(repoArtists))
-	for _, repoArtist := range repoArtists {
-		artists = append(artists, &usecaseModel.TrackArtist{
-			ID:    repoArtist.ID,
-			Title: repoArtist.Title,
-			Role:  repoArtist.Role,
-		})
-	}
-
 	albumTitle, err := u.albumRepo.GetAlbumTitleByID(repoTrack.AlbumID)
 	if err != nil {
 		return nil, err
@@ -98,20 +70,9 @@ func (u trackUsecase) GetTrackByID(id int64) (*usecaseModel.TrackDetailed, error
 		return nil, err
 	}
 
-	track := &usecaseModel.TrackDetailed{
-		Track: usecaseModel.Track{
-			ID:        repoTrack.ID,
-			Title:     repoTrack.Title,
-			Thumbnail: repoTrack.Thumbnail,
-			Duration:  repoTrack.Duration,
-			Album:     albumTitle,
-			AlbumID:   repoTrack.AlbumID,
-			Artists:   artists,
-		},
-		FileUrl: trackFileUrl,
-	}
+	trackDetailed := model.TrackDetailedFromRepositoryToUsecase(repoTrack, repoArtists, albumTitle, trackFileUrl)
 
-	return track, nil
+	return trackDetailed, nil
 }
 
 func (u trackUsecase) GetTracksByArtistID(id int64) ([]*usecaseModel.Track, error) {
@@ -127,31 +88,43 @@ func (u trackUsecase) GetTracksByArtistID(id int64) ([]*usecaseModel.Track, erro
 			return nil, err
 		}
 
-		artists := make([]*usecaseModel.TrackArtist, 0, len(repoArtists))
-		for _, repoArtist := range repoArtists {
-			artists = append(artists, &usecaseModel.TrackArtist{
-				ID:    repoArtist.ID,
-				Title: repoArtist.Title,
-				Role:  repoArtist.Role,
-			})
-		}
-
 		albumTitle, err := u.albumRepo.GetAlbumTitleByID(repoTrack.AlbumID)
 		if err != nil {
 			return nil, err
 		}
 
-		track := &usecaseModel.Track{
-			ID:        repoTrack.ID,
-			Title:     repoTrack.Title,
-			Thumbnail: repoTrack.Thumbnail,
-			Duration:  repoTrack.Duration,
-			Album:     albumTitle,
-			AlbumID:   repoTrack.AlbumID,
-			Artists:   artists,
-		}
+		track := model.TrackFromRepositoryToUsecase(repoTrack, repoArtists, albumTitle)
+
 		tracks = append(tracks, track)
 	}
 
 	return tracks, nil
+}
+
+func (u trackUsecase) CreateStream(stream *usecaseModel.TrackStreamCreateData) (int64, error) {
+	repoTrackStreamCreateData := model.TrackStreamCreateDataFromUsecaseToRepository(stream)
+	streamID, err := u.trackRepo.CreateStream(repoTrackStreamCreateData)
+	if err != nil {
+		return 0, err
+	}
+
+	return streamID, nil
+}
+
+func (u trackUsecase) UpdateStreamDuration(endedStream *usecaseModel.TrackStreamUpdateData) error {
+	repoTrackStream, err := u.trackRepo.GetStreamByID(endedStream.StreamID)
+	if err != nil {
+		return err
+	}
+
+	if repoTrackStream.UserID != endedStream.UserID {
+		return track.ErrStreamPermissionDenied
+	}
+
+	err = u.trackRepo.UpdateStreamDuration(model.TrackStreamUpdateDataFromUsecaseToRepository(endedStream))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

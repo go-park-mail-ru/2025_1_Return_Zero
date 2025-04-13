@@ -37,17 +37,20 @@ const (
 			ELSE 4
 		END ASC
 	`
-	GetArtistListenersCountQuery = `
-		SELECT COUNT(*)
-		FROM stream
-		LEFT JOIN track ON stream.track_id = track.id
-		LEFT JOIN track_artist ON track.id = track_artist.track_id
-		WHERE track_artist.artist_id = $1
-	`
-	GetArtistFavoritesCountQuery = `
-		SELECT COUNT(*)
-		FROM favorite_artist
+	GetArtistStatsQuery = `
+		SELECT 
+			listeners_count,
+			favorites_count
+		FROM artist_stats
 		WHERE artist_id = $1
+	`
+
+	GetArtistsByAlbumIDQuery = `
+		SELECT a.id, a.title
+		FROM artist a
+		JOIN album_artist aa ON a.id = aa.artist_id
+		WHERE aa.album_id = $1
+		ORDER BY aa.created_at, aa.id
 	`
 )
 
@@ -82,17 +85,17 @@ func (r *artistPostgresRepository) GetAllArtists(filters *repoModel.ArtistFilter
 func (r *artistPostgresRepository) GetArtistByID(id int64) (*repoModel.Artist, error) {
 	row := r.db.QueryRow(GetArtistByIDQuery, id)
 
-	var artist repoModel.Artist
-	err := row.Scan(&artist.ID, &artist.Title, &artist.Description, &artist.Thumbnail)
+	var artistObject repoModel.Artist
+	err := row.Scan(&artistObject.ID, &artistObject.Title, &artistObject.Description, &artistObject.Thumbnail)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, repoModel.ErrArtistNotFound
+			return nil, artist.ErrArtistNotFound
 		}
 		return nil, err
 	}
 
-	return &artist, nil
+	return &artistObject, nil
 }
 
 func (r *artistPostgresRepository) GetArtistTitleByID(id int64) (string, error) {
@@ -102,7 +105,7 @@ func (r *artistPostgresRepository) GetArtistTitleByID(id int64) (string, error) 
 	err := row.Scan(&title)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", repoModel.ErrArtistNotFound
+			return "", artist.ErrArtistNotFound
 		}
 		return "", err
 	}
@@ -130,26 +133,34 @@ func (r *artistPostgresRepository) GetArtistsByTrackID(id int64) ([]*repoModel.A
 	return artists, nil
 }
 
-func (r *artistPostgresRepository) GetArtistListenersCount(id int64) (int64, error) {
-	row := r.db.QueryRow(GetArtistListenersCountQuery, id)
+func (r *artistPostgresRepository) GetArtistStats(id int64) (*repoModel.ArtistStats, error) {
+	row := r.db.QueryRow(GetArtistStatsQuery, id)
 
-	var count int64
-	err := row.Scan(&count)
+	var stats repoModel.ArtistStats
+	err := row.Scan(&stats.ListenersCount, &stats.FavoritesCount)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return count, nil
+	return &stats, nil
 }
 
-func (r *artistPostgresRepository) GetArtistFavoritesCount(id int64) (int64, error) {
-	row := r.db.QueryRow(GetArtistFavoritesCountQuery, id)
-
-	var count int64
-	err := row.Scan(&count)
+func (r *artistPostgresRepository) GetArtistsByAlbumID(albumID int64) ([]*repoModel.ArtistWithTitle, error) {
+	rows, err := r.db.Query(GetArtistsByAlbumIDQuery, albumID)
 	if err != nil {
-		return 0, err
+		return nil, err
+	}
+	defer rows.Close()
+
+	artists := make([]*repoModel.ArtistWithTitle, 0)
+	for rows.Next() {
+		var artist repoModel.ArtistWithTitle
+		err := rows.Scan(&artist.ID, &artist.Title)
+		if err != nil {
+			return nil, err
+		}
+		artists = append(artists, &artist)
 	}
 
-	return count, nil
+	return artists, nil
 }

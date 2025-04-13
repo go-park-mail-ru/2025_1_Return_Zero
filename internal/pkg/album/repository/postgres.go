@@ -10,13 +10,13 @@ import (
 
 const (
 	GetAllAlbumsQuery = `
-		SELECT id, title, type, thumbnail_url, artist_id, release_date
+		SELECT id, title, type, thumbnail_url, release_date
 		FROM album
 		ORDER BY release_date DESC, id DESC
 		LIMIT $1 OFFSET $2
 	`
 	GetAlbumByIDQuery = `
-		SELECT id, title, type, thumbnail_url, artist_id, release_date
+		SELECT id, title, type, thumbnail_url, release_date
 		FROM album
 		WHERE id = $1
 	`
@@ -26,10 +26,11 @@ const (
 		WHERE id = $1
 	`
 	GetAlbumsByArtistIDQuery = `
-		SELECT id, title, type, thumbnail_url, artist_id, release_date
+		SELECT album.id, album.title, album.type, album.thumbnail_url, album.release_date
 		FROM album
-		WHERE artist_id = $1
-		ORDER BY release_date DESC, id DESC
+		JOIN album_artist aa ON album.id = aa.album_id
+		WHERE aa.artist_id = $1
+		ORDER BY album.release_date DESC, album.id DESC
 	`
 )
 
@@ -53,7 +54,7 @@ func (r *albumPostgresRepository) GetAllAlbums(filters *repoModel.AlbumFilters) 
 	albums := make([]*repoModel.Album, 0)
 	for rows.Next() {
 		var album repoModel.Album
-		err = rows.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ArtistID, &album.ReleaseDate)
+		err = rows.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ReleaseDate)
 		if err != nil {
 			return nil, err
 		}
@@ -70,16 +71,16 @@ func (r *albumPostgresRepository) GetAllAlbums(filters *repoModel.AlbumFilters) 
 func (r *albumPostgresRepository) GetAlbumByID(id int64) (*repoModel.Album, error) {
 	row := r.db.QueryRow(GetAlbumByIDQuery, id)
 
-	var album repoModel.Album
-	err := row.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ArtistID, &album.ReleaseDate)
+	var albumObject repoModel.Album
+	err := row.Scan(&albumObject.ID, &albumObject.Title, &albumObject.Type, &albumObject.Thumbnail, &albumObject.ReleaseDate)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, repoModel.ErrAlbumNotFound
+			return nil, album.ErrAlbumNotFound
 		}
 		return nil, err
 	}
 
-	return &album, nil
+	return &albumObject, nil
 }
 
 func (r *albumPostgresRepository) GetAlbumTitleByID(id int64) (string, error) {
@@ -89,7 +90,7 @@ func (r *albumPostgresRepository) GetAlbumTitleByID(id int64) (string, error) {
 	err := row.Scan(&title)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", repoModel.ErrAlbumNotFound
+			return "", album.ErrAlbumNotFound
 		}
 		return "", err
 	}
@@ -107,7 +108,7 @@ func (r *albumPostgresRepository) GetAlbumsByArtistID(artistID int64) ([]*repoMo
 	albums := make([]*repoModel.Album, 0)
 	for rows.Next() {
 		var album repoModel.Album
-		err = rows.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ArtistID, &album.ReleaseDate)
+		err = rows.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ReleaseDate)
 		if err != nil {
 			return nil, err
 		}

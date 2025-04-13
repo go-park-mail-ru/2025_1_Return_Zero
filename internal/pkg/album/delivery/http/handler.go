@@ -8,7 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
-	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
+	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -45,10 +45,7 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 	}
 
 	usecaseAlbums, err := h.usecase.GetAllAlbums(&usecaseModel.AlbumFilters{
-		Pagination: &usecaseModel.Pagination{
-			Offset: pagination.Offset,
-			Limit:  pagination.Limit,
-		},
+		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
 	})
 	if err != nil {
 		logger.Error("failed to get albums", zap.Error(err))
@@ -56,19 +53,7 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	albums := make([]*deliveryModel.Album, 0, len(usecaseAlbums))
-	for _, usecaseAlbum := range usecaseAlbums {
-		albumType := deliveryModel.AlbumType(usecaseAlbum.Type)
-		albums = append(albums, &deliveryModel.Album{
-			ID:          usecaseAlbum.ID,
-			Title:       usecaseAlbum.Title,
-			Type:        albumType,
-			Thumbnail:   usecaseAlbum.Thumbnail,
-			Artist:      usecaseAlbum.Artist,
-			ArtistID:    usecaseAlbum.ArtistID,
-			ReleaseDate: usecaseAlbum.ReleaseDate,
-		})
-	}
+	albums := model.AlbumsFromUsecaseToDelivery(usecaseAlbums)
 
 	helpers.WriteSuccessResponse(w, http.StatusOK, albums, nil)
 }
@@ -102,19 +87,6 @@ func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	albums := make([]*deliveryModel.Album, 0, len(usecaseAlbums))
-	for _, usecaseAlbum := range usecaseAlbums {
-		albumType := deliveryModel.AlbumType(usecaseAlbum.Type)
-		albums = append(albums, &deliveryModel.Album{
-			ID:          usecaseAlbum.ID,
-			Title:       usecaseAlbum.Title,
-			Type:        albumType,
-			Thumbnail:   usecaseAlbum.Thumbnail,
-			Artist:      usecaseAlbum.Artist,
-			ArtistID:    usecaseAlbum.ArtistID,
-			ReleaseDate: usecaseAlbum.ReleaseDate,
-		})
-	}
-
+	albums := model.AlbumsFromUsecaseToDelivery(usecaseAlbums)
 	helpers.WriteSuccessResponse(w, http.StatusOK, albums, nil)
 }
