@@ -795,7 +795,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "User data and privacy settings",
+                        "description": "User data, privacy settings and statistics",
                         "schema": {
                             "allOf": [
                                 {
@@ -821,7 +821,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Updates user's profile information such as username, email, or password",
+                "description": "Updates user profile information and privacy settings",
                 "consumes": [
                     "application/json"
                 ],
@@ -831,21 +831,21 @@ const docTemplate = `{
                 "tags": [
                     "user"
                 ],
-                "summary": "Change user profile data",
+                "summary": "Change user data",
                 "parameters": [
                     {
-                        "description": "User data to be updated",
-                        "name": "data",
+                        "description": "User data and privacy settings",
+                        "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/delivery.ChangeUserData"
+                            "$ref": "#/definitions/delivery.UserChangeSettings"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "User data successfully updated",
+                        "description": "Updated user data and privacy settings",
                         "schema": {
                             "allOf": [
                                 {
@@ -855,7 +855,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "$ref": "#/definitions/delivery.UserToFront"
+                                            "$ref": "#/definitions/delivery.UserAndSettings"
                                         }
                                     }
                                 }
@@ -863,7 +863,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad request - invalid user data or validation failure",
+                        "description": "Bad request - invalid request body, validation failed, or user not found",
                         "schema": {
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
@@ -965,7 +965,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Avatar successfully uploaded",
+                        "description": "Link to the uploaded avatar image",
                         "schema": {
                             "allOf": [
                                 {
@@ -975,7 +975,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "$ref": "#/definitions/delivery.Message"
+                                            "$ref": "#/definitions/delivery.AvatarURL"
                                         }
                                     }
                                 }
@@ -990,60 +990,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/user/{username}/privacy": {
-            "put": {
-                "description": "Updates user's privacy settings",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Change user privacy settings",
-                "parameters": [
-                    {
-                        "description": "User privacy settings to be updated",
-                        "name": "settings",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/delivery.PrivacySettings"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Privacy settings successfully changed",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.Message"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request - invalid settings data, validation failure, or unauthorized user",
-                        "schema": {
-                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
-                        }
-                    }
-                }
-            }
-<<<<<<< HEAD
-=======
         },
         "/users/{username}/history": {
             "get": {
@@ -1121,7 +1067,6 @@ const docTemplate = `{
                     }
                 }
             }
->>>>>>> origin/temp_for_front
         }
     },
     "definitions": {
@@ -1323,26 +1268,10 @@ const docTemplate = `{
                 }
             }
         },
-        "delivery.ChangeUserData": {
-            "description": "Data for user profile update. Requires current credentials and allows new username (3-20 alphanum), new email (5-30 valid format), and new password (4-25 characters)",
+        "delivery.AvatarURL": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "new_email": {
-                    "type": "string"
-                },
-                "new_password": {
-                    "type": "string"
-                },
-                "new_username": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "username": {
+                "avatar_url": {
                     "type": "string"
                 }
             }
@@ -1372,7 +1301,7 @@ const docTemplate = `{
                 }
             }
         },
-        "delivery.PrivacySettings": {
+        "delivery.Privacy": {
             "type": "object",
             "properties": {
                 "is_public_artists_listened": {
@@ -1392,35 +1321,6 @@ const docTemplate = `{
                 },
                 "is_public_tracks_listened": {
                     "type": "boolean"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "delivery.PrivacySettings": {
-            "type": "object",
-            "properties": {
-                "is_public_artists_listened": {
-                    "type": "boolean"
-                },
-                "is_public_favorite_artists": {
-                    "type": "boolean"
-                },
-                "is_public_favorite_tracks": {
-                    "type": "boolean"
-                },
-                "is_public_minutes_listened": {
-                    "type": "boolean"
-                },
-                "is_public_playlists": {
-                    "type": "boolean"
-                },
-                "is_public_tracks_listened": {
-                    "type": "boolean"
-                },
-                "username": {
-                    "type": "string"
                 }
             }
         },
@@ -1436,6 +1336,20 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "delivery.Statistics": {
+            "type": "object",
+            "properties": {
+                "artists_listened": {
+                    "type": "integer"
+                },
+                "minutes_listened": {
+                    "type": "integer"
+                },
+                "tracks_listened": {
+                    "type": "integer"
                 }
             }
         },
@@ -1546,6 +1460,23 @@ const docTemplate = `{
                 "avatar_url": {
                     "type": "string"
                 },
+                "email": {
+                    "type": "string"
+                },
+                "privacy": {
+                    "$ref": "#/definitions/delivery.Privacy"
+                },
+                "statistics": {
+                    "$ref": "#/definitions/delivery.Statistics"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "delivery.UserChangeSettings": {
+            "type": "object",
+            "properties": {
                 "is_public_artists_listened": {
                     "type": "boolean"
                 },
@@ -1564,7 +1495,16 @@ const docTemplate = `{
                 "is_public_tracks_listened": {
                     "type": "boolean"
                 },
-                "username": {
+                "new_email": {
+                    "type": "string"
+                },
+                "new_password": {
+                    "type": "string"
+                },
+                "new_username": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 }
             }
