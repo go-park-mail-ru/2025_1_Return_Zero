@@ -520,8 +520,8 @@ func (r *userPostgresRepository) GetUserStats(ctx context.Context, username stri
 		return nil, err
 	}
 	return &repoModel.UserStats{
-		MinutesListened: numUniqueTracks,
-		TracksListened:  numMinutes,
+		MinutesListened: numMinutes,
+		TracksListened:  numUniqueTracks,
 		ArtistsListened: numUniqueArtists,
 	}, nil
 }
