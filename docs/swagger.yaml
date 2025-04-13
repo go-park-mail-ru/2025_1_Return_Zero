@@ -10,6 +10,16 @@ definitions:
         example: 400
         type: integer
     type: object
+  delivery.APIForbiddenErrorResponse:
+    description: API forbidden error response structure
+    properties:
+      error:
+        example: Forbidden
+        type: string
+      status:
+        example: 403
+        type: integer
+    type: object
   delivery.APIInternalServerErrorResponse:
     description: API internal server error response structure
     properties:
@@ -20,12 +30,32 @@ definitions:
         example: 500
         type: integer
     type: object
+  delivery.APINotFoundErrorResponse:
+    description: API not found error response structure
+    properties:
+      error:
+        example: Not found
+        type: string
+      status:
+        example: 404
+        type: integer
+    type: object
   delivery.APIResponse:
     description: API response wrapper
     properties:
       body: {}
       status:
         example: 200
+        type: integer
+    type: object
+  delivery.APIUnauthorizedErrorResponse:
+    description: API unauthorized error response structure
+    properties:
+      error:
+        example: Unauthorized
+        type: string
+      status:
+        example: 401
         type: integer
     type: object
   delivery.Album:
@@ -142,6 +172,7 @@ definitions:
         type: string
     type: object
   delivery.Message:
+    description: Message for responses without data
     properties:
       msg:
         example: object have been successfully created/updated
@@ -470,6 +501,10 @@ paths:
           description: Bad request - invalid ID or filters
           schema:
             $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
         "500":
           description: Internal server error
           schema:
@@ -615,6 +650,18 @@ paths:
           description: Bad request - invalid ID or filters
           schema:
             $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/delivery.APIForbiddenErrorResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
         "500":
           description: Internal server error
           schema:
@@ -654,6 +701,10 @@ paths:
           description: Bad request - invalid filters
           schema:
             $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
         "500":
           description: Internal server error
           schema:
@@ -688,6 +739,10 @@ paths:
           description: Bad request - invalid ID
           schema:
             $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "404":
+          description: Not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
         "500":
           description: Internal server error
           schema:

@@ -36,7 +36,8 @@ func NewAlbumHandler(usecase album.Usecase, cfg *config.Config) *AlbumHandler {
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /albums [get]
 func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
@@ -44,7 +45,7 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usecaseAlbums, err := h.usecase.GetAllAlbums(&usecaseModel.AlbumFilters{
+	usecaseAlbums, err := h.usecase.GetAllAlbums(ctx, &usecaseModel.AlbumFilters{
 		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
 	})
 	if err != nil {
@@ -70,7 +71,8 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /artists/{id}/albums [get]
 func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -80,7 +82,7 @@ func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	usecaseAlbums, err := h.usecase.GetAlbumsByArtistID(id)
+	usecaseAlbums, err := h.usecase.GetAlbumsByArtistID(ctx, id)
 	if err != nil {
 		logger.Error("failed to get albums", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)

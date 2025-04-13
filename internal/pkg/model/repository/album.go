@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"errors"
 	"time"
 )
 
@@ -25,7 +24,3 @@ type Album struct {
 type AlbumFilters struct {
 	Pagination *Pagination
 }
-
-var (
-	ErrAlbumNotFound = errors.New("album not found")
-)

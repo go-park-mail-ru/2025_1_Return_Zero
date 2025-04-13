@@ -1,11 +1,14 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
+	"go.uber.org/zap"
 )
 
 const (
@@ -62,9 +65,12 @@ func NewArtistPostgresRepository(db *sql.DB) artist.Repository {
 	return &artistPostgresRepository{db: db}
 }
 
-func (r *artistPostgresRepository) GetAllArtists(filters *repoModel.ArtistFilters) ([]*repoModel.Artist, error) {
-	rows, err := r.db.Query(GetAllArtistsQuery, filters.Pagination.Limit, filters.Pagination.Offset)
+func (r *artistPostgresRepository) GetAllArtists(ctx context.Context, filters *repoModel.ArtistFilters) ([]*repoModel.Artist, error) {
+	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Requesting all artists with filters from db", zap.Any("filters", filters))
+	rows, err := r.db.QueryContext(ctx, GetAllArtistsQuery, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
+		logger.Error("failed to get all artists", zap.Error(err))
 		return nil, err
 	}
 	defer rows.Close()
@@ -74,6 +80,7 @@ func (r *artistPostgresRepository) GetAllArtists(filters *repoModel.ArtistFilter
 		var artist repoModel.Artist
 		err = rows.Scan(&artist.ID, &artist.Title, &artist.Description, &artist.Thumbnail)
 		if err != nil {
+			logger.Error("failed to scan artist", zap.Error(err))
 			return nil, err
 		}
 		artists = append(artists, &artist)
@@ -82,40 +89,51 @@ func (r *artistPostgresRepository) GetAllArtists(filters *repoModel.ArtistFilter
 	return artists, nil
 }
 
-func (r *artistPostgresRepository) GetArtistByID(id int64) (*repoModel.Artist, error) {
-	row := r.db.QueryRow(GetArtistByIDQuery, id)
+func (r *artistPostgresRepository) GetArtistByID(ctx context.Context, id int64) (*repoModel.Artist, error) {
+	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Requesting artist by id from db", zap.Int64("id", id))
+	row := r.db.QueryRowContext(ctx, GetArtistByIDQuery, id)
 
-	var artist repoModel.Artist
-	err := row.Scan(&artist.ID, &artist.Title, &artist.Description, &artist.Thumbnail)
+	var artistObject repoModel.Artist
+	err := row.Scan(&artistObject.ID, &artistObject.Title, &artistObject.Description, &artistObject.Thumbnail)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, repoModel.ErrArtistNotFound
+			logger.Error("artist not found", zap.Error(err))
+			return nil, artist.ErrArtistNotFound
 		}
+		logger.Error("failed to get artist by id", zap.Error(err))
 		return nil, err
 	}
 
-	return &artist, nil
+	return &artistObject, nil
 }
 
-func (r *artistPostgresRepository) GetArtistTitleByID(id int64) (string, error) {
-	row := r.db.QueryRow(GetArtistTitleByIDQuery, id)
+func (r *artistPostgresRepository) GetArtistTitleByID(ctx context.Context, id int64) (string, error) {
+	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Requesting artist title by id from db", zap.Int64("id", id))
+	row := r.db.QueryRowContext(ctx, GetArtistTitleByIDQuery, id)
 
 	var title string
 	err := row.Scan(&title)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", repoModel.ErrArtistNotFound
+			logger.Error("artist not found", zap.Error(err))
+			return "", artist.ErrArtistNotFound
 		}
+		logger.Error("failed to get artist title by id", zap.Error(err))
 		return "", err
 	}
 
 	return title, nil
 }
 
-func (r *artistPostgresRepository) GetArtistsByTrackID(id int64) ([]*repoModel.ArtistWithRole, error) {
-	rows, err := r.db.Query(GetArtistsByTrackIDQuery, id)
+func (r *artistPostgresRepository) GetArtistsByTrackID(ctx context.Context, id int64) ([]*repoModel.ArtistWithRole, error) {
+	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Requesting artists by track id from db", zap.Int64("id", id))
+	rows, err := r.db.QueryContext(ctx, GetArtistsByTrackIDQuery, id)
 	if err != nil {
+		logger.Error("failed to get artists by track id", zap.Error(err))
 		return nil, err
 	}
 	defer rows.Close()
@@ -125,6 +143,7 @@ func (r *artistPostgresRepository) GetArtistsByTrackID(id int64) ([]*repoModel.A
 		var artist repoModel.ArtistWithRole
 		err := rows.Scan(&artist.ID, &artist.Title, &artist.Role)
 		if err != nil {
+			logger.Error("failed to scan artist", zap.Error(err))
 			return nil, err
 		}
 		artists = append(artists, &artist)
@@ -133,21 +152,27 @@ func (r *artistPostgresRepository) GetArtistsByTrackID(id int64) ([]*repoModel.A
 	return artists, nil
 }
 
-func (r *artistPostgresRepository) GetArtistStats(id int64) (*repoModel.ArtistStats, error) {
-	row := r.db.QueryRow(GetArtistStatsQuery, id)
+func (r *artistPostgresRepository) GetArtistStats(ctx context.Context, id int64) (*repoModel.ArtistStats, error) {
+	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Requesting artist stats by id from db", zap.Int64("id", id))
+	row := r.db.QueryRowContext(ctx, GetArtistStatsQuery, id)
 
 	var stats repoModel.ArtistStats
 	err := row.Scan(&stats.ListenersCount, &stats.FavoritesCount)
 	if err != nil {
+		logger.Error("failed to get artist stats by id", zap.Error(err))
 		return nil, err
 	}
 
 	return &stats, nil
 }
 
-func (r *artistPostgresRepository) GetArtistsByAlbumID(albumID int64) ([]*repoModel.ArtistWithTitle, error) {
-	rows, err := r.db.Query(GetArtistsByAlbumIDQuery, albumID)
+func (r *artistPostgresRepository) GetArtistsByAlbumID(ctx context.Context, albumID int64) ([]*repoModel.ArtistWithTitle, error) {
+	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Requesting artists by album id from db", zap.Int64("id", albumID))
+	rows, err := r.db.QueryContext(ctx, GetArtistsByAlbumIDQuery, albumID)
 	if err != nil {
+		logger.Error("failed to get artists by album id", zap.Error(err))
 		return nil, err
 	}
 	defer rows.Close()
@@ -157,6 +182,7 @@ func (r *artistPostgresRepository) GetArtistsByAlbumID(albumID int64) ([]*repoMo
 		var artist repoModel.ArtistWithTitle
 		err := rows.Scan(&artist.ID, &artist.Title)
 		if err != nil {
+			logger.Error("failed to scan artist", zap.Error(err))
 			return nil, err
 		}
 		artists = append(artists, &artist)
