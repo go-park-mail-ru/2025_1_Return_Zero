@@ -1,11 +1,5 @@
 package repository
 
-import "errors"
-
-var (
-	ErrArtistNotFound = errors.New("artist not found")
-)
-
 type Artist struct {
 	ID          int64  `sql:"id"`
 	Title       string `sql:"title"`

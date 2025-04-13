@@ -1,12 +1,15 @@
 package http
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
@@ -39,6 +42,7 @@ func NewTrackHandler(usecase track.Usecase, cfg *config.Config) *TrackHandler {
 // @Param limit query integer false "Limit (default: 10, max: 100)"
 // @Success 200 {object} delivery.APIResponse{body=[]delivery.Track} "List of tracks"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid filters"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "Not found"
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /tracks [get]
 func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
@@ -57,7 +61,12 @@ func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
 	if err != nil {
 		logger.Error("failed to get tracks", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		switch {
+		case errors.Is(err, album.ErrAlbumNotFound) || errors.Is(err, artist.ErrArtistNotFound):
+			helpers.WriteErrorResponse(w, http.StatusNotFound, err.Error(), nil)
+		default:
+			helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		}
 		return
 	}
 
@@ -73,6 +82,7 @@ func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 // @Param id path int true "Track ID"
 // @Success 200 {object} delivery.APIResponse{body=delivery.TrackDetailed} "Track details"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid ID"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "Not found"
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /tracks/{id} [get]
 func (h *TrackHandler) GetTrackByID(w http.ResponseWriter, r *http.Request) {
@@ -90,7 +100,14 @@ func (h *TrackHandler) GetTrackByID(w http.ResponseWriter, r *http.Request) {
 	usecaseTrack, err := h.usecase.GetTrackByID(id)
 	if err != nil {
 		logger.Error("failed to get track", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		var status int
+		switch {
+		case errors.Is(err, track.ErrTrackNotFound):
+			status = http.StatusNotFound
+		default:
+			status = http.StatusInternalServerError
+		}
+		helpers.WriteErrorResponse(w, status, err.Error(), nil)
 		return
 	}
 
@@ -108,6 +125,7 @@ func (h *TrackHandler) GetTrackByID(w http.ResponseWriter, r *http.Request) {
 // @Param id path integer true "Artist ID"
 // @Success 200 {object} delivery.APIResponse{body=[]delivery.Track} "List of tracks by artist"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid ID or filters"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "Not found"
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /artists/{id}/tracks [get]
 func (h *TrackHandler) GetTracksByArtistID(w http.ResponseWriter, r *http.Request) {
@@ -125,7 +143,12 @@ func (h *TrackHandler) GetTracksByArtistID(w http.ResponseWriter, r *http.Reques
 	usecaseTracks, err := h.usecase.GetTracksByArtistID(id)
 	if err != nil {
 		logger.Error("failed to get tracks", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		switch {
+		case errors.Is(err, album.ErrAlbumNotFound) || errors.Is(err, artist.ErrArtistNotFound):
+			helpers.WriteErrorResponse(w, http.StatusNotFound, err.Error(), nil)
+		default:
+			helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		}
 		return
 	}
 
@@ -188,6 +211,9 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 // @Param id path integer true "Stream ID"
 // @Success 200 {object} delivery.APIResponse{body=[]delivery.Message} "Message that stream was updated"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid ID or filters"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 403 {object} delivery.APIForbiddenErrorResponse "Forbidden"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "Not found"
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /streams/{id} [put]
 func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Request) {
@@ -228,7 +254,16 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 	err = h.usecase.UpdateStreamDuration(model.TrackStreamUpdateDataFromDeliveryToUsecase(&streamUpdateData, userID, streamID))
 	if err != nil {
 		logger.Error("failed to update stream duration", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		var status int
+		switch {
+		case errors.Is(err, track.ErrStreamNotFound):
+			status = http.StatusNotFound
+		case errors.Is(err, track.ErrStreamPermissionDenied):
+			status = http.StatusForbidden
+		default:
+			status = http.StatusInternalServerError
+		}
+		helpers.WriteErrorResponse(w, status, err.Error(), nil)
 		return
 	}
 

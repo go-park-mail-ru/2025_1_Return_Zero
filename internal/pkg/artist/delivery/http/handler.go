@@ -1,6 +1,7 @@
 package artist
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -84,7 +85,12 @@ func (h *ArtistHandler) GetArtistByID(w http.ResponseWriter, r *http.Request) {
 	usecaseArtist, err := h.usecase.GetArtistByID(id)
 	if err != nil {
 		logger.Error("failed to get artist", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		switch {
+		case errors.Is(err, artist.ErrArtistNotFound):
+			helpers.WriteErrorResponse(w, http.StatusNotFound, err.Error(), nil)
+		default:
+			helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		}
 		return
 	}
 

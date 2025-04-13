@@ -71,16 +71,16 @@ func (r *albumPostgresRepository) GetAllAlbums(filters *repoModel.AlbumFilters) 
 func (r *albumPostgresRepository) GetAlbumByID(id int64) (*repoModel.Album, error) {
 	row := r.db.QueryRow(GetAlbumByIDQuery, id)
 
-	var album repoModel.Album
-	err := row.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ReleaseDate)
+	var albumObject repoModel.Album
+	err := row.Scan(&albumObject.ID, &albumObject.Title, &albumObject.Type, &albumObject.Thumbnail, &albumObject.ReleaseDate)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, repoModel.ErrAlbumNotFound
+			return nil, album.ErrAlbumNotFound
 		}
 		return nil, err
 	}
 
-	return &album, nil
+	return &albumObject, nil
 }
 
 func (r *albumPostgresRepository) GetAlbumTitleByID(id int64) (string, error) {
@@ -90,7 +90,7 @@ func (r *albumPostgresRepository) GetAlbumTitleByID(id int64) (string, error) {
 	err := row.Scan(&title)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", repoModel.ErrAlbumNotFound
+			return "", album.ErrAlbumNotFound
 		}
 		return "", err
 	}

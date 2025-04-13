@@ -85,17 +85,17 @@ func (r *artistPostgresRepository) GetAllArtists(filters *repoModel.ArtistFilter
 func (r *artistPostgresRepository) GetArtistByID(id int64) (*repoModel.Artist, error) {
 	row := r.db.QueryRow(GetArtistByIDQuery, id)
 
-	var artist repoModel.Artist
-	err := row.Scan(&artist.ID, &artist.Title, &artist.Description, &artist.Thumbnail)
+	var artistObject repoModel.Artist
+	err := row.Scan(&artistObject.ID, &artistObject.Title, &artistObject.Description, &artistObject.Thumbnail)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, repoModel.ErrArtistNotFound
+			return nil, artist.ErrArtistNotFound
 		}
 		return nil, err
 	}
 
-	return &artist, nil
+	return &artistObject, nil
 }
 
 func (r *artistPostgresRepository) GetArtistTitleByID(id int64) (string, error) {
@@ -105,7 +105,7 @@ func (r *artistPostgresRepository) GetArtistTitleByID(id int64) (string, error) 
 	err := row.Scan(&title)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", repoModel.ErrArtistNotFound
+			return "", artist.ErrArtistNotFound
 		}
 		return "", err
 	}

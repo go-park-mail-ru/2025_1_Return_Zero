@@ -2,6 +2,8 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
+
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
@@ -79,13 +81,16 @@ func (r *TrackPostgresRepository) GetAllTracks(filters *repository.TrackFilters)
 }
 
 func (r *TrackPostgresRepository) GetTrackByID(id int64) (*repository.TrackWithFileKey, error) {
-	var track repository.TrackWithFileKey
-	err := r.db.QueryRow(GetTrackByIDQuery, id).Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID, &track.FileKey)
+	var trackObject repository.TrackWithFileKey
+	err := r.db.QueryRow(GetTrackByIDQuery, id).Scan(&trackObject.ID, &trackObject.Title, &trackObject.Thumbnail, &trackObject.Duration, &trackObject.AlbumID, &trackObject.FileKey)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, track.ErrTrackNotFound
+		}
 		return nil, err
 	}
 
-	return &track, nil
+	return &trackObject, nil
 }
 
 func (r *TrackPostgresRepository) GetTracksByArtistID(artistID int64) ([]*repository.Track, error) {
@@ -126,6 +131,9 @@ func (r *TrackPostgresRepository) GetStreamByID(id int64) (*repository.TrackStre
 	var stream repository.TrackStream
 	err := r.db.QueryRow(GetStreamByIDQuery, id).Scan(&stream.ID, &stream.UserID, &stream.TrackID, &stream.Duration)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, track.ErrStreamNotFound
+		}
 		return nil, err
 	}
 
