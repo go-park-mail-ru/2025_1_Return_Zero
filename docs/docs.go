@@ -323,7 +323,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/check": {
+        "/auth/check": {
             "get": {
                 "description": "Verifies user's session and returns user information if authenticated",
                 "consumes": [
@@ -333,7 +333,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "auth"
                 ],
                 "summary": "Check user authentication",
                 "responses": {
@@ -364,7 +364,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/login": {
+        "/auth/login": {
             "post": {
                 "description": "Authenticates a user with provided login credentials and returns a session",
                 "consumes": [
@@ -374,7 +374,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "auth"
                 ],
                 "summary": "Authenticate user",
                 "parameters": [
@@ -416,7 +416,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/logout": {
+        "/auth/logout": {
             "post": {
                 "description": "Terminates user session and invalidates session cookie",
                 "consumes": [
@@ -426,7 +426,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "auth"
                 ],
                 "summary": "Log out user",
                 "responses": {
@@ -441,10 +441,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "type": "string"
-                                            }
+                                            "$ref": "#/definitions/delivery.Message"
                                         }
                                     }
                                 }
@@ -460,7 +457,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/signup": {
+        "/auth/signup": {
             "post": {
                 "description": "Creates a new user account with provided registration data",
                 "consumes": [
@@ -470,7 +467,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "auth"
                 ],
                 "summary": "Register a new user",
                 "parameters": [
@@ -774,9 +771,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/{username}/avatar": {
+        "/user/{username}": {
             "get": {
-                "description": "Retrieves the avatar URL for a specific user",
+                "description": "Retrieves user's profile information and privacy settings",
                 "consumes": [
                     "application/json"
                 ],
@@ -784,9 +781,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "user"
                 ],
-                "summary": "Get user avatar",
+                "summary": "Get user profile data and privacy settings",
                 "parameters": [
                     {
                         "type": "string",
@@ -798,7 +795,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Avatar URL",
+                        "description": "User data and privacy settings",
                         "schema": {
                             "allOf": [
                                 {
@@ -808,10 +805,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "type": "string"
-                                            }
+                                            "$ref": "#/definitions/delivery.UserAndSettings"
                                         }
                                     }
                                 }
@@ -819,19 +813,128 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad request - username not found",
+                        "description": "Bad request - username not found in URL or user not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates user's profile information such as username, email, or password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Change user profile data",
+                "parameters": [
+                    {
+                        "description": "User data to be updated",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ChangeUserData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User data successfully updated",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.UserToFront"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid user data or validation failure",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes the authenticated user's account. Requires valid session cookie and matching user credentials.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Delete user account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID cookie (session_id=...)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "User credentials for deletion verification",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.UserDelete"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User successfully deleted",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.Message"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Possible errors: invalid request body, validation failed, credentials mismatch, session cookie missing",
                         "schema": {
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal server error during user deletion",
                         "schema": {
-                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     }
                 }
-            },
+            }
+        },
+        "/user/{username}/avatar": {
             "post": {
                 "description": "Uploads a new avatar image for a specific user",
                 "consumes": [
@@ -841,7 +944,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "users"
+                    "user"
                 ],
                 "summary": "Upload user avatar",
                 "parameters": [
@@ -872,10 +975,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "type": "string"
-                                            }
+                                            "$ref": "#/definitions/delivery.Message"
                                         }
                                     }
                                 }
@@ -884,6 +984,58 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request - invalid file or username",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{username}/privacy": {
+            "put": {
+                "description": "Updates user's privacy settings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Change user privacy settings",
+                "parameters": [
+                    {
+                        "description": "User privacy settings to be updated",
+                        "name": "settings",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.PrivacySettings"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Privacy settings successfully changed",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.Message"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid settings data, validation failure, or unauthorized user",
                         "schema": {
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
@@ -1091,8 +1243,32 @@ const docTemplate = `{
                 }
             }
         },
+        "delivery.ChangeUserData": {
+            "description": "Data for user profile update. Requires current credentials and allows new username (3-20 alphanum), new email (5-30 valid format), and new password (4-25 characters)",
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "new_email": {
+                    "type": "string"
+                },
+                "new_password": {
+                    "type": "string"
+                },
+                "new_username": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "delivery.LoginData": {
-            "description": "User login data",
+            "description": "User login data. Either username or email must be provided along with required password (4-25 characters)",
             "type": "object",
             "properties": {
                 "email": {
@@ -1116,8 +1292,34 @@ const docTemplate = `{
                 }
             }
         },
+        "delivery.PrivacySettings": {
+            "type": "object",
+            "properties": {
+                "is_public_artists_listened": {
+                    "type": "boolean"
+                },
+                "is_public_favorite_artists": {
+                    "type": "boolean"
+                },
+                "is_public_favorite_tracks": {
+                    "type": "boolean"
+                },
+                "is_public_minutes_listened": {
+                    "type": "boolean"
+                },
+                "is_public_playlists": {
+                    "type": "boolean"
+                },
+                "is_public_tracks_listened": {
+                    "type": "boolean"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "delivery.RegisterData": {
-            "description": "User registration data",
+            "description": "User registration data requiring username (3-20 characters), password (4-25 characters), and valid email (5-30 characters)",
             "type": "object",
             "properties": {
                 "email": {
@@ -1232,10 +1434,56 @@ const docTemplate = `{
                 }
             }
         },
+        "delivery.UserAndSettings": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "is_public_artists_listened": {
+                    "type": "boolean"
+                },
+                "is_public_favorite_artists": {
+                    "type": "boolean"
+                },
+                "is_public_favorite_tracks": {
+                    "type": "boolean"
+                },
+                "is_public_minutes_listened": {
+                    "type": "boolean"
+                },
+                "is_public_playlists": {
+                    "type": "boolean"
+                },
+                "is_public_tracks_listened": {
+                    "type": "boolean"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "delivery.UserDelete": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "delivery.UserToFront": {
             "description": "User data",
             "type": "object",
             "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },

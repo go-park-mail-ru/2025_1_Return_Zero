@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"context"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"net/http"
 
+	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
 )
 
@@ -20,20 +20,19 @@ func Auth(userUsecase user.Usecase) func(http.Handler) http.Handler {
 			}
 
 			sessionID := sessionCookie.Value
-			user, err := userUsecase.GetUserBySID(sessionID)
+			user, err := userUsecase.GetUserBySID(r.Context(), sessionID)
 			if err != nil {
 				next.ServeHTTP(w, r)
 				return
 			}
 			ctx := context.WithValue(r.Context(), UserContextKey{}, user)
-			r = r.WithContext(ctx)
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
 
-func GetUserFromContext(ctx context.Context) (*usecase.User, bool) {
-	user, ok := ctx.Value(UserContextKey{}).(*usecase.User)
+func GetUserFromContext(ctx context.Context) (*usecaseModel.User, bool) {
+	user, ok := ctx.Value(UserContextKey{}).(*usecaseModel.User)
 	if !ok {
 		return nil, false
 	}

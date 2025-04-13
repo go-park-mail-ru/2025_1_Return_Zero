@@ -48,12 +48,16 @@ func main() {
 		return
 	}
 
-	redisConn, err := redis.ConnectRedis(cfg.Redis)
+	redisPool := redis.NewRedisPool(cfg.Redis)
+	defer redisPool.Close()
+
+	redisConn := redisPool.Get()
+	err = redisConn.Err()
 	if err != nil {
 		logger.Error("Error connecting to Redis:", zap.Error(err))
 		return
 	}
-	defer redisConn.Close()
+	redisConn.Close()
 
 	postgresConn, err := postgres.ConnectPostgres(cfg.Postgres)
 	if err != nil {
@@ -77,7 +81,7 @@ func main() {
 		httpSwagger.DocExpansion("none"),
 	))
 
-	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisConn), userFileRepo.NewS3Repository(s3, cfg.S3.S3_IMAGES_BUCKET))
+	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisPool), userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket))
 
 	r.Use(middleware.LoggerMiddleware(logger))
 	r.Use(middleware.RequestId)
@@ -106,8 +110,12 @@ func main() {
 	r.HandleFunc("/api/v1/auth/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/api/v1/auth/logout", userHandler.Logout).Methods("POST")
 	r.HandleFunc("/api/v1/auth/check", userHandler.CheckUser).Methods("GET")
-	r.HandleFunc("/api/v1/user/{username}/avatar", userHandler.GetUserAvatar).Methods("GET")
+
 	r.HandleFunc("/api/v1/user/{username}/avatar", userHandler.UploadAvatar).Methods("POST")
+	r.HandleFunc("/api/v1/user/{username}", userHandler.ChangeUserData).Methods("PUT")
+	r.HandleFunc("/api/v1/user/{username}", userHandler.DeleteUser).Methods("DELETE")
+	r.HandleFunc("/api/v1/user/{username}/privacy", userHandler.ChangeUserPrivacySettings).Methods("PUT")
+	r.HandleFunc("/api/v1/user/{username}", userHandler.GetUserData).Methods("GET")
 
 	r.HandleFunc("/api/v1/user/{username}/history", trackHandler.GetLastListenedTracks).Methods("GET")
 
