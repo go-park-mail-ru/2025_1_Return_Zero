@@ -3,9 +3,11 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth"
+	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
@@ -58,7 +60,7 @@ func (u userUsecase) CreateUser(ctx context.Context, user *usecaseModel.User) (*
 	if err != nil {
 		return nil, "", err
 	}
-	avatar_url, err := u.userFileRepo.GetAvatarURL(newUser.Thumbnail)
+	avatar_url, err := u.userFileRepo.GetAvatarURL(ctx, newUser.Thumbnail)
 	if err != nil {
 		return nil, "", err
 	}
@@ -80,7 +82,7 @@ func (u userUsecase) GetUserBySID(ctx context.Context, SID string) (*usecaseMode
 	if err != nil {
 		return nil, err
 	}
-	avatar_url, err := u.userFileRepo.GetAvatarURL(user.Thumbnail)
+	avatar_url, err := u.userFileRepo.GetAvatarURL(ctx, user.Thumbnail)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +101,7 @@ func (u userUsecase) LoginUser(ctx context.Context, user *usecaseModel.User) (*u
 	if err != nil {
 		return nil, "", err
 	}
-	avatar_url, err := u.userFileRepo.GetAvatarURL(loginUser.Thumbnail)
+	avatar_url, err := u.userFileRepo.GetAvatarURL(ctx, loginUser.Thumbnail)
 	if err != nil {
 		return nil, "", err
 	}
@@ -130,7 +132,7 @@ func (u userUsecase) UploadAvatar(ctx context.Context, username string, fileAvat
 	if err != nil {
 		return "", err
 	}
-	avatarURL, err := u.userFileRepo.GetAvatarURL(fileURL)
+	avatarURL, err := u.userFileRepo.GetAvatarURL(ctx, fileURL)
 	if err != nil {
 		return "", err
 	}
@@ -143,7 +145,11 @@ func (u userUsecase) DeleteUser(ctx context.Context, user *usecaseModel.User, SI
 		Email:    user.Email,
 		Password: user.Password,
 	}
-	err := u.userRepo.DeleteUser(ctx, repoUser)
+	fileKey, err := u.userRepo.GetAvatar(ctx, user.Username)
+	if err != nil {
+		return err
+	}
+	err = u.userRepo.DeleteUser(ctx, repoUser)
 	if err != nil {
 		return err
 	}
@@ -151,112 +157,54 @@ func (u userUsecase) DeleteUser(ctx context.Context, user *usecaseModel.User, SI
 	if err != nil {
 		return err
 	}
-	err = u.userFileRepo.DeleteUserAvatar(ctx, user.Username)
+	err = u.userFileRepo.DeleteUserAvatar(ctx, fileKey)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u userUsecase) GetUserData(ctx context.Context, username string) (*usecaseModel.UserAndSettings, error) {
-	userAndSettings, err := u.userRepo.GetUserData(ctx, username)
+func (u userUsecase) GetUserData(ctx context.Context, username string) (*usecaseModel.UserFullData, error) {
+	userFullData, err := u.userRepo.GetFullUserData(ctx, username)
 	if err != nil {
 		return nil, err
 	}
-	privacy := &usecaseModel.UserPrivacy{
-		IsPublicPlaylists:       userAndSettings.IsPublicPlaylists,
-		IsPublicMinutesListened: userAndSettings.IsPublicMinutesListened,
-		IsPublicFavoriteArtists: userAndSettings.IsPublicFavoriteArtists,
-		IsPublicTracksListened:  userAndSettings.IsPublicTracksListened,
-		IsPublicFavoriteTracks:  userAndSettings.IsPublicFavoriteTracks,
-		IsPublicArtistsListened: userAndSettings.IsPublicArtistsListened,
-	}
-	userStatistics, err := u.userRepo.GetUserStats(ctx, username)
+	avatarURL, err := u.userFileRepo.GetAvatarURL(ctx, userFullData.Thumbnail)
 	if err != nil {
 		return nil, err
 	}
-	avatar_url, err := u.userFileRepo.GetAvatarURL(userAndSettings.Thumbnail)
-	if err != nil {
-		return nil, err
-	}
-
-	usecaseUserAndSettings := &usecaseModel.UserAndSettings{
-		Username:  userAndSettings.Username,
-		Email:     userAndSettings.Email,
-		AvatarUrl: avatar_url,
-		Privacy:   privacy,
-		Statistics: &usecaseModel.UserStatistics{
-			MinutesListened: userStatistics.MinutesListened,
-			TracksListened:  userStatistics.TracksListened,
-			ArtistsListened: userStatistics.ArtistsListened,
-		},
-	}
-	return usecaseUserAndSettings, nil
+	userFullDataUsecase := model.UserFullDataRepositoryToUsecase(userFullData)
+	userFullDataUsecase.AvatarUrl = avatarURL
+	return userFullDataUsecase, nil
 }
 
-func (u userUsecase) ChangeUserData(ctx context.Context, username string, userChangeData *usecaseModel.UserChangeSettings) (*usecaseModel.UserAndSettings, error) {
-	privacyRepo := &repoModel.PrivacySettings{
-		IsPublicPlaylists:       userChangeData.IsPublicPlaylists,
-		IsPublicMinutesListened: userChangeData.IsPublicMinutesListened,
-		IsPublicFavoriteArtists: userChangeData.IsPublicFavoriteArtists,
-		IsPublicTracksListened:  userChangeData.IsPublicTracksListened,
-		IsPublicFavoriteTracks:  userChangeData.IsPublicFavoriteTracks,
-		IsPublicArtistsListened: userChangeData.IsPublicArtistsListened,
+func (u userUsecase) ChangeUserData(ctx context.Context, username string, userChangeData *usecaseModel.UserChangeSettings) (*usecaseModel.UserFullData, error) {
+	privacyRepo := model.PrivacyFromUsecaseToRepository(userChangeData.Privacy)
+	if privacyRepo == nil {
+		return nil, fmt.Errorf("privacyRepo is nil")
 	}
-
-	userDataRepo := &repoModel.ChangeUserData{
-		Password:    userChangeData.Password,
-		NewUsername: userChangeData.NewUsername,
-		NewEmail:    userChangeData.NewEmail,
-		NewPassword: userChangeData.NewPassword,
-	}
-
+	userDataRepo := model.ChangeDataFromUsecaseToRepository(userChangeData)
 	err := u.userRepo.ChangeUserPrivacySettings(ctx, username, privacyRepo)
 	if err != nil {
 		return nil, err
 	}
-
 	err = u.userRepo.ChangeUserData(ctx, username, userDataRepo)
 	if err != nil {
 		return nil, err
 	}
-
 	updatedUsername := username
 	if userDataRepo.NewUsername != "" {
 		updatedUsername = userDataRepo.NewUsername
 	}
-
-	userStats, err := u.userRepo.GetUserStats(ctx, updatedUsername)
+	newUserData, err := u.userRepo.GetFullUserData(ctx, updatedUsername)
 	if err != nil {
 		return nil, err
 	}
-	user, err := u.userRepo.GetUserData(ctx, updatedUsername)
+	avatarURL, err := u.userFileRepo.GetAvatarURL(ctx, newUserData.Thumbnail)
 	if err != nil {
 		return nil, err
 	}
-	avatar_url, err := u.userFileRepo.GetAvatarURL(user.Thumbnail)
-	if err != nil {
-		return nil, err
-	}
-	privacy := &usecaseModel.UserPrivacy{
-		IsPublicPlaylists:       userChangeData.IsPublicPlaylists,
-		IsPublicMinutesListened: userChangeData.IsPublicMinutesListened,
-		IsPublicFavoriteArtists: userChangeData.IsPublicFavoriteArtists,
-		IsPublicTracksListened:  userChangeData.IsPublicTracksListened,
-		IsPublicFavoriteTracks:  userChangeData.IsPublicFavoriteTracks,
-		IsPublicArtistsListened: userChangeData.IsPublicArtistsListened,
-	}
-	userStatistics := &usecaseModel.UserStatistics{
-		MinutesListened: userStats.MinutesListened,
-		TracksListened:  userStats.TracksListened,
-		ArtistsListened: userStats.ArtistsListened,
-	}
-	newUserData := &usecaseModel.UserAndSettings{
-		Username:   user.Username,
-		Email:      user.Email,
-		AvatarUrl:  avatar_url,
-		Privacy:    privacy,
-		Statistics: userStatistics,
-	}
-	return newUserData, nil
+	userFullDataUsecase := model.UserFullDataRepositoryToUsecase(newUserData)
+	userFullDataUsecase.AvatarUrl = avatarURL
+	return userFullDataUsecase, nil
 }
