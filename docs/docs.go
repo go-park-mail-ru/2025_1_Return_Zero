@@ -1042,6 +1042,8 @@ const docTemplate = `{
                     }
                 }
             }
+<<<<<<< HEAD
+=======
         },
         "/users/{username}/history": {
             "get": {
@@ -1119,6 +1121,7 @@ const docTemplate = `{
                     }
                 }
             }
+>>>>>>> origin/temp_for_front
         }
     },
     "definitions": {
@@ -1366,6 +1369,32 @@ const docTemplate = `{
                 "msg": {
                     "type": "string",
                     "example": "object have been successfully created/updated"
+                }
+            }
+        },
+        "delivery.PrivacySettings": {
+            "type": "object",
+            "properties": {
+                "is_public_artists_listened": {
+                    "type": "boolean"
+                },
+                "is_public_favorite_artists": {
+                    "type": "boolean"
+                },
+                "is_public_favorite_tracks": {
+                    "type": "boolean"
+                },
+                "is_public_minutes_listened": {
+                    "type": "boolean"
+                },
+                "is_public_playlists": {
+                    "type": "boolean"
+                },
+                "is_public_tracks_listened": {
+                    "type": "boolean"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },

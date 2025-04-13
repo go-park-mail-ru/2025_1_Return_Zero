@@ -195,6 +195,23 @@ definitions:
       username:
         type: string
     type: object
+  delivery.PrivacySettings:
+    properties:
+      is_public_artists_listened:
+        type: boolean
+      is_public_favorite_artists:
+        type: boolean
+      is_public_favorite_tracks:
+        type: boolean
+      is_public_minutes_listened:
+        type: boolean
+      is_public_playlists:
+        type: boolean
+      is_public_tracks_listened:
+        type: boolean
+      username:
+        type: string
+    type: object
   delivery.RegisterData:
     description: User registration data requiring username (3-20 characters), password
       (4-25 characters), and valid email (5-30 characters)
@@ -954,6 +971,8 @@ paths:
       summary: Change user privacy settings
       tags:
       - user
+<<<<<<< HEAD
+=======
   /users/{username}/history:
     get:
       consumes:
@@ -1003,4 +1022,5 @@ paths:
       summary: Get last listened tracks for a user
       tags:
       - tracks
+>>>>>>> origin/temp_for_front
 swagger: "2.0"

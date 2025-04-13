@@ -33,13 +33,39 @@ type PrivacySettings struct {
 	IsPublicArtistsListened bool
 }
 
+type UserPrivacy struct {
+	IsPublicPlaylists       bool
+	IsPublicMinutesListened bool
+	IsPublicFavoriteArtists bool
+	IsPublicTracksListened  bool
+	IsPublicFavoriteTracks  bool
+	IsPublicArtistsListened bool
+}
+
+type UserStatistics struct {
+	MinutesListened int64
+	TracksListened  int64
+	ArtistsListened int64
+}
+
 type UserAndSettings struct {
-	Username                string 
-	AvatarUrl               string 
-	IsPublicPlaylists       bool   
-	IsPublicMinutesListened bool   
-	IsPublicFavoriteArtists bool   
-	IsPublicTracksListened  bool   
-	IsPublicFavoriteTracks  bool   
-	IsPublicArtistsListened bool   
+	Username   string
+	Email      string
+	AvatarUrl  string
+	Privacy    *UserPrivacy
+	Statistics *UserStatistics
+}
+
+type UserChangeSettings struct {
+	IsPublicPlaylists       bool
+	IsPublicMinutesListened bool
+	IsPublicFavoriteArtists bool
+	IsPublicTracksListened  bool
+	IsPublicFavoriteTracks  bool
+	IsPublicArtistsListened bool
+
+	Password    string
+	NewUsername string
+	NewEmail    string
+	NewPassword string
 }

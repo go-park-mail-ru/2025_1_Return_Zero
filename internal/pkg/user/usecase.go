@@ -12,9 +12,8 @@ type Usecase interface {
 	GetUserBySID(ctx context.Context, SID string) (*usecaseModel.User, error)
 	LoginUser(ctx context.Context, user *usecaseModel.User) (*usecaseModel.User, string, error)
 	Logout(ctx context.Context, SID string) error
-	UploadAvatar(ctx context.Context, username string, fileAvatar io.Reader) error
-	ChangeUserData(ctx context.Context, username string, changeData *usecaseModel.ChangeUserData) (*usecaseModel.User, error)
+	UploadAvatar(ctx context.Context, username string, fileAvatar io.Reader) (string, error)
+	ChangeUserData(ctx context.Context, username string, userChangeData *usecaseModel.UserChangeSettings) (*usecaseModel.UserAndSettings, error) 
 	DeleteUser(ctx context.Context, user *usecaseModel.User, SID string) error
-	ChangeUserPrivacySettings(ctx context.Context, privacySettings *usecaseModel.PrivacySettings) error
 	GetUserData(ctx context.Context, username string) (*usecaseModel.UserAndSettings, error)
 }
