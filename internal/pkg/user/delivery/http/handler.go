@@ -423,14 +423,22 @@ func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userAndSettingsDelivery := &deliveryModel.UserAndSettings{
-		Username:   userAndSettings.Username,
-		Email:      userAndSettings.Email,
-		AvatarUrl:  userAndSettings.AvatarUrl,
-		Privacy:    (*deliveryModel.Privacy)(userAndSettings.Privacy),
-		Statistics: (*deliveryModel.Statistics)(userAndSettings.Statistics),
+	userAndSettingsDelivery := &deliveryModel.UserAndSettings{}
+	if username != userAndSettings.Username {
+		userAndSettingsDelivery = &deliveryModel.UserAndSettings{
+			Username:   userAndSettings.Username,
+			AvatarUrl:  userAndSettings.AvatarUrl,
+			Privacy:    (*deliveryModel.Privacy)(userAndSettings.Privacy),
+		}
+	} else {
+		userAndSettingsDelivery = &deliveryModel.UserAndSettings{
+			Username:   userAndSettings.Username,
+			Email:      userAndSettings.Email,
+			AvatarUrl:  userAndSettings.AvatarUrl,
+			Privacy:    (*deliveryModel.Privacy)(userAndSettings.Privacy),
+			Statistics: (*deliveryModel.Statistics)(userAndSettings.Statistics),
+		}
 	}
-
 	helpers.WriteSuccessResponse(w, http.StatusOK, userAndSettingsDelivery, nil)
 }
 
