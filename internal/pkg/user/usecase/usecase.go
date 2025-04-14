@@ -145,19 +145,11 @@ func (u userUsecase) DeleteUser(ctx context.Context, user *usecaseModel.User, SI
 		Email:    user.Email,
 		Password: user.Password,
 	}
-	fileKey, err := u.userRepo.GetAvatar(ctx, user.Username)
-	if err != nil {
-		return err
-	}
-	err = u.userRepo.DeleteUser(ctx, repoUser)
+	err := u.userRepo.DeleteUser(ctx, repoUser)
 	if err != nil {
 		return err
 	}
 	err = u.authRepo.DeleteSession(ctx, SID)
-	if err != nil {
-		return err
-	}
-	err = u.userFileRepo.DeleteUserAvatar(ctx, fileKey)
 	if err != nil {
 		return err
 	}

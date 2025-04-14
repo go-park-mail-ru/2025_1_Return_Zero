@@ -65,19 +65,3 @@ func (r *s3Repository) UploadUserAvatar(ctx context.Context, username string, fi
 	return fileKey, nil
 }
 
-func (r *s3Repository) DeleteUserAvatar(ctx context.Context, fileKey string) error {
-	logger := middleware.LoggerFromContext(ctx)
-	s3Key := fmt.Sprintf("avatars%s", fileKey)
-
-	_, err := r.s3.DeleteObjectWithContext(ctx, &s3.DeleteObjectInput{
-		Bucket: aws.String(r.bucketName),
-		Key:    aws.String(s3Key),
-	})
-
-	if err != nil {
-		logger.Error("delete failed", zap.Error(err))
-		return fmt.Errorf("delete failed: %w", err)
-	}
-
-	return nil
-}
