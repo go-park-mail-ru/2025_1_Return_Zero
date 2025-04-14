@@ -9,7 +9,7 @@ import (
 type Repository interface {
 	GetFullUserData(ctx context.Context, username string) (*repoModel.UserFullData, error)
 	GetUserPrivacy(ctx context.Context, id int64) (*repoModel.UserPrivacySettings, error)
-	GetUserStats(ctx context.Context, username string) (*repoModel.UserStats, error)
+	GetUserStats(ctx context.Context, id int64) (*repoModel.UserStats, error)
 	GetUserData(ctx context.Context, id int64) (*repoModel.User, error)
 	GetIDByUsername(ctx context.Context, username string) (int64, error)
 	ChangeUserPrivacySettings(ctx context.Context, username string, privacySettings *repoModel.UserPrivacySettings) error

@@ -6,8 +6,8 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/base64"
-	"strings"
 	"errors"
+	"strings"
 
 	"golang.org/x/crypto/argon2"
 
@@ -122,7 +122,7 @@ const (
 	`
 	getMinutesListenedQuery = `
 			SELECT COALESCE(SUM(duration) / 60, 0) AS total_minutes
-			FROM STREAM
+			FROM stream
 			WHERE user_id = $1
 	`
 	getNumUniqueArtistQuery = `
@@ -192,6 +192,7 @@ func (r *userPostgresRepository) CreateUser(ctx context.Context, regData *repoMo
 	logger := middleware.LoggerFromContext(ctx)
 	var exists bool
 	lowerUsername := strings.ToLower(regData.Username)
+	logger.Info("Creating new user", zap.String("username: ", lowerUsername))
 	err := r.db.QueryRowContext(ctx, checkUserExist, lowerUsername, regData.Email).Scan(&exists)
 	if err != nil && err != sql.ErrNoRows {
 		logger.Error("failed to check user existence", zap.Error(err))
@@ -237,6 +238,7 @@ func (r *userPostgresRepository) CreateUser(ctx context.Context, regData *repoMo
 
 func (r *userPostgresRepository) GetUserByID(ctx context.Context, ID int64) (*repoModel.User, error) {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Getting user by id", zap.Int64("ID", ID))
 	row := r.db.QueryRowContext(ctx, getUserByIDQuery, ID)
 	var user repoModel.User
 	err := row.Scan(&user.ID, &user.Username, &user.Email, &user.Thumbnail)
@@ -255,6 +257,7 @@ func (r *userPostgresRepository) LoginUser(ctx context.Context, logData *repoMod
 	logger := middleware.LoggerFromContext(ctx)
 	var storedHash string
 	lowerUsername := strings.ToLower(logData.Username)
+	logger.Info("Loggining user", zap.String("username", lowerUsername))
 	row := r.db.QueryRowContext(ctx, loginUserQuery, lowerUsername, logData.Email)
 	var user repoModel.User
 	err := row.Scan(&user.ID, &user.Username, &user.Email, &storedHash, &user.Thumbnail)
@@ -277,6 +280,7 @@ func (r *userPostgresRepository) LoginUser(ctx context.Context, logData *repoMod
 
 func (r *userPostgresRepository) GetAvatar(ctx context.Context, username string) (string, error) {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Getting avarat by username", zap.String("username", username))
 	row := r.db.QueryRowContext(ctx, getAvatarQuery, username)
 	var avatarUrl string
 	err := row.Scan(&avatarUrl)
@@ -293,6 +297,7 @@ func (r *userPostgresRepository) GetAvatar(ctx context.Context, username string)
 
 func (r *userPostgresRepository) UploadAvatar(ctx context.Context, avatarUrl string, username string) error {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Loading avatar by username", zap.String("username", username))
 	_, err := r.db.ExecContext(ctx, uploadAvatarQuery, avatarUrl, username)
 	if err != nil {
 		logger.Error("failed to upload avatar", zap.Error(err))
@@ -304,6 +309,7 @@ func (r *userPostgresRepository) UploadAvatar(ctx context.Context, avatarUrl str
 func (r *userPostgresRepository) changeUsername(ctx context.Context, id int64, newUsername string) error {
 	logger := middleware.LoggerFromContext(ctx)
 	newLowerUsername := strings.ToLower(newUsername)
+	logger.Info("Changing username", zap.String("username", newLowerUsername))
 	_, err := r.db.ExecContext(ctx, changeUsernameQuery, newLowerUsername, id)
 	if err != nil {
 		logger.Error("failed to change username", zap.Error(err))
@@ -314,6 +320,7 @@ func (r *userPostgresRepository) changeUsername(ctx context.Context, id int64, n
 
 func (r *userPostgresRepository) changeEmail(ctx context.Context, id int64, newEmail string) error {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Changing email", zap.String("email", newEmail))
 	_, err := r.db.ExecContext(ctx, changeEmailQuery, newEmail, id)
 	if err != nil {
 		logger.Error("failed to change email", zap.Error(err))
@@ -324,6 +331,7 @@ func (r *userPostgresRepository) changeEmail(ctx context.Context, id int64, newE
 
 func (r *userPostgresRepository) changePassword(ctx context.Context, password string, id int64, newPassword string) error {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Changing password")
 	storedHash, err := r.getPassword(ctx, id)
 	if err != nil {
 		logger.Error("failed to get password hash", zap.Error(err))
@@ -345,6 +353,7 @@ func (r *userPostgresRepository) changePassword(ctx context.Context, password st
 
 func (r *userPostgresRepository) ChangeUserData(ctx context.Context, username string, changeData *repoModel.ChangeUserData) error {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Changing data by username", zap.String("username", username))
 	id, err := r.GetIDByUsername(ctx, username)
 	if err != nil {
 		logger.Error("failed to get user ID", zap.Error(err))
@@ -376,6 +385,7 @@ func (r *userPostgresRepository) ChangeUserData(ctx context.Context, username st
 
 func (r *userPostgresRepository) DeleteUser(ctx context.Context, user *repoModel.User) error {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Deleting user", zap.String("username", user.Username))
 	storedHash, err := r.getPassword(ctx, user.ID)
 	if err != nil {
 		logger.Error("failed to get password hash", zap.Error(err))
@@ -395,6 +405,7 @@ func (r *userPostgresRepository) DeleteUser(ctx context.Context, user *repoModel
 
 func (r *userPostgresRepository) ChangeUserPrivacySettings(ctx context.Context, username string, privacySettings *repoModel.UserPrivacySettings) error {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Changing user privacy", zap.String("username", username))
 	id, err := r.GetIDByUsername(ctx, username)
 	if err != nil {
 		logger.Error("failed to get user ID", zap.Error(err))
@@ -418,6 +429,7 @@ func (r *userPostgresRepository) ChangeUserPrivacySettings(ctx context.Context, 
 
 func (r *userPostgresRepository) GetIDByUsername(ctx context.Context, username string) (int64, error) {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Getting ID by username", zap.String("username", username))
 	row := r.db.QueryRowContext(ctx, getIdByUsernameQuery, username)
 	var userID int64
 	err := row.Scan(&userID)
@@ -434,6 +446,7 @@ func (r *userPostgresRepository) GetIDByUsername(ctx context.Context, username s
 
 func (r *userPostgresRepository) GetUserData(ctx context.Context, id int64) (*repoModel.User, error) {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Gettign user data by id", zap.Int64("ID", id))
 	row := r.db.QueryRowContext(ctx, getUserDataQuery, id)
 	var user repoModel.User
 	err := row.Scan(&user.Username, &user.Email, &user.Thumbnail)
@@ -450,6 +463,7 @@ func (r *userPostgresRepository) GetUserData(ctx context.Context, id int64) (*re
 
 func (r *userPostgresRepository) getNumUniqueTracks(ctx context.Context, id int64) (int64, error) {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Getting num unique tracks by id", zap.Int64("ID", id))
 	row := r.db.QueryRowContext(ctx, getNumUniqueTracksQuery, id)
 	var numUniqueTracks int64
 	err := row.Scan(&numUniqueTracks)
@@ -466,6 +480,7 @@ func (r *userPostgresRepository) getNumUniqueTracks(ctx context.Context, id int6
 
 func (r *userPostgresRepository) getNumMinutes(ctx context.Context, id int64) (int64, error) {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Getting num listened minutes by id", zap.Int64("ID", id))
 	row := r.db.QueryRowContext(ctx, getMinutesListenedQuery, id)
 	var numMinutes int64
 	err := row.Scan(&numMinutes)
@@ -482,6 +497,7 @@ func (r *userPostgresRepository) getNumMinutes(ctx context.Context, id int64) (i
 
 func (r *userPostgresRepository) getNumUniqueArtist(ctx context.Context, id int64) (int64, error) {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Getting num unique artists by id", zap.Int64("ID", id))
 	row := r.db.QueryRowContext(ctx, getNumUniqueArtistQuery, id)
 	var numUniqueArtist int64
 	err := row.Scan(&numUniqueArtist)
@@ -497,24 +513,20 @@ func (r *userPostgresRepository) getNumUniqueArtist(ctx context.Context, id int6
 
 }
 
-func (r *userPostgresRepository) GetUserStats(ctx context.Context, username string) (*repoModel.UserStats, error) {
+func (r *userPostgresRepository) GetUserStats(ctx context.Context, id int64) (*repoModel.UserStats, error) {
 	logger := middleware.LoggerFromContext(ctx)
-	userID, err := r.GetIDByUsername(ctx, username)
-	if err != nil {
-		logger.Error("failed to get user ID", zap.Error(err))
-		return nil, err
-	}
-	numUniqueTracks, err := r.getNumUniqueTracks(ctx, userID)
+	logger.Info("Getting user statistics by id", zap.Int64("ID", id))
+	numUniqueTracks, err := r.getNumUniqueTracks(ctx, id)
 	if err != nil {
 		logger.Error("failed to get number of unique tracks", zap.Error(err))
 		return nil, err
 	}
-	numMinutes, err := r.getNumMinutes(ctx, userID)
+	numMinutes, err := r.getNumMinutes(ctx, id)
 	if err != nil {
 		logger.Error("failed to get number of minutes listened", zap.Error(err))
 		return nil, err
 	}
-	numUniqueArtists, err := r.getNumUniqueArtist(ctx, userID)
+	numUniqueArtists, err := r.getNumUniqueArtist(ctx, id)
 	if err != nil {
 		logger.Error("failed to get number of unique artists", zap.Error(err))
 		return nil, err
@@ -528,6 +540,7 @@ func (r *userPostgresRepository) GetUserStats(ctx context.Context, username stri
 
 func (r *userPostgresRepository) GetUserPrivacy(ctx context.Context, id int64) (*repoModel.UserPrivacySettings, error) {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Getting user privacy settings by id", zap.Int64("ID", id))
 	row := r.db.QueryRowContext(ctx, getUserPrivacySettingsQuery, id)
 	var privacySettings repoModel.UserPrivacySettings
 	err := row.Scan(&privacySettings.IsPublicPlaylists,
@@ -549,6 +562,7 @@ func (r *userPostgresRepository) GetUserPrivacy(ctx context.Context, id int64) (
 
 func (r *userPostgresRepository) GetFullUserData(ctx context.Context, username string) (*repoModel.UserFullData, error) {
 	logger := middleware.LoggerFromContext(ctx)
+	logger.Info("Get full user data by username", zap.String("username", username))
 	id, err := r.GetIDByUsername(ctx, username)
 	if err != nil {
 		logger.Error("failed to get user ID", zap.Error(err))
@@ -559,7 +573,7 @@ func (r *userPostgresRepository) GetFullUserData(ctx context.Context, username s
 		logger.Error("failed to get user privacy settings", zap.Error(err))
 		return nil, err
 	}
-	stats, err := r.GetUserStats(ctx, username)
+	stats, err := r.GetUserStats(ctx, id)
 	if err != nil {
 		logger.Error("failed to get user statistics", zap.Error(err))
 		return nil, err
