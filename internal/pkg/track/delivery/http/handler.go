@@ -319,5 +319,7 @@ func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	helpers.WriteSuccessResponse(w, http.StatusOK, usecaseTracks, nil)
+	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
+
+	helpers.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
 }
