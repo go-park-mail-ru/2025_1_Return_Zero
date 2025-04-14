@@ -108,6 +108,8 @@ func main() {
 	r.HandleFunc("/api/v1/user/{username}", userHandler.DeleteUser).Methods("DELETE")
 	r.HandleFunc("/api/v1/user/{username}", userHandler.GetUserData).Methods("GET")
 
+	r.HandleFunc("/api/v1/user/{username}/history", trackHandler.GetLastListenedTracks).Methods("GET")
+
 	err = http.ListenAndServe(cfg.Port, r)
 	if err != nil {
 		logger.Error("Error starting server:", zap.Error(err))
