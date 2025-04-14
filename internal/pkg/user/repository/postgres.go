@@ -386,7 +386,12 @@ func (r *userPostgresRepository) ChangeUserData(ctx context.Context, username st
 func (r *userPostgresRepository) DeleteUser(ctx context.Context, user *repoModel.User) error {
 	logger := middleware.LoggerFromContext(ctx)
 	logger.Info("Deleting user", zap.String("username", user.Username))
-	storedHash, err := r.getPassword(ctx, user.ID)
+	id, err := r.GetIDByUsername(ctx, user.Username)
+	if err != nil {
+		logger.Error("failed to find user", zap.Error(err))
+		return err
+	}
+	storedHash, err := r.getPassword(ctx, id)
 	if err != nil {
 		logger.Error("failed to get password hash", zap.Error(err))
 		return err
