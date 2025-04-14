@@ -39,7 +39,7 @@ INSERT INTO genre_album (genre_id, album_id) VALUES
 
 INSERT INTO track (title, album_id, duration, thumbnail_url, file_url, position) VALUES
     ('Lagtrain', 1, 252, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/lagtrain.jpg', 'lagtrain.mp3', 1),
-    ('Lost Umbrella', 1, 255, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/lostumbrella.jpg', 'lostumbrella.mp3', 2),
+    ('Lost Umbrella', 1, 200, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/lostumbrella.jpg', 'lostumbrella.mp3', 2),
     ('Racing Into The Night', 2, 275, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/racingintotheright.jpg', 'racingintotheright.mp3', 1),
     ('Idol', 2, 226, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/idol.jpg', 'idol.mp3', 2),
     ('Monster', 2, 206, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/monster.jpg', 'monster.mp3', 3),
