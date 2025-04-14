@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
@@ -60,29 +61,6 @@ func userDeleteToUsecaseModel(user *deliveryModel.UserDelete) *usecaseModel.User
 		Username: user.Username,
 		Email:    user.Email,
 		Password: user.Password,
-	}
-}
-
-func changeDataToUsecaseModel(changeData *deliveryModel.ChangeUserData) *usecaseModel.ChangeUserData {
-	return &usecaseModel.ChangeUserData{
-		Username:    changeData.Username,
-		Email:       changeData.Email,
-		Password:    changeData.Password,
-		NewUsername: changeData.NewUsername,
-		NewEmail:    changeData.NewEmail,
-		NewPassword: changeData.NewPassword,
-	}
-}
-
-func privacySettingsToUsecaseModel(settings *deliveryModel.PrivacySettings) *usecaseModel.PrivacySettings {
-	return &usecaseModel.PrivacySettings{
-		Username:                settings.Username,
-		IsPublicPlaylists:       settings.IsPublicPlaylists,
-		IsPublicMinutesListened: settings.IsPublicMinutesListened,
-		IsPublicFavoriteArtists: settings.IsPublicFavoriteArtists,
-		IsPublicTracksListened:  settings.IsPublicTracksListened,
-		IsPublicFavoriteTracks:  settings.IsPublicFavoriteTracks,
-		IsPublicArtistsListened: settings.IsPublicArtistsListened,
 	}
 }
 
@@ -256,7 +234,7 @@ func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param username path string true "Username"
 // @Param avatar formData file true "Avatar image file (max 5MB, image formats only)"
-// @Success 200 {object} delivery.APIResponse{body=delivery.Message} "Avatar successfully uploaded"
+// @Success 200 {object} delivery.APIResponse{body=delivery.AvatarURL} "Link to the uploaded avatar image"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid file or username"
 // @Router /user/{username}/avatar [post]
 func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
@@ -311,61 +289,16 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.usecase.UploadAvatar(ctx, username, file)
+	avatarURL, err := h.usecase.UploadAvatar(ctx, username, file)
 	if err != nil {
 		logger.Error("failed to upload avatar", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
-	msg := &deliveryModel.Message{
-		Message: "Avatar successfully uploaded",
+	msg := &deliveryModel.AvatarURL{
+		AvatarUrl: avatarURL,
 	}
 	helpers.WriteSuccessResponse(w, http.StatusOK, msg, nil)
-}
-
-// ChangeUserData godoc
-// @Summary Change user profile data
-// @Description Updates user's profile information such as username, email, or password
-// @Tags user
-// @Accept json
-// @Produce json
-// @Param data body delivery.ChangeUserData true "User data to be updated"
-// @Success 200 {object} delivery.APIResponse{body=delivery.UserToFront} "User data successfully updated"
-// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid user data or validation failure"
-// @Router /user/{username} [put]
-func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
-
-	userAuth, exist := middleware.GetUserFromContext(ctx)
-	if !exist {
-		logger.Error("user not auth")
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
-		return
-	}
-
-	changeData := &deliveryModel.ChangeUserData{}
-	err := helpers.ReadJSON(w, r, changeData)
-	if err != nil {
-		logger.Error("failed to read change user data", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
-		return
-	}
-
-	isValid, err := validateData(changeData)
-	if err != nil || !isValid {
-		logger.Error("failed to validate change user data", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
-		return
-	}
-	changeDataUsecase := changeDataToUsecaseModel(changeData)
-	newUser, err := h.usecase.ChangeUserData(ctx, userAuth.Username, changeDataUsecase)
-	if err != nil {
-		logger.Error("failed to change user data", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
-		return
-	}
-	helpers.WriteSuccessResponse(w, http.StatusOK, toUserToFront(newUser), nil)
 }
 
 // DeleteUser godoc
@@ -435,70 +368,15 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	helpers.WriteSuccessResponse(w, http.StatusOK, msg, nil)
 }
 
-// ChangeUserPrivacySettings godoc
-// @Summary Change user privacy settings 
-// @Description Updates user's privacy settings
-// @Tags user 
-// @Accept json 
-// @Produce json 
-// @Param settings body delivery.PrivacySettings true "User privacy settings to be updated" 
-// @Success 200 {object} delivery.APIResponse{body=delivery.Message} "Privacy settings successfully changed" 
-// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid settings data, validation failure, or unauthorized user" 
-// @Router /user/{username}/privacy [put]
-func (h *UserHandler) ChangeUserPrivacySettings(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
-
-	userAuth, exist := middleware.GetUserFromContext(ctx)
-	if !exist {
-		logger.Error("user not auth")
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
-		return
-	}
-
-	settings := &deliveryModel.PrivacySettings{}
-	err := helpers.ReadJSON(w, r, settings)
-	if err != nil {
-		logger.Error("failed to read privacy settings", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
-		return
-	}
-
-	isValid, err := validateData(settings)
-	if err != nil || !isValid {
-		logger.Error("failed to validate privacy settings", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
-		return
-	}
-
-	if userAuth.Username != settings.Username {
-		logger.Error("wrong user")
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
-		return
-	}
-
-	settingsUsecase := privacySettingsToUsecaseModel(settings)
-	err = h.usecase.ChangeUserPrivacySettings(ctx, settingsUsecase)
-	if err != nil {
-		logger.Error("failed to change privacy settings", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
-		return
-	}
-	msg := &deliveryModel.Message{
-		Message: "Privacy settings successfully changed",
-	}
-	helpers.WriteSuccessResponse(w, http.StatusOK, msg, nil)
-}
-
-// GetUserData godoc 
-// @Summary Get user profile data and privacy settings 
-// @Description Retrieves user's profile information and privacy settings 
-// @Tags user 
-// @Accept json 
-// @Produce json 
-// @Param username path string true "Username" 
-// @Success 200 {object} delivery.APIResponse{body=delivery.UserAndSettings} "User data and privacy settings" 
-// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - username not found in URL or user not found" 
+// GetUserData godoc
+// @Summary Get user profile data and privacy settings
+// @Description Retrieves user's profile information and privacy settings
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param username path string true "Username"
+// @Success 200 {object} delivery.APIResponse{body=delivery.UserFullData} "User data, privacy settings and statistics, -1 - if the statistics field is not allowed to display"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - username not found in URL or user not found"
 // @Router /user/{username} [get]
 func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -512,23 +390,88 @@ func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userAndSettings, err := h.usecase.GetUserData(ctx, username)
+	userFullDataUsecase, err := h.usecase.GetUserData(ctx, username)
 	if err != nil {
 		logger.Error("failed to get user by username", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
-	userAndSettingsDelivery := &deliveryModel.UserAndSettings{
-		Username:                userAndSettings.Username,
-		AvatarUrl:               userAndSettings.AvatarUrl,
-		IsPublicPlaylists:       userAndSettings.IsPublicPlaylists,
-		IsPublicMinutesListened: userAndSettings.IsPublicMinutesListened,
-		IsPublicFavoriteArtists: userAndSettings.IsPublicFavoriteArtists,
-		IsPublicTracksListened:  userAndSettings.IsPublicTracksListened,
-		IsPublicFavoriteTracks:  userAndSettings.IsPublicFavoriteTracks,
-		IsPublicArtistsListened: userAndSettings.IsPublicArtistsListened,
+	authUser, isAuth := middleware.GetUserFromContext(ctx)
+
+	UserFullDataDelivery := model.UserFullDataUsecaseToDelivery(userFullDataUsecase)
+
+	isSameUser := isAuth && authUser.Username == userFullDataUsecase.Username
+
+	if !isSameUser {
+		UserFullDataDelivery.Email = ""
+
+		privacySettings := UserFullDataDelivery.Privacy
+		UserFullDataDelivery.Privacy = nil
+
+		if privacySettings != nil && UserFullDataDelivery.Statistics != nil {
+			if !privacySettings.IsPublicMinutesListened {
+				UserFullDataDelivery.Statistics.MinutesListened = -1
+			}
+			if !privacySettings.IsPublicTracksListened {
+				UserFullDataDelivery.Statistics.TracksListened = -1
+			}
+			if !privacySettings.IsPublicArtistsListened {
+				UserFullDataDelivery.Statistics.ArtistsListened = -1
+			}
+			if !privacySettings.IsPublicPlaylists && !privacySettings.IsPublicFavoriteTracks && !privacySettings.IsPublicFavoriteArtists {
+				UserFullDataDelivery.Statistics = nil
+			}
+		}
 	}
 
-	helpers.WriteSuccessResponse(w, http.StatusOK, userAndSettingsDelivery, nil)
+	helpers.WriteSuccessResponse(w, http.StatusOK, UserFullDataDelivery, nil)
+}
+
+// ChangeUserData godoc
+// @Summary Change user data
+// @Description Updates user profile information and privacy settings
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param user body delivery.UserChangeSettings true "User data and privacy settings"
+// @Success 200 {object} delivery.APIResponse{body=delivery.UserFullData} "Updated user data and privacy settings"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid request body, validation failed, or user not found"
+// @Router /user/{username} [put]
+func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := middleware.LoggerFromContext(ctx)
+	userAuth, exist := middleware.GetUserFromContext(ctx)
+	if !exist {
+		logger.Error("user not auth")
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not auth", nil)
+		return
+	}
+	userChangeData := &deliveryModel.UserChangeSettings{}
+	err := helpers.ReadJSON(w, r, userChangeData)
+	if err != nil {
+		logger.Error("failed to read change user data", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+	isValid, err := validateData(userChangeData)
+	if err != nil {
+		logger.Error("failed to validate change user data", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+	if !isValid {
+		logger.Error("failed to validate change user data", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
+		return
+	}
+	newUser, err := h.usecase.ChangeUserData(ctx, userAuth.Username, model.ChangeDataFromDeliveryToUsecase(userChangeData))
+	if err != nil {
+		logger.Error("failed to change user data", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	newUserDelivery := model.UserFullDataUsecaseToDelivery(newUser)
+	helpers.WriteSuccessResponse(w, http.StatusOK, newUserDelivery, nil)
 }

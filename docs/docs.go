@@ -795,7 +795,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "User data and privacy settings",
+                        "description": "User data, privacy settings and statistics, -1 - if the statistics field is not allowed to display",
                         "schema": {
                             "allOf": [
                                 {
@@ -805,7 +805,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "$ref": "#/definitions/delivery.UserAndSettings"
+                                            "$ref": "#/definitions/delivery.UserFullData"
                                         }
                                     }
                                 }
@@ -821,7 +821,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Updates user's profile information such as username, email, or password",
+                "description": "Updates user profile information and privacy settings",
                 "consumes": [
                     "application/json"
                 ],
@@ -831,21 +831,21 @@ const docTemplate = `{
                 "tags": [
                     "user"
                 ],
-                "summary": "Change user profile data",
+                "summary": "Change user data",
                 "parameters": [
                     {
-                        "description": "User data to be updated",
-                        "name": "data",
+                        "description": "User data and privacy settings",
+                        "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/delivery.ChangeUserData"
+                            "$ref": "#/definitions/delivery.UserChangeSettings"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "User data successfully updated",
+                        "description": "Updated user data and privacy settings",
                         "schema": {
                             "allOf": [
                                 {
@@ -855,7 +855,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "$ref": "#/definitions/delivery.UserToFront"
+                                            "$ref": "#/definitions/delivery.UserFullData"
                                         }
                                     }
                                 }
@@ -863,7 +863,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad request - invalid user data or validation failure",
+                        "description": "Bad request - invalid request body, validation failed, or user not found",
                         "schema": {
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
@@ -965,7 +965,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Avatar successfully uploaded",
+                        "description": "Link to the uploaded avatar image",
                         "schema": {
                             "allOf": [
                                 {
@@ -975,7 +975,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "$ref": "#/definitions/delivery.Message"
+                                            "$ref": "#/definitions/delivery.AvatarURL"
                                         }
                                     }
                                 }
@@ -991,9 +991,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/{username}/privacy": {
-            "put": {
-                "description": "Updates user's privacy settings",
+        "/users/{username}/history": {
+            "get": {
+                "description": "Retrieves a list of tracks last listened by a specific user with pagination",
                 "consumes": [
                     "application/json"
                 ],
@@ -1001,23 +1001,33 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "user"
+                    "tracks"
                 ],
-                "summary": "Change user privacy settings",
+                "summary": "Get last listened tracks for a user",
                 "parameters": [
                     {
-                        "description": "User privacy settings to be updated",
-                        "name": "settings",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/delivery.PrivacySettings"
-                        }
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default: 0)",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit (default: 10, max: 100)",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Privacy settings successfully changed",
+                        "description": "List of last listened tracks",
                         "schema": {
                             "allOf": [
                                 {
@@ -1027,7 +1037,10 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "body": {
-                                            "$ref": "#/definitions/delivery.Message"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Track"
+                                            }
                                         }
                                     }
                                 }
@@ -1035,9 +1048,21 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad request - invalid settings data, validation failure, or unauthorized user",
+                        "description": "Bad request - invalid username or filters",
                         "schema": {
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                         }
                     }
                 }
@@ -1243,26 +1268,10 @@ const docTemplate = `{
                 }
             }
         },
-        "delivery.ChangeUserData": {
-            "description": "Data for user profile update. Requires current credentials and allows new username (3-20 alphanum), new email (5-30 valid format), and new password (4-25 characters)",
+        "delivery.AvatarURL": {
             "type": "object",
             "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "new_email": {
-                    "type": "string"
-                },
-                "new_password": {
-                    "type": "string"
-                },
-                "new_username": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "username": {
+                "avatar_url": {
                     "type": "string"
                 }
             }
@@ -1292,7 +1301,7 @@ const docTemplate = `{
                 }
             }
         },
-        "delivery.PrivacySettings": {
+        "delivery.Privacy": {
             "type": "object",
             "properties": {
                 "is_public_artists_listened": {
@@ -1312,9 +1321,6 @@ const docTemplate = `{
                 },
                 "is_public_tracks_listened": {
                     "type": "boolean"
-                },
-                "username": {
-                    "type": "string"
                 }
             }
         },
@@ -1330,6 +1336,20 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "delivery.Statistics": {
+            "type": "object",
+            "properties": {
+                "artists_listened": {
+                    "type": "integer"
+                },
+                "minutes_listened": {
+                    "type": "integer"
+                },
+                "tracks_listened": {
+                    "type": "integer"
                 }
             }
         },
@@ -1434,32 +1454,23 @@ const docTemplate = `{
                 }
             }
         },
-        "delivery.UserAndSettings": {
+        "delivery.UserChangeSettings": {
             "type": "object",
             "properties": {
-                "avatar_url": {
+                "new_email": {
                     "type": "string"
                 },
-                "is_public_artists_listened": {
-                    "type": "boolean"
-                },
-                "is_public_favorite_artists": {
-                    "type": "boolean"
-                },
-                "is_public_favorite_tracks": {
-                    "type": "boolean"
-                },
-                "is_public_minutes_listened": {
-                    "type": "boolean"
-                },
-                "is_public_playlists": {
-                    "type": "boolean"
-                },
-                "is_public_tracks_listened": {
-                    "type": "boolean"
-                },
-                "username": {
+                "new_password": {
                     "type": "string"
+                },
+                "new_username": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "privacy": {
+                    "$ref": "#/definitions/delivery.Privacy"
                 }
             }
         },
@@ -1471,6 +1482,26 @@ const docTemplate = `{
                 },
                 "password": {
                     "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "delivery.UserFullData": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "privacy": {
+                    "$ref": "#/definitions/delivery.Privacy"
+                },
+                "statistics": {
+                    "$ref": "#/definitions/delivery.Statistics"
                 },
                 "username": {
                     "type": "string"
