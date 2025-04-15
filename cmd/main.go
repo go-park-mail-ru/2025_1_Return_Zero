@@ -79,7 +79,8 @@ func main() {
 	r.Use(middleware.RequestId)
 	r.Use(middleware.AccessLog)
 	r.Use(middleware.Auth(newUserUsecase))
-	r.Use(cfg.Cors.Middleware)
+	r.Use(middleware.CorsMiddleware(cfg.Cors))
+	r.Use(middleware.CSRFMiddleware(cfg.CSRF))
 
 	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration), userRepository.NewUserPostgresRepository(postgresConn)), cfg)
 	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), genreRepository.NewGenrePostgresRepository(postgresConn)), cfg)
