@@ -6,7 +6,6 @@ import (
 )
 
 type Repository interface {
-	GetAvatarURL(fileKey string) (string, error)
+	GetAvatarURL(ctx context.Context, fileKey string) (string, error)
 	UploadUserAvatar(ctx context.Context, username string, fileContent io.Reader) (string, error)
-	DeleteUserAvatar(ctx context.Context, username string) error
 }

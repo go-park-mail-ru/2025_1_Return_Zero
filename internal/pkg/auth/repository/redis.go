@@ -11,7 +11,9 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth"
+	"go.uber.org/zap"
 )
 
 var (
@@ -41,6 +43,7 @@ func generateSessionID() string {
 }
 
 func (r *AuthRedisRepository) CreateSession(ctx context.Context, ID int64) (string, error) {
+	logger := middleware.LoggerFromContext(ctx)
 	conn := r.redisPool.Get()
 	defer conn.Close()
 
@@ -48,28 +51,37 @@ func (r *AuthRedisRepository) CreateSession(ctx context.Context, ID int64) (stri
 	expiration := int(SessionTTL.Seconds())
 	_, err := redis.DoContext(conn, ctx, "SETEX", SID, expiration, ID)
 	if err != nil {
+		logger.Error("failed to create session", zap.Error(err))
 		return "", err
 	}
 	return SID, nil
 }
 
 func (r *AuthRedisRepository) DeleteSession(ctx context.Context, SID string) error {
+	logger := middleware.LoggerFromContext(ctx)
 	conn := r.redisPool.Get()
 	defer conn.Close()
 
 	_, err := redis.DoContext(conn, ctx, "DEL", SID)
 	if err != nil {
+		logger.Error("failed to delete session", zap.Error(err))
 		return err
 	}
 	return nil
 }
 
 func (r *AuthRedisRepository) GetSession(ctx context.Context, SID string) (int64, error) {
+	logger := middleware.LoggerFromContext(ctx)
 	conn := r.redisPool.Get()
 	defer conn.Close()
 
 	id, err := redis.Int64(redis.DoContext(conn, ctx, "GET", SID))
 	if err != nil {
+		if err == redis.ErrNil {
+			logger.Error("session not found", zap.String("SID", SID))
+			return -1, ErrSessionNotFound
+		}
+		logger.Error("failed to get session", zap.Error(err))
 		return -1, err
 	}
 	return id, nil
