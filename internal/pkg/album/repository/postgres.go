@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"go.uber.org/zap"
 )
@@ -28,6 +28,11 @@ const (
 		FROM album
 		WHERE id = $1
 	`
+	GetAlbumTitleByIDsQuery = `
+		SELECT id, title
+		FROM album
+		WHERE id = ANY($1)
+	`
 	GetAlbumsByArtistIDQuery = `
 		SELECT album.id, album.title, album.type, album.thumbnail_url, album.release_date
 		FROM album
@@ -48,8 +53,8 @@ func NewAlbumPostgresRepository(db *sql.DB) album.Repository {
 }
 
 func (r *albumPostgresRepository) GetAllAlbums(ctx context.Context, filters *repoModel.AlbumFilters) ([]*repoModel.Album, error) {
-	logger := middleware.LoggerFromContext(ctx)
-	logger.Info("Requesting all albums from db", zap.Any("filters", filters))
+	logger := helpers.LoggerFromContext(ctx)
+	logger.Info("Requesting all albums from db", zap.Any("filters", filters), zap.String("query", GetAllAlbumsQuery))
 	rows, err := r.db.Query(GetAllAlbumsQuery, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
 		logger.Error("failed to get all albums", zap.Error(err))
@@ -77,8 +82,8 @@ func (r *albumPostgresRepository) GetAllAlbums(ctx context.Context, filters *rep
 }
 
 func (r *albumPostgresRepository) GetAlbumByID(ctx context.Context, id int64) (*repoModel.Album, error) {
-	logger := middleware.LoggerFromContext(ctx)
-	logger.Info("Requesting album by id from db", zap.Int64("id", id))
+	logger := helpers.LoggerFromContext(ctx)
+	logger.Info("Requesting album by id from db", zap.Int64("id", id), zap.String("query", GetAlbumByIDQuery))
 	row := r.db.QueryRow(GetAlbumByIDQuery, id)
 
 	var albumObject repoModel.Album
@@ -95,9 +100,39 @@ func (r *albumPostgresRepository) GetAlbumByID(ctx context.Context, id int64) (*
 	return &albumObject, nil
 }
 
+func (r *albumPostgresRepository) GetAlbumTitleByIDs(ctx context.Context, ids []int64) (map[int64]string, error) {
+	logger := helpers.LoggerFromContext(ctx)
+	logger.Info("Requesting album title by ids from db", zap.Any("ids", ids), zap.String("query", GetAlbumTitleByIDsQuery))
+	rows, err := r.db.Query(GetAlbumTitleByIDsQuery, ids)
+	if err != nil {
+		logger.Error("failed to get album title by ids", zap.Error(err))
+		return nil, err
+	}
+	defer rows.Close()
+
+	albums := make(map[int64]string)
+	for rows.Next() {
+		var id int64
+		var title string
+		err = rows.Scan(&id, &title)
+		if err != nil {
+			logger.Error("failed to scan album title", zap.Error(err))
+			return nil, err
+		}
+		albums[id] = title
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.Error("failed to get album title by ids", zap.Error(err))
+		return nil, err
+	}
+
+	return albums, nil
+}
+
 func (r *albumPostgresRepository) GetAlbumTitleByID(ctx context.Context, id int64) (string, error) {
-	logger := middleware.LoggerFromContext(ctx)
-	logger.Info("Requesting album title by id from db", zap.Int64("id", id))
+	logger := helpers.LoggerFromContext(ctx)
+	logger.Info("Requesting album title by id from db", zap.Int64("id", id), zap.String("query", GetAlbumTitleByIDQuery))
 	row := r.db.QueryRow(GetAlbumTitleByIDQuery, id)
 
 	var title string
@@ -115,8 +150,8 @@ func (r *albumPostgresRepository) GetAlbumTitleByID(ctx context.Context, id int6
 }
 
 func (r *albumPostgresRepository) GetAlbumsByArtistID(ctx context.Context, artistID int64) ([]*repoModel.Album, error) {
-	logger := middleware.LoggerFromContext(ctx)
-	logger.Info("Requesting albums by artist id from db", zap.Int64("artistID", artistID))
+	logger := helpers.LoggerFromContext(ctx)
+	logger.Info("Requesting albums by artist id from db", zap.Int64("artistID", artistID), zap.String("query", GetAlbumsByArtistIDQuery))
 	rows, err := r.db.Query(GetAlbumsByArtistIDQuery, artistID)
 	if err != nil {
 		logger.Error("failed to get albums by artist id", zap.Error(err))

@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
@@ -37,7 +36,7 @@ func NewAlbumHandler(usecase album.Usecase, cfg *config.Config) *AlbumHandler {
 // @Router /albums [get]
 func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
@@ -48,9 +47,10 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 	usecaseAlbums, err := h.usecase.GetAllAlbums(ctx, &usecaseModel.AlbumFilters{
 		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
 	})
+
 	if err != nil {
 		logger.Error("failed to get albums", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
@@ -72,7 +72,7 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 // @Router /artists/{id}/albums [get]
 func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -85,7 +85,7 @@ func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Reques
 	usecaseAlbums, err := h.usecase.GetAlbumsByArtistID(ctx, id)
 	if err != nil {
 		logger.Error("failed to get albums", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 

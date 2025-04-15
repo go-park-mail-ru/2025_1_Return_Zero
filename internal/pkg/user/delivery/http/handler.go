@@ -116,7 +116,7 @@ func createCookie(name string, value string, expiration time.Time, path string) 
 // @Router /auth/signup [post]
 func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 
 	regData := &deliveryModel.RegisterData{}
 	err := helpers.ReadJSON(w, r, regData)
@@ -159,7 +159,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/login [post]
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 
 	logData := &deliveryModel.LoginData{}
 	err := helpers.ReadJSON(w, r, logData)
@@ -196,7 +196,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/logout [post]
 func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
 		logger.Error("failed to get session id", zap.Error(err))
@@ -231,7 +231,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/check [get]
 func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
 		logger.Error("failed to get session id", zap.Error(err))
@@ -261,7 +261,7 @@ func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 // @Router /user/{username}/avatar [post]
 func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	vars := mux.Vars(r)
 	username, ok := vars["username"]
 	if !ok {
@@ -335,7 +335,7 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 // @Router /user/{username} [put]
 func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 
 	userAuth, exist := middleware.GetUserFromContext(ctx)
 	if !exist {
@@ -382,7 +382,7 @@ func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
 // @Router /user/{username} [delete]
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 
 	userAuth, exist := middleware.GetUserFromContext(ctx)
 	if !exist {
@@ -436,18 +436,18 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // ChangeUserPrivacySettings godoc
-// @Summary Change user privacy settings 
+// @Summary Change user privacy settings
 // @Description Updates user's privacy settings
-// @Tags user 
-// @Accept json 
-// @Produce json 
-// @Param settings body delivery.PrivacySettings true "User privacy settings to be updated" 
-// @Success 200 {object} delivery.APIResponse{body=delivery.Message} "Privacy settings successfully changed" 
-// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid settings data, validation failure, or unauthorized user" 
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param settings body delivery.PrivacySettings true "User privacy settings to be updated"
+// @Success 200 {object} delivery.APIResponse{body=delivery.Message} "Privacy settings successfully changed"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid settings data, validation failure, or unauthorized user"
 // @Router /user/{username}/privacy [put]
 func (h *UserHandler) ChangeUserPrivacySettings(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 
 	userAuth, exist := middleware.GetUserFromContext(ctx)
 	if !exist {
@@ -490,19 +490,19 @@ func (h *UserHandler) ChangeUserPrivacySettings(w http.ResponseWriter, r *http.R
 	helpers.WriteSuccessResponse(w, http.StatusOK, msg, nil)
 }
 
-// GetUserData godoc 
-// @Summary Get user profile data and privacy settings 
-// @Description Retrieves user's profile information and privacy settings 
-// @Tags user 
-// @Accept json 
-// @Produce json 
-// @Param username path string true "Username" 
-// @Success 200 {object} delivery.APIResponse{body=delivery.UserAndSettings} "User data and privacy settings" 
-// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - username not found in URL or user not found" 
+// GetUserData godoc
+// @Summary Get user profile data and privacy settings
+// @Description Retrieves user's profile information and privacy settings
+// @Tags user
+// @Accept json
+// @Produce json
+// @Param username path string true "Username"
+// @Success 200 {object} delivery.APIResponse{body=delivery.UserAndSettings} "User data and privacy settings"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - username not found in URL or user not found"
 // @Router /user/{username} [get]
 func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	username, ok := vars["username"]
