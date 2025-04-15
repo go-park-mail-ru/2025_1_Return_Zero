@@ -3,6 +3,7 @@ package middleware
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
@@ -24,7 +25,27 @@ func CSRFMiddleware(cfg config.CSRFConfig) func(http.Handler) http.Handler {
 			if r.Method == http.MethodGet || r.Method == http.MethodHead || r.Method == http.MethodOptions {
 				var token string
 				cookie, err := r.Cookie(cfg.CSRFCookieName)
-				if err == http.ErrNoCookie || cookie.Value == "" {
+				if err != nil {
+					if errors.Is(err, http.ErrNoCookie) {
+						newToken, err := generateCSRFToken(cfg.CSRFTokenLength)
+						if err != nil {
+							helpers.WriteErrorResponse(w, http.StatusInternalServerError, "Failed to generate CSRF token", nil)
+							return
+						}
+						token = newToken
+						cookie = &http.Cookie{
+							Name:     cfg.CSRFCookieName,
+							Value:    token,
+							Path:     "/",
+							HttpOnly: true,
+							Secure:   false,
+						}
+						http.SetCookie(w, cookie)
+					} else {
+						helpers.WriteErrorResponse(w, http.StatusInternalServerError, "Error reading CSRF cookie", nil)
+						return
+					}
+				} else if cookie.Value == "" {
 					newToken, err := generateCSRFToken(cfg.CSRFTokenLength)
 					if err != nil {
 						helpers.WriteErrorResponse(w, http.StatusInternalServerError, "Failed to generate CSRF token", nil)
@@ -49,10 +70,19 @@ func CSRFMiddleware(cfg config.CSRFConfig) func(http.Handler) http.Handler {
 			}
 
 			cookie, err := r.Cookie(cfg.CSRFCookieName)
-			if err != nil || cookie == nil || cookie.Value == "" {
+			if err != nil {
+				if errors.Is(err, http.ErrNoCookie) {
+					helpers.WriteErrorResponse(w, http.StatusForbidden, "CSRF token missing", nil)
+					return
+				}
+				helpers.WriteErrorResponse(w, http.StatusInternalServerError, "Error reading CSRF cookie", nil)
+				return
+			}
+			if cookie.Value == "" {
 				helpers.WriteErrorResponse(w, http.StatusForbidden, "CSRF token missing", nil)
 				return
 			}
+
 			token := r.Header.Get(cfg.CSRFHeaderName)
 			if token == "" || token != cookie.Value {
 				helpers.WriteErrorResponse(w, http.StatusForbidden, "Invalid CSRF token", nil)
