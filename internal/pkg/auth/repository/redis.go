@@ -11,8 +11,8 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	"go.uber.org/zap"
 )
 
@@ -43,7 +43,7 @@ func generateSessionID() string {
 }
 
 func (r *AuthRedisRepository) CreateSession(ctx context.Context, ID int64) (string, error) {
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	conn := r.redisPool.Get()
 	defer conn.Close()
 
@@ -58,7 +58,7 @@ func (r *AuthRedisRepository) CreateSession(ctx context.Context, ID int64) (stri
 }
 
 func (r *AuthRedisRepository) DeleteSession(ctx context.Context, SID string) error {
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	conn := r.redisPool.Get()
 	defer conn.Close()
 
@@ -71,7 +71,7 @@ func (r *AuthRedisRepository) DeleteSession(ctx context.Context, SID string) err
 }
 
 func (r *AuthRedisRepository) GetSession(ctx context.Context, SID string) (int64, error) {
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	conn := r.redisPool.Get()
 	defer conn.Close()
 

@@ -440,7 +440,7 @@ func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 // @Router /user/{username} [put]
 func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	userAuth, exist := middleware.GetUserFromContext(ctx)
 	if !exist {
 		logger.Error("user not auth")

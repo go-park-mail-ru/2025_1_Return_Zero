@@ -5,12 +5,14 @@ import (
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/trackFile"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
+	"go.uber.org/zap"
 )
 
 func NewUsecase(trackRepository track.Repository, artistRepository artist.Repository, albumRepository album.Repository, trackFileRepository trackFile.Repository, userRepository user.Repository) track.Usecase {
@@ -156,9 +158,10 @@ func (u trackUsecase) GetLastListenedTracks(ctx context.Context, username string
 	repoFilters := &repoModel.TrackFilters{
 		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
 	}
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	userID, err := u.userRepo.GetIDByUsername(ctx, username)
 	if err != nil {
+		logger.Error("failed to get user id by username", zap.Error(err))
 		return nil, err
 	}
 
