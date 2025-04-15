@@ -6,16 +6,11 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
-	"errors"
 	"time"
 
 	"github.com/gomodule/redigo/redis"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth"
-)
-
-var (
-	ErrSessionNotFound = errors.New("session not found")
 )
 
 const (

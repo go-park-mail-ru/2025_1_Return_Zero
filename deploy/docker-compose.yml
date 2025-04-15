@@ -6,7 +6,7 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/16
+        - subnet: 172.30.0.0/16
 
 services:
   postgres:
@@ -43,7 +43,7 @@ services:
     tty: true
     networks:
       app-network:
-        ipv4_address: 172.20.0.10
+        ipv4_address: 172.30.0.10
 
   go-api:
     build:

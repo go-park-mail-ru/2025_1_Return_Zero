@@ -6,7 +6,6 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
@@ -161,7 +160,7 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 	}
 
-	user, exists := middleware.GetUserFromContext(ctx)
+	user, exists := helpers.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to create stream for unauthorized user")
 		helpers.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
@@ -212,7 +211,7 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 	}
 
-	user, exists := middleware.GetUserFromContext(ctx)
+	user, exists := helpers.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to update stream duration for unauthorized user")
 		helpers.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)

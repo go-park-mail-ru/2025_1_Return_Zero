@@ -156,7 +156,7 @@ func (u trackUsecase) GetLastListenedTracks(ctx context.Context, username string
 	repoFilters := &repoModel.TrackFilters{
 		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
 	}
-	userID, err := u.userRepo.GetUserIDByUsername(ctx, username)
+	userID, err := u.userRepo.GetIDByUsername(ctx, username)
 	if err != nil {
 		return nil, err
 	}
