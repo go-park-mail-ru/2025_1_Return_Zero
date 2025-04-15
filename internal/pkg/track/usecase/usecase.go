@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
@@ -12,7 +11,6 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/trackFile"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
-	"go.uber.org/zap"
 )
 
 func NewUsecase(trackRepository track.Repository, artistRepository artist.Repository, albumRepository album.Repository, trackFileRepository trackFile.Repository, userRepository user.Repository) track.Usecase {
@@ -36,19 +34,29 @@ func (u trackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.Tr
 		return nil, err
 	}
 
+	trackIDs := make([]int64, 0, len(repoTracks))
+	for _, repoTrack := range repoTracks {
+		trackIDs = append(trackIDs, repoTrack.ID)
+	}
+
+	albumIDs := make([]int64, 0, len(repoTracks))
+	for _, repoTrack := range repoTracks {
+		albumIDs = append(albumIDs, repoTrack.AlbumID)
+	}
+
+	repoArtists, err := u.artistRepo.GetArtistsByTrackIDs(ctx, trackIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	albumTitles, err := u.albumRepo.GetAlbumTitleByIDs(ctx, albumIDs)
+	if err != nil {
+		return nil, err
+	}
+
 	tracks := make([]*usecaseModel.Track, 0, len(repoTracks))
 	for _, repoTrack := range repoTracks {
-		repoArtists, err := u.artistRepo.GetArtistsByTrackID(ctx, repoTrack.ID)
-		if err != nil {
-			return nil, err
-		}
-
-		albumTitle, err := u.albumRepo.GetAlbumTitleByID(ctx, repoTrack.AlbumID)
-		if err != nil {
-			return nil, err
-		}
-
-		track := model.TrackFromRepositoryToUsecase(repoTrack, repoArtists, albumTitle)
+		track := model.TrackFromRepositoryToUsecase(repoTrack, repoArtists[repoTrack.ID], albumTitles[repoTrack.AlbumID])
 		tracks = append(tracks, track)
 	}
 
@@ -87,20 +95,29 @@ func (u trackUsecase) GetTracksByArtistID(ctx context.Context, id int64) ([]*use
 		return nil, err
 	}
 
+	trackIDs := make([]int64, 0, len(repoTracks))
+	for _, repoTrack := range repoTracks {
+		trackIDs = append(trackIDs, repoTrack.ID)
+	}
+
+	albumIDs := make([]int64, 0, len(repoTracks))
+	for _, repoTrack := range repoTracks {
+		albumIDs = append(albumIDs, repoTrack.AlbumID)
+	}
+
+	albumTitles, err := u.albumRepo.GetAlbumTitleByIDs(ctx, albumIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	repoArtists, err := u.artistRepo.GetArtistsByTrackIDs(ctx, trackIDs)
+	if err != nil {
+		return nil, err
+	}
+
 	tracks := make([]*usecaseModel.Track, 0, len(repoTracks))
 	for _, repoTrack := range repoTracks {
-		repoArtists, err := u.artistRepo.GetArtistsByTrackID(ctx, repoTrack.ID)
-		if err != nil {
-			return nil, err
-		}
-
-		albumTitle, err := u.albumRepo.GetAlbumTitleByID(ctx, repoTrack.AlbumID)
-		if err != nil {
-			return nil, err
-		}
-
-		track := model.TrackFromRepositoryToUsecase(repoTrack, repoArtists, albumTitle)
-
+		track := model.TrackFromRepositoryToUsecase(repoTrack, repoArtists[repoTrack.ID], albumTitles[repoTrack.AlbumID])
 		tracks = append(tracks, track)
 	}
 
@@ -142,13 +159,11 @@ func (u trackUsecase) GetLastListenedTracks(ctx context.Context, username string
 	logger := middleware.LoggerFromContext(ctx)
 	userID, err := u.userRepo.GetIDByUsername(ctx, username)
 	if err != nil {
-		logger.Error("failed to get user id", zap.Error(err))
 		return nil, err
 	}
 
 	repoStreams, err := u.trackRepo.GetStreamsByUserID(ctx, userID, repoFilters)
 	if err != nil {
-		logger.Error("failed to get streams by user id", zap.Error(err))
 		return nil, err
 	}
 
@@ -159,28 +174,32 @@ func (u trackUsecase) GetLastListenedTracks(ctx context.Context, username string
 
 	repoTracks, err := u.trackRepo.GetTracksByIDs(ctx, ids)
 	if err != nil {
-		logger.Error("failed to get tracks by ids", zap.Error(err))
+		return nil, err
+	}
+
+	trackIDs := make([]int64, 0, len(repoTracks))
+	for _, repoTrack := range repoTracks {
+		trackIDs = append(trackIDs, repoTrack.ID)
+	}
+
+	albumIDs := make([]int64, 0, len(repoTracks))
+	for _, repoTrack := range repoTracks {
+		albumIDs = append(albumIDs, repoTrack.AlbumID)
+	}
+
+	albumTitles, err := u.albumRepo.GetAlbumTitleByIDs(ctx, albumIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	repoArtists, err := u.artistRepo.GetArtistsByTrackIDs(ctx, trackIDs)
+	if err != nil {
 		return nil, err
 	}
 
 	tracks := make([]*usecaseModel.Track, 0, len(repoTracks))
-
-	for _, id := range ids {
-		repoTrack := repoTracks[id]
-		repoArtists, err := u.artistRepo.GetArtistsByTrackID(ctx, id)
-		if err != nil {
-			logger.Error("failed to get artists by track id", zap.Error(err))
-			return nil, err
-		}
-
-		albumTitle, err := u.albumRepo.GetAlbumTitleByID(ctx, repoTrack.AlbumID)
-		if err != nil {
-			logger.Error("failed to get album title by id", zap.Error(err))
-			return nil, err
-		}
-
-		track := model.TrackFromRepositoryToUsecase(repoTrack, repoArtists, albumTitle)
-
+	for _, repoTrack := range repoTracks {
+		track := model.TrackFromRepositoryToUsecase(repoTrack, repoArtists[repoTrack.ID], albumTitles[repoTrack.AlbumID])
 		tracks = append(tracks, track)
 	}
 

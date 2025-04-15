@@ -31,15 +31,19 @@ func (u albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.Al
 		return nil, err
 	}
 
-	albums := make([]*usecaseModel.Album, 0, len(repoAlbums))
-
+	albumIDs := make([]int64, 0, len(repoAlbums))
 	for _, repoAlbum := range repoAlbums {
-		repoArtists, err := u.artistRepo.GetArtistsByAlbumID(ctx, repoAlbum.ID)
-		if err != nil {
-			return nil, err
-		}
+		albumIDs = append(albumIDs, repoAlbum.ID)
+	}
 
-		usecaseAlbum := model.AlbumFromRepositoryToUsecase(repoAlbum, repoArtists)
+	repoArtists, err := u.artistRepo.GetArtistsByAlbumIDs(ctx, albumIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	albums := make([]*usecaseModel.Album, 0, len(repoAlbums))
+	for _, repoAlbum := range repoAlbums {
+		usecaseAlbum := model.AlbumFromRepositoryToUsecase(repoAlbum, repoArtists[repoAlbum.ID])
 		albums = append(albums, usecaseAlbum)
 	}
 	return albums, nil
@@ -51,15 +55,19 @@ func (u albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64) (
 		return nil, err
 	}
 
-	albums := make([]*usecaseModel.Album, 0, len(repoAlbums))
-
+	albumIDs := make([]int64, 0, len(repoAlbums))
 	for _, repoAlbum := range repoAlbums {
-		repoArtists, err := u.artistRepo.GetArtistsByAlbumID(ctx, repoAlbum.ID)
-		if err != nil {
-			return nil, err
-		}
+		albumIDs = append(albumIDs, repoAlbum.ID)
+	}
 
-		usecaseAlbum := model.AlbumFromRepositoryToUsecase(repoAlbum, repoArtists)
+	repoArtists, err := u.artistRepo.GetArtistsByAlbumIDs(ctx, albumIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	albums := make([]*usecaseModel.Album, 0, len(repoAlbums))
+	for _, repoAlbum := range repoAlbums {
+		usecaseAlbum := model.AlbumFromRepositoryToUsecase(repoAlbum, repoArtists[repoAlbum.ID])
 		albums = append(albums, usecaseAlbum)
 	}
 	return albums, nil

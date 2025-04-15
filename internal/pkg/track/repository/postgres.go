@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
@@ -74,8 +74,8 @@ func NewTrackPostgresRepository(db *sql.DB) *TrackPostgresRepository {
 }
 
 func (r *TrackPostgresRepository) GetAllTracks(ctx context.Context, filters *repository.TrackFilters) ([]*repository.Track, error) {
-	logger := middleware.LoggerFromContext(ctx)
-	logger.Info("Requesting all tracks from db", zap.Any("filters", filters))
+	logger := helpers.LoggerFromContext(ctx)
+	logger.Info("Requesting all tracks from db", zap.Any("filters", filters), zap.String("query", GetAllTracksQuery))
 	rows, err := r.db.Query(GetAllTracksQuery, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
 		logger.Error("failed to get all tracks", zap.Error(err))
@@ -103,8 +103,8 @@ func (r *TrackPostgresRepository) GetAllTracks(ctx context.Context, filters *rep
 }
 
 func (r *TrackPostgresRepository) GetTrackByID(ctx context.Context, id int64) (*repository.TrackWithFileKey, error) {
-	logger := middleware.LoggerFromContext(ctx)
-	logger.Info("Requesting track by id from db", zap.Int64("id", id))
+	logger := helpers.LoggerFromContext(ctx)
+	logger.Info("Requesting track by id from db", zap.Int64("id", id), zap.String("query", GetTrackByIDQuery))
 	var trackObject repository.TrackWithFileKey
 	err := r.db.QueryRow(GetTrackByIDQuery, id).Scan(&trackObject.ID, &trackObject.Title, &trackObject.Thumbnail, &trackObject.Duration, &trackObject.AlbumID, &trackObject.FileKey)
 	if err != nil {
@@ -120,8 +120,8 @@ func (r *TrackPostgresRepository) GetTrackByID(ctx context.Context, id int64) (*
 }
 
 func (r *TrackPostgresRepository) GetTracksByArtistID(ctx context.Context, artistID int64) ([]*repository.Track, error) {
-	logger := middleware.LoggerFromContext(ctx)
-	logger.Info("Requesting tracks by artist id from db", zap.Int64("artistID", artistID))
+	logger := helpers.LoggerFromContext(ctx)
+	logger.Info("Requesting tracks by artist id from db", zap.Int64("artistID", artistID), zap.String("query", GetTracksByArtistIDQuery))
 	rows, err := r.db.Query(GetTracksByArtistIDQuery, artistID)
 	if err != nil {
 		logger.Error("failed to get tracks by artist id", zap.Error(err))
@@ -149,8 +149,8 @@ func (r *TrackPostgresRepository) GetTracksByArtistID(ctx context.Context, artis
 }
 
 func (r *TrackPostgresRepository) CreateStream(ctx context.Context, createData *repository.TrackStreamCreateData) (int64, error) {
-	logger := middleware.LoggerFromContext(ctx)
-	logger.Info("Requesting to create stream in db", zap.Any("createData", createData))
+	logger := helpers.LoggerFromContext(ctx)
+	logger.Info("Requesting to create stream in db", zap.Any("createData", createData), zap.String("query", CreateStreamQuery))
 	var streamID int64
 	err := r.db.QueryRow(CreateStreamQuery, createData.TrackID, createData.UserID).Scan(&streamID)
 	if err != nil {
@@ -162,8 +162,8 @@ func (r *TrackPostgresRepository) CreateStream(ctx context.Context, createData *
 }
 
 func (r *TrackPostgresRepository) GetStreamByID(ctx context.Context, id int64) (*repository.TrackStream, error) {
-	logger := middleware.LoggerFromContext(ctx)
-	logger.Info("Requesting stream by id from db", zap.Int64("id", id))
+	logger := helpers.LoggerFromContext(ctx)
+	logger.Info("Requesting stream by id from db", zap.Int64("id", id), zap.String("query", GetStreamByIDQuery))
 	var stream repository.TrackStream
 	err := r.db.QueryRow(GetStreamByIDQuery, id).Scan(&stream.ID, &stream.UserID, &stream.TrackID, &stream.Duration)
 	if err != nil {
@@ -179,8 +179,8 @@ func (r *TrackPostgresRepository) GetStreamByID(ctx context.Context, id int64) (
 }
 
 func (r *TrackPostgresRepository) UpdateStreamDuration(ctx context.Context, endedStream *repository.TrackStreamUpdateData) error {
-	logger := middleware.LoggerFromContext(ctx)
-	logger.Info("Requesting to update stream duration in db", zap.Any("endedStream", endedStream))
+	logger := helpers.LoggerFromContext(ctx)
+	logger.Info("Requesting to update stream duration in db", zap.Any("endedStream", endedStream), zap.String("query", UpdateStreamDurationQuery))
 	result, err := r.db.Exec(UpdateStreamDurationQuery, endedStream.Duration, endedStream.StreamID)
 	if err != nil {
 		logger.Error("failed to update stream duration", zap.Error(err))
@@ -202,8 +202,8 @@ func (r *TrackPostgresRepository) UpdateStreamDuration(ctx context.Context, ende
 }
 
 func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID int64, filters *repository.TrackFilters) ([]*repository.TrackStream, error) {
-	logger := middleware.LoggerFromContext(ctx)
-	logger.Info("Requesting streams by user id from db", zap.Int64("userID", userID))
+	logger := helpers.LoggerFromContext(ctx)
+	logger.Info("Requesting streams by user id from db", zap.Int64("userID", userID), zap.String("query", GetStreamsByUserIDQuery))
 	rows, err := r.db.Query(GetStreamsByUserIDQuery, userID, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
 		logger.Error("failed to get streams by user id", zap.Error(err))
@@ -231,8 +231,8 @@ func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID
 }
 
 func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int64) (map[int64]*repository.Track, error) {
-	logger := middleware.LoggerFromContext(ctx)
-	logger.Info("Requesting tracks by ids from db", zap.Any("ids", ids))
+	logger := helpers.LoggerFromContext(ctx)
+	logger.Info("Requesting tracks by ids from db", zap.Any("ids", ids), zap.String("query", GetTracksByIDsQuery))
 	rows, err := r.db.Query(GetTracksByIDsQuery, ids)
 	if err != nil {
 		logger.Error("failed to get tracks by ids", zap.Error(err))

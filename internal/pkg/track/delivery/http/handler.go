@@ -1,15 +1,12 @@
 package http
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
@@ -20,7 +17,7 @@ import (
 )
 
 const (
-	unauthorizedError = "unauthorized users can't save to stream history"
+	ErrUnauthorized = "unauthorized users can't save to stream history"
 )
 
 type TrackHandler struct {
@@ -47,7 +44,7 @@ func NewTrackHandler(usecase track.Usecase, cfg *config.Config) *TrackHandler {
 // @Router /tracks [get]
 func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
@@ -62,12 +59,7 @@ func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
 	if err != nil {
 		logger.Error("failed to get tracks", zap.Error(err))
-		switch {
-		case errors.Is(err, album.ErrAlbumNotFound) || errors.Is(err, artist.ErrArtistNotFound):
-			helpers.WriteErrorResponse(w, http.StatusNotFound, err.Error(), nil)
-		default:
-			helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
-		}
+		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
@@ -88,7 +80,7 @@ func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 // @Router /tracks/{id} [get]
 func (h *TrackHandler) GetTrackByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -102,14 +94,7 @@ func (h *TrackHandler) GetTrackByID(w http.ResponseWriter, r *http.Request) {
 	usecaseTrack, err := h.usecase.GetTrackByID(ctx, id)
 	if err != nil {
 		logger.Error("failed to get track", zap.Error(err))
-		var status int
-		switch {
-		case errors.Is(err, track.ErrTrackNotFound):
-			status = http.StatusNotFound
-		default:
-			status = http.StatusInternalServerError
-		}
-		helpers.WriteErrorResponse(w, status, err.Error(), nil)
+		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
@@ -132,7 +117,7 @@ func (h *TrackHandler) GetTrackByID(w http.ResponseWriter, r *http.Request) {
 // @Router /artists/{id}/tracks [get]
 func (h *TrackHandler) GetTracksByArtistID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -146,12 +131,7 @@ func (h *TrackHandler) GetTracksByArtistID(w http.ResponseWriter, r *http.Reques
 	usecaseTracks, err := h.usecase.GetTracksByArtistID(ctx, id)
 	if err != nil {
 		logger.Error("failed to get tracks", zap.Error(err))
-		switch {
-		case errors.Is(err, album.ErrAlbumNotFound) || errors.Is(err, artist.ErrArtistNotFound):
-			helpers.WriteErrorResponse(w, http.StatusNotFound, err.Error(), nil)
-		default:
-			helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
-		}
+		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
@@ -171,7 +151,7 @@ func (h *TrackHandler) GetTracksByArtistID(w http.ResponseWriter, r *http.Reques
 // @Router /tracks/{id}/stream [post]
 func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -184,7 +164,7 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 	user, exists := middleware.GetUserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to create stream for unauthorized user")
-		helpers.WriteErrorResponse(w, http.StatusUnauthorized, unauthorizedError, nil)
+		helpers.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
 		return
 	}
 	userID := user.ID
@@ -197,7 +177,7 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 	streamID, err := h.usecase.CreateStream(ctx, model.TrackStreamCreateDataFromDeliveryToUsecase(trackStreamCreateData))
 	if err != nil {
 		logger.Error("failed to save track stream", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
 	}
 
 	createResponse := &delivery.StreamID{
@@ -222,7 +202,7 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 // @Router /streams/{id} [put]
 func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 
@@ -235,7 +215,7 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 	user, exists := middleware.GetUserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to update stream duration for unauthorized user")
-		helpers.WriteErrorResponse(w, http.StatusUnauthorized, unauthorizedError, nil)
+		helpers.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
 	}
 
 	userID := user.ID
@@ -259,16 +239,7 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 	err = h.usecase.UpdateStreamDuration(ctx, model.TrackStreamUpdateDataFromDeliveryToUsecase(&streamUpdateData, userID, streamID))
 	if err != nil {
 		logger.Error("failed to update stream duration", zap.Error(err))
-		var status int
-		switch {
-		case errors.Is(err, track.ErrStreamNotFound):
-			status = http.StatusNotFound
-		case errors.Is(err, track.ErrStreamPermissionDenied):
-			status = http.StatusForbidden
-		default:
-			status = http.StatusInternalServerError
-		}
-		helpers.WriteErrorResponse(w, status, err.Error(), nil)
+		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
@@ -293,7 +264,7 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 // @Router /users/{username}/history [get]
 func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
@@ -315,7 +286,7 @@ func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Requ
 
 	if err != nil {
 		logger.Error("failed to get last listened tracks", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusNotFound, err.Error(), nil)
+		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 

@@ -94,7 +94,7 @@ func createCookie(name string, value string, expiration time.Time, path string) 
 // @Router /auth/signup [post]
 func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 
 	regData := &deliveryModel.RegisterData{}
 	err := helpers.ReadJSON(w, r, regData)
@@ -137,7 +137,7 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/login [post]
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 
 	logData := &deliveryModel.LoginData{}
 	err := helpers.ReadJSON(w, r, logData)
@@ -174,7 +174,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/logout [post]
 func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
 		logger.Error("failed to get session id", zap.Error(err))
@@ -209,7 +209,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/check [get]
 func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
 		logger.Error("failed to get session id", zap.Error(err))
@@ -239,7 +239,7 @@ func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 // @Router /user/{username}/avatar [post]
 func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 	vars := mux.Vars(r)
 	username, ok := vars["username"]
 	if !ok {
@@ -315,7 +315,7 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 // @Router /user/{username} [delete]
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 
 	userAuth, exist := middleware.GetUserFromContext(ctx)
 	if !exist {
@@ -380,7 +380,7 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 // @Router /user/{username} [get]
 func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := middleware.LoggerFromContext(ctx)
+	logger := helpers.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	username, ok := vars["username"]
