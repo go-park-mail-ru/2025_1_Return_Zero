@@ -4,10 +4,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	"github.com/spf13/viper"
 )
+
+type CSRFConfig struct {
+	CSRFHeaderName  string `mapstructure:"csrf_header_name"`
+	CSRFCookieName  string `mapstructure:"csrf_cookie_name"`
+	CSRFTokenLength int    `mapstructure:"csrf_token_length"`
+}
 
 type PostgresConfig struct {
 	PostgresHost     string
@@ -15,19 +20,19 @@ type PostgresConfig struct {
 	PostgresUser     string
 	PostgresPassword string
 	PostgresDB       string
-	MaxOpenConns      int `mapstructure:"max_open_conns"`
-	MaxIdleConns      int `mapstructure:"max_idle_conns"`
-	MaxLifetime       int `mapstructure:"max_lifetime"`
+	MaxOpenConns     int `mapstructure:"max_open_conns"`
+	MaxIdleConns     int `mapstructure:"max_idle_conns"`
+	MaxLifetime      int `mapstructure:"max_lifetime"`
 }
 
 type S3Config struct {
-	S3Region        string
-	S3Endpoint      string
-	S3TracksBucket  string
-	S3ImagesBucket  string
-	S3AccessKey     string
-	S3SecretKey     string
-	S3Duration      time.Duration `mapstructure:"s3_duration"`
+	S3Region       string
+	S3Endpoint     string
+	S3TracksBucket string
+	S3ImagesBucket string
+	S3AccessKey    string
+	S3SecretKey    string
+	S3Duration     time.Duration `mapstructure:"s3_duration"`
 }
 
 type RedisConfig struct {
@@ -35,13 +40,22 @@ type RedisConfig struct {
 	RedisPort string
 }
 
+type Cors struct {
+	AllowedOrigins   []string `mapstructure:"allowed_origins"`
+	AllowedMethods   []string `mapstructure:"allowed_methods"`
+	AllowedHeaders   []string `mapstructure:"allowed_headers"`
+	AllowCredentials bool     `mapstructure:"allow_credentials"`
+	MaxAge           int      `mapstructure:"max_age"`
+}
+
 type Config struct {
-	Cors       middleware.Cors
+	Cors       Cors
 	Port       string `mapstructure:"port"`
 	Pagination deliveryModel.PaginationConfig
 	Postgres   PostgresConfig
 	S3         S3Config
 	Redis      RedisConfig
+	CSRF       CSRFConfig
 }
 
 func LoadConfig() (*Config, error) {
