@@ -4,44 +4,58 @@ import (
 	"os"
 	"time"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	"github.com/spf13/viper"
 )
 
+type CSRFConfig struct {
+	CSRFHeaderName  string `mapstructure:"csrf_header_name"`
+	CSRFCookieName  string `mapstructure:"csrf_cookie_name"`
+	CSRFTokenLength int    `mapstructure:"csrf_token_length"`
+}
+
 type PostgresConfig struct {
-	POSTGRES_HOST     string
-	POSTGRES_PORT     string
-	POSTGRES_USER     string
-	POSTGRES_PASSWORD string
-	POSTGRES_DB       string
-	MaxOpenConns      int `mapstructure:"max_open_conns"`
-	MaxIdleConns      int `mapstructure:"max_idle_conns"`
-	MaxLifetime       int `mapstructure:"max_lifetime"`
+	PostgresHost     string
+	PostgresPort     string
+	PostgresUser     string
+	PostgresPassword string
+	PostgresDB       string
+	MaxOpenConns     int `mapstructure:"max_open_conns"`
+	MaxIdleConns     int `mapstructure:"max_idle_conns"`
+	MaxLifetime      int `mapstructure:"max_lifetime"`
 }
 
 type S3Config struct {
-	S3_REGION        string
-	S3_ENDPOINT      string
-	S3_TRACKS_BUCKET string
-	S3_IMAGES_BUCKET string
-	S3_ACCESS_KEY    string
-	S3_SECRET_KEY    string
-	S3_DURATION      time.Duration `mapstructure:"s3_duration"`
+	S3Region       string
+	S3Endpoint     string
+	S3TracksBucket string
+	S3ImagesBucket string
+	S3AccessKey    string
+	S3SecretKey    string
+	S3Duration     time.Duration `mapstructure:"s3_duration"`
 }
 
 type RedisConfig struct {
-	REDIS_HOST string
-	REDIS_PORT string
+	RedisHost string
+	RedisPort string
+}
+
+type Cors struct {
+	AllowedOrigins   []string `mapstructure:"allowed_origins"`
+	AllowedMethods   []string `mapstructure:"allowed_methods"`
+	AllowedHeaders   []string `mapstructure:"allowed_headers"`
+	AllowCredentials bool     `mapstructure:"allow_credentials"`
+	MaxAge           int      `mapstructure:"max_age"`
 }
 
 type Config struct {
-	Cors       middleware.Cors
+	Cors       Cors
 	Port       string `mapstructure:"port"`
 	Pagination deliveryModel.PaginationConfig
 	Postgres   PostgresConfig
 	S3         S3Config
 	Redis      RedisConfig
+	CSRF       CSRFConfig
 }
 
 func LoadConfig() (*Config, error) {
@@ -58,21 +72,21 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	config.Postgres.POSTGRES_HOST = os.Getenv("POSTGRES_HOST")
-	config.Postgres.POSTGRES_PORT = os.Getenv("POSTGRES_PORT")
-	config.Postgres.POSTGRES_USER = os.Getenv("POSTGRES_USER")
-	config.Postgres.POSTGRES_PASSWORD = os.Getenv("POSTGRES_PASSWORD")
-	config.Postgres.POSTGRES_DB = os.Getenv("POSTGRES_DB")
+	config.Postgres.PostgresHost = os.Getenv("POSTGRES_HOST")
+	config.Postgres.PostgresPort = os.Getenv("POSTGRES_PORT")
+	config.Postgres.PostgresUser = os.Getenv("POSTGRES_USER")
+	config.Postgres.PostgresPassword = os.Getenv("POSTGRES_PASSWORD")
+	config.Postgres.PostgresDB = os.Getenv("POSTGRES_DB")
 
-	config.S3.S3_ACCESS_KEY = os.Getenv("S3_ACCESS_KEY")
-	config.S3.S3_SECRET_KEY = os.Getenv("S3_SECRET_KEY")
-	config.S3.S3_REGION = os.Getenv("S3_REGION")
-	config.S3.S3_ENDPOINT = os.Getenv("S3_ENDPOINT")
-	config.S3.S3_TRACKS_BUCKET = os.Getenv("S3_TRACKS_BUCKET")
-	config.S3.S3_IMAGES_BUCKET = os.Getenv("S3_IMAGES_BUCKET")
+	config.S3.S3AccessKey = os.Getenv("S3_ACCESS_KEY")
+	config.S3.S3SecretKey = os.Getenv("S3_SECRET_KEY")
+	config.S3.S3Region = os.Getenv("S3_REGION")
+	config.S3.S3Endpoint = os.Getenv("S3_ENDPOINT")
+	config.S3.S3TracksBucket = os.Getenv("S3_TRACKS_BUCKET")
+	config.S3.S3ImagesBucket = os.Getenv("S3_IMAGES_BUCKET")
 
-	config.Redis.REDIS_HOST = os.Getenv("REDIS_HOST")
-	config.Redis.REDIS_PORT = os.Getenv("REDIS_PORT")
+	config.Redis.RedisHost = os.Getenv("REDIS_HOST")
+	config.Redis.RedisPort = os.Getenv("REDIS_PORT")
 
 	return &config, nil
 }

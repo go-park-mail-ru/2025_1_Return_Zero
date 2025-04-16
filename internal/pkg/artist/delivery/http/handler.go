@@ -1,12 +1,10 @@
 package artist
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
@@ -37,21 +35,22 @@ func NewArtistHandler(usecase artist.Usecase, cfg *config.Config) *ArtistHandler
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /artists [get]
 func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := helpers.LoggerFromContext(ctx)
 	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
-	usecaseArtists, err := h.usecase.GetAllArtists(&usecaseModel.ArtistFilters{
+	usecaseArtists, err := h.usecase.GetAllArtists(ctx, &usecaseModel.ArtistFilters{
 		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
 	})
 
 	if err != nil {
 		logger.Error("failed to get artists", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
+		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
@@ -71,7 +70,8 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /artists/{id} [get]
 func (h *ArtistHandler) GetArtistByID(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+	ctx := r.Context()
+	logger := helpers.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -82,15 +82,10 @@ func (h *ArtistHandler) GetArtistByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usecaseArtist, err := h.usecase.GetArtistByID(id)
+	usecaseArtist, err := h.usecase.GetArtistByID(ctx, id)
 	if err != nil {
 		logger.Error("failed to get artist", zap.Error(err))
-		switch {
-		case errors.Is(err, artist.ErrArtistNotFound):
-			helpers.WriteErrorResponse(w, http.StatusNotFound, err.Error(), nil)
-		default:
-			helpers.WriteErrorResponse(w, http.StatusInternalServerError, err.Error(), nil)
-		}
+		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 

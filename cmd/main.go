@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
@@ -28,6 +27,7 @@ import (
 	userFileRepo "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/userAvatarFile/repository"
 	"github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
+	"go.uber.org/zap"
 )
 
 // @title Return Zero API
@@ -36,34 +36,36 @@ import (
 // @host returnzero.ru
 // @BasePath /api/v1
 func main() {
-	cfg, err := config.LoadConfig()
+	logger, err := middleware.NewZapLogger()
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Error creating logger:", zap.Error(err))
 		return
 	}
 
-	redisConn, err := redis.ConnectRedis(cfg.Redis)
+	cfg, err := config.LoadConfig()
 	if err != nil {
-		fmt.Println("Error connecting to Redis:", err)
+		logger.Error("Error loading config:", zap.Error(err))
 		return
 	}
-	defer redisConn.Close()
+
+	redisPool := redis.NewRedisPool(cfg.Redis)
+	defer redisPool.Close()
 
 	postgresConn, err := postgres.ConnectPostgres(cfg.Postgres)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Error connecting to Postgres:", zap.Error(err))
 		return
 	}
 	defer postgresConn.Close()
 
 	s3, err := s3.InitS3(cfg.S3)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Error initializing S3:", zap.Error(err))
 		return
 	}
 
 	r := mux.NewRouter()
-	fmt.Printf("Server starting on port %s...\n", cfg.Port)
+	logger.Info("Server starting on port %s...", zap.String("port", cfg.Port))
 
 	r.PathPrefix("/api/v1/docs/").Handler(httpSwagger.Handler(
 		httpSwagger.URL("/api/v1/docs/doc.json"),
@@ -71,15 +73,16 @@ func main() {
 		httpSwagger.DocExpansion("none"),
 	))
 
-	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisConn), userFileRepo.NewS3Repository(s3, cfg.S3.S3_IMAGES_BUCKET))
+	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisPool), userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket))
 
-	r.Use(middleware.Logger)
+	r.Use(middleware.LoggerMiddleware(logger))
 	r.Use(middleware.RequestId)
 	r.Use(middleware.AccessLog)
 	r.Use(middleware.Auth(newUserUsecase))
-	r.Use(cfg.Cors.Middleware)
+	r.Use(middleware.CorsMiddleware(cfg.Cors))
+	r.Use(middleware.CSRFMiddleware(cfg.CSRF))
 
-	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3_TRACKS_BUCKET, cfg.S3.S3_DURATION)), cfg)
+	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration), userRepository.NewUserPostgresRepository(postgresConn)), cfg)
 	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), genreRepository.NewGenrePostgresRepository(postgresConn)), cfg)
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistRepository.NewArtistPostgresRepository(postgresConn)), cfg)
 	userHandler := userHttp.NewUserHandler(newUserUsecase)
@@ -100,11 +103,16 @@ func main() {
 	r.HandleFunc("/api/v1/auth/login", userHandler.Login).Methods("POST")
 	r.HandleFunc("/api/v1/auth/logout", userHandler.Logout).Methods("POST")
 	r.HandleFunc("/api/v1/auth/check", userHandler.CheckUser).Methods("GET")
-	r.HandleFunc("/api/v1/user/{username}/avatar", userHandler.GetUserAvatar).Methods("GET")
+
 	r.HandleFunc("/api/v1/user/{username}/avatar", userHandler.UploadAvatar).Methods("POST")
+	r.HandleFunc("/api/v1/user/{username}", userHandler.ChangeUserData).Methods("PUT")
+	r.HandleFunc("/api/v1/user/{username}", userHandler.DeleteUser).Methods("DELETE")
+	r.HandleFunc("/api/v1/user/{username}", userHandler.GetUserData).Methods("GET")
+
+	r.HandleFunc("/api/v1/user/{username}/history", trackHandler.GetLastListenedTracks).Methods("GET")
 
 	err = http.ListenAndServe(cfg.Port, r)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("Error starting server:", zap.Error(err))
 	}
 }

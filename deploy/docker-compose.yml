@@ -1,6 +1,13 @@
 # docker-compose up
 # docker rm $(docker ps -a -q) && docker volume prune -f
 
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+
 services:
   postgres:
     build:
@@ -17,16 +24,26 @@ services:
     ports:
       - '${POSTGRES_PORT}:${POSTGRES_PORT}'
     volumes:
-      - './_postgres/:/docker-entrypoint-initdb.d/'
+      - 'pgdata:/var/lib/postgresql/data'
     tty: true
+    networks:
+      - app-network
 
   redis:
     image: 'redis'
     container_name: redis
     restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
     ports:
       - '6379:6379'
     tty: true
+    networks:
+      app-network:
+        ipv4_address: 172.30.0.10
 
   go-api:
     build:
@@ -54,6 +71,8 @@ services:
     depends_on:
       - postgres
       - redis
+    networks:
+      - app-network
 
   nginx:
     build:
@@ -68,3 +87,9 @@ services:
     depends_on:
       - go-api
     tty: true
+    networks:
+      - app-network
+
+volumes:
+  pgdata:
+    driver: local

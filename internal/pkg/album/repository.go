@@ -1,6 +1,7 @@
 package album
 
 import (
+	"context"
 	"errors"
 
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
@@ -11,8 +12,9 @@ var (
 )
 
 type Repository interface {
-	GetAllAlbums(filters *repoModel.AlbumFilters) ([]*repoModel.Album, error)
-	GetAlbumByID(id int64) (*repoModel.Album, error)
-	GetAlbumTitleByID(id int64) (string, error)
-	GetAlbumsByArtistID(artistID int64) ([]*repoModel.Album, error)
+	GetAllAlbums(ctx context.Context, filters *repoModel.AlbumFilters) ([]*repoModel.Album, error)
+	GetAlbumByID(ctx context.Context, id int64) (*repoModel.Album, error)
+	GetAlbumTitleByID(ctx context.Context, id int64) (string, error)
+	GetAlbumTitleByIDs(ctx context.Context, ids []int64) (map[int64]string, error)
+	GetAlbumsByArtistID(ctx context.Context, artistID int64) ([]*repoModel.Album, error)
 }

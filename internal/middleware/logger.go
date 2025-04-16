@@ -4,11 +4,10 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
-
-type LoggerKey struct{}
 
 func NewZapLogger() (*zap.SugaredLogger, error) {
 	config := zap.NewProductionConfig()
@@ -23,22 +22,17 @@ func NewZapLogger() (*zap.SugaredLogger, error) {
 	return logger.Sugar(), nil
 }
 
-func LoggerFromContext(ctx context.Context) *zap.SugaredLogger {
-	logger := ctx.Value(LoggerKey{}).(*zap.SugaredLogger)
-	return logger
-}
-
-func Logger(next http.Handler) http.Handler {
+func Logger(next http.Handler, logger *zap.SugaredLogger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger, err := NewZapLogger()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		ctx := context.WithValue(r.Context(), LoggerKey{}, logger)
+		ctx := context.WithValue(r.Context(), helpers.LoggerKey{}, logger)
 		r = r.WithContext(ctx)
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func LoggerMiddleware(logger *zap.SugaredLogger) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return Logger(next, logger)
+	}
 }
