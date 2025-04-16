@@ -819,6 +819,7 @@ func TestTrackUsecase_GetLastListenedTracks(t *testing.T) {
 						100: "Album 100",
 						200: "Album 200",
 					}, nil)
+
 			},
 			expectedTracks: []*usecaseModel.Track{
 				{
