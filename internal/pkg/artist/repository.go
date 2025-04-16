@@ -16,6 +16,8 @@ type Repository interface {
 	GetArtistByID(ctx context.Context, id int64) (*repoModel.Artist, error)
 	GetArtistTitleByID(ctx context.Context, id int64) (string, error)
 	GetArtistsByTrackID(ctx context.Context, id int64) ([]*repoModel.ArtistWithRole, error)
+	GetArtistsByTrackIDs(ctx context.Context, trackIDs []int64) (map[int64][]*repoModel.ArtistWithRole, error)
 	GetArtistStats(ctx context.Context, id int64) (*repoModel.ArtistStats, error)
 	GetArtistsByAlbumID(ctx context.Context, albumID int64) ([]*repoModel.ArtistWithTitle, error)
+	GetArtistsByAlbumIDs(ctx context.Context, albumIDs []int64) (map[int64][]*repoModel.ArtistWithTitle, error)
 }

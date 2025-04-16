@@ -2,6 +2,11 @@ package auth
 
 import (
 	"context"
+	"errors"
+)
+
+var (
+	ErrSessionNotFound = errors.New("session not found")
 )
 
 type Repository interface {

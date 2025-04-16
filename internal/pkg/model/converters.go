@@ -250,3 +250,106 @@ func TrackStreamUpdateDataFromDeliveryToUsecase(repositoryTrackStream *delivery.
 		UserID:   userID,
 	}
 }
+
+// /////////////////////////////////// USER ////////////////////////////////////
+func PrivacyRepositoryToUsecase(repositoryPrivacy *repository.UserPrivacySettings) *usecase.UserPrivacy {
+	return &usecase.UserPrivacy{
+		IsPublicPlaylists:       repositoryPrivacy.IsPublicPlaylists,
+		IsPublicMinutesListened: repositoryPrivacy.IsPublicMinutesListened,
+		IsPublicFavoriteArtists: repositoryPrivacy.IsPublicFavoriteArtists,
+		IsPublicTracksListened:  repositoryPrivacy.IsPublicTracksListened,
+		IsPublicFavoriteTracks:  repositoryPrivacy.IsPublicFavoriteTracks,
+		IsPublicArtistsListened: repositoryPrivacy.IsPublicArtistsListened,
+	}
+}
+
+func StatisticsRepositoryToUsecase(repositoryStatistics *repository.UserStats) *usecase.UserStatistics {
+	return &usecase.UserStatistics{
+		MinutesListened: repositoryStatistics.MinutesListened,
+		TracksListened:  repositoryStatistics.TracksListened,
+		ArtistsListened: repositoryStatistics.ArtistsListened,
+	}
+}
+
+func UserFullDataRepositoryToUsecase(repositoryUser *repository.UserFullData) *usecase.UserFullData {
+	usecasePrivacy := PrivacyRepositoryToUsecase(repositoryUser.Privacy)
+	usecaseStatistics := StatisticsRepositoryToUsecase(repositoryUser.Statistics)
+	return &usecase.UserFullData{
+		Username:   repositoryUser.Username,
+		Email:      repositoryUser.Email,
+		Privacy:    usecasePrivacy,
+		Statistics: usecaseStatistics,
+	}
+}
+
+func UserFullDataUsecaseToDelivery(usecaseUser *usecase.UserFullData) *delivery.UserFullData {
+	return &delivery.UserFullData{
+		Username:   usecaseUser.Username,
+		AvatarUrl:  usecaseUser.AvatarUrl,
+		Email:      usecaseUser.Email,
+		Privacy:    PrivacyUsecaseToDelivery(usecaseUser.Privacy),
+		Statistics: StatisticsUsecaseToDelivery(usecaseUser.Statistics),
+	}
+}
+
+func PrivacyUsecaseToDelivery(usecasePrivacy *usecase.UserPrivacy) *delivery.Privacy {
+	return &delivery.Privacy{
+		IsPublicPlaylists:       usecasePrivacy.IsPublicPlaylists,
+		IsPublicMinutesListened: usecasePrivacy.IsPublicMinutesListened,
+		IsPublicFavoriteArtists: usecasePrivacy.IsPublicFavoriteArtists,
+		IsPublicTracksListened:  usecasePrivacy.IsPublicTracksListened,
+		IsPublicFavoriteTracks:  usecasePrivacy.IsPublicFavoriteTracks,
+		IsPublicArtistsListened: usecasePrivacy.IsPublicArtistsListened,
+	}
+}
+
+func StatisticsUsecaseToDelivery(usecaseStatistics *usecase.UserStatistics) *delivery.Statistics {
+	return &delivery.Statistics{
+		MinutesListened: usecaseStatistics.MinutesListened,
+		TracksListened:  usecaseStatistics.TracksListened,
+		ArtistsListened: usecaseStatistics.ArtistsListened,
+	}
+}
+
+func PrivacyFromUsecaseToRepository(usecasePrivacy *usecase.UserPrivacy) *repository.UserPrivacySettings {
+	return &repository.UserPrivacySettings{
+		IsPublicPlaylists:       usecasePrivacy.IsPublicPlaylists,
+		IsPublicMinutesListened: usecasePrivacy.IsPublicMinutesListened,
+		IsPublicFavoriteArtists: usecasePrivacy.IsPublicFavoriteArtists,
+		IsPublicTracksListened:  usecasePrivacy.IsPublicTracksListened,
+		IsPublicFavoriteTracks:  usecasePrivacy.IsPublicFavoriteTracks,
+		IsPublicArtistsListened: usecasePrivacy.IsPublicArtistsListened,
+	}
+}
+
+func ChangeDataFromUsecaseToRepository(usecaseUser *usecase.UserChangeSettings) *repository.ChangeUserData {
+
+	return &repository.ChangeUserData{
+		Password:    usecaseUser.Password,
+		NewUsername: usecaseUser.NewUsername,
+		NewEmail:    usecaseUser.NewEmail,
+		NewPassword: usecaseUser.NewPassword,
+	}
+}
+
+func PrivacyFromDeliveryToUsecase(deliveryPrivacy *delivery.Privacy) *usecase.UserPrivacy {
+	return &usecase.UserPrivacy{
+		IsPublicPlaylists:       deliveryPrivacy.IsPublicPlaylists,
+		IsPublicMinutesListened: deliveryPrivacy.IsPublicMinutesListened,
+		IsPublicFavoriteArtists: deliveryPrivacy.IsPublicFavoriteArtists,
+		IsPublicTracksListened:  deliveryPrivacy.IsPublicTracksListened,
+		IsPublicFavoriteTracks:  deliveryPrivacy.IsPublicFavoriteTracks,
+		IsPublicArtistsListened: deliveryPrivacy.IsPublicArtistsListened,
+	}
+}
+
+func ChangeDataFromDeliveryToUsecase(deliveryUser *delivery.UserChangeSettings) *usecase.UserChangeSettings {
+	privacyDelivery := PrivacyFromDeliveryToUsecase(deliveryUser.Privacy)
+	return &usecase.UserChangeSettings{
+		Password:    deliveryUser.Password,
+		NewUsername: deliveryUser.NewUsername,
+		NewEmail:    deliveryUser.NewEmail,
+		NewPassword: deliveryUser.NewPassword,
+		Privacy:     privacyDelivery,
+	}
+}

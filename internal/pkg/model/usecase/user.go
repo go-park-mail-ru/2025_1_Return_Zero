@@ -14,10 +14,7 @@ type User struct {
 }
 
 type ChangeUserData struct {
-	Username string
-	Email    string
-	Password string
-
+	Password    string
 	NewUsername string
 	NewEmail    string
 	NewPassword string
@@ -33,13 +30,33 @@ type PrivacySettings struct {
 	IsPublicArtistsListened bool
 }
 
-type UserAndSettings struct {
-	Username                string 
-	AvatarUrl               string 
-	IsPublicPlaylists       bool   
-	IsPublicMinutesListened bool   
-	IsPublicFavoriteArtists bool   
-	IsPublicTracksListened  bool   
-	IsPublicFavoriteTracks  bool   
-	IsPublicArtistsListened bool   
+type UserPrivacy struct {
+	IsPublicPlaylists       bool
+	IsPublicMinutesListened bool
+	IsPublicFavoriteArtists bool
+	IsPublicTracksListened  bool
+	IsPublicFavoriteTracks  bool
+	IsPublicArtistsListened bool
+}
+
+type UserStatistics struct {
+	MinutesListened int64
+	TracksListened  int64
+	ArtistsListened int64
+}
+
+type UserFullData struct {
+	Username   string
+	Email      string
+	AvatarUrl  string
+	Privacy    *UserPrivacy
+	Statistics *UserStatistics
+}
+
+type UserChangeSettings struct {
+	Privacy     *UserPrivacy
+	Password    string
+	NewUsername string
+	NewEmail    string
+	NewPassword string
 }
