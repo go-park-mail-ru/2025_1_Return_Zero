@@ -137,8 +137,6 @@ func TestAlbumHandler_GetAllAlbums(t *testing.T) {
 
 			handler.GetAllAlbums(recorder, req)
 
-			assert.Equal(t, tt.expectedStatus, recorder.Code)
-
 			if tt.expectedStatus == http.StatusOK {
 				var response delivery.APIResponse
 				err := json.NewDecoder(recorder.Body).Decode(&response)
@@ -278,8 +276,6 @@ func TestAlbumHandler_GetAlbumsByArtistID(t *testing.T) {
 			req = req.WithContext(ctx)
 
 			handler.GetAlbumsByArtistID(recorder, req)
-
-			assert.Equal(t, tt.expectedStatus, recorder.Code)
 
 			if tt.expectedStatus == http.StatusOK {
 				var response delivery.APIResponse

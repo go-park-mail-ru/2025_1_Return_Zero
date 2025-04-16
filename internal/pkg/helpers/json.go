@@ -62,7 +62,7 @@ func WriteSuccessResponse(w http.ResponseWriter, status int, data interface{}, h
 		Body:   data,
 	}
 
-	WriteJSON(w, status, response, headers)
+	WriteJSON(w, DefaultStatus, response, headers)
 }
 
 func WriteErrorResponse(w http.ResponseWriter, status int, message string, headers http.Header) {
@@ -71,5 +71,5 @@ func WriteErrorResponse(w http.ResponseWriter, status int, message string, heade
 		Error:  message,
 	}
 
-	WriteJSON(w, status, response, headers)
+	WriteJSON(w, DefaultStatus, response, headers)
 }
