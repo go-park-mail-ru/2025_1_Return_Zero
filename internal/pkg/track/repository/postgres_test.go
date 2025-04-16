@@ -26,7 +26,7 @@ func setupTest(t *testing.T) (*sql.DB, sqlmock.Sqlmock, *TrackPostgresRepository
 }
 
 func getTestContext() context.Context {
-	logger, _ := zap.NewDevelopment()
+	logger := zap.NewNop()
 	ctx := context.Background()
 	return helpers.LoggerToContext(ctx, logger.Sugar())
 }

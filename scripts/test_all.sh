@@ -7,7 +7,7 @@ COVERAGE_DIR=$(mktemp -d)
 COVERAGE_FILE="coverage.out"
 echo "mode: atomic" > "$COVERAGE_FILE"
 
-ALL_PACKAGES=$(go list ./... | grep -v mock | grep -v docs)
+ALL_PACKAGES=$(go list ./... | grep -v mock | grep -v docs | grep -v populate)
 
 for pkg in $ALL_PACKAGES; do
     echo "PKG: $pkg"
@@ -24,5 +24,4 @@ done
 
 rm -rf "$COVERAGE_DIR"
 
-echo "Total coverage:"
-go tool cover -func="$COVERAGE_FILE" | grep "total:" | awk '{print $3}'
+go tool cover -func="$COVERAGE_FILE"

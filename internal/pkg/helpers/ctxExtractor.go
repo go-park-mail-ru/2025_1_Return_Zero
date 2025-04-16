@@ -27,3 +27,7 @@ func UserFromContext(ctx context.Context) (*usecaseModel.User, bool) {
 	}
 	return user, true
 }
+
+func UserToContext(ctx context.Context, user *usecaseModel.User) context.Context {
+	return context.WithValue(ctx, UserContextKey{}, user)
+}

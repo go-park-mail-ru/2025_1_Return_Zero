@@ -23,8 +23,8 @@ func TestAlbumUsecase_GetAllAlbums(t *testing.T) {
 	usecase := NewUsecase(mockAlbumRepo, mockArtistRepo)
 	ctx := context.Background()
 
-	date1, _ := time.Parse(time.RFC3339, "2023-01-01T00:00:00Z")
-	date2, _ := time.Parse(time.RFC3339, "2023-02-01T00:00:00Z")
+	date1 := time.Date(2023, 0, 0, 0, 0, 0, 0, time.UTC)
+	date2 := time.Date(2023, 0, 0, 0, 0, 0, 0, time.UTC)
 
 	tests := []struct {
 		name           string
@@ -176,9 +176,9 @@ func TestAlbumUsecase_GetAlbumsByArtistID(t *testing.T) {
 	usecase := NewUsecase(mockAlbumRepo, mockArtistRepo)
 	ctx := context.Background()
 
-	date3, _ := time.Parse(time.RFC3339, "2023-03-00T00:00:00Z")
-	date4, _ := time.Parse(time.RFC3339, "2023-04-00T00:00:00Z")
-	date5, _ := time.Parse(time.RFC3339, "2023-05-00T00:00:00Z")
+	date3 := time.Date(2023, 0, 0, 0, 0, 0, 0, time.UTC)
+	date4 := time.Date(2023, 0, 0, 0, 0, 0, 0, time.UTC)
+	date5 := time.Date(2023, 0, 0, 0, 0, 0, 0, time.UTC)
 
 	tests := []struct {
 		name           string

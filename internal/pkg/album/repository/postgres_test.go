@@ -27,7 +27,7 @@ func setupTest(t *testing.T) (*sql.DB, sqlmock.Sqlmock, albumPkg.Repository) {
 }
 
 func getTestContext() context.Context {
-	logger, _ := zap.NewDevelopment()
+	logger := zap.NewNop()
 	ctx := context.Background()
 	return helpers.LoggerToContext(ctx, logger.Sugar())
 }
@@ -142,7 +142,7 @@ func TestGetAlbumByID(t *testing.T) {
 		},
 		{
 			name:          "Not Found",
-			albumID:       999,
+			albumID:       1000,
 			mockError:     sql.ErrNoRows,
 			expectedError: albumPkg.ErrAlbumNotFound,
 		},
@@ -204,7 +204,7 @@ func TestGetAlbumTitleByIDs(t *testing.T) {
 		},
 		{
 			name:           "Success with no albums",
-			albumIDs:       []int64{999},
+			albumIDs:       []int64{1000},
 			expectedTitles: map[int64]string{},
 		},
 		{
@@ -262,7 +262,7 @@ func TestGetAlbumTitleByID(t *testing.T) {
 		},
 		{
 			name:          "Not Found",
-			albumID:       999,
+			albumID:       1000,
 			mockError:     sql.ErrNoRows,
 			expectedError: albumPkg.ErrAlbumNotFound,
 		},
@@ -337,7 +337,7 @@ func TestGetAlbumsByArtistID(t *testing.T) {
 		},
 		{
 			name:           "Success with no albums",
-			artistID:       999,
+			artistID:       1000,
 			expectedAlbums: []*repoModel.Album{},
 		},
 		{

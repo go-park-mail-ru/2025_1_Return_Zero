@@ -25,7 +25,7 @@ func setupTest(t *testing.T) (*sql.DB, sqlmock.Sqlmock, artistPkg.Repository) {
 }
 
 func getTestContext() context.Context {
-	logger, _ := zap.NewDevelopment()
+	logger := zap.NewNop()
 	ctx := context.Background()
 	return helpers.LoggerToContext(ctx, logger.Sugar())
 }
@@ -135,7 +135,7 @@ func TestGetArtistByID(t *testing.T) {
 		},
 		{
 			name:          "Not Found",
-			artistID:      999,
+			artistID:      1000,
 			mockError:     sql.ErrNoRows,
 			expectedError: artistPkg.ErrArtistNotFound,
 		},
@@ -195,7 +195,7 @@ func TestGetArtistTitleByID(t *testing.T) {
 		},
 		{
 			name:          "Not Found",
-			artistID:      999,
+			artistID:      1000,
 			mockError:     sql.ErrNoRows,
 			expectedError: artistPkg.ErrArtistNotFound,
 		},
@@ -265,7 +265,7 @@ func TestGetArtistsByTrackID(t *testing.T) {
 		},
 		{
 			name:            "Success with no artists",
-			trackID:         999,
+			trackID:         1000,
 			expectedArtists: []*repoModel.ArtistWithRole{},
 		},
 		{
@@ -361,7 +361,7 @@ func TestGetArtistsByTrackIDs(t *testing.T) {
 		},
 		{
 			name:            "Success with no artists",
-			trackIDs:        []int64{999},
+			trackIDs:        []int64{1000},
 			expectedArtists: map[int64][]*repoModel.ArtistWithRole{},
 			setupMock: func(mock sqlmock.Sqlmock, trackIDs []int64, artists map[int64][]*repoModel.ArtistWithRole, mockError error) {
 				queryPattern := regexp.QuoteMeta(GetArtistsByTrackIDsQuery)
@@ -479,7 +479,7 @@ func TestGetArtistsByAlbumID(t *testing.T) {
 		},
 		{
 			name:            "Success with no artists",
-			albumID:         999,
+			albumID:         1000,
 			expectedArtists: []*repoModel.ArtistWithTitle{},
 		},
 		{
@@ -574,7 +574,7 @@ func TestGetArtistsByAlbumIDs(t *testing.T) {
 		},
 		{
 			name:            "Success with no artists",
-			albumIDs:        []int64{999},
+			albumIDs:        []int64{1000},
 			expectedArtists: map[int64][]*repoModel.ArtistWithTitle{},
 			setupMock: func(mock sqlmock.Sqlmock, albumIDs []int64, artists map[int64][]*repoModel.ArtistWithTitle, mockError error) {
 				queryPattern := regexp.QuoteMeta(GetArtistsByAlbumIDsQuery)
