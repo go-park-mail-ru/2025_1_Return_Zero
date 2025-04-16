@@ -7,7 +7,7 @@
         "version": "1.0"
     },
     "host": "returnzero.ru",
-    "basePath": "/",
+    "basePath": "/api/v1",
     "paths": {
         "/albums": {
             "get": {
@@ -40,22 +40,34 @@
                     "200": {
                         "description": "List of albums",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Album"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Album"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad request - invalid filters",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                         }
                     }
                 }
@@ -92,30 +104,222 @@
                     "200": {
                         "description": "List of artists",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Artist"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Artist"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad request - invalid filters",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/login": {
-            "post": {
-                "description": "Authenticates a user based on provided credentials (either username+password or email+password).",
+        "/artists/{id}": {
+            "get": {
+                "description": "Get detailed information about a specific artist by their ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "artists"
+                ],
+                "summary": "Get artist by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Artist ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Artist details",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.ArtistDetailed"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/artists/{id}/albums": {
+            "get": {
+                "description": "Get a list of albums for a specific artist",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "albums"
+                ],
+                "summary": "Get albums by artist ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Artist ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of albums",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Album"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid artist ID",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/artists/{id}/tracks": {
+            "get": {
+                "description": "Get a list of tracks by a specific artist with optional pagination filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tracks"
+                ],
+                "summary": "Get tracks by artist ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Artist ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of tracks by artist",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Track"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID or filters",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/check": {
+            "get": {
+                "description": "Verifies user's session and returns user information if authenticated",
                 "consumes": [
                     "application/json"
                 ],
@@ -125,49 +329,90 @@
                 "tags": [
                     "auth"
                 ],
-                "summary": "User login",
+                "summary": "Check user authentication",
+                "responses": {
+                    "200": {
+                        "description": "User information",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.UserToFront"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - session not found or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "description": "Authenticates a user with provided login credentials and returns a session",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Authenticate user",
                 "parameters": [
                     {
-                        "description": "User credentials",
-                        "name": "request",
+                        "description": "User login data",
+                        "name": "login",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.User"
+                            "$ref": "#/definitions/delivery.LoginData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "User successfully authenticated",
                         "schema": {
-                            "$ref": "#/definitions/main.UserToFront"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.UserToFront"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Invalid request",
+                        "description": "Bad request - invalid login data",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "401": {
-                        "description": "Invalid input",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/logout": {
+        "/auth/logout": {
             "post": {
-                "description": "Terminate the user's session and clear the session cookie",
+                "description": "Terminates user session and invalidates session cookie",
                 "consumes": [
                     "application/json"
                 ],
@@ -177,32 +422,38 @@
                 "tags": [
                     "auth"
                 ],
-                "summary": "Log out a user",
+                "summary": "Log out user",
                 "responses": {
                     "200": {
                         "description": "Successfully logged out",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.Message"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized - no valid session",
+                    "400": {
+                        "description": "Bad request - session not found",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/signup": {
+        "/auth/signup": {
             "post": {
-                "description": "Creates a new user if the username and email are unique. Hashes the password, saves the user, and creates a session.",
+                "description": "Creates a new user account with provided registration data",
                 "consumes": [
                     "application/json"
                 ],
@@ -215,12 +466,12 @@
                 "summary": "Register a new user",
                 "parameters": [
                     {
-                        "description": "User data for registration",
-                        "name": "user",
+                        "description": "User registration data",
+                        "name": "register",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.User"
+                            "$ref": "#/definitions/delivery.RegisterData"
                         }
                     }
                 ],
@@ -228,25 +479,99 @@
                     "200": {
                         "description": "User successfully registered",
                         "schema": {
-                            "$ref": "#/definitions/main.UserToFront"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.UserToFront"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Invalid request",
+                        "description": "Bad request - invalid registration data",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/streams/{id}": {
+            "put": {
+                "description": "updates listening duration at the end of stream",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tracks"
+                ],
+                "summary": "Update stream duration by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Stream ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Message that stream was updated",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Message"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
-                    "409": {
-                        "description": "User already exists",
+                    "400": {
+                        "description": "Bad request - invalid ID or filters",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIForbiddenErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                         }
                     }
                 }
@@ -283,30 +608,48 @@
                     "200": {
                         "description": "List of tracks",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Track"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Track"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad request - invalid filters",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/user": {
+        "/tracks/{id}": {
             "get": {
-                "description": "Validates the session by checking the \"session_id\" cookie and retrieving user information.",
+                "description": "Retrieves a specific track by its ID with detailed information",
                 "consumes": [
                     "application/json"
                 ],
@@ -314,32 +657,406 @@
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "tracks"
                 ],
-                "summary": "Check user session",
+                "summary": "Get track by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Track ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "User session is valid",
+                        "description": "Track details",
                         "schema": {
-                            "$ref": "#/definitions/main.UserToFront"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.TrackDetailed"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
-                    "401": {
-                        "description": "Invalid cookie or unauthorized",
+                    "400": {
+                        "description": "Bad request - invalid ID",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
                     "404": {
-                        "description": "User not found",
+                        "description": "Not found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tracks/{id}/stream": {
+            "post": {
+                "description": "Creates stream for track by id, essentially it means saving track to listening history",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tracks"
+                ],
+                "summary": "Create stream for track by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Track ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ID of created stream",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.StreamID"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID or filters",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{username}": {
+            "get": {
+                "description": "Retrieves user's profile information and privacy settings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get user profile data and privacy settings",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User data, privacy settings and statistics, -1 - if the statistics field is not allowed to display",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.UserFullData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - username not found in URL or user not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates user profile information and privacy settings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Change user data",
+                "parameters": [
+                    {
+                        "description": "User data and privacy settings",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.UserChangeSettings"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated user data and privacy settings",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.UserFullData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid request body, validation failed, or user not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes the authenticated user's account. Requires valid session cookie and matching user credentials.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Delete user account",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID cookie (session_id=...)",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "User credentials for deletion verification",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.UserDelete"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User successfully deleted",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.Message"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Possible errors: invalid request body, validation failed, credentials mismatch, session cookie missing",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error during user deletion",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{username}/avatar": {
+            "post": {
+                "description": "Uploads a new avatar image for a specific user",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Upload user avatar",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Avatar image file (max 5MB, image formats only)",
+                        "name": "avatar",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Link to the uploaded avatar image",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.AvatarURL"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid file or username",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{username}/history": {
+            "get": {
+                "description": "Retrieves a list of tracks last listened by a specific user with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tracks"
+                ],
+                "summary": "Get last listened tracks for a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset (default: 0)",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit (default: 10, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of last listened tracks",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Track"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid username or filters",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                         }
                     }
                 }
@@ -347,14 +1064,218 @@
         }
     },
     "definitions": {
-        "main.User": {
+        "delivery.APIBadRequestErrorResponse": {
+            "description": "API bad request error response structure",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Something went wrong"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 400
+                }
+            }
+        },
+        "delivery.APIForbiddenErrorResponse": {
+            "description": "API forbidden error response structure",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Forbidden"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 403
+                }
+            }
+        },
+        "delivery.APIInternalServerErrorResponse": {
+            "description": "API internal server error response structure",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Something went wrong"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 500
+                }
+            }
+        },
+        "delivery.APINotFoundErrorResponse": {
+            "description": "API not found error response structure",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Not found"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 404
+                }
+            }
+        },
+        "delivery.APIResponse": {
+            "description": "API response wrapper",
+            "type": "object",
+            "properties": {
+                "body": {},
+                "status": {
+                    "type": "integer",
+                    "example": 200
+                }
+            }
+        },
+        "delivery.APIUnauthorizedErrorResponse": {
+            "description": "API unauthorized error response structure",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Unauthorized"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 401
+                }
+            }
+        },
+        "delivery.Album": {
+            "description": "A music album entity",
+            "type": "object",
+            "properties": {
+                "artists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/delivery.AlbumArtist"
+                    }
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "release_date": {
+                    "type": "string",
+                    "example": "2021-01-01"
+                },
+                "thumbnail_url": {
+                    "type": "string",
+                    "example": "https://example.com/album.jpg"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Anticyclone"
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/delivery.AlbumType"
+                        }
+                    ],
+                    "example": "album"
+                }
+            }
+        },
+        "delivery.AlbumArtist": {
+            "description": "An artist associated with an album",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Inabakumori"
+                }
+            }
+        },
+        "delivery.AlbumType": {
+            "type": "string",
+            "enum": [
+                "album",
+                "ep",
+                "compilation",
+                "single"
+            ],
+            "x-enum-varnames": [
+                "AlbumTypeAlbum",
+                "AlbumTypeEP",
+                "AlbumTypeCompilation",
+                "AlbumTypeSingle"
+            ]
+        },
+        "delivery.Artist": {
+            "description": "A music artist entity",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Inabakumori is a Japanese artist"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "thumbnail_url": {
+                    "type": "string",
+                    "example": "https://example.com/artist.jpg"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Inabakumori"
+                }
+            }
+        },
+        "delivery.ArtistDetailed": {
+            "description": "A detailed music artist entity",
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Inabakumori is a Japanese artist"
+                },
+                "favorites_count": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "listeners_count": {
+                    "type": "integer",
+                    "example": 1000
+                },
+                "thumbnail_url": {
+                    "type": "string",
+                    "example": "https://example.com/artist.jpg"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Inabakumori"
+                }
+            }
+        },
+        "delivery.AvatarURL": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "delivery.LoginData": {
+            "description": "User login data. Either username or email must be provided along with required password (4-25 characters)",
             "type": "object",
             "properties": {
                 "email": {
                     "type": "string"
-                },
-                "id": {
-                    "type": "integer"
                 },
                 "password": {
                     "type": "string"
@@ -364,70 +1285,234 @@
                 }
             }
         },
-        "main.UserToFront": {
+        "delivery.Message": {
+            "description": "Message for responses without data",
+            "type": "object",
+            "properties": {
+                "msg": {
+                    "type": "string",
+                    "example": "object have been successfully created/updated"
+                }
+            }
+        },
+        "delivery.Privacy": {
+            "type": "object",
+            "properties": {
+                "is_public_artists_listened": {
+                    "type": "boolean"
+                },
+                "is_public_favorite_artists": {
+                    "type": "boolean"
+                },
+                "is_public_favorite_tracks": {
+                    "type": "boolean"
+                },
+                "is_public_minutes_listened": {
+                    "type": "boolean"
+                },
+                "is_public_playlists": {
+                    "type": "boolean"
+                },
+                "is_public_tracks_listened": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "delivery.RegisterData": {
+            "description": "User registration data requiring username (3-20 characters), password (4-25 characters), and valid email (5-30 characters)",
             "type": "object",
             "properties": {
                 "email": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
+                "password": {
+                    "type": "string"
                 },
                 "username": {
                     "type": "string"
                 }
             }
         },
-        "models.Album": {
+        "delivery.Statistics": {
             "type": "object",
             "properties": {
-                "artist": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
+                "artists_listened": {
                     "type": "integer"
                 },
-                "image": {
-                    "type": "string"
+                "minutes_listened": {
+                    "type": "integer"
                 },
-                "title": {
-                    "type": "string"
+                "tracks_listened": {
+                    "type": "integer"
                 }
             }
         },
-        "models.Artist": {
+        "delivery.StreamID": {
+            "description": "An id of a track stream",
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "integer"
-                },
-                "image": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
-        "models.Track": {
+        "delivery.Track": {
+            "description": "A music track entity",
             "type": "object",
             "properties": {
                 "album": {
                     "type": "string"
                 },
-                "artist": {
-                    "type": "string"
+                "album_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "artists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/delivery.TrackArtist"
+                    }
+                },
+                "duration": {
+                    "type": "integer",
+                    "example": 216
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
-                "image": {
-                    "type": "string"
+                "thumbnail_url": {
+                    "type": "string",
+                    "example": "https://example.com/image.jpg"
                 },
                 "title": {
+                    "type": "string",
+                    "example": "Lagtrain"
+                }
+            }
+        },
+        "delivery.TrackArtist": {
+            "description": "An artist associated with a track",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "role": {
+                    "type": "string",
+                    "example": "Main artist"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Lagtrain"
+                }
+            }
+        },
+        "delivery.TrackDetailed": {
+            "type": "object",
+            "properties": {
+                "album": {
+                    "type": "string"
+                },
+                "album_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "artists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/delivery.TrackArtist"
+                    }
+                },
+                "duration": {
+                    "type": "integer",
+                    "example": 216
+                },
+                "file_url": {
+                    "type": "string",
+                    "example": "https://example.com/track.mp3"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "thumbnail_url": {
+                    "type": "string",
+                    "example": "https://example.com/image.jpg"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Lagtrain"
+                }
+            }
+        },
+        "delivery.UserChangeSettings": {
+            "type": "object",
+            "properties": {
+                "new_email": {
+                    "type": "string"
+                },
+                "new_password": {
+                    "type": "string"
+                },
+                "new_username": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "privacy": {
+                    "$ref": "#/definitions/delivery.Privacy"
+                }
+            }
+        },
+        "delivery.UserDelete": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "delivery.UserFullData": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "privacy": {
+                    "$ref": "#/definitions/delivery.Privacy"
+                },
+                "statistics": {
+                    "$ref": "#/definitions/delivery.Statistics"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "delivery.UserToFront": {
+            "description": "User data",
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
