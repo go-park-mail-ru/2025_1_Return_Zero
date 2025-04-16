@@ -321,7 +321,7 @@ func (r *userPostgresRepository) changeEmail(ctx context.Context, id int64, newE
 	return nil
 }
 
-func (r *userPostgresRepository) changePassword(ctx context.Context, password string, id int64, newPassword string) error {
+func (r *userPostgresRepository) сhangePassword(ctx context.Context, password string, id int64, newPassword string) error {
 	logger := helpers.LoggerFromContext(ctx)
 	logger.Info("Changing password")
 	storedHash, err := r.getPassword(ctx, id)
@@ -366,7 +366,7 @@ func (r *userPostgresRepository) ChangeUserData(ctx context.Context, username st
 		}
 	}
 	if changeData.NewPassword != "" {
-		err := r.changePassword(ctx, changeData.Password, id, changeData.NewPassword)
+		err := r.сhangePassword(ctx, changeData.Password, id, changeData.NewPassword)
 		if err != nil {
 			logger.Error("failed to change password", zap.Error(err))
 			return err
