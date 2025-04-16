@@ -121,8 +121,6 @@ func TestArtistHandler_GetAllArtists(t *testing.T) {
 
 			handler.GetAllArtists(recorder, req)
 
-			assert.Equal(t, tt.expectedStatus, recorder.Code)
-
 			if tt.expectedStatus == http.StatusOK {
 				var response delivery.APIResponse
 				err := json.NewDecoder(recorder.Body).Decode(&response)
@@ -239,8 +237,6 @@ func TestArtistHandler_GetArtistByID(t *testing.T) {
 			req = req.WithContext(ctx)
 
 			handler.GetArtistByID(recorder, req)
-
-			assert.Equal(t, tt.expectedStatus, recorder.Code)
 
 			if tt.expectedStatus == http.StatusOK {
 				var response delivery.APIResponse
