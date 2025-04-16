@@ -8,6 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
+	"github.com/lib/pq"
 	"go.uber.org/zap"
 )
 
@@ -177,7 +178,7 @@ func (r *artistPostgresRepository) GetArtistsByTrackID(ctx context.Context, id i
 func (r *artistPostgresRepository) GetArtistsByTrackIDs(ctx context.Context, trackIDs []int64) (map[int64][]*repoModel.ArtistWithRole, error) {
 	logger := helpers.LoggerFromContext(ctx)
 	logger.Info("Requesting artists by track ids from db", zap.Any("ids", trackIDs), zap.String("query", GetArtistsByTrackIDsQuery))
-	rows, err := r.db.QueryContext(ctx, GetArtistsByTrackIDsQuery, trackIDs)
+	rows, err := r.db.QueryContext(ctx, GetArtistsByTrackIDsQuery, pq.Array(trackIDs))
 	if err != nil {
 		logger.Error("failed to get artists by track ids", zap.Error(err))
 		return nil, err
@@ -241,7 +242,7 @@ func (r *artistPostgresRepository) GetArtistsByAlbumID(ctx context.Context, albu
 func (r *artistPostgresRepository) GetArtistsByAlbumIDs(ctx context.Context, albumIDs []int64) (map[int64][]*repoModel.ArtistWithTitle, error) {
 	logger := helpers.LoggerFromContext(ctx)
 	logger.Info("Requesting artists by album ids from db", zap.Any("ids", albumIDs), zap.String("query", GetArtistsByAlbumIDsQuery))
-	rows, err := r.db.QueryContext(ctx, GetArtistsByAlbumIDsQuery, albumIDs)
+	rows, err := r.db.QueryContext(ctx, GetArtistsByAlbumIDsQuery, pq.Array(albumIDs))
 	if err != nil {
 		logger.Error("failed to get artists by album ids", zap.Error(err))
 		return nil, err
