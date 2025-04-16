@@ -158,6 +158,7 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error("failed to parse track ID", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
 	}
 
 	user, exists := helpers.UserFromContext(ctx)
@@ -177,6 +178,7 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Error("failed to save track stream", zap.Error(err))
 		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		return
 	}
 
 	createResponse := &delivery.StreamID{
@@ -209,12 +211,14 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		logger.Error("failed to parse track ID", zap.Error(err))
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
 	}
 
 	user, exists := helpers.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to update stream duration for unauthorized user")
 		helpers.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
+		return
 	}
 
 	userID := user.ID
@@ -289,5 +293,6 @@ func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	helpers.WriteSuccessResponse(w, http.StatusOK, usecaseTracks, nil)
+	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
+	helpers.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
 }

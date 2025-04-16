@@ -14,6 +14,10 @@ func LoggerFromContext(ctx context.Context) *zap.SugaredLogger {
 	return logger
 }
 
+func LoggerToContext(ctx context.Context, logger *zap.SugaredLogger) context.Context {
+	return context.WithValue(ctx, LoggerKey{}, logger)
+}
+
 type UserContextKey struct{}
 
 func UserFromContext(ctx context.Context) (*usecaseModel.User, bool) {
@@ -22,4 +26,8 @@ func UserFromContext(ctx context.Context) (*usecaseModel.User, bool) {
 		return nil, false
 	}
 	return user, true
+}
+
+func UserToContext(ctx context.Context, user *usecaseModel.User) context.Context {
+	return context.WithValue(ctx, UserContextKey{}, user)
 }

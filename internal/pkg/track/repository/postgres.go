@@ -9,6 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
+	"github.com/lib/pq"
 	"go.uber.org/zap"
 )
 
@@ -233,7 +234,7 @@ func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID
 func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int64) (map[int64]*repository.Track, error) {
 	logger := helpers.LoggerFromContext(ctx)
 	logger.Info("Requesting tracks by ids from db", zap.Any("ids", ids), zap.String("query", GetTracksByIDsQuery))
-	rows, err := r.db.Query(GetTracksByIDsQuery, ids)
+	rows, err := r.db.Query(GetTracksByIDsQuery, pq.Array(ids))
 	if err != nil {
 		logger.Error("failed to get tracks by ids", zap.Error(err))
 		return nil, err
@@ -256,10 +257,12 @@ func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int6
 		return nil, err
 	}
 
-	for id := range tracks {
-		if _, ok := tracks[id]; !ok {
-			logger.Error("track not found", zap.Int64("id", id))
-			return nil, track.ErrTrackNotFound
+	if len(tracks) > 0 {
+		for _, id := range ids {
+			if _, ok := tracks[id]; !ok {
+				logger.Error("track not found", zap.Int64("id", id))
+				return nil, track.ErrTrackNotFound
+			}
 		}
 	}
 
