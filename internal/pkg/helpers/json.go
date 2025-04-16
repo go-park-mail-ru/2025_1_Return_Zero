@@ -48,7 +48,7 @@ func WriteJSON(w http.ResponseWriter, status int, data interface{}, headers http
 	maps.Copy(w.Header(), headers)
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(DefaultStatus)
+	w.WriteHeader(status)
 
 	_, err = w.Write(jsonData)
 	if err != nil {

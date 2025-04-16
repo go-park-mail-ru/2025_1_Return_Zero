@@ -5,20 +5,18 @@ import (
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/genre"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
 
-func NewUsecase(albumRepository album.Repository, artistRepository artist.Repository, genreRepository genre.Repository) album.Usecase {
-	return albumUsecase{albumRepo: albumRepository, artistRepo: artistRepository, genreRepo: genreRepository}
+func NewUsecase(albumRepository album.Repository, artistRepository artist.Repository) album.Usecase {
+	return albumUsecase{albumRepo: albumRepository, artistRepo: artistRepository}
 }
 
 type albumUsecase struct {
 	albumRepo  album.Repository
 	artistRepo artist.Repository
-	genreRepo  genre.Repository
 }
 
 func (u albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {

@@ -176,13 +176,18 @@ func (u trackUsecase) GetLastListenedTracks(ctx context.Context, username string
 		return nil, err
 	}
 
-	trackIDs := make([]int64, 0, len(repoTracks))
-	for _, repoTrack := range repoTracks {
+	alignedByIDTracks := make([]*repoModel.Track, 0, len(repoTracks))
+	for _, id := range ids {
+		alignedByIDTracks = append(alignedByIDTracks, repoTracks[id])
+	}
+
+	trackIDs := make([]int64, 0, len(alignedByIDTracks))
+	for _, repoTrack := range alignedByIDTracks {
 		trackIDs = append(trackIDs, repoTrack.ID)
 	}
 
-	albumIDs := make([]int64, 0, len(repoTracks))
-	for _, repoTrack := range repoTracks {
+	albumIDs := make([]int64, 0, len(alignedByIDTracks))
+	for _, repoTrack := range alignedByIDTracks {
 		albumIDs = append(albumIDs, repoTrack.AlbumID)
 	}
 
@@ -197,8 +202,8 @@ func (u trackUsecase) GetLastListenedTracks(ctx context.Context, username string
 	}
 
 	tracks := make([]*usecaseModel.Track, 0, len(repoTracks))
-	for _, repoTrack := range repoTracks {
-		track := model.TrackFromRepositoryToUsecase(repoTrack, repoArtists[repoTrack.ID], albumTitles[repoTrack.AlbumID])
+	for _, id := range ids {
+		track := model.TrackFromRepositoryToUsecase(repoTracks[id], repoArtists[id], albumTitles[repoTracks[id].AlbumID])
 		tracks = append(tracks, track)
 	}
 
