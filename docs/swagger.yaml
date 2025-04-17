@@ -787,6 +787,37 @@ paths:
       tags:
       - tracks
   /user/{username}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves user's profile information and privacy settings
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User data, privacy settings and statistics, -1 - if the statistics
+            field is not allowed to display
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.UserFullData'
+              type: object
+        "400":
+          description: Bad request - username not found in URL or user not found
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+      summary: Get user profile data and privacy settings
+      tags:
+      - user
+  /user/me:
     delete:
       consumes:
       - application/json
@@ -828,36 +859,6 @@ paths:
       summary: Delete user account
       tags:
       - user
-    get:
-      consumes:
-      - application/json
-      description: Retrieves user's profile information and privacy settings
-      parameters:
-      - description: Username
-        in: path
-        name: username
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: User data, privacy settings and statistics, -1 - if the statistics
-            field is not allowed to display
-          schema:
-            allOf:
-            - $ref: '#/definitions/delivery.APIResponse'
-            - properties:
-                body:
-                  $ref: '#/definitions/delivery.UserFullData'
-              type: object
-        "400":
-          description: Bad request - username not found in URL or user not found
-          schema:
-            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
-      summary: Get user profile data and privacy settings
-      tags:
-      - user
     put:
       consumes:
       - application/json
@@ -889,7 +890,7 @@ paths:
       summary: Change user data
       tags:
       - user
-  /user/{username}/avatar:
+  /user/me/avatar:
     post:
       consumes:
       - multipart/form-data
