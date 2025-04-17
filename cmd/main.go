@@ -79,7 +79,7 @@ func main() {
 	r.Use(middleware.AccessLog)
 	r.Use(middleware.Auth(newUserUsecase))
 	r.Use(middleware.CorsMiddleware(cfg.Cors))
-	r.Use(middleware.CSRFMiddleware(cfg.CSRF))
+	// r.Use(middleware.CSRFMiddleware(cfg.CSRF))
 
 	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration), userRepository.NewUserPostgresRepository(postgresConn)), cfg)
 	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn)), cfg)
@@ -103,9 +103,9 @@ func main() {
 	r.HandleFunc("/api/v1/auth/logout", userHandler.Logout).Methods("POST")
 	r.HandleFunc("/api/v1/auth/check", userHandler.CheckUser).Methods("GET")
 
-	r.HandleFunc("/api/v1/user/{username}/avatar", userHandler.UploadAvatar).Methods("POST")
-	r.HandleFunc("/api/v1/user/{username}", userHandler.ChangeUserData).Methods("PUT")
-	r.HandleFunc("/api/v1/user/{username}", userHandler.DeleteUser).Methods("DELETE")
+	r.HandleFunc("/api/v1/user/me/avatar", userHandler.UploadAvatar).Methods("POST")
+	r.HandleFunc("/api/v1/user/me", userHandler.ChangeUserData).Methods("PUT")
+	r.HandleFunc("/api/v1/user/me", userHandler.DeleteUser).Methods("DELETE")
 	r.HandleFunc("/api/v1/user/{username}", userHandler.GetUserData).Methods("GET")
 
 	r.HandleFunc("/api/v1/user/{username}/history", trackHandler.GetLastListenedTracks).Methods("GET")

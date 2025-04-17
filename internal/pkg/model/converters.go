@@ -312,6 +312,9 @@ func StatisticsUsecaseToDelivery(usecaseStatistics *usecase.UserStatistics) *del
 }
 
 func PrivacyFromUsecaseToRepository(usecasePrivacy *usecase.UserPrivacy) *repository.UserPrivacySettings {
+	if usecasePrivacy == nil {
+		return nil
+	}
 	return &repository.UserPrivacySettings{
 		IsPublicPlaylists:       usecasePrivacy.IsPublicPlaylists,
 		IsPublicMinutesListened: usecasePrivacy.IsPublicMinutesListened,
@@ -333,6 +336,9 @@ func ChangeDataFromUsecaseToRepository(usecaseUser *usecase.UserChangeSettings) 
 }
 
 func PrivacyFromDeliveryToUsecase(deliveryPrivacy *delivery.Privacy) *usecase.UserPrivacy {
+	if deliveryPrivacy == nil {
+		return nil
+	}
 	return &usecase.UserPrivacy{
 		IsPublicPlaylists:       deliveryPrivacy.IsPublicPlaylists,
 		IsPublicMinutesListened: deliveryPrivacy.IsPublicMinutesListened,

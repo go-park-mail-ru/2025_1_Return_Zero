@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth"
@@ -19,7 +18,7 @@ var (
 )
 
 func NewUserUsecase(userRepo user.Repository, authRepo auth.Repository, userFileRepo userAvatarFile.Repository) user.Usecase {
-	return userUsecase{
+	return &userUsecase{
 		userRepo:     userRepo,
 		authRepo:     authRepo,
 		userFileRepo: userFileRepo,
@@ -42,7 +41,7 @@ func toUsecaseModel(user *repoModel.User) *usecaseModel.User {
 	}
 }
 
-func (u userUsecase) CreateUser(ctx context.Context, user *usecaseModel.User) (*usecaseModel.User, string, error) {
+func (u *userUsecase) CreateUser(ctx context.Context, user *usecaseModel.User) (*usecaseModel.User, string, error) {
 	repoUser := &repoModel.User{
 		Username: user.Username,
 		Email:    user.Email,
@@ -65,7 +64,7 @@ func (u userUsecase) CreateUser(ctx context.Context, user *usecaseModel.User) (*
 	return userUsecase, sessionID, nil
 }
 
-func (u userUsecase) GetUserBySID(ctx context.Context, SID string) (*usecaseModel.User, error) {
+func (u *userUsecase) GetUserBySID(ctx context.Context, SID string) (*usecaseModel.User, error) {
 	id, err := u.authRepo.GetSession(ctx, SID)
 	if err != nil {
 		return nil, err
@@ -83,7 +82,7 @@ func (u userUsecase) GetUserBySID(ctx context.Context, SID string) (*usecaseMode
 	return usecaseUser, nil
 }
 
-func (u userUsecase) LoginUser(ctx context.Context, user *usecaseModel.User) (*usecaseModel.User, string, error) {
+func (u *userUsecase) LoginUser(ctx context.Context, user *usecaseModel.User) (*usecaseModel.User, string, error) {
 	repoUser := &repoModel.User{
 		Username: user.Username,
 		Email:    user.Email,
@@ -106,7 +105,7 @@ func (u userUsecase) LoginUser(ctx context.Context, user *usecaseModel.User) (*u
 	return usecaseUser, sessionID, nil
 }
 
-func (u userUsecase) Logout(ctx context.Context, SID string) error {
+func (u *userUsecase) Logout(ctx context.Context, SID string) error {
 	err := u.authRepo.DeleteSession(ctx, SID)
 	if err != nil {
 		return err
@@ -114,7 +113,7 @@ func (u userUsecase) Logout(ctx context.Context, SID string) error {
 	return nil
 }
 
-func (u userUsecase) UploadAvatar(ctx context.Context, username string, fileAvatar io.Reader) (string, error) {
+func (u *userUsecase) UploadAvatar(ctx context.Context, username string, fileAvatar io.Reader) (string, error) {
 	fileURL, err := u.userFileRepo.UploadUserAvatar(ctx, username, fileAvatar)
 	if err != nil {
 		return "", err
@@ -131,7 +130,7 @@ func (u userUsecase) UploadAvatar(ctx context.Context, username string, fileAvat
 	return avatarURL, nil
 }
 
-func (u userUsecase) DeleteUser(ctx context.Context, user *usecaseModel.User, SID string) error {
+func (u *userUsecase) DeleteUser(ctx context.Context, user *usecaseModel.User, SID string) error {
 	repoUser := &repoModel.User{
 		Username: user.Username,
 		Email:    user.Email,
@@ -148,7 +147,7 @@ func (u userUsecase) DeleteUser(ctx context.Context, user *usecaseModel.User, SI
 	return nil
 }
 
-func (u userUsecase) GetUserData(ctx context.Context, username string) (*usecaseModel.UserFullData, error) {
+func (u *userUsecase) GetUserData(ctx context.Context, username string) (*usecaseModel.UserFullData, error) {
 	userFullData, err := u.userRepo.GetFullUserData(ctx, username)
 	if err != nil {
 		return nil, err
@@ -162,18 +161,16 @@ func (u userUsecase) GetUserData(ctx context.Context, username string) (*usecase
 	return userFullDataUsecase, nil
 }
 
-func (u userUsecase) ChangeUserData(ctx context.Context, username string, userChangeData *usecaseModel.UserChangeSettings) (*usecaseModel.UserFullData, error) {
+func (u *userUsecase) ChangeUserData(ctx context.Context, username string, userChangeData *usecaseModel.UserChangeSettings) (*usecaseModel.UserFullData, error) {
 	privacyRepo := model.PrivacyFromUsecaseToRepository(userChangeData.Privacy)
-	if privacyRepo == nil {
-		return nil, fmt.Errorf("privacyRepo is nil")
+	if privacyRepo != nil {
+		err := u.userRepo.ChangeUserPrivacySettings(ctx, username, privacyRepo)
+		if err != nil {
+			return nil, err
+		}
 	}
 	userDataRepo := model.ChangeDataFromUsecaseToRepository(userChangeData)
-	err := u.userRepo.ChangeUserPrivacySettings(ctx, username, privacyRepo)
-	if err != nil {
-		return nil, err
-	}
-
-	err = u.userRepo.ChangeUserData(ctx, username, userDataRepo)
+	err := u.userRepo.ChangeUserData(ctx, username, userDataRepo)
 	if err != nil {
 		return nil, err
 	}

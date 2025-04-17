@@ -8,11 +8,12 @@ import (
 )
 
 var (
-	ErrUsernameExist = errors.New("user with this username already exists")
-	ErrEmailExist    = errors.New("user with this email already exists")
-	ErrUserNotFound  = errors.New("user not found")
-	ErrCreateSalt    = errors.New("failed to create salt")
-	ErrWrongPassword = errors.New("wrong password")
+	ErrUsernameExist    = errors.New("user with this username already exists")
+	ErrEmailExist       = errors.New("user with this email already exists")
+	ErrUserNotFound     = errors.New("user not found")
+	ErrCreateSalt       = errors.New("failed to create salt")
+	ErrWrongPassword    = errors.New("wrong password")
+	ErrPasswordRequired = errors.New("password required")
 )
 
 type Repository interface {

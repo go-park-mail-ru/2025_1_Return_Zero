@@ -8,9 +8,8 @@ import (
 	"encoding/base64"
 	"time"
 
-	"github.com/gomodule/redigo/redis"
-
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth"
+	"github.com/gomodule/redigo/redis"
 )
 
 const (
@@ -38,7 +37,6 @@ func generateSessionID() string {
 func (r *AuthRedisRepository) CreateSession(ctx context.Context, ID int64) (string, error) {
 	conn := r.redisPool.Get()
 	defer conn.Close()
-
 	SID := generateSessionID()
 	expiration := int(SessionTTL.Seconds())
 	_, err := redis.DoContext(conn, ctx, "SETEX", SID, expiration, ID)
