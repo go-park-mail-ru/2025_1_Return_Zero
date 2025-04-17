@@ -5,11 +5,11 @@ endif
 
 # deploy
 deploy:
-	docker compose up -d --build
+	docker-compose up -d --build
 
 # docker down
 undeploy:
-	docker compose down --volumes --remove-orphans --rmi all
+	docker-compose down --volumes --remove-orphans --rmi all
 
 # docker remove
 docker-remove:

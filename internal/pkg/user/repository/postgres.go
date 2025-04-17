@@ -346,6 +346,10 @@ func (r *userPostgresRepository) сhangePassword(ctx context.Context, password s
 func (r *userPostgresRepository) ChangeUserData(ctx context.Context, username string, changeData *repoModel.ChangeUserData) error {
 	logger := helpers.LoggerFromContext(ctx)
 	logger.Info("Changing data by username", zap.String("username", username))
+	if changeData.NewPassword != "" && changeData.Password == "" {
+		logger.Error("password is required to change password")
+		return user.ErrPasswordRequired
+	}
 	id, err := r.GetIDByUsername(ctx, username)
 	if err != nil {
 		logger.Error("failed to get user ID", zap.Error(err))

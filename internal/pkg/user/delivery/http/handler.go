@@ -235,26 +235,14 @@ func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 // @Param avatar formData file true "Avatar image file (max 5MB, image formats only)"
 // @Success 200 {object} delivery.APIResponse{body=delivery.AvatarURL} "Link to the uploaded avatar image"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid file or username"
-// @Router /user/{username}/avatar [post]
+// @Router /user/me/avatar [post]
 func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := helpers.LoggerFromContext(ctx)
-	vars := mux.Vars(r)
-	username, ok := vars["username"]
-	if !ok {
-		logger.Error("username not found in URL")
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "username not found in URL", nil)
-		return
-	}
 
 	userAuth, exist := helpers.UserFromContext(ctx)
 	if !exist {
 		logger.Error("user not auth")
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
-		return
-	}
-	if userAuth.Username != username {
-		logger.Error("wrong user")
 		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
 		return
 	}
@@ -288,7 +276,7 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	avatarURL, err := h.usecase.UploadAvatar(ctx, username, file)
+	avatarURL, err := h.usecase.UploadAvatar(ctx, userAuth.Username, file)
 	if err != nil {
 		logger.Error("failed to upload avatar", zap.Error(err))
 		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
@@ -311,7 +299,7 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} delivery.APIResponse{body=delivery.Message} "User successfully deleted"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Possible errors: invalid request body, validation failed, credentials mismatch, session cookie missing"
 // @Failure 500 {object} delivery.APIBadRequestErrorResponse "Internal server error during user deletion"
-// @Router /user/{username} [delete]
+// @Router /user/me [delete]
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := helpers.LoggerFromContext(ctx)
@@ -418,9 +406,6 @@ func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 			if !privacySettings.IsPublicArtistsListened {
 				UserFullDataDelivery.Statistics.ArtistsListened = -1
 			}
-			if !privacySettings.IsPublicPlaylists && !privacySettings.IsPublicFavoriteTracks && !privacySettings.IsPublicFavoriteArtists {
-				UserFullDataDelivery.Statistics = nil
-			}
 		}
 	}
 
@@ -436,7 +421,7 @@ func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 // @Param user body delivery.UserChangeSettings true "User data and privacy settings"
 // @Success 200 {object} delivery.APIResponse{body=delivery.UserFullData} "Updated user data and privacy settings"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid request body, validation failed, or user not found"
-// @Router /user/{username} [put]
+// @Router /user/me [put]
 func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := helpers.LoggerFromContext(ctx)

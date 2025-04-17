@@ -25,6 +25,7 @@ var mapErrorStatus = map[error]int{
 	auth.ErrSessionNotFound:               http.StatusNotFound,
 	ErrInvalidOffset:                      http.StatusBadRequest,
 	ErrInvalidLimit:                       http.StatusBadRequest,
+	user.ErrPasswordRequired:                   http.StatusBadRequest,
 }
 
 func ErrorStatus(err error) int {

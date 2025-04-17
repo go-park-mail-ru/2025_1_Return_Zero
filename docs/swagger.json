@@ -765,55 +765,7 @@
                 }
             }
         },
-        "/user/{username}": {
-            "get": {
-                "description": "Retrieves user's profile information and privacy settings",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user"
-                ],
-                "summary": "Get user profile data and privacy settings",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Username",
-                        "name": "username",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "User data, privacy settings and statistics, -1 - if the statistics field is not allowed to display",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "$ref": "#/definitions/delivery.UserFullData"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request - username not found in URL or user not found",
-                        "schema": {
-                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
-                        }
-                    }
-                }
-            },
+        "/user/me": {
             "put": {
                 "description": "Updates user profile information and privacy settings",
                 "consumes": [
@@ -928,7 +880,7 @@
                 }
             }
         },
-        "/user/{username}/avatar": {
+        "/user/me/avatar": {
             "post": {
                 "description": "Uploads a new avatar image for a specific user",
                 "consumes": [
@@ -978,6 +930,56 @@
                     },
                     "400": {
                         "description": "Bad request - invalid file or username",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{username}": {
+            "get": {
+                "description": "Retrieves user's profile information and privacy settings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get user profile data and privacy settings",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User data, privacy settings and statistics, -1 - if the statistics field is not allowed to display",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.UserFullData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - username not found in URL or user not found",
                         "schema": {
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
