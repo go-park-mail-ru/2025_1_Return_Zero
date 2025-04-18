@@ -129,6 +129,16 @@ const (
 			FROM user_settings
 			WHERE user_id = $1
 	`
+	checkIsUsernameUniqueQuery = `
+			SELECT 1 
+			FROM "user"
+			WHERE username = $1 AND id != $2
+			`
+	checkIsEmailUniqueQuery = `
+			SELECT 1 
+			FROM "user"
+			WHERE username = $1 AND id != $2
+			`
 )
 
 func hashPassword(salt []byte, password string) string {
@@ -302,7 +312,17 @@ func (r *userPostgresRepository) changeUsername(ctx context.Context, id int64, n
 	logger := helpers.LoggerFromContext(ctx)
 	newLowerUsername := strings.ToLower(newUsername)
 	logger.Info("Changing username", zap.String("username", newLowerUsername))
-	_, err := r.db.ExecContext(ctx, changeUsernameQuery, newLowerUsername, id)
+	var isExist bool
+	err := r.db.QueryRowContext(ctx, checkIsUsernameUniqueQuery, newLowerUsername, id).Scan(&isExist)
+	if err != nil && err != sql.ErrNoRows {
+		logger.Error("failed to check username uniqueness", zap.Error(err))
+		return err
+	}
+	if isExist {
+		logger.Error("username already occupied. username: ", zap.String("username", newLowerUsername))
+		return user.ErrUsernameExist
+	}
+	_, err = r.db.ExecContext(ctx, changeUsernameQuery, newLowerUsername, id)
 	if err != nil {
 		logger.Error("failed to change username", zap.Error(err))
 		return err
@@ -313,7 +333,17 @@ func (r *userPostgresRepository) changeUsername(ctx context.Context, id int64, n
 func (r *userPostgresRepository) changeEmail(ctx context.Context, id int64, newEmail string) error {
 	logger := helpers.LoggerFromContext(ctx)
 	logger.Info("Changing email", zap.String("email", newEmail))
-	_, err := r.db.ExecContext(ctx, changeEmailQuery, newEmail, id)
+	var isExist bool
+	err := r.db.QueryRowContext(ctx, checkIsEmailUniqueQuery, newEmail, id).Scan(&isExist)
+	if err != nil && err != sql.ErrNoRows {
+		logger.Error("failed to check email uniqueness", zap.Error(err))
+		return err
+	}
+	if isExist {
+		logger.Error("email already occupied. email: ", zap.String("email", newEmail))
+		return user.ErrUsernameExist
+	}
+	_, err = r.db.ExecContext(ctx, changeEmailQuery, newEmail, id)
 	if err != nil {
 		logger.Error("failed to change email", zap.Error(err))
 		return err
