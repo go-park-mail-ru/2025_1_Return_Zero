@@ -1,4 +1,9 @@
-FROM golang:1.24-alpine
+# Build stage
+FROM golang:1.24-alpine AS builder
+
+ENV CGO_ENABLED=1
+
+RUN apk add --no-cache gcc musl-dev libwebp-dev
 
 WORKDIR /app
 
@@ -9,6 +14,18 @@ RUN go mod download
 COPY . .
 
 RUN go build -o main cmd/main.go
+
+FROM alpine:latest
+
+RUN apk add --no-cache libwebp
+
+WORKDIR /app
+
+COPY --from=builder /app/main .
+
+COPY --from=builder /app/config.yaml . 
+
+COPY --from=builder /app/.env .
 
 EXPOSE 8080
 
