@@ -27,7 +27,6 @@ var mapErrorStatus = map[error]int{
 	ErrInvalidOffset:                         http.StatusBadRequest,
 	ErrInvalidLimit:                          http.StatusBadRequest,
 	user.ErrPasswordRequired:                 http.StatusBadRequest,
-	userAvatarFile.ErrFileTooLarge:           http.StatusBadRequest,
 	userAvatarFile.ErrFailedToUploadAvatar:   http.StatusBadRequest,
 	userAvatarFile.ErrUnsupportedImageFormat: http.StatusBadRequest,
 	userAvatarFile.ErrFailedToEncodeWebp:     http.StatusBadRequest,

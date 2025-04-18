@@ -53,7 +53,7 @@ const (
 	`
 
 	GetStreamsByUserIDQuery = `
-		SELECT id, user_id, track_id, duration
+		SELECT id, user_id, (DISTINCT track_id), duration
 		FROM stream
 		WHERE user_id = $1
 		ORDER BY created_at DESC, id DESC
