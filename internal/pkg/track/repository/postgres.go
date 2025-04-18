@@ -56,7 +56,7 @@ const (
 		SELECT DISTINCT ON (track_id) id, user_id, track_id, duration
 		FROM stream
 		WHERE user_id = $1
-		ORDER BY created_at DESC, id DESC
+		ORDER BY track_id, created_at DESC, id DESC
 		LIMIT $2 OFFSET $3
 	`
 
