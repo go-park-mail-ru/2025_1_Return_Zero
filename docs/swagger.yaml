@@ -447,6 +447,14 @@ paths:
         name: id
         required: true
         type: integer
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -483,6 +491,14 @@ paths:
         in: path
         name: id
         required: true
+        type: integer
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
         type: integer
       produces:
       - application/json
