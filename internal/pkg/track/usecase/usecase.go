@@ -14,7 +14,7 @@ import (
 )
 
 func NewUsecase(trackRepository track.Repository, artistRepository artist.Repository, albumRepository album.Repository, trackFileRepository trackFile.Repository, userRepository user.Repository) track.Usecase {
-	return trackUsecase{trackRepo: trackRepository, artistRepo: artistRepository, albumRepo: albumRepository, trackFileRepo: trackFileRepository, userRepo: userRepository}
+	return &trackUsecase{trackRepo: trackRepository, artistRepo: artistRepository, albumRepo: albumRepository, trackFileRepo: trackFileRepository, userRepo: userRepository}
 }
 
 type trackUsecase struct {
@@ -25,7 +25,7 @@ type trackUsecase struct {
 	userRepo      user.Repository
 }
 
-func (u trackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
+func (u *trackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
 	repoFilters := &repoModel.TrackFilters{
 		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
 	}
@@ -63,7 +63,7 @@ func (u trackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.Tr
 	return tracks, nil
 }
 
-func (u trackUsecase) GetTrackByID(ctx context.Context, id int64) (*usecaseModel.TrackDetailed, error) {
+func (u *trackUsecase) GetTrackByID(ctx context.Context, id int64) (*usecaseModel.TrackDetailed, error) {
 	repoTrack, err := u.trackRepo.GetTrackByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -89,8 +89,11 @@ func (u trackUsecase) GetTrackByID(ctx context.Context, id int64) (*usecaseModel
 	return trackDetailed, nil
 }
 
-func (u trackUsecase) GetTracksByArtistID(ctx context.Context, id int64) ([]*usecaseModel.Track, error) {
-	repoTracks, err := u.trackRepo.GetTracksByArtistID(ctx, id)
+func (u *trackUsecase) GetTracksByArtistID(ctx context.Context, id int64, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
+	repoFilters := &repoModel.TrackFilters{
+		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
+	}
+	repoTracks, err := u.trackRepo.GetTracksByArtistID(ctx, id, repoFilters)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +127,7 @@ func (u trackUsecase) GetTracksByArtistID(ctx context.Context, id int64) ([]*use
 	return tracks, nil
 }
 
-func (u trackUsecase) CreateStream(ctx context.Context, stream *usecaseModel.TrackStreamCreateData) (int64, error) {
+func (u *trackUsecase) CreateStream(ctx context.Context, stream *usecaseModel.TrackStreamCreateData) (int64, error) {
 	repoTrackStreamCreateData := model.TrackStreamCreateDataFromUsecaseToRepository(stream)
 	streamID, err := u.trackRepo.CreateStream(ctx, repoTrackStreamCreateData)
 	if err != nil {
@@ -134,7 +137,7 @@ func (u trackUsecase) CreateStream(ctx context.Context, stream *usecaseModel.Tra
 	return streamID, nil
 }
 
-func (u trackUsecase) UpdateStreamDuration(ctx context.Context, endedStream *usecaseModel.TrackStreamUpdateData) error {
+func (u *trackUsecase) UpdateStreamDuration(ctx context.Context, endedStream *usecaseModel.TrackStreamUpdateData) error {
 	repoTrackStream, err := u.trackRepo.GetStreamByID(ctx, endedStream.StreamID)
 	if err != nil {
 		return err
@@ -152,7 +155,7 @@ func (u trackUsecase) UpdateStreamDuration(ctx context.Context, endedStream *use
 	return nil
 }
 
-func (u trackUsecase) GetLastListenedTracks(ctx context.Context, username string, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
+func (u *trackUsecase) GetLastListenedTracks(ctx context.Context, username string, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
 	repoFilters := &repoModel.TrackFilters{
 		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
 	}

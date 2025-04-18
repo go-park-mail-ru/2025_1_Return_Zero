@@ -10,7 +10,7 @@ import (
 )
 
 func NewUsecase(artistRepository artist.Repository) artist.Usecase {
-	return artistUsecase{
+	return &artistUsecase{
 		artistRepo: artistRepository,
 	}
 }
@@ -19,7 +19,7 @@ type artistUsecase struct {
 	artistRepo artist.Repository
 }
 
-func (u artistUsecase) GetArtistByID(ctx context.Context, id int64) (*usecaseModel.ArtistDetailed, error) {
+func (u *artistUsecase) GetArtistByID(ctx context.Context, id int64) (*usecaseModel.ArtistDetailed, error) {
 	repoArtist, err := u.artistRepo.GetArtistByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func (u artistUsecase) GetArtistByID(ctx context.Context, id int64) (*usecaseMod
 	return model.ArtistDetailedFromRepositoryToUsecase(repoArtist, stats), nil
 }
 
-func (u artistUsecase) GetAllArtists(ctx context.Context, filters *usecaseModel.ArtistFilters) ([]*usecaseModel.Artist, error) {
+func (u *artistUsecase) GetAllArtists(ctx context.Context, filters *usecaseModel.ArtistFilters) ([]*usecaseModel.Artist, error) {
 	repoFilters := &repoModel.ArtistFilters{
 		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
 	}

@@ -117,18 +117,18 @@ func (mr *MockRepositoryMockRecorder) GetTrackByID(ctx, id any) *gomock.Call {
 }
 
 // GetTracksByArtistID mocks base method.
-func (m *MockRepository) GetTracksByArtistID(ctx context.Context, id int64) ([]*repository.Track, error) {
+func (m *MockRepository) GetTracksByArtistID(ctx context.Context, id int64, filters *repository.TrackFilters) ([]*repository.Track, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTracksByArtistID", ctx, id)
+	ret := m.ctrl.Call(m, "GetTracksByArtistID", ctx, id, filters)
 	ret0, _ := ret[0].([]*repository.Track)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetTracksByArtistID indicates an expected call of GetTracksByArtistID.
-func (mr *MockRepositoryMockRecorder) GetTracksByArtistID(ctx, id any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) GetTracksByArtistID(ctx, id, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTracksByArtistID", reflect.TypeOf((*MockRepository)(nil).GetTracksByArtistID), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTracksByArtistID", reflect.TypeOf((*MockRepository)(nil).GetTracksByArtistID), ctx, id, filters)
 }
 
 // GetTracksByIDs mocks base method.

@@ -192,7 +192,7 @@ func TestAlbumUsecase_GetAlbumsByArtistID(t *testing.T) {
 			artistID: 1,
 			mockSetup: func() {
 				mockAlbumRepo.EXPECT().
-					GetAlbumsByArtistID(ctx, int64(1)).
+					GetAlbumsByArtistID(ctx, int64(1), gomock.Any()).
 					Return([]*repository.Album{
 						{
 							ID:          10,
@@ -266,7 +266,7 @@ func TestAlbumUsecase_GetAlbumsByArtistID(t *testing.T) {
 			artistID: 2,
 			mockSetup: func() {
 				mockAlbumRepo.EXPECT().
-					GetAlbumsByArtistID(ctx, int64(2)).
+					GetAlbumsByArtistID(ctx, int64(2), gomock.Any()).
 					Return(nil, errors.New("database error"))
 			},
 			expectedAlbums: nil,
@@ -277,7 +277,7 @@ func TestAlbumUsecase_GetAlbumsByArtistID(t *testing.T) {
 			artistID: 3,
 			mockSetup: func() {
 				mockAlbumRepo.EXPECT().
-					GetAlbumsByArtistID(ctx, int64(3)).
+					GetAlbumsByArtistID(ctx, int64(3), gomock.Any()).
 					Return([]*repository.Album{
 						{
 							ID:          30,
@@ -300,7 +300,12 @@ func TestAlbumUsecase_GetAlbumsByArtistID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockSetup()
 
-			albums, err := usecase.GetAlbumsByArtistID(ctx, tt.artistID)
+			albums, err := usecase.GetAlbumsByArtistID(ctx, tt.artistID, &usecaseModel.AlbumFilters{
+				Pagination: &usecaseModel.Pagination{
+					Limit:  10,
+					Offset: 0,
+				},
+			})
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)

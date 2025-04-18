@@ -247,7 +247,12 @@ func TestGetTracksByArtistID(t *testing.T) {
 					WillReturnRows(rows)
 			}
 
-			tracks, err := repo.GetTracksByArtistID(ctx, tt.artistID)
+			tracks, err := repo.GetTracksByArtistID(ctx, tt.artistID, &repoModel.TrackFilters{
+				Pagination: &repoModel.Pagination{
+					Limit:  10,
+					Offset: 0,
+				},
+			})
 
 			if tt.mockError != nil {
 				assert.Error(t, err)

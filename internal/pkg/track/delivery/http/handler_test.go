@@ -349,7 +349,7 @@ func TestTrackHandler_GetTracksByArtistID(t *testing.T) {
 			artistID: "1",
 			setupMock: func(m *mock_track.MockUsecase) {
 				m.EXPECT().
-					GetTracksByArtistID(gomock.Any(), int64(1)).
+					GetTracksByArtistID(gomock.Any(), int64(1), gomock.Any()).
 					Return([]*usecaseModel.Track{
 						{
 							ID:        1,
@@ -406,7 +406,7 @@ func TestTrackHandler_GetTracksByArtistID(t *testing.T) {
 			artistID: "999",
 			setupMock: func(m *mock_track.MockUsecase) {
 				m.EXPECT().
-					GetTracksByArtistID(gomock.Any(), int64(999)).
+					GetTracksByArtistID(gomock.Any(), int64(999), gomock.Any()).
 					Return(nil, errors.New("artist not found"))
 			},
 			expectedStatus: http.StatusInternalServerError,

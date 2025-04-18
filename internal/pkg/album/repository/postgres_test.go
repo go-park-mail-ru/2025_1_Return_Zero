@@ -367,7 +367,12 @@ func TestGetAlbumsByArtistID(t *testing.T) {
 					WillReturnRows(rows)
 			}
 
-			albums, err := repo.GetAlbumsByArtistID(ctx, tt.artistID)
+			albums, err := repo.GetAlbumsByArtistID(ctx, tt.artistID, &repoModel.AlbumFilters{
+				Pagination: &repoModel.Pagination{
+					Limit:  10,
+					Offset: 0,
+				},
+			})
 
 			if tt.mockError != nil {
 				assert.Error(t, err)

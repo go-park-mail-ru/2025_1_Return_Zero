@@ -102,18 +102,18 @@ func (mr *MockUsecaseMockRecorder) GetTrackByID(ctx, id any) *gomock.Call {
 }
 
 // GetTracksByArtistID mocks base method.
-func (m *MockUsecase) GetTracksByArtistID(ctx context.Context, id int64) ([]*usecase.Track, error) {
+func (m *MockUsecase) GetTracksByArtistID(ctx context.Context, id int64, filters *usecase.TrackFilters) ([]*usecase.Track, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTracksByArtistID", ctx, id)
+	ret := m.ctrl.Call(m, "GetTracksByArtistID", ctx, id, filters)
 	ret0, _ := ret[0].([]*usecase.Track)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetTracksByArtistID indicates an expected call of GetTracksByArtistID.
-func (mr *MockUsecaseMockRecorder) GetTracksByArtistID(ctx, id any) *gomock.Call {
+func (mr *MockUsecaseMockRecorder) GetTracksByArtistID(ctx, id, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTracksByArtistID", reflect.TypeOf((*MockUsecase)(nil).GetTracksByArtistID), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTracksByArtistID", reflect.TypeOf((*MockUsecase)(nil).GetTracksByArtistID), ctx, id, filters)
 }
 
 // UpdateStreamDuration mocks base method.
