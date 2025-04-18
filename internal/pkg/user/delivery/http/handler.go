@@ -239,7 +239,6 @@ func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := helpers.LoggerFromContext(ctx)
-
 	userAuth, exist := helpers.UserFromContext(ctx)
 	if !exist {
 		logger.Error("user not auth")
@@ -251,14 +250,14 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(maxUploadSize)
 	if err != nil {
 		logger.Error("failed to parse form", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse form", nil)
 		return
 	}
 
 	file, fileHeader, err := r.FormFile("avatar")
 	if err != nil {
 		logger.Error("failed to get file from form", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, "failed to get file from form", nil)
 		return
 	}
 	defer file.Close()

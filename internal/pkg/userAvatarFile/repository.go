@@ -12,7 +12,6 @@ var (
 	ErrUnsupportedImageFormat = errors.New("unsupported image format")
 	ErrFailedToEncodeWebp     = errors.New("failed to encode webp")
 	ErrFailedToUploadAvatar   = errors.New("failed to upload avatar")
-	ErrFileTooLarge           = errors.New("file too large")
 )
 
 type Repository interface {
