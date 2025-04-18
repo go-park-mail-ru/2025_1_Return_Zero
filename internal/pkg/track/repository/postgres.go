@@ -53,10 +53,15 @@ const (
 	`
 
 	GetStreamsByUserIDQuery = `
-		SELECT DISTINCT ON (track_id) id, user_id, track_id, duration
-		FROM stream
-		WHERE user_id = $1
-		ORDER BY track_id, created_at DESC, id DESC
+		WITH latest_streams AS (
+			SELECT DISTINCT ON (track_id) id, user_id, track_id, duration, created_at
+			FROM stream
+			WHERE user_id = $1
+			ORDER BY track_id, created_at DESC, id DESC
+		)
+		SELECT id, user_id, track_id, duration
+		FROM latest_streams
+		ORDER BY created_at DESC, id DESC
 		LIMIT $2 OFFSET $3
 	`
 
