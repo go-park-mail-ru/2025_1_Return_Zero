@@ -66,6 +66,8 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path integer true "Artist ID"
+// @Param offset query integer false "Offset (default: 0)"
+// @Param limit query integer false "Limit (default: 10, max: 100)"
 // @Success 200 {object} delivery.APIResponse{body=[]delivery.Album} "List of albums"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid artist ID"
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
@@ -73,6 +75,13 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := helpers.LoggerFromContext(ctx)
+	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
+	if err != nil {
+		logger.Error("failed to get pagination", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -82,7 +91,9 @@ func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	usecaseAlbums, err := h.usecase.GetAlbumsByArtistID(ctx, id)
+	usecaseAlbums, err := h.usecase.GetAlbumsByArtistID(ctx, id, &usecaseModel.AlbumFilters{
+		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
+	})
 	if err != nil {
 		logger.Error("failed to get albums", zap.Error(err))
 		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)

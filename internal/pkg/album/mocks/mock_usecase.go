@@ -42,18 +42,18 @@ func (m *MockUsecase) EXPECT() *MockUsecaseMockRecorder {
 }
 
 // GetAlbumsByArtistID mocks base method.
-func (m *MockUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64) ([]*usecase.Album, error) {
+func (m *MockUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, filters *usecase.AlbumFilters) ([]*usecase.Album, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAlbumsByArtistID", ctx, artistID)
+	ret := m.ctrl.Call(m, "GetAlbumsByArtistID", ctx, artistID, filters)
 	ret0, _ := ret[0].([]*usecase.Album)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAlbumsByArtistID indicates an expected call of GetAlbumsByArtistID.
-func (mr *MockUsecaseMockRecorder) GetAlbumsByArtistID(ctx, artistID any) *gomock.Call {
+func (mr *MockUsecaseMockRecorder) GetAlbumsByArtistID(ctx, artistID, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAlbumsByArtistID", reflect.TypeOf((*MockUsecase)(nil).GetAlbumsByArtistID), ctx, artistID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAlbumsByArtistID", reflect.TypeOf((*MockUsecase)(nil).GetAlbumsByArtistID), ctx, artistID, filters)
 }
 
 // GetAllAlbums mocks base method.

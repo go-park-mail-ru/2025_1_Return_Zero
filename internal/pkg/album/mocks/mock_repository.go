@@ -87,18 +87,18 @@ func (mr *MockRepositoryMockRecorder) GetAlbumTitleByIDs(ctx, ids any) *gomock.C
 }
 
 // GetAlbumsByArtistID mocks base method.
-func (m *MockRepository) GetAlbumsByArtistID(ctx context.Context, artistID int64) ([]*repository.Album, error) {
+func (m *MockRepository) GetAlbumsByArtistID(ctx context.Context, artistID int64, filters *repository.AlbumFilters) ([]*repository.Album, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAlbumsByArtistID", ctx, artistID)
+	ret := m.ctrl.Call(m, "GetAlbumsByArtistID", ctx, artistID, filters)
 	ret0, _ := ret[0].([]*repository.Album)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAlbumsByArtistID indicates an expected call of GetAlbumsByArtistID.
-func (mr *MockRepositoryMockRecorder) GetAlbumsByArtistID(ctx, artistID any) *gomock.Call {
+func (mr *MockRepositoryMockRecorder) GetAlbumsByArtistID(ctx, artistID, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAlbumsByArtistID", reflect.TypeOf((*MockRepository)(nil).GetAlbumsByArtistID), ctx, artistID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAlbumsByArtistID", reflect.TypeOf((*MockRepository)(nil).GetAlbumsByArtistID), ctx, artistID, filters)
 }
 
 // GetAllAlbums mocks base method.

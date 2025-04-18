@@ -16,7 +16,7 @@ var (
 type Repository interface {
 	GetAllTracks(ctx context.Context, filters *repoModel.TrackFilters) ([]*repoModel.Track, error)
 	GetTrackByID(ctx context.Context, id int64) (*repoModel.TrackWithFileKey, error)
-	GetTracksByArtistID(ctx context.Context, id int64) ([]*repoModel.Track, error)
+	GetTracksByArtistID(ctx context.Context, id int64, filters *repoModel.TrackFilters) ([]*repoModel.Track, error)
 	CreateStream(ctx context.Context, stream *repoModel.TrackStreamCreateData) (int64, error)
 	GetStreamByID(ctx context.Context, streamID int64) (*repoModel.TrackStream, error)
 	UpdateStreamDuration(ctx context.Context, endedStream *repoModel.TrackStreamUpdateData) error

@@ -201,7 +201,7 @@ func TestAlbumHandler_GetAlbumsByArtistID(t *testing.T) {
 			artistID: "1",
 			setupMock: func(m *mock_album.MockUsecase) {
 				m.EXPECT().
-					GetAlbumsByArtistID(gomock.Any(), int64(1)).
+					GetAlbumsByArtistID(gomock.Any(), int64(1), gomock.Any()).
 					Return([]*usecaseModel.Album{
 						{
 							ID:          1,
@@ -254,7 +254,7 @@ func TestAlbumHandler_GetAlbumsByArtistID(t *testing.T) {
 			artistID: "1000",
 			setupMock: func(m *mock_album.MockUsecase) {
 				m.EXPECT().
-					GetAlbumsByArtistID(gomock.Any(), int64(1000)).
+					GetAlbumsByArtistID(gomock.Any(), int64(1000), gomock.Any()).
 					Return(nil, errors.New("artist not found"))
 			},
 			expectedStatus: http.StatusInternalServerError,

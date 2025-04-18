@@ -31,6 +31,7 @@ const (
 		JOIN track_artist ta ON track.id = ta.track_id
 		WHERE ta.artist_id = $1 AND (ta.role = 'main' OR ta.role = 'featured')
 		ORDER BY track.created_at DESC, track.id DESC
+		LIMIT $2 OFFSET $3
 	`
 
 	CreateStreamQuery = `
@@ -120,10 +121,10 @@ func (r *TrackPostgresRepository) GetTrackByID(ctx context.Context, id int64) (*
 	return &trackObject, nil
 }
 
-func (r *TrackPostgresRepository) GetTracksByArtistID(ctx context.Context, artistID int64) ([]*repository.Track, error) {
+func (r *TrackPostgresRepository) GetTracksByArtistID(ctx context.Context, artistID int64, filters *repository.TrackFilters) ([]*repository.Track, error) {
 	logger := helpers.LoggerFromContext(ctx)
 	logger.Info("Requesting tracks by artist id from db", zap.Int64("artistID", artistID), zap.String("query", GetTracksByArtistIDQuery))
-	rows, err := r.db.Query(GetTracksByArtistIDQuery, artistID)
+	rows, err := r.db.Query(GetTracksByArtistIDQuery, artistID, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
 		logger.Error("failed to get tracks by artist id", zap.Error(err))
 		return nil, err

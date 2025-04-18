@@ -440,7 +440,7 @@ func TestTrackUsecase_GetTracksByArtistID(t *testing.T) {
 			artistID: 100,
 			mockSetup: func() {
 				mockTrackRepo.EXPECT().
-					GetTracksByArtistID(ctx, int64(100)).
+					GetTracksByArtistID(ctx, int64(100), gomock.Any()).
 					Return([]*repository.Track{
 						{
 							ID:      1,
@@ -525,7 +525,7 @@ func TestTrackUsecase_GetTracksByArtistID(t *testing.T) {
 			artistID: 101,
 			mockSetup: func() {
 				mockTrackRepo.EXPECT().
-					GetTracksByArtistID(ctx, int64(101)).
+					GetTracksByArtistID(ctx, int64(101), gomock.Any()).
 					Return(nil, errors.New("database error"))
 			},
 			expectedTracks: nil,
@@ -537,7 +537,12 @@ func TestTrackUsecase_GetTracksByArtistID(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockSetup()
 
-			tracks, err := usecase.GetTracksByArtistID(ctx, tt.artistID)
+			tracks, err := usecase.GetTracksByArtistID(ctx, tt.artistID, &usecaseModel.TrackFilters{
+				Pagination: &usecaseModel.Pagination{
+					Limit:  10,
+					Offset: 0,
+				},
+			})
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)

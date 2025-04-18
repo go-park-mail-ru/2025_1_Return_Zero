@@ -40,6 +40,7 @@ const (
 		JOIN album_artist aa ON album.id = aa.album_id
 		WHERE aa.artist_id = $1
 		ORDER BY album.release_date DESC, album.id DESC
+		LIMIT $2 OFFSET $3
 	`
 )
 
@@ -150,10 +151,10 @@ func (r *albumPostgresRepository) GetAlbumTitleByID(ctx context.Context, id int6
 	return title, nil
 }
 
-func (r *albumPostgresRepository) GetAlbumsByArtistID(ctx context.Context, artistID int64) ([]*repoModel.Album, error) {
+func (r *albumPostgresRepository) GetAlbumsByArtistID(ctx context.Context, artistID int64, filters *repoModel.AlbumFilters) ([]*repoModel.Album, error) {
 	logger := helpers.LoggerFromContext(ctx)
 	logger.Info("Requesting albums by artist id from db", zap.Int64("artistID", artistID), zap.String("query", GetAlbumsByArtistIDQuery))
-	rows, err := r.db.Query(GetAlbumsByArtistIDQuery, artistID)
+	rows, err := r.db.Query(GetAlbumsByArtistIDQuery, artistID, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
 		logger.Error("failed to get albums by artist id", zap.Error(err))
 		return nil, err

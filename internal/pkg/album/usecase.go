@@ -8,5 +8,5 @@ import (
 
 type Usecase interface {
 	GetAllAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error)
-	GetAlbumsByArtistID(ctx context.Context, artistID int64) ([]*usecaseModel.Album, error)
+	GetAlbumsByArtistID(ctx context.Context, artistID int64, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error)
 }

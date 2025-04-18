@@ -11,7 +11,7 @@ import (
 )
 
 func NewUsecase(albumRepository album.Repository, artistRepository artist.Repository) album.Usecase {
-	return albumUsecase{albumRepo: albumRepository, artistRepo: artistRepository}
+	return &albumUsecase{albumRepo: albumRepository, artistRepo: artistRepository}
 }
 
 type albumUsecase struct {
@@ -19,7 +19,7 @@ type albumUsecase struct {
 	artistRepo artist.Repository
 }
 
-func (u albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
+func (u *albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
 	repoFilters := &repoModel.AlbumFilters{
 		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
 	}
@@ -47,8 +47,11 @@ func (u albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.Al
 	return albums, nil
 }
 
-func (u albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64) ([]*usecaseModel.Album, error) {
-	repoAlbums, err := u.albumRepo.GetAlbumsByArtistID(ctx, artistID)
+func (u *albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
+	repoFilters := &repoModel.AlbumFilters{
+		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
+	}
+	repoAlbums, err := u.albumRepo.GetAlbumsByArtistID(ctx, artistID, repoFilters)
 	if err != nil {
 		return nil, err
 	}

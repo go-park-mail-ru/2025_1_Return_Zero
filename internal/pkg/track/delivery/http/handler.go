@@ -109,6 +109,8 @@ func (h *TrackHandler) GetTrackByID(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path integer true "Artist ID"
+// @Param offset query integer false "Offset (default: 0)"
+// @Param limit query integer false "Limit (default: 10, max: 100)"
 // @Success 200 {object} delivery.APIResponse{body=[]delivery.Track} "List of tracks by artist"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid ID or filters"
 // @Failure 404 {object} delivery.APINotFoundErrorResponse "Not found"
@@ -117,6 +119,12 @@ func (h *TrackHandler) GetTrackByID(w http.ResponseWriter, r *http.Request) {
 func (h *TrackHandler) GetTracksByArtistID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := helpers.LoggerFromContext(ctx)
+	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
+	if err != nil {
+		logger.Error("failed to get pagination", zap.Error(err))
+		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -127,7 +135,9 @@ func (h *TrackHandler) GetTracksByArtistID(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	usecaseTracks, err := h.usecase.GetTracksByArtistID(ctx, id)
+	usecaseTracks, err := h.usecase.GetTracksByArtistID(ctx, id, &usecaseModel.TrackFilters{
+		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
+	})
 	if err != nil {
 		logger.Error("failed to get tracks", zap.Error(err))
 		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
