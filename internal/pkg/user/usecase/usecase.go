@@ -123,6 +123,7 @@ func (u *userUsecase) UploadAvatar(ctx context.Context, username string, fileAva
 	if err != nil {
 		return "", err
 	}
+
 	avatarURL, err := u.userFileRepo.GetAvatarURL(ctx, fileURL)
 	if err != nil {
 		return "", err

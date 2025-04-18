@@ -8,24 +8,30 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
+	userAvatarFile "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/userAvatarFile"
 )
 
 var mapErrorStatus = map[error]int{
-	track.ErrTrackNotFound:                http.StatusNotFound,
-	track.ErrStreamNotFound:               http.StatusNotFound,
-	track.ErrFailedToUpdateStreamDuration: http.StatusInternalServerError,
-	track.ErrStreamPermissionDenied:       http.StatusForbidden,
-	artist.ErrArtistNotFound:              http.StatusNotFound,
-	album.ErrAlbumNotFound:                http.StatusNotFound,
-	user.ErrUsernameExist:                 http.StatusNotFound,
-	user.ErrEmailExist:                    http.StatusNotFound,
-	user.ErrUserNotFound:                  http.StatusNotFound,
-	user.ErrCreateSalt:                    http.StatusNotFound,
-	user.ErrWrongPassword:                 http.StatusNotFound,
-	auth.ErrSessionNotFound:               http.StatusNotFound,
-	ErrInvalidOffset:                      http.StatusBadRequest,
-	ErrInvalidLimit:                       http.StatusBadRequest,
-	user.ErrPasswordRequired:                   http.StatusBadRequest,
+	track.ErrTrackNotFound:                   http.StatusNotFound,
+	track.ErrStreamNotFound:                  http.StatusNotFound,
+	track.ErrFailedToUpdateStreamDuration:    http.StatusInternalServerError,
+	track.ErrStreamPermissionDenied:          http.StatusForbidden,
+	artist.ErrArtistNotFound:                 http.StatusNotFound,
+	album.ErrAlbumNotFound:                   http.StatusNotFound,
+	user.ErrUsernameExist:                    http.StatusNotFound,
+	user.ErrEmailExist:                       http.StatusNotFound,
+	user.ErrUserNotFound:                     http.StatusNotFound,
+	user.ErrCreateSalt:                       http.StatusNotFound,
+	user.ErrWrongPassword:                    http.StatusNotFound,
+	auth.ErrSessionNotFound:                  http.StatusNotFound,
+	ErrInvalidOffset:                         http.StatusBadRequest,
+	ErrInvalidLimit:                          http.StatusBadRequest,
+	user.ErrPasswordRequired:                 http.StatusBadRequest,
+	userAvatarFile.ErrFileTooLarge:           http.StatusBadRequest,
+	userAvatarFile.ErrFailedToUploadAvatar:   http.StatusBadRequest,
+	userAvatarFile.ErrUnsupportedImageFormat: http.StatusBadRequest,
+	userAvatarFile.ErrFailedToEncodeWebp:     http.StatusBadRequest,
+	userAvatarFile.ErrFailedToParseImage:     http.StatusBadRequest,
 }
 
 func ErrorStatus(err error) int {
