@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
+	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -39,7 +39,7 @@ func (r *AuthRedisRepository) CreateSession(ctx context.Context, ID int64) (stri
 	conn := r.redisPool.Get()
 	defer conn.Close()
 	SID := generateSessionID()
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Creating session")
 	expiration := int(SessionTTL.Seconds())
 	_, err := redis.DoContext(conn, ctx, "SETEX", SID, expiration, ID)
@@ -52,7 +52,7 @@ func (r *AuthRedisRepository) CreateSession(ctx context.Context, ID int64) (stri
 func (r *AuthRedisRepository) DeleteSession(ctx context.Context, SID string) error {
 	conn := r.redisPool.Get()
 	defer conn.Close()
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Deleting session")
 	_, err := redis.DoContext(conn, ctx, "DEL", SID)
 	if err != nil {
@@ -64,7 +64,7 @@ func (r *AuthRedisRepository) DeleteSession(ctx context.Context, SID string) err
 func (r *AuthRedisRepository) GetSession(ctx context.Context, SID string) (int64, error) {
 	conn := r.redisPool.Get()
 	defer conn.Close()
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Getting session")
 	id, err := redis.Int64(redis.DoContext(conn, ctx, "GET", SID))
 	if err != nil {

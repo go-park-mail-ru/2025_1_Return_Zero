@@ -3,7 +3,8 @@ package middleware
 import (
 	"context"
 	"net/http"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
+
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
 )
 
@@ -22,9 +23,8 @@ func Auth(userUsecase user.Usecase) func(http.Handler) http.Handler {
 				next.ServeHTTP(w, r)
 				return
 			}
-			ctx := context.WithValue(r.Context(), helpers.UserContextKey{}, user)
+			ctx := context.WithValue(r.Context(), ctxExtractor.UserContextKey{}, user)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
-

@@ -45,8 +45,6 @@ CREATE TABLE IF NOT EXISTS artist (
     CONSTRAINT artist_title_length_check CHECK (LENGTH(title) >= 1 AND LENGTH(title) <= 100),
     description TEXT NOT NULL DEFAULT '',
     CONSTRAINT artist_description_length_check CHECK (LENGTH(description) <= 1000),
-    listeners_count BIGINT NOT NULL DEFAULT 0,
-    favorites_count BIGINT NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     thumbnail_url TEXT NOT NULL DEFAULT '/default_artist.png',
@@ -63,8 +61,6 @@ CREATE TABLE IF NOT EXISTS album (
     release_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    listeners_count BIGINT NOT NULL DEFAULT 0,
-    favorites_count BIGINT NOT NULL DEFAULT 0,
     CONSTRAINT album_valid_type_check CHECK (type IN ('album', 'single', 'ep', 'compilation')),
     CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
     CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
@@ -81,8 +77,6 @@ CREATE TABLE IF NOT EXISTS track (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     duration INTEGER NOT NULL,
     position INTEGER NOT NULL,
-    listeners_count BIGINT NOT NULL DEFAULT 0,
-    favorites_count BIGINT NOT NULL DEFAULT 0,
     FOREIGN KEY (album_id)
         REFERENCES album (id)
         ON DELETE CASCADE

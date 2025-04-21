@@ -1,10 +1,17 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"time"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	_ "github.com/go-park-mail-ru/2025_1_Return_Zero/docs"
+	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
+	grpc "github.com/go-park-mail-ru/2025_1_Return_Zero/init/microservices"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/postgres"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/redis"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/s3"
@@ -16,6 +23,7 @@ import (
 	artistRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/repository"
 	artistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/usecase"
 	authRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth/repository"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	trackHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/delivery/http"
 	trackRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/repository"
 	trackUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/usecase"
@@ -35,7 +43,7 @@ import (
 // @host returnzero.ru
 // @BasePath /api/v1
 func main() {
-	logger, err := middleware.NewZapLogger()
+	logger, err := logger.NewZapLogger()
 	if err != nil {
 		logger.Error("Error creating logger:", zap.Error(err))
 		return
@@ -64,13 +72,21 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	logger.Info("Server starting on port %s...", zap.String("port", cfg.Port))
+	logger.Info("Server starting on port %s...", zap.String("port", fmt.Sprintf(":%d", cfg.Port)))
 
 	r.PathPrefix("/api/v1/docs/").Handler(httpSwagger.Handler(
 		httpSwagger.URL("/api/v1/docs/doc.json"),
 		httpSwagger.DeepLinking(true),
 		httpSwagger.DocExpansion("none"),
 	))
+
+	clients, err := grpc.InitGrpc(&cfg.Services, logger)
+	if err != nil {
+		logger.Error("Error initializing gRPC clients:", zap.Error(err))
+		return
+	}
+
+	artistClient := artistProto.NewArtistServiceClient(clients.ArtistClient)
 
 	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisPool), userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket))
 
@@ -83,7 +99,7 @@ func main() {
 
 	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration), userRepository.NewUserPostgresRepository(postgresConn)), cfg)
 	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn)), cfg)
-	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistRepository.NewArtistPostgresRepository(postgresConn)), cfg)
+	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(&artistClient), cfg)
 	userHandler := userHttp.NewUserHandler(newUserUsecase)
 
 	r.HandleFunc("/api/v1/tracks", trackHandler.GetAllTracks).Methods("GET")
@@ -110,8 +126,23 @@ func main() {
 
 	r.HandleFunc("/api/v1/user/{username}/history", trackHandler.GetLastListenedTracks).Methods("GET")
 
-	err = http.ListenAndServe(cfg.Port, r)
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", cfg.Port),
+		Handler: r,
+	}
+
+	err = srv.ListenAndServe()
 	if err != nil {
 		logger.Error("Error starting server:", zap.Error(err))
 	}
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	<-c
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	srv.Shutdown(ctx)
+	logger.Info("Composer server stopped")
 }

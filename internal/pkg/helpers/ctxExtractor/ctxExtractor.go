@@ -1,22 +1,10 @@
-package helpers
+package ctxExtractor
 
 import (
 	"context"
 
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
-	"go.uber.org/zap"
 )
-
-type LoggerKey struct{}
-
-func LoggerFromContext(ctx context.Context) *zap.SugaredLogger {
-	logger := ctx.Value(LoggerKey{}).(*zap.SugaredLogger)
-	return logger
-}
-
-func LoggerToContext(ctx context.Context, logger *zap.SugaredLogger) context.Context {
-	return context.WithValue(ctx, LoggerKey{}, logger)
-}
 
 type UserContextKey struct{}
 

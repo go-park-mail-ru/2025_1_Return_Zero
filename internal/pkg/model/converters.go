@@ -1,12 +1,20 @@
 package model
 
 import (
+	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
 
 ///////////////////////////////////// PAGINATION ////////////////////////////////////
+
+func PaginationFromUsecaseToRepository(usecasePagination *usecase.Pagination) *repository.Pagination {
+	return &repository.Pagination{
+		Offset: usecasePagination.Offset,
+		Limit:  usecasePagination.Limit,
+	}
+}
 
 func PaginationFromDeliveryToUsecase(deliveryPagination *delivery.Pagination) *usecase.Pagination {
 	return &usecase.Pagination{
@@ -15,10 +23,10 @@ func PaginationFromDeliveryToUsecase(deliveryPagination *delivery.Pagination) *u
 	}
 }
 
-func PaginationFromUsecaseToRepository(usecasePagination *usecase.Pagination) *repository.Pagination {
-	return &repository.Pagination{
-		Offset: usecasePagination.Offset,
-		Limit:  usecasePagination.Limit,
+func PaginationFromUsecaseToProto(usecasePagination *usecase.Pagination) *artistProto.Pagination {
+	return &artistProto.Pagination{
+		Offset: int64(usecasePagination.Offset),
+		Limit:  int64(usecasePagination.Limit),
 	}
 }
 
@@ -95,28 +103,28 @@ func ArtistFromUsecaseToDelivery(usecaseArtist *usecase.Artist) *delivery.Artist
 	}
 }
 
-func ArtistsFromRepositoryToUsecase(repositoryArtists []*repository.Artist) []*usecase.Artist {
-	artists := make([]*usecase.Artist, 0, len(repositoryArtists))
-	for _, repositoryArtist := range repositoryArtists {
-		artists = append(artists, ArtistFromRepositoryToUsecase(repositoryArtist))
+func ArtistsFromProtoToUsecase(protoArtists []*artistProto.Artist) []*usecase.Artist {
+	artists := make([]*usecase.Artist, 0, len(protoArtists))
+	for _, protoArtist := range protoArtists {
+		artists = append(artists, ArtistFromProtoToUsecase(protoArtist))
 	}
 	return artists
 }
 
-func ArtistFromRepositoryToUsecase(repositoryArtist *repository.Artist) *usecase.Artist {
+func ArtistFromProtoToUsecase(protoArtist *artistProto.Artist) *usecase.Artist {
 	return &usecase.Artist{
-		ID:          repositoryArtist.ID,
-		Title:       repositoryArtist.Title,
-		Thumbnail:   repositoryArtist.Thumbnail,
-		Description: repositoryArtist.Description,
+		ID:          protoArtist.Id,
+		Title:       protoArtist.Title,
+		Thumbnail:   protoArtist.Thumbnail,
+		Description: protoArtist.Description,
 	}
 }
 
-func ArtistDetailedFromRepositoryToUsecase(repositoryArtist *repository.Artist, repositoryArtistStats *repository.ArtistStats) *usecase.ArtistDetailed {
+func ArtistDetailedFromProtoToUsecase(protoArtist *artistProto.ArtistDetailed) *usecase.ArtistDetailed {
 	return &usecase.ArtistDetailed{
-		Artist:    *ArtistFromRepositoryToUsecase(repositoryArtist),
-		Favorites: repositoryArtistStats.FavoritesCount,
-		Listeners: repositoryArtistStats.ListenersCount,
+		Artist:    *ArtistFromProtoToUsecase(protoArtist.Artist),
+		Favorites: protoArtist.FavoritesCount,
+		Listeners: protoArtist.ListenersCount,
 	}
 }
 

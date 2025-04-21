@@ -25,7 +25,7 @@ type Repository interface {
 	ChangeUserPrivacySettings(ctx context.Context, username string, privacySettings *repoModel.UserPrivacySettings) error
 	DeleteUser(ctx context.Context, user *repoModel.User) error
 	ChangeUserData(ctx context.Context, username string, changeData *repoModel.ChangeUserData) error
-	UploadAvatar(ctx context.Context, avatarUrl string, username string) error
+	UploadAvatar(ctx context.Context, avatarUrl string, ID int64) error
 	GetAvatar(ctx context.Context, username string) (string, error)
 	LoginUser(ctx context.Context, logData *repoModel.User) (*repoModel.User, error)
 	GetUserByID(ctx context.Context, ID int64) (*repoModel.User, error)

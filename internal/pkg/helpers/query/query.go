@@ -1,4 +1,4 @@
-package helpers
+package query
 
 import (
 	"net/url"

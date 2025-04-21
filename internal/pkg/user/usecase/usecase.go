@@ -113,13 +113,13 @@ func (u *userUsecase) Logout(ctx context.Context, SID string) error {
 	return nil
 }
 
-func (u *userUsecase) UploadAvatar(ctx context.Context, username string, fileAvatar io.Reader) (string, error) {
+func (u *userUsecase) UploadAvatar(ctx context.Context, username string, fileAvatar io.Reader, ID int64) (string, error) {
 	fileURL, err := u.userFileRepo.UploadUserAvatar(ctx, username, fileAvatar)
 	if err != nil {
 		return "", err
 	}
 
-	err = u.userRepo.UploadAvatar(ctx, fileURL, username)
+	err = u.userRepo.UploadAvatar(ctx, fileURL, ID)
 	if err != nil {
 		return "", err
 	}

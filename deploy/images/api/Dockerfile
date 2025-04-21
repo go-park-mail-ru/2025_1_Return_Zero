@@ -1,9 +1,5 @@
-# Build stage
+# syntax=docker/dockerfile:1.7-labs
 FROM golang:1.24-alpine AS builder
-
-ENV CGO_ENABLED=1
-
-RUN apk add --no-cache gcc musl-dev libwebp-dev
 
 WORKDIR /app
 
@@ -11,13 +7,11 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
-COPY . .
+COPY --exclude=microservices --exclude=deploy . .
 
 RUN go build -o main cmd/main.go
 
 FROM alpine:latest
-
-RUN apk add --no-cache libwebp
 
 WORKDIR /app
 

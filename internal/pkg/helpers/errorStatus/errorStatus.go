@@ -1,11 +1,11 @@
-package helpers
+package errorStatus
 
 import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
 	userAvatarFile "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/userAvatarFile"
@@ -16,7 +16,6 @@ var mapErrorStatus = map[error]int{
 	track.ErrStreamNotFound:                  http.StatusNotFound,
 	track.ErrFailedToUpdateStreamDuration:    http.StatusInternalServerError,
 	track.ErrStreamPermissionDenied:          http.StatusForbidden,
-	artist.ErrArtistNotFound:                 http.StatusNotFound,
 	album.ErrAlbumNotFound:                   http.StatusNotFound,
 	user.ErrUsernameExist:                    http.StatusNotFound,
 	user.ErrEmailExist:                       http.StatusNotFound,
@@ -24,13 +23,14 @@ var mapErrorStatus = map[error]int{
 	user.ErrCreateSalt:                       http.StatusNotFound,
 	user.ErrWrongPassword:                    http.StatusNotFound,
 	auth.ErrSessionNotFound:                  http.StatusNotFound,
-	ErrInvalidOffset:                         http.StatusBadRequest,
-	ErrInvalidLimit:                          http.StatusBadRequest,
+	customErrors.ErrInvalidOffset:            http.StatusBadRequest,
+	customErrors.ErrInvalidLimit:             http.StatusBadRequest,
 	user.ErrPasswordRequired:                 http.StatusBadRequest,
 	userAvatarFile.ErrFailedToUploadAvatar:   http.StatusBadRequest,
 	userAvatarFile.ErrUnsupportedImageFormat: http.StatusBadRequest,
 	userAvatarFile.ErrFailedToEncodeWebp:     http.StatusBadRequest,
 	userAvatarFile.ErrFailedToParseImage:     http.StatusBadRequest,
+	customErrors.ErrArtistNotFound:           http.StatusNotFound,
 }
 
 func ErrorStatus(err error) int {
