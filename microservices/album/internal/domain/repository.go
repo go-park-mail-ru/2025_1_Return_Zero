@@ -1,9 +1,9 @@
-package album
+package domain
 
 import (
 	"context"
 
-	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
+	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/album/model/repository"
 )
 
 type Repository interface {
@@ -11,5 +11,5 @@ type Repository interface {
 	GetAlbumByID(ctx context.Context, id int64) (*repoModel.Album, error)
 	GetAlbumTitleByID(ctx context.Context, id int64) (string, error)
 	GetAlbumTitleByIDs(ctx context.Context, ids []int64) (map[int64]string, error)
-	GetAlbumsByArtistID(ctx context.Context, artistID int64, filters *repoModel.AlbumFilters) ([]*repoModel.Album, error)
+	GetAlbumsByIDs(ctx context.Context, ids []int64) (map[int64]*repoModel.Album, error)
 }

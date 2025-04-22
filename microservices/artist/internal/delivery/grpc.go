@@ -13,7 +13,7 @@ type ArtistService struct {
 	artistUsecase domain.Usecase
 }
 
-func NewArtistService(artistUsecase domain.Usecase) *ArtistService {
+func NewArtistService(artistUsecase domain.Usecase) artistProto.ArtistServiceServer {
 	return &ArtistService{
 		artistUsecase: artistUsecase,
 	}
@@ -75,4 +75,17 @@ func (s *ArtistService) GetArtistsByAlbumIDs(ctx context.Context, req *artistPro
 		return nil, err
 	}
 	return model.ArtistWithTitleMapFromUsecaseToProto(artists), nil
+}
+
+func (s *ArtistService) GetAlbumIDsByArtistID(ctx context.Context, req *artistProto.ArtistID) (*artistProto.AlbumIDList, error) {
+	albumIDs, err := s.artistUsecase.GetAlbumIDsByArtistID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	albumIDList := make([]*artistProto.AlbumID, 0, len(albumIDs))
+	for _, albumID := range albumIDs {
+		albumIDList = append(albumIDList, &artistProto.AlbumID{Id: albumID})
+	}
+	return &artistProto.AlbumIDList{Ids: albumIDList}, nil
 }

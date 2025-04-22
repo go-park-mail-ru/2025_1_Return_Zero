@@ -80,3 +80,11 @@ func (u *artistUsecase) GetArtistsByAlbumIDs(ctx context.Context, ids []int64) (
 	}
 	return model.ArtistWithTitleMapFromRepositoryToUsecase(repoArtists), nil
 }
+
+func (u *artistUsecase) GetAlbumIDsByArtistID(ctx context.Context, id int64) ([]int64, error) {
+	repoAlbumIDs, err := u.artistRepo.GetAlbumIDsByArtistID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return repoAlbumIDs, nil
+}

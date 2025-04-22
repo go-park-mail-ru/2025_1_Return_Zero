@@ -9,14 +9,14 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/postgres"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/internal/delivery"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/internal/repository"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/internal/usecase"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/album/internal/delivery"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/album/internal/repository"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/album/internal/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/interceptors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
-	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
+	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 )
 
 func main() {
@@ -32,10 +32,10 @@ func main() {
 		return
 	}
 
-	port := fmt.Sprintf(":%d", cfg.Services.ArtistService.Port)
+	port := fmt.Sprintf(":%d", cfg.Services.AlbumService.Port)
 	conn, err := net.Listen("tcp", port)
 	if err != nil {
-		logger.Error("Can't start artist service:", zap.Error(err))
+		logger.Error("Can't start album service:", zap.Error(err))
 		return
 	}
 	defer conn.Close()
@@ -53,16 +53,16 @@ func main() {
 	}
 	defer postgresPool.Close()
 
-	artistRepository := repository.NewArtistPostgresRepository(postgresPool)
-	artistUsecase := usecase.NewArtistUsecase(artistRepository)
-	artistService := delivery.NewArtistService(artistUsecase)
-	artistProto.RegisterArtistServiceServer(server, artistService)
+	albumRepository := repository.NewAlbumPostgresRepository(postgresPool)
+	albumUsecase := usecase.NewAlbumUsecase(albumRepository)
+	albumService := delivery.NewAlbumService(albumUsecase)
+	albumProto.RegisterAlbumServiceServer(server, albumService)
 
-	logger.Info("Artist service started", zap.String("port", port))
+	logger.Info("Album service started", zap.String("port", port))
 
 	err = server.Serve(conn)
 	if err != nil {
-		logger.Fatal("Error starting artist service:", zap.Error(err))
+		logger.Fatal("Error starting album service:", zap.Error(err))
 	}
 
 	c := make(chan os.Signal, 1)
@@ -70,5 +70,5 @@ func main() {
 	<-c
 
 	server.GracefulStop()
-	logger.Info("Artist service stopped")
+	logger.Info("Album service stopped")
 }

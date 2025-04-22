@@ -3,7 +3,6 @@ package errorStatus
 import (
 	"net/http"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
@@ -16,7 +15,6 @@ var mapErrorStatus = map[error]int{
 	track.ErrStreamNotFound:                  http.StatusNotFound,
 	track.ErrFailedToUpdateStreamDuration:    http.StatusInternalServerError,
 	track.ErrStreamPermissionDenied:          http.StatusForbidden,
-	album.ErrAlbumNotFound:                   http.StatusNotFound,
 	user.ErrUsernameExist:                    http.StatusNotFound,
 	user.ErrEmailExist:                       http.StatusNotFound,
 	user.ErrUserNotFound:                     http.StatusNotFound,
@@ -31,6 +29,7 @@ var mapErrorStatus = map[error]int{
 	userAvatarFile.ErrFailedToEncodeWebp:     http.StatusBadRequest,
 	userAvatarFile.ErrFailedToParseImage:     http.StatusBadRequest,
 	customErrors.ErrArtistNotFound:           http.StatusNotFound,
+	customErrors.ErrAlbumNotFound:            http.StatusNotFound,
 }
 
 func ErrorStatus(err error) int {

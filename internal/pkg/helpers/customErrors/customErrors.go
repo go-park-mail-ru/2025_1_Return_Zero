@@ -6,4 +6,5 @@ var (
 	ErrArtistNotFound = errors.New("artist not found")
 	ErrInvalidOffset  = errors.New("invalid offset: should be greater than 0")
 	ErrInvalidLimit   = errors.New("invalid limit: should be greater than 0")
+	ErrAlbumNotFound  = errors.New("album not found")
 )

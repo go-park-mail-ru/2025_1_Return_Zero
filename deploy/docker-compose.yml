@@ -54,6 +54,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_PORT}
       ARTIST_SERVICE_HOST: artist-grpc
+      ALBUM_SERVICE_HOST: album-grpc
     restart: always
     ports:
       - '8080:8080'
@@ -62,7 +63,7 @@ services:
       - postgres
       - redis
       - artist-grpc
-
+      - album-grpc
   artist-grpc:
     build:
       context: ..
@@ -80,6 +81,25 @@ services:
     ports:
       - '5001:5001'
     tty: true
+
+  album-grpc:
+    build:
+      context: ..
+      dockerfile: deploy/images/album/Dockerfile
+    environment:
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: postgres
+    container_name: album-grpc
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - '5003:5003'
+    tty: true
+
 
   nginx:
     build:

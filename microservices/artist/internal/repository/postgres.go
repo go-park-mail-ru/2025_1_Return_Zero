@@ -79,6 +79,12 @@ const (
 		WHERE aa.album_id = ANY($1)
 		ORDER BY aa.created_at, aa.id
 	`
+
+	GetAlbumIDsByArtistIDQuery = `
+		SELECT album_id
+		FROM album_artist
+		WHERE artist_id = $1
+	`
 )
 
 type artistPostgresRepository struct {
@@ -263,4 +269,28 @@ func (r *artistPostgresRepository) GetArtistsByAlbumIDs(ctx context.Context, alb
 	}
 
 	return artists, nil
+}
+
+func (r *artistPostgresRepository) GetAlbumIDsByArtistID(ctx context.Context, id int64) ([]int64, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting album ids by artist id from db", zap.Int64("id", id), zap.String("query", GetAlbumIDsByArtistIDQuery))
+	rows, err := r.db.QueryContext(ctx, GetAlbumIDsByArtistIDQuery, id)
+	if err != nil {
+		logger.Error("failed to get album ids by artist id", zap.Error(err))
+		return nil, err
+	}
+	defer rows.Close()
+
+	albumIDs := make([]int64, 0)
+	for rows.Next() {
+		var albumID int64
+		err := rows.Scan(&albumID)
+		if err != nil {
+			logger.Error("failed to scan album id", zap.Error(err))
+			return nil, err
+		}
+		albumIDs = append(albumIDs, albumID)
+	}
+
+	return albumIDs, nil
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	_ "github.com/go-park-mail-ru/2025_1_Return_Zero/docs"
+	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
 	grpc "github.com/go-park-mail-ru/2025_1_Return_Zero/init/microservices"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/postgres"
@@ -72,7 +73,7 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	logger.Info("Server starting on port %s...", zap.String("port", fmt.Sprintf(":%d", cfg.Port)))
+	logger.Info("Server starting", zap.String("port", fmt.Sprintf(":%d", cfg.Port)))
 
 	r.PathPrefix("/api/v1/docs/").Handler(httpSwagger.Handler(
 		httpSwagger.URL("/api/v1/docs/doc.json"),
@@ -87,6 +88,7 @@ func main() {
 	}
 
 	artistClient := artistProto.NewArtistServiceClient(clients.ArtistClient)
+	albumClient := albumProto.NewAlbumServiceClient(clients.AlbumClient)
 
 	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisPool), userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket))
 
@@ -95,10 +97,10 @@ func main() {
 	r.Use(middleware.AccessLog)
 	r.Use(middleware.Auth(newUserUsecase))
 	r.Use(middleware.CorsMiddleware(cfg.Cors))
-	r.Use(middleware.CSRFMiddleware(cfg.CSRF))
+	// r.Use(middleware.CSRFMiddleware(cfg.CSRF))
 
 	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration), userRepository.NewUserPostgresRepository(postgresConn)), cfg)
-	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn)), cfg)
+	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(&albumClient, &artistClient), cfg)
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(&artistClient), cfg)
 	userHandler := userHttp.NewUserHandler(newUserUsecase)
 

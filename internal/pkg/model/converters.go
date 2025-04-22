@@ -1,6 +1,7 @@
 package model
 
 import (
+	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
@@ -23,8 +24,15 @@ func PaginationFromDeliveryToUsecase(deliveryPagination *delivery.Pagination) *u
 	}
 }
 
-func PaginationFromUsecaseToProto(usecasePagination *usecase.Pagination) *artistProto.Pagination {
+func PaginationFromUsecaseToArtistProto(usecasePagination *usecase.Pagination) *artistProto.Pagination {
 	return &artistProto.Pagination{
+		Offset: int64(usecasePagination.Offset),
+		Limit:  int64(usecasePagination.Limit),
+	}
+}
+
+func PaginationFromUsecaseToAlbumProto(usecasePagination *usecase.Pagination) *albumProto.Pagination {
+	return &albumProto.Pagination{
 		Offset: int64(usecasePagination.Offset),
 		Limit:  int64(usecasePagination.Limit),
 	}
@@ -84,7 +92,51 @@ func AlbumArtistsFromRepositoryToUsecase(repositoryAlbumArtists []*repository.Ar
 	return albumArtists
 }
 
+func AlbumFromProtoToUsecase(protoAlbum *albumProto.Album) *usecase.Album {
+	var albumType usecase.AlbumType
+
+	switch protoAlbum.Type {
+	case albumProto.AlbumType_AlbumTypeAlbum:
+		albumType = usecase.AlbumTypeAlbum
+	case albumProto.AlbumType_AlbumTypeEP:
+		albumType = usecase.AlbumTypeEP
+	case albumProto.AlbumType_AlbumTypeSingle:
+		albumType = usecase.AlbumTypeSingle
+	case albumProto.AlbumType_AlbumTypeCompilation:
+		albumType = usecase.AlbumTypeCompilation
+	default:
+		albumType = usecase.AlbumTypeAlbum
+	}
+
+	return &usecase.Album{
+		ID:          protoAlbum.Id,
+		Title:       protoAlbum.Title,
+		Type:        albumType,
+		Thumbnail:   protoAlbum.Thumbnail,
+		ReleaseDate: protoAlbum.ReleaseDate.AsTime(),
+	}
+}
+
 ///////////////////////////////////// ARTIST ////////////////////////////////////
+
+func ArtistWithTitleListFromProtoToUsecase(protoArtistWithTitleList []*artistProto.ArtistWithTitle) []*usecase.AlbumArtist {
+	artistWithTitleList := make([]*usecase.AlbumArtist, 0, len(protoArtistWithTitleList))
+	for _, protoArtistWithTitle := range protoArtistWithTitleList {
+		artistWithTitleList = append(artistWithTitleList, &usecase.AlbumArtist{
+			ID:    protoArtistWithTitle.Id,
+			Title: protoArtistWithTitle.Title,
+		})
+	}
+	return artistWithTitleList
+}
+
+func ArtistWithTitleMapFromProtoToUsecase(protoArtistWithTitleMap map[int64]*artistProto.ArtistWithTitleList) map[int64][]*usecase.AlbumArtist {
+	artistWithTitleMap := make(map[int64][]*usecase.AlbumArtist, len(protoArtistWithTitleMap))
+	for id, protoArtistWithTitleList := range protoArtistWithTitleMap {
+		artistWithTitleMap[id] = ArtistWithTitleListFromProtoToUsecase(protoArtistWithTitleList.Artists)
+	}
+	return artistWithTitleMap
+}
 
 func ArtistsFromUsecaseToDelivery(usecaseArtists []*usecase.Artist) []*delivery.Artist {
 	artists := make([]*delivery.Artist, 0, len(usecaseArtists))

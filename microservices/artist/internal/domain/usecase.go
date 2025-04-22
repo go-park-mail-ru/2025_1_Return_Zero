@@ -14,4 +14,5 @@ type Usecase interface {
 	GetArtistsByTrackIDs(ctx context.Context, trackIDs []int64) (*usecaseModel.ArtistWithRoleMap, error)
 	GetArtistsByAlbumID(ctx context.Context, albumID int64) (*usecaseModel.ArtistWithTitleList, error)
 	GetArtistsByAlbumIDs(ctx context.Context, albumIDs []int64) (*usecaseModel.ArtistWithTitleMap, error)
+	GetAlbumIDsByArtistID(ctx context.Context, id int64) ([]int64, error)
 }

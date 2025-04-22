@@ -898,7 +898,7 @@ const file_artist_artist_proto_rawDesc = "" +
 	"\aFilters\x122\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2\x12.artist.PaginationR\n" +
-	"pagination2\xd7\x03\n" +
+	"pagination2\x97\x04\n" +
 	"\rArtistService\x124\n" +
 	"\rGetAllArtists\x12\x0f.artist.Filters\x1a\x12.artist.ArtistList\x129\n" +
 	"\rGetArtistByID\x12\x10.artist.ArtistID\x1a\x16.artist.ArtistDetailed\x12;\n" +
@@ -906,7 +906,8 @@ const file_artist_artist_proto_rawDesc = "" +
 	"\x13GetArtistsByTrackID\x12\x0f.artist.TrackID\x1a\x1a.artist.ArtistWithRoleList\x12F\n" +
 	"\x14GetArtistsByTrackIDs\x12\x13.artist.TrackIDList\x1a\x19.artist.ArtistWithRoleMap\x12C\n" +
 	"\x13GetArtistsByAlbumID\x12\x0f.artist.AlbumID\x1a\x1b.artist.ArtistWithTitleList\x12G\n" +
-	"\x14GetArtistsByAlbumIDs\x12\x13.artist.AlbumIDList\x1a\x1a.artist.ArtistWithTitleMapB\n" +
+	"\x14GetArtistsByAlbumIDs\x12\x13.artist.AlbumIDList\x1a\x1a.artist.ArtistWithTitleMap\x12>\n" +
+	"\x15GetAlbumIDsByArtistID\x12\x10.artist.ArtistID\x1a\x13.artist.AlbumIDListB\n" +
 	"Z\b./artistb\x06proto3"
 
 var (
@@ -962,15 +963,17 @@ var file_artist_artist_proto_depIdxs = []int32{
 	3,  // 15: artist.ArtistService.GetArtistsByTrackIDs:input_type -> artist.TrackIDList
 	2,  // 16: artist.ArtistService.GetArtistsByAlbumID:input_type -> artist.AlbumID
 	4,  // 17: artist.ArtistService.GetArtistsByAlbumIDs:input_type -> artist.AlbumIDList
-	8,  // 18: artist.ArtistService.GetAllArtists:output_type -> artist.ArtistList
-	6,  // 19: artist.ArtistService.GetArtistByID:output_type -> artist.ArtistDetailed
-	7,  // 20: artist.ArtistService.GetArtistTitleByID:output_type -> artist.ArtistTitle
-	13, // 21: artist.ArtistService.GetArtistsByTrackID:output_type -> artist.ArtistWithRoleList
-	14, // 22: artist.ArtistService.GetArtistsByTrackIDs:output_type -> artist.ArtistWithRoleMap
-	10, // 23: artist.ArtistService.GetArtistsByAlbumID:output_type -> artist.ArtistWithTitleList
-	11, // 24: artist.ArtistService.GetArtistsByAlbumIDs:output_type -> artist.ArtistWithTitleMap
-	18, // [18:25] is the sub-list for method output_type
-	11, // [11:18] is the sub-list for method input_type
+	0,  // 18: artist.ArtistService.GetAlbumIDsByArtistID:input_type -> artist.ArtistID
+	8,  // 19: artist.ArtistService.GetAllArtists:output_type -> artist.ArtistList
+	6,  // 20: artist.ArtistService.GetArtistByID:output_type -> artist.ArtistDetailed
+	7,  // 21: artist.ArtistService.GetArtistTitleByID:output_type -> artist.ArtistTitle
+	13, // 22: artist.ArtistService.GetArtistsByTrackID:output_type -> artist.ArtistWithRoleList
+	14, // 23: artist.ArtistService.GetArtistsByTrackIDs:output_type -> artist.ArtistWithRoleMap
+	10, // 24: artist.ArtistService.GetArtistsByAlbumID:output_type -> artist.ArtistWithTitleList
+	11, // 25: artist.ArtistService.GetArtistsByAlbumIDs:output_type -> artist.ArtistWithTitleMap
+	4,  // 26: artist.ArtistService.GetAlbumIDsByArtistID:output_type -> artist.AlbumIDList
+	19, // [19:27] is the sub-list for method output_type
+	11, // [11:19] is the sub-list for method input_type
 	11, // [11:11] is the sub-list for extension type_name
 	11, // [11:11] is the sub-list for extension extendee
 	0,  // [0:11] is the sub-list for field type_name

@@ -30,7 +30,7 @@ func (u *artistUsecase) GetArtistByID(ctx context.Context, id int64) (*usecaseMo
 
 func (u *artistUsecase) GetAllArtists(ctx context.Context, filters *usecaseModel.ArtistFilters) ([]*usecaseModel.Artist, error) {
 	protoFilters := &artistProto.Filters{
-		Pagination: model.PaginationFromUsecaseToProto(filters.Pagination),
+		Pagination: model.PaginationFromUsecaseToArtistProto(filters.Pagination),
 	}
 
 	protoArtists, err := (*u.artistClient).GetAllArtists(ctx, protoFilters)
