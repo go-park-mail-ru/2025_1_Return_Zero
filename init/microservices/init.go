@@ -11,6 +11,7 @@ import (
 
 type Clients struct {
 	ArtistClient *grpc.ClientConn
+	AuthClient   *grpc.ClientConn
 }
 
 func InitGrpc(cfg *config.Services, logger *zap.SugaredLogger) (*Clients, error) {
@@ -19,7 +20,13 @@ func InitGrpc(cfg *config.Services, logger *zap.SugaredLogger) (*Clients, error)
 		logger.Fatal("Error creating artist client:", zap.Error(err))
 	}
 
+	authClient, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.AuthService.Host, cfg.AuthService.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logger.Fatal("Error creating auth client:", zap.Error(err))
+	}
+
 	return &Clients{
 		ArtistClient: artistClient,
+		AuthClient:  authClient,
 	}, nil
 }

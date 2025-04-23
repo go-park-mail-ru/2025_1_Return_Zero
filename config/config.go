@@ -52,8 +52,14 @@ type ArtistService struct {
 	Host string
 }
 
+type AuthService struct {
+	Port int `mapstructure:"port"`
+	Host string
+}
+
 type Services struct {
 	ArtistService ArtistService `mapstructure:"artist_service"`
+	AuthService   AuthService   `mapstructure:"auth_service"`
 }
 
 type PaginationConfig struct {
@@ -105,6 +111,7 @@ func LoadConfig() (*Config, error) {
 	config.Redis.RedisPort = os.Getenv("REDIS_PORT")
 
 	config.Services.ArtistService.Host = os.Getenv("ARTIST_SERVICE_HOST")
+	config.Services.AuthService.Host = os.Getenv("AUTH_SERVICE_HOST")
 
 	return &config, nil
 }

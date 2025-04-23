@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth"
+	authProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/auth"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
@@ -17,17 +17,17 @@ var (
 	ErrWrongUsername = errors.New("wrong username")
 )
 
-func NewUserUsecase(userRepo user.Repository, authRepo auth.Repository, userFileRepo userAvatarFile.Repository) user.Usecase {
+func NewUserUsecase(userRepo user.Repository, authClient *authProto.AuthServiceClient, userFileRepo userAvatarFile.Repository) user.Usecase {
 	return &userUsecase{
 		userRepo:     userRepo,
-		authRepo:     authRepo,
+		authClient:   authClient,
 		userFileRepo: userFileRepo,
 	}
 }
 
 type userUsecase struct {
 	userRepo     user.Repository
-	authRepo     auth.Repository
+	authClient   *authProto.AuthServiceClient
 	userFileRepo userAvatarFile.Repository
 }
 
@@ -57,19 +57,19 @@ func (u *userUsecase) CreateUser(ctx context.Context, user *usecaseModel.User) (
 	}
 	userUsecase := toUsecaseModel(newUser)
 	userUsecase.AvatarUrl = avatar_url
-	sessionID, err := u.authRepo.CreateSession(ctx, newUser.ID)
+	sessionID, err := (*u.authClient).CreateSession(ctx, model.UserIDFromUsecaseToProto(newUser.ID))
 	if err != nil {
 		return nil, "", err
 	}
-	return userUsecase, sessionID, nil
+	return userUsecase, model.SessionIDFromProtoToUsecase(sessionID), nil
 }
 
 func (u *userUsecase) GetUserBySID(ctx context.Context, SID string) (*usecaseModel.User, error) {
-	id, err := u.authRepo.GetSession(ctx, SID)
+	id, err := (*u.authClient).GetSession(ctx, model.SessionIDFromUsecaseToProto(SID))
 	if err != nil {
 		return nil, err
 	}
-	user, err := u.userRepo.GetUserByID(ctx, id)
+	user, err := u.userRepo.GetUserByID(ctx, model.UserIDFromProtoToUsecase(id))
 	if err != nil {
 		return nil, err
 	}
@@ -98,15 +98,15 @@ func (u *userUsecase) LoginUser(ctx context.Context, user *usecaseModel.User) (*
 	}
 	usecaseUser := toUsecaseModel(loginUser)
 	usecaseUser.AvatarUrl = avatar_url
-	sessionID, err := u.authRepo.CreateSession(ctx, loginUser.ID)
+	sessionID, err := (*u.authClient).CreateSession(ctx, model.UserIDFromUsecaseToProto(loginUser.ID))
 	if err != nil {
 		return nil, "", err
 	}
-	return usecaseUser, sessionID, nil
+	return usecaseUser, model.SessionIDFromProtoToUsecase(sessionID), nil
 }
 
 func (u *userUsecase) Logout(ctx context.Context, SID string) error {
-	err := u.authRepo.DeleteSession(ctx, SID)
+	_, err := (*u.authClient).DeleteSession(ctx, model.SessionIDFromUsecaseToProto(SID))
 	if err != nil {
 		return err
 	}
@@ -141,7 +141,7 @@ func (u *userUsecase) DeleteUser(ctx context.Context, user *usecaseModel.User, S
 	if err != nil {
 		return err
 	}
-	err = u.authRepo.DeleteSession(ctx, SID)
+	_, err = (*u.authClient).DeleteSession(ctx, model.SessionIDFromUsecaseToProto(SID))
 	if err != nil {
 		return err
 	}

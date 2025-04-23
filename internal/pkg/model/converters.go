@@ -2,6 +2,7 @@ package model
 
 import (
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
+	authProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/auth"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
@@ -365,5 +366,25 @@ func ChangeDataFromDeliveryToUsecase(deliveryUser *delivery.UserChangeSettings) 
 		NewEmail:    deliveryUser.NewEmail,
 		NewPassword: deliveryUser.NewPassword,
 		Privacy:     privacyDelivery,
+	}
+}
+
+func SessionIDFromProtoToUsecase(protoSessionID *authProto.SessionID) string {
+	return protoSessionID.SessionId
+}
+
+func UserIDFromProtoToUsecase(protoUserID *authProto.UserID) int64 {
+	return protoUserID.Id
+}
+
+func SessionIDFromUsecaseToProto(sessionID string) *authProto.SessionID {
+	return &authProto.SessionID{
+		SessionId: sessionID,
+	}
+}
+
+func UserIDFromUsecaseToProto(userID int64) *authProto.UserID {
+	return &authProto.UserID{
+		Id: userID,
 	}
 }
