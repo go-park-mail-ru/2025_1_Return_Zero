@@ -15,6 +15,15 @@ INSERT INTO artist (title, thumbnail_url, description) VALUES
     ('Toaka', 'https://returnzeroimages.fra1.digitaloceanspaces.com/artists/toaka.jpg', 'Toaka is a Japanese artist'),
     ('Ayase', 'https://returnzeroimages.fra1.digitaloceanspaces.com/artists/ayase.jpg', 'Ayase is a Japanese artist');
 
+INSERT INTO artist_stats (artist_id) VALUES
+    (1),
+    (2),
+    (3),
+    (4),
+    (5),
+    (6),
+    (7);
+
 INSERT INTO album (title, thumbnail_url, release_date, type) VALUES
 	('Anticyclone', 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/anticyclone.jpg', '2023-01-01', 'album'),
 	('THE BOOK', 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/thebook.jpg', '2024-01-01', 'album'),
@@ -22,6 +31,14 @@ INSERT INTO album (title, thumbnail_url, release_date, type) VALUES
 	('Your Name.', 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/yourname.jpg', '2021-01-01', 'album'),
     ('Official HIGE DANdism', 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/officialhigedandism.jpg', '2020-01-01', 'album'),
     ('Ghost City Tokyo', 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/ghostcitytokyo.jpg', '2024-01-01', 'album');
+
+INSERT INTO album_stats (album_id) VALUES
+    (1),
+    (2),
+    (3),
+    (4),
+    (5),
+    (6);
 
 INSERT INTO genre (name) VALUES
 	('J-Pop'),
@@ -58,6 +75,28 @@ INSERT INTO track (title, album_id, duration, thumbnail_url, file_url, position)
     ('Gunjo', 2, 248, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/gunjo.jpg', 'gunjo.mp3', 4),
     ('Tabun', 2, 263, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/tabun.jpg', 'tabun.mp3', 5),
     ('Ghost City Tokyo', 6, 204, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/ghostcitytokyo.jpg', 'ghostcitytokyo.mp3', 1);
+
+INSERT INTO track_stats (track_id) VALUES
+    (1),
+    (2),
+    (3),
+    (4),
+    (5),
+    (6),
+    (7),
+    (8),
+    (9),
+    (10),
+    (11),
+    (12),
+    (13),
+    (14),
+    (15),
+    (16),
+    (17),
+    (18),
+    (19),
+    (20);
 
 INSERT INTO genre_track (genre_id, track_id) VALUES
     (1, 1),
@@ -96,7 +135,3 @@ INSERT INTO album_artist (album_id, artist_id) VALUES
     (4, 4),
     (5, 5),
     (6, 7);
-
-REFRESH MATERIALIZED VIEW artist_stats;
-REFRESH MATERIALIZED VIEW album_stats;
-REFRESH MATERIALIZED VIEW track_stats;

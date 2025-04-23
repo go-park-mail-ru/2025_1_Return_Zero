@@ -89,3 +89,16 @@ func (s *ArtistService) GetAlbumIDsByArtistID(ctx context.Context, req *artistPr
 	}
 	return &artistProto.AlbumIDList{Ids: albumIDList}, nil
 }
+
+func (s *ArtistService) GetTrackIDsByArtistID(ctx context.Context, req *artistProto.ArtistID) (*artistProto.TrackIDList, error) {
+	trackIDs, err := s.artistUsecase.GetTrackIDsByArtistID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	trackIDList := make([]*artistProto.TrackID, 0, len(trackIDs))
+	for _, trackID := range trackIDs {
+		trackIDList = append(trackIDList, &artistProto.TrackID{Id: trackID})
+	}
+	return &artistProto.TrackIDList{Ids: trackIDList}, nil
+}

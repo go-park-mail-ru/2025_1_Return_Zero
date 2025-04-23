@@ -32,7 +32,7 @@ func (u *artistUsecase) GetArtistByID(ctx context.Context, id int64) (*usecaseMo
 	return model.ArtistDetailedFromRepositoryToUsecase(repoArtist, stats), nil
 }
 
-func (u *artistUsecase) GetAllArtists(ctx context.Context, filters *usecaseModel.ArtistFilters) (*usecaseModel.ArtistList, error) {
+func (u *artistUsecase) GetAllArtists(ctx context.Context, filters *usecaseModel.Filters) (*usecaseModel.ArtistList, error) {
 	repoFilters := model.ArtistFiltersFromUsecaseToRepository(filters)
 	repoArtists, err := u.artistRepo.GetAllArtists(ctx, repoFilters)
 	if err != nil {
@@ -87,4 +87,12 @@ func (u *artistUsecase) GetAlbumIDsByArtistID(ctx context.Context, id int64) ([]
 		return nil, err
 	}
 	return repoAlbumIDs, nil
+}
+
+func (u *artistUsecase) GetTrackIDsByArtistID(ctx context.Context, id int64) ([]int64, error) {
+	repoTrackIDs, err := u.artistRepo.GetTrackIDsByArtistID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return repoTrackIDs, nil
 }

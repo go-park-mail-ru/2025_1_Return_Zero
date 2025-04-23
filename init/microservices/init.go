@@ -12,6 +12,7 @@ import (
 type Clients struct {
 	ArtistClient *grpc.ClientConn
 	AlbumClient  *grpc.ClientConn
+	TrackClient  *grpc.ClientConn
 }
 
 func InitGrpc(cfg *config.Services, logger *zap.SugaredLogger) (*Clients, error) {
@@ -25,8 +26,14 @@ func InitGrpc(cfg *config.Services, logger *zap.SugaredLogger) (*Clients, error)
 		logger.Fatal("Error creating album client:", zap.Error(err))
 	}
 
+	trackClient, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.TrackService.Host, cfg.TrackService.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logger.Fatal("Error creating track client:", zap.Error(err))
+	}
+
 	return &Clients{
 		ArtistClient: artistClient,
 		AlbumClient:  albumClient,
+		TrackClient:  trackClient,
 	}, nil
 }

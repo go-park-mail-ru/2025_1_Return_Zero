@@ -26,6 +26,7 @@ type ArtistServiceClient interface {
 	GetArtistsByAlbumID(ctx context.Context, in *AlbumID, opts ...grpc.CallOption) (*ArtistWithTitleList, error)
 	GetArtistsByAlbumIDs(ctx context.Context, in *AlbumIDList, opts ...grpc.CallOption) (*ArtistWithTitleMap, error)
 	GetAlbumIDsByArtistID(ctx context.Context, in *ArtistID, opts ...grpc.CallOption) (*AlbumIDList, error)
+	GetTrackIDsByArtistID(ctx context.Context, in *ArtistID, opts ...grpc.CallOption) (*TrackIDList, error)
 }
 
 type artistServiceClient struct {
@@ -108,6 +109,15 @@ func (c *artistServiceClient) GetAlbumIDsByArtistID(ctx context.Context, in *Art
 	return out, nil
 }
 
+func (c *artistServiceClient) GetTrackIDsByArtistID(ctx context.Context, in *ArtistID, opts ...grpc.CallOption) (*TrackIDList, error) {
+	out := new(TrackIDList)
+	err := c.cc.Invoke(ctx, "/artist.ArtistService/GetTrackIDsByArtistID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ArtistServiceServer is the server API for ArtistService service.
 // All implementations must embed UnimplementedArtistServiceServer
 // for forward compatibility
@@ -120,6 +130,7 @@ type ArtistServiceServer interface {
 	GetArtistsByAlbumID(context.Context, *AlbumID) (*ArtistWithTitleList, error)
 	GetArtistsByAlbumIDs(context.Context, *AlbumIDList) (*ArtistWithTitleMap, error)
 	GetAlbumIDsByArtistID(context.Context, *ArtistID) (*AlbumIDList, error)
+	GetTrackIDsByArtistID(context.Context, *ArtistID) (*TrackIDList, error)
 	mustEmbedUnimplementedArtistServiceServer()
 }
 
@@ -150,6 +161,9 @@ func (UnimplementedArtistServiceServer) GetArtistsByAlbumIDs(context.Context, *A
 }
 func (UnimplementedArtistServiceServer) GetAlbumIDsByArtistID(context.Context, *ArtistID) (*AlbumIDList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAlbumIDsByArtistID not implemented")
+}
+func (UnimplementedArtistServiceServer) GetTrackIDsByArtistID(context.Context, *ArtistID) (*TrackIDList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTrackIDsByArtistID not implemented")
 }
 func (UnimplementedArtistServiceServer) mustEmbedUnimplementedArtistServiceServer() {}
 
@@ -308,6 +322,24 @@ func _ArtistService_GetAlbumIDsByArtistID_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ArtistService_GetTrackIDsByArtistID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ArtistID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArtistServiceServer).GetTrackIDsByArtistID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/artist.ArtistService/GetTrackIDsByArtistID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArtistServiceServer).GetTrackIDsByArtistID(ctx, req.(*ArtistID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ArtistService_ServiceDesc is the grpc.ServiceDesc for ArtistService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -346,6 +378,10 @@ var ArtistService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAlbumIDsByArtistID",
 			Handler:    _ArtistService_GetAlbumIDsByArtistID_Handler,
+		},
+		{
+			MethodName: "GetTrackIDsByArtistID",
+			Handler:    _ArtistService_GetTrackIDsByArtistID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

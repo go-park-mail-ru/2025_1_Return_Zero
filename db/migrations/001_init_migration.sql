@@ -47,9 +47,17 @@ CREATE TABLE IF NOT EXISTS artist (
     CONSTRAINT artist_description_length_check CHECK (LENGTH(description) <= 1000),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    thumbnail_url TEXT NOT NULL DEFAULT '/default_artist.png',
-    CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
-    CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
+    thumbnail_url TEXT NOT NULL DEFAULT '/default_artist.png'
+);
+
+CREATE TABLE IF NOT EXISTS artist_stats (
+    artist_id BIGINT NOT NULL PRIMARY KEY,
+    listeners_count BIGINT NOT NULL DEFAULT 0,
+    favorites_count BIGINT NOT NULL DEFAULT 0,
+    FOREIGN KEY (artist_id)
+        REFERENCES artist (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS album (
@@ -61,7 +69,17 @@ CREATE TABLE IF NOT EXISTS album (
     release_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT album_valid_type_check CHECK (type IN ('album', 'single', 'ep', 'compilation')),
+    CONSTRAINT album_valid_type_check CHECK (type IN ('album', 'single', 'ep', 'compilation'))
+);
+
+CREATE TABLE IF NOT EXISTS album_stats (
+    album_id BIGINT NOT NULL PRIMARY KEY,
+    listeners_count BIGINT NOT NULL DEFAULT 0,
+    favorites_count BIGINT NOT NULL DEFAULT 0,
+    FOREIGN KEY (album_id)
+        REFERENCES album (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
     CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
     CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
@@ -82,7 +100,17 @@ CREATE TABLE IF NOT EXISTS track (
         ON DELETE CASCADE
         ON UPDATE CASCADE,
     CONSTRAINT track_valid_duration_check CHECK (duration > 0),
-    CONSTRAINT unique_album_track_check UNIQUE (album_id, position),
+    CONSTRAINT unique_album_track_check UNIQUE (album_id, position)
+);
+
+CREATE TABLE IF NOT EXISTS track_stats (
+    track_id BIGINT NOT NULL PRIMARY KEY,
+    listeners_count BIGINT NOT NULL DEFAULT 0,
+    favorites_count BIGINT NOT NULL DEFAULT 0,
+    FOREIGN KEY (track_id) 
+        REFERENCES track (id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE,
     CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
     CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
@@ -128,7 +156,7 @@ CREATE TABLE IF NOT EXISTS playlist (
     CONSTRAINT playlist_title_length_check CHECK (LENGTH(title) >= 1 AND LENGTH(title) <= 100),
     description TEXT DEFAULT '',
     CONSTRAINT playlist_description_length_check CHECK (LENGTH(description) <= 1000),
-    user_id BIGINT, -- NULL для подборок
+    user_id BIGINT NOT NULL,
     thumbnail_url TEXT NOT NULL DEFAULT '/default_playlist.png',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -261,69 +289,6 @@ CREATE TABLE IF NOT EXISTS stream (
     CONSTRAINT stream_valid_duration_check CHECK (duration >= 0)
 );
 
-CREATE MATERIALIZED VIEW artist_stats AS
-SELECT 
-    a.id AS artist_id,
-    COUNT(DISTINCT s.user_id) AS listeners_count,
-    COUNT(DISTINCT fa.user_id) AS favorites_count
-FROM 
-    artist a
-LEFT JOIN 
-    track_artist ta ON a.id = ta.artist_id
-LEFT JOIN 
-    track t ON ta.track_id = t.id
-LEFT JOIN 
-    stream s ON t.id = s.track_id
-LEFT JOIN 
-    favorite_artist fa ON a.id = fa.artist_id
-GROUP BY 
-    a.id, a.title;
-
-SELECT cron.schedule(
-    'refresh_artist_stats', 
-    '0 */1 * * *', 
-    $$REFRESH MATERIALIZED VIEW artist_stats$$);
-
-CREATE MATERIALIZED VIEW album_stats AS
-SELECT 
-    a.id AS album_id,
-    COUNT(DISTINCT s.user_id) AS listeners_count,
-    COUNT(DISTINCT fa.user_id) AS favorites_count
-FROM 
-    album a
-LEFT JOIN 
-    track t ON a.id = t.album_id
-LEFT JOIN 
-    stream s ON t.id = s.track_id
-LEFT JOIN 
-    favorite_album fa ON a.id = fa.album_id
-GROUP BY 
-    a.id, a.title;
-
-SELECT cron.schedule(
-    'refresh_album_stats', 
-    '0 */1 * * *', 
-    $$REFRESH MATERIALIZED VIEW album_stats$$);
-
-CREATE MATERIALIZED VIEW track_stats AS
-SELECT 
-    t.id AS track_id,
-    COUNT(DISTINCT s.user_id) AS listeners_count,
-    COUNT(DISTINCT fa.user_id) AS favorites_count
-FROM 
-    track t
-LEFT JOIN 
-    stream s ON t.id = s.track_id
-LEFT JOIN 
-    favorite_track fa ON t.id = fa.track_id
-GROUP BY 
-    t.id, t.title;
-
-SELECT cron.schedule(
-    'refresh_track_stats', 
-    '0 */1 * * *', 
-    $$REFRESH MATERIALIZED VIEW track_stats$$);
-
 ---- create above / drop below ----
 
 DROP MATERIALIZED VIEW IF EXISTS artist_stats;
@@ -344,6 +309,9 @@ DROP TABLE IF EXISTS track;
 DROP TABLE IF EXISTS album;
 DROP TABLE IF EXISTS artist;
 DROP TABLE IF EXISTS genre;
+DROP TABLE IF EXISTS artist_stats;  
+DROP TABLE IF EXISTS album_stats;
+DROP TABLE IF EXISTS track_stats;
 DROP TABLE IF EXISTS user_settings;
 DROP TABLE IF EXISTS "user";
 

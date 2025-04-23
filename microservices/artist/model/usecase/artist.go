@@ -49,6 +49,6 @@ type Pagination struct {
 	Limit  int64
 }
 
-type ArtistFilters struct {
+type Filters struct {
 	Pagination *Pagination
 }

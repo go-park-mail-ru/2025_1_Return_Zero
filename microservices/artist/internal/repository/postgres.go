@@ -85,6 +85,12 @@ const (
 		FROM album_artist
 		WHERE artist_id = $1
 	`
+
+	GetTrackIDsByArtistID = `
+		SELECT track_id
+		FROM track_artist
+		WHERE artist_id = $1
+	`
 )
 
 type artistPostgresRepository struct {
@@ -95,7 +101,7 @@ func NewArtistPostgresRepository(db *sql.DB) domain.Repository {
 	return &artistPostgresRepository{db: db}
 }
 
-func (r *artistPostgresRepository) GetAllArtists(ctx context.Context, filters *repoModel.ArtistFilters) ([]*repoModel.Artist, error) {
+func (r *artistPostgresRepository) GetAllArtists(ctx context.Context, filters *repoModel.Filters) ([]*repoModel.Artist, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting all artists with filters from db", zap.Any("filters", filters), zap.String("query", GetAllArtistsQuery))
 	rows, err := r.db.QueryContext(ctx, GetAllArtistsQuery, filters.Pagination.Limit, filters.Pagination.Offset)
@@ -293,4 +299,28 @@ func (r *artistPostgresRepository) GetAlbumIDsByArtistID(ctx context.Context, id
 	}
 
 	return albumIDs, nil
+}
+
+func (r *artistPostgresRepository) GetTrackIDsByArtistID(ctx context.Context, id int64) ([]int64, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting track ids by artist id from db", zap.Int64("id", id), zap.String("query", GetTrackIDsByArtistID))
+	rows, err := r.db.QueryContext(ctx, GetTrackIDsByArtistID, id)
+	if err != nil {
+		logger.Error("failed to get track ids by artist id", zap.Error(err))
+		return nil, err
+	}
+	defer rows.Close()
+
+	trackIDs := make([]int64, 0)
+	for rows.Next() {
+		var trackID int64
+		err := rows.Scan(&trackID)
+		if err != nil {
+			logger.Error("failed to scan track id", zap.Error(err))
+			return nil, err
+		}
+		trackIDs = append(trackIDs, trackID)
+	}
+
+	return trackIDs, nil
 }

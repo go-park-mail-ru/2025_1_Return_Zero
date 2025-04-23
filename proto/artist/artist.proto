@@ -13,6 +13,7 @@ service ArtistService {
 	rpc GetArtistsByAlbumID(AlbumID) returns (ArtistWithTitleList);
 	rpc GetArtistsByAlbumIDs(AlbumIDList) returns (ArtistWithTitleMap);
 	rpc GetAlbumIDsByArtistID(ArtistID) returns (AlbumIDList);
+	rpc GetTrackIDsByArtistID(ArtistID) returns (TrackIDList);
 }
 
 message ArtistID {

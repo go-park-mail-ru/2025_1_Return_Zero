@@ -175,8 +175,8 @@ func PaginationFromUsecaseToRepository(pagination *usecaseModel.Pagination) *rep
 	}
 }
 
-func ArtistFiltersFromUsecaseToRepository(filters *usecaseModel.ArtistFilters) *repoModel.ArtistFilters {
-	return &repoModel.ArtistFilters{
+func ArtistFiltersFromUsecaseToRepository(filters *usecaseModel.Filters) *repoModel.Filters {
+	return &repoModel.Filters{
 		Pagination: PaginationFromUsecaseToRepository(filters.Pagination),
 	}
 }
@@ -204,8 +204,8 @@ func PaginationFromProtoToUsecase(pagination *protoModel.Pagination) *usecaseMod
 	}
 }
 
-func ArtistFiltersFromProtoToUsecase(filters *protoModel.Filters) *usecaseModel.ArtistFilters {
-	return &usecaseModel.ArtistFilters{
+func ArtistFiltersFromProtoToUsecase(filters *protoModel.Filters) *usecaseModel.Filters {
+	return &usecaseModel.Filters{
 		Pagination: PaginationFromProtoToUsecase(filters.Pagination),
 	}
 }

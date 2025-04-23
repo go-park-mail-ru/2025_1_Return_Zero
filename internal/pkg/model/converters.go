@@ -3,6 +3,7 @@ package model
 import (
 	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
+	trackProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
@@ -33,6 +34,13 @@ func PaginationFromUsecaseToArtistProto(usecasePagination *usecase.Pagination) *
 
 func PaginationFromUsecaseToAlbumProto(usecasePagination *usecase.Pagination) *albumProto.Pagination {
 	return &albumProto.Pagination{
+		Offset: int64(usecasePagination.Offset),
+		Limit:  int64(usecasePagination.Limit),
+	}
+}
+
+func PaginationFromUsecaseToTrackProto(usecasePagination *usecase.Pagination) *trackProto.Pagination {
+	return &trackProto.Pagination{
 		Offset: int64(usecasePagination.Offset),
 		Limit:  int64(usecasePagination.Limit),
 	}
@@ -117,6 +125,14 @@ func AlbumFromProtoToUsecase(protoAlbum *albumProto.Album) *usecase.Album {
 	}
 }
 
+func AlbumIdsFromUsecaseToAlbumProto(usecaseAlbumIds []int64) []*albumProto.AlbumID {
+	albumIds := make([]*albumProto.AlbumID, 0, len(usecaseAlbumIds))
+	for _, id := range usecaseAlbumIds {
+		albumIds = append(albumIds, &albumProto.AlbumID{Id: id})
+	}
+	return albumIds
+}
+
 ///////////////////////////////////// ARTIST ////////////////////////////////////
 
 func ArtistWithTitleListFromProtoToUsecase(protoArtistWithTitleList []*artistProto.ArtistWithTitle) []*usecase.AlbumArtist {
@@ -186,6 +202,26 @@ func ArtistDetailedFromUsecaseToDelivery(usecaseArtistDetailed *usecase.ArtistDe
 		Favorites: usecaseArtistDetailed.Favorites,
 		Listeners: usecaseArtistDetailed.Listeners,
 	}
+}
+
+func TrackIdsFromUsecaseToArtistProto(usecaseTrackIds []int64) []*artistProto.TrackID {
+	trackIds := make([]*artistProto.TrackID, 0, len(usecaseTrackIds))
+	for _, id := range usecaseTrackIds {
+		trackIds = append(trackIds, &artistProto.TrackID{Id: id})
+	}
+	return trackIds
+}
+
+func ArtistWithRoleListFromProtoToUsecase(protoArtistWithRoleList []*artistProto.ArtistWithRole) []*usecase.TrackArtist {
+	artistWithRoleList := make([]*usecase.TrackArtist, 0, len(protoArtistWithRoleList))
+	for _, protoArtistWithRole := range protoArtistWithRoleList {
+		artistWithRoleList = append(artistWithRoleList, &usecase.TrackArtist{
+			ID:    protoArtistWithRole.Id,
+			Title: protoArtistWithRole.Title,
+			Role:  protoArtistWithRole.Role,
+		})
+	}
+	return artistWithRoleList
 }
 
 ///////////////////////////////////// TRACK ////////////////////////////////////
@@ -280,6 +316,41 @@ func TrackDetailedFromRepositoryToUsecase(repositoryTrack *repository.TrackWithF
 	}
 }
 
+func TrackIdsFromUsecaseToTrackProto(usecaseTrackIds []*usecase.Track) []*trackProto.TrackID {
+	trackIds := make([]*trackProto.TrackID, 0, len(usecaseTrackIds))
+	for _, usecaseTrack := range usecaseTrackIds {
+		trackIds = append(trackIds, &trackProto.TrackID{Id: usecaseTrack.ID})
+	}
+	return trackIds
+}
+
+func TrackFromProtoToUsecase(protoTrack *trackProto.Track, protoAlbum *albumProto.AlbumTitle, protoArtists *artistProto.ArtistWithRoleList) *usecase.Track {
+	return &usecase.Track{
+		ID:        protoTrack.Id,
+		Title:     protoTrack.Title,
+		Thumbnail: protoTrack.Thumbnail,
+		Duration:  protoTrack.Duration,
+		AlbumID:   protoTrack.AlbumId,
+		Album:     protoAlbum.Title,
+		Artists:   ArtistWithRoleListFromProtoToUsecase(protoArtists.Artists),
+	}
+}
+
+func TrackDetailedFromProtoToUsecase(protoTrack *trackProto.TrackDetailed, protoAlbum *albumProto.AlbumTitle, protoArtists *artistProto.ArtistWithRoleList) *usecase.TrackDetailed {
+	return &usecase.TrackDetailed{
+		Track:   *TrackFromProtoToUsecase(protoTrack.Track, protoAlbum, protoArtists),
+		FileUrl: protoTrack.FileUrl,
+	}
+}
+
+func TrackIDListFromArtistToTrackProto(protoArtist *artistProto.TrackIDList) *trackProto.TrackIDList {
+	trackIds := make([]*trackProto.TrackID, 0, len(protoArtist.Ids))
+	for _, id := range protoArtist.Ids {
+		trackIds = append(trackIds, &trackProto.TrackID{Id: id.Id})
+	}
+	return &trackProto.TrackIDList{Ids: trackIds}
+}
+
 ///////////////////////////////////// STREAM ////////////////////////////////////
 
 func TrackStreamCreateDataFromDeliveryToUsecase(deliveryTrackStream *delivery.TrackStreamCreateData) *usecase.TrackStreamCreateData {
@@ -308,6 +379,21 @@ func TrackStreamUpdateDataFromDeliveryToUsecase(repositoryTrackStream *delivery.
 		StreamID: streamID,
 		Duration: repositoryTrackStream.Duration,
 		UserID:   userID,
+	}
+}
+
+func TrackStreamCreateDataFromUsecaseToProto(usecaseTrackStream *usecase.TrackStreamCreateData) *trackProto.TrackStreamCreateData {
+	return &trackProto.TrackStreamCreateData{
+		TrackId: &trackProto.TrackID{Id: usecaseTrackStream.TrackID},
+		UserId:  &trackProto.UserID{Id: usecaseTrackStream.UserID},
+	}
+}
+
+func TrackStreamUpdateDataFromUsecaseToProto(usecaseTrackStream *usecase.TrackStreamUpdateData) *trackProto.TrackStreamUpdateData {
+	return &trackProto.TrackStreamUpdateData{
+		StreamId: &trackProto.StreamID{Id: usecaseTrackStream.StreamID},
+		Duration: usecaseTrackStream.Duration,
+		UserId:   &trackProto.UserID{Id: usecaseTrackStream.UserID},
 	}
 }
 

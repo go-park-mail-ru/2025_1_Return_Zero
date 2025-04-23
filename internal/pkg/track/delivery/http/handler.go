@@ -289,15 +289,14 @@ func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	vars := mux.Vars(r)
-	username := vars["username"]
-	if username == "" {
-		logger.Error("username is required")
-		json.WriteErrorResponse(w, http.StatusBadRequest, "username is required", nil)
+	user, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		logger.Warn("attempt to get last listened tracks for unauthorized user")
+		json.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
 		return
 	}
 
-	usecaseTracks, err := h.usecase.GetLastListenedTracks(ctx, username, &usecaseModel.TrackFilters{
+	usecaseTracks, err := h.usecase.GetLastListenedTracks(ctx, user.ID, &usecaseModel.TrackFilters{
 		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
 	})
 

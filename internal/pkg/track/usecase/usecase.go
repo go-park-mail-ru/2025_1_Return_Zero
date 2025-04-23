@@ -3,60 +3,56 @@ package usecase
 import (
 	"context"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
+	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
+	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
+	trackProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
-	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/trackFile"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
 )
 
-func NewUsecase(trackRepository track.Repository, artistRepository artist.Repository, albumRepository album.Repository, trackFileRepository trackFile.Repository, userRepository user.Repository) track.Usecase {
-	return &trackUsecase{trackRepo: trackRepository, artistRepo: artistRepository, albumRepo: albumRepository, trackFileRepo: trackFileRepository, userRepo: userRepository}
+func NewUsecase(trackClient *trackProto.TrackServiceClient, artistClient *artistProto.ArtistServiceClient, albumClient *albumProto.AlbumServiceClient) track.Usecase {
+	return &trackUsecase{trackClient: trackClient, artistClient: artistClient, albumClient: albumClient}
 }
 
 type trackUsecase struct {
-	trackRepo     track.Repository
-	artistRepo    artist.Repository
-	albumRepo     album.Repository
-	trackFileRepo trackFile.Repository
-	userRepo      user.Repository
+	trackClient  *trackProto.TrackServiceClient
+	artistClient *artistProto.ArtistServiceClient
+	albumClient  *albumProto.AlbumServiceClient
 }
 
 func (u *trackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
-	repoFilters := &repoModel.TrackFilters{
-		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
+	protoFilters := &trackProto.Filters{
+		Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination),
 	}
-	repoTracks, err := u.trackRepo.GetAllTracks(ctx, repoFilters)
+	protoTracks, err := (*u.trackClient).GetAllTracks(ctx, protoFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	trackIDs := make([]int64, 0, len(repoTracks))
-	for _, repoTrack := range repoTracks {
-		trackIDs = append(trackIDs, repoTrack.ID)
+	trackIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		trackIDs = append(trackIDs, protoTrack.Id)
 	}
 
-	albumIDs := make([]int64, 0, len(repoTracks))
-	for _, repoTrack := range repoTracks {
-		albumIDs = append(albumIDs, repoTrack.AlbumID)
+	albumIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		albumIDs = append(albumIDs, protoTrack.AlbumId)
 	}
 
-	repoArtists, err := u.artistRepo.GetArtistsByTrackIDs(ctx, trackIDs)
+	protoArtists, err := (*u.artistClient).GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
 	if err != nil {
 		return nil, err
 	}
 
-	albumTitles, err := u.albumRepo.GetAlbumTitleByIDs(ctx, albumIDs)
+	protoAlbumTitles, err := (*u.albumClient).GetAlbumTitleByIDs(ctx, &albumProto.AlbumIDList{Ids: model.AlbumIdsFromUsecaseToAlbumProto(albumIDs)})
 	if err != nil {
 		return nil, err
 	}
 
-	tracks := make([]*usecaseModel.Track, 0, len(repoTracks))
-	for _, repoTrack := range repoTracks {
-		track := model.TrackFromRepositoryToUsecase(repoTrack, repoArtists[repoTrack.ID], albumTitles[repoTrack.AlbumID])
+	tracks := make([]*usecaseModel.Track, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		track := model.TrackFromProtoToUsecase(protoTrack, protoAlbumTitles.Titles[protoTrack.AlbumId], protoArtists.Artists[protoTrack.Id])
 		tracks = append(tracks, track)
 	}
 
@@ -64,63 +60,64 @@ func (u *trackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.T
 }
 
 func (u *trackUsecase) GetTrackByID(ctx context.Context, id int64) (*usecaseModel.TrackDetailed, error) {
-	repoTrack, err := u.trackRepo.GetTrackByID(ctx, id)
+	protoTrack, err := (*u.trackClient).GetTrackByID(ctx, &trackProto.TrackID{Id: id})
 	if err != nil {
 		return nil, err
 	}
 
-	repoArtists, err := u.artistRepo.GetArtistsByTrackID(ctx, repoTrack.ID)
+	protoArtists, err := (*u.artistClient).GetArtistsByTrackID(ctx, &artistProto.TrackID{Id: id})
 	if err != nil {
 		return nil, err
 	}
 
-	albumTitle, err := u.albumRepo.GetAlbumTitleByID(ctx, repoTrack.AlbumID)
+	protoAlbumTitle, err := (*u.albumClient).GetAlbumTitleByID(ctx, &albumProto.AlbumID{Id: protoTrack.Track.AlbumId})
 	if err != nil {
 		return nil, err
 	}
 
-	trackFileUrl, err := u.trackFileRepo.GetPresignedURL(repoTrack.FileKey)
-	if err != nil {
-		return nil, err
-	}
-
-	trackDetailed := model.TrackDetailedFromRepositoryToUsecase(repoTrack, repoArtists, albumTitle, trackFileUrl)
+	trackDetailed := model.TrackDetailedFromProtoToUsecase(protoTrack, protoAlbumTitle, protoArtists)
 
 	return trackDetailed, nil
 }
 
 func (u *trackUsecase) GetTracksByArtistID(ctx context.Context, id int64, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
-	repoFilters := &repoModel.TrackFilters{
-		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
+	protoFilters := &trackProto.Filters{
+		Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination),
 	}
-	repoTracks, err := u.trackRepo.GetTracksByArtistID(ctx, id, repoFilters)
+
+	artistTrackIDs, err := (*u.artistClient).GetTrackIDsByArtistID(ctx, &artistProto.ArtistID{Id: id})
 	if err != nil {
 		return nil, err
 	}
 
-	trackIDs := make([]int64, 0, len(repoTracks))
-	for _, repoTrack := range repoTracks {
-		trackIDs = append(trackIDs, repoTrack.ID)
-	}
-
-	albumIDs := make([]int64, 0, len(repoTracks))
-	for _, repoTrack := range repoTracks {
-		albumIDs = append(albumIDs, repoTrack.AlbumID)
-	}
-
-	albumTitles, err := u.albumRepo.GetAlbumTitleByIDs(ctx, albumIDs)
+	protoTracks, err := (*u.trackClient).GetTracksByIDsFiltered(ctx, &trackProto.TrackIDListWithFilters{Ids: model.TrackIDListFromArtistToTrackProto(artistTrackIDs), Filters: protoFilters})
 	if err != nil {
 		return nil, err
 	}
 
-	repoArtists, err := u.artistRepo.GetArtistsByTrackIDs(ctx, trackIDs)
+	trackIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		trackIDs = append(trackIDs, protoTrack.Id)
+	}
+
+	albumIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		albumIDs = append(albumIDs, protoTrack.AlbumId)
+	}
+
+	protoAlbumTitles, err := (*u.albumClient).GetAlbumTitleByIDs(ctx, &albumProto.AlbumIDList{Ids: model.AlbumIdsFromUsecaseToAlbumProto(albumIDs)})
 	if err != nil {
 		return nil, err
 	}
 
-	tracks := make([]*usecaseModel.Track, 0, len(repoTracks))
-	for _, repoTrack := range repoTracks {
-		track := model.TrackFromRepositoryToUsecase(repoTrack, repoArtists[repoTrack.ID], albumTitles[repoTrack.AlbumID])
+	protoArtists, err := (*u.artistClient).GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
+	if err != nil {
+		return nil, err
+	}
+
+	tracks := make([]*usecaseModel.Track, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		track := model.TrackFromProtoToUsecase(protoTrack, protoAlbumTitles.Titles[protoTrack.AlbumId], protoArtists.Artists[protoTrack.Id])
 		tracks = append(tracks, track)
 	}
 
@@ -128,26 +125,18 @@ func (u *trackUsecase) GetTracksByArtistID(ctx context.Context, id int64, filter
 }
 
 func (u *trackUsecase) CreateStream(ctx context.Context, stream *usecaseModel.TrackStreamCreateData) (int64, error) {
-	repoTrackStreamCreateData := model.TrackStreamCreateDataFromUsecaseToRepository(stream)
-	streamID, err := u.trackRepo.CreateStream(ctx, repoTrackStreamCreateData)
+	protoTrackStreamCreateData := model.TrackStreamCreateDataFromUsecaseToProto(stream)
+	streamID, err := (*u.trackClient).CreateStream(ctx, protoTrackStreamCreateData)
 	if err != nil {
 		return 0, err
 	}
 
-	return streamID, nil
+	return streamID.Id, nil
 }
 
 func (u *trackUsecase) UpdateStreamDuration(ctx context.Context, endedStream *usecaseModel.TrackStreamUpdateData) error {
-	repoTrackStream, err := u.trackRepo.GetStreamByID(ctx, endedStream.StreamID)
-	if err != nil {
-		return err
-	}
-
-	if repoTrackStream.UserID != endedStream.UserID {
-		return track.ErrStreamPermissionDenied
-	}
-
-	err = u.trackRepo.UpdateStreamDuration(ctx, model.TrackStreamUpdateDataFromUsecaseToRepository(endedStream))
+	protoTrackStreamUpdateData := model.TrackStreamUpdateDataFromUsecaseToProto(endedStream)
+	_, err := (*u.trackClient).UpdateStreamDuration(ctx, protoTrackStreamUpdateData)
 	if err != nil {
 		return err
 	}
@@ -155,58 +144,41 @@ func (u *trackUsecase) UpdateStreamDuration(ctx context.Context, endedStream *us
 	return nil
 }
 
-func (u *trackUsecase) GetLastListenedTracks(ctx context.Context, username string, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
-	repoFilters := &repoModel.TrackFilters{
-		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
+func (u *trackUsecase) GetLastListenedTracks(ctx context.Context, userID int64, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
+
+	protoUserIDWithFilters := &trackProto.UserIDWithFilters{
+		UserId:  &trackProto.UserID{Id: userID},
+		Filters: &trackProto.Filters{Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination)},
 	}
-	userID, err := u.userRepo.GetIDByUsername(ctx, username)
+
+	protoTracks, err := (*u.trackClient).GetLastListenedTracks(ctx, protoUserIDWithFilters)
 	if err != nil {
 		return nil, err
 	}
 
-	repoStreams, err := u.trackRepo.GetStreamsByUserID(ctx, userID, repoFilters)
+	trackIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		trackIDs = append(trackIDs, protoTrack.Id)
+	}
+
+	albumIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		albumIDs = append(albumIDs, protoTrack.AlbumId)
+	}
+
+	albumTitles, err := (*u.albumClient).GetAlbumTitleByIDs(ctx, &albumProto.AlbumIDList{Ids: model.AlbumIdsFromUsecaseToAlbumProto(albumIDs)})
 	if err != nil {
 		return nil, err
 	}
 
-	ids := make([]int64, 0, len(repoStreams))
-	for _, stream := range repoStreams {
-		ids = append(ids, stream.TrackID)
-	}
-
-	repoTracks, err := u.trackRepo.GetTracksByIDs(ctx, ids)
+	protoArtists, err := (*u.artistClient).GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
 	if err != nil {
 		return nil, err
 	}
 
-	alignedByIDTracks := make([]*repoModel.Track, 0, len(repoTracks))
-	for _, id := range ids {
-		alignedByIDTracks = append(alignedByIDTracks, repoTracks[id])
-	}
-
-	trackIDs := make([]int64, 0, len(alignedByIDTracks))
-	for _, repoTrack := range alignedByIDTracks {
-		trackIDs = append(trackIDs, repoTrack.ID)
-	}
-
-	albumIDs := make([]int64, 0, len(alignedByIDTracks))
-	for _, repoTrack := range alignedByIDTracks {
-		albumIDs = append(albumIDs, repoTrack.AlbumID)
-	}
-
-	albumTitles, err := u.albumRepo.GetAlbumTitleByIDs(ctx, albumIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	repoArtists, err := u.artistRepo.GetArtistsByTrackIDs(ctx, trackIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	tracks := make([]*usecaseModel.Track, 0, len(repoTracks))
-	for _, id := range ids {
-		track := model.TrackFromRepositoryToUsecase(repoTracks[id], repoArtists[id], albumTitles[repoTracks[id].AlbumID])
+	tracks := make([]*usecaseModel.Track, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		track := model.TrackFromProtoToUsecase(protoTrack, albumTitles.Titles[protoTrack.AlbumId], protoArtists.Artists[protoTrack.Id])
 		tracks = append(tracks, track)
 	}
 

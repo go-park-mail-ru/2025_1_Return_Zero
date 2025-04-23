@@ -7,7 +7,8 @@ import (
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/internal/domain"
+	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/model/repository"
 	"github.com/lib/pq"
 	"go.uber.org/zap"
 )
@@ -16,21 +17,14 @@ const (
 	GetAllTracksQuery = `
 		SELECT id, title, thumbnail_url, duration, album_id
 		FROM track
-		ORDER BY created_at DESC, id DESC
+		JOIN track_stats ts ON track.id = ts.track_id
+		ORDER BY ts.listeners_count DESC, id DESC
 		LIMIT $1 OFFSET $2
 	`
 	GetTrackByIDQuery = `
 		SELECT id, title, thumbnail_url, duration, album_id, file_url
 		FROM track
 		WHERE id = $1
-	`
-	GetTracksByArtistIDQuery = `
-		SELECT track.id, track.title, track.thumbnail_url, track.duration, track.album_id
-		FROM track
-		JOIN track_artist ta ON track.id = ta.track_id
-		WHERE ta.artist_id = $1 AND (ta.role = 'main' OR ta.role = 'featured')
-		ORDER BY track.created_at DESC, track.id DESC
-		LIMIT $2 OFFSET $3
 	`
 
 	CreateStreamQuery = `
@@ -69,17 +63,26 @@ const (
 		FROM track
 		WHERE id = ANY($1)
 	`
+
+	GetTracksByIDsFilteredQuery = `
+		SELECT id, title, thumbnail_url, duration, album_id
+		FROM track
+		JOIN track_stats ts ON track.id = ts.track_id
+		WHERE id = ANY($1)
+		ORDER BY ts.listeners_count DESC, id DESC
+		LIMIT $2 OFFSET $3
+	`
 )
 
 type TrackPostgresRepository struct {
 	db *sql.DB
 }
 
-func NewTrackPostgresRepository(db *sql.DB) *TrackPostgresRepository {
+func NewTrackPostgresRepository(db *sql.DB) domain.Repository {
 	return &TrackPostgresRepository{db: db}
 }
 
-func (r *TrackPostgresRepository) GetAllTracks(ctx context.Context, filters *repository.TrackFilters) ([]*repository.Track, error) {
+func (r *TrackPostgresRepository) GetAllTracks(ctx context.Context, filters *repoModel.TrackFilters) ([]*repoModel.Track, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting all tracks from db", zap.Any("filters", filters), zap.String("query", GetAllTracksQuery))
 	rows, err := r.db.Query(GetAllTracksQuery, filters.Pagination.Limit, filters.Pagination.Offset)
@@ -89,9 +92,9 @@ func (r *TrackPostgresRepository) GetAllTracks(ctx context.Context, filters *rep
 	}
 	defer rows.Close()
 
-	tracks := make([]*repository.Track, 0)
+	tracks := make([]*repoModel.Track, 0)
 	for rows.Next() {
-		var track repository.Track
+		var track repoModel.Track
 		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID)
 		if err != nil {
 			logger.Error("failed to scan track", zap.Error(err))
@@ -108,10 +111,10 @@ func (r *TrackPostgresRepository) GetAllTracks(ctx context.Context, filters *rep
 	return tracks, nil
 }
 
-func (r *TrackPostgresRepository) GetTrackByID(ctx context.Context, id int64) (*repository.TrackWithFileKey, error) {
+func (r *TrackPostgresRepository) GetTrackByID(ctx context.Context, id int64) (*repoModel.TrackWithFileKey, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting track by id from db", zap.Int64("id", id), zap.String("query", GetTrackByIDQuery))
-	var trackObject repository.TrackWithFileKey
+	var trackObject repoModel.TrackWithFileKey
 	err := r.db.QueryRow(GetTrackByIDQuery, id).Scan(&trackObject.ID, &trackObject.Title, &trackObject.Thumbnail, &trackObject.Duration, &trackObject.AlbumID, &trackObject.FileKey)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -125,36 +128,7 @@ func (r *TrackPostgresRepository) GetTrackByID(ctx context.Context, id int64) (*
 	return &trackObject, nil
 }
 
-func (r *TrackPostgresRepository) GetTracksByArtistID(ctx context.Context, artistID int64, filters *repository.TrackFilters) ([]*repository.Track, error) {
-	logger := loggerPkg.LoggerFromContext(ctx)
-	logger.Info("Requesting tracks by artist id from db", zap.Int64("artistID", artistID), zap.String("query", GetTracksByArtistIDQuery))
-	rows, err := r.db.Query(GetTracksByArtistIDQuery, artistID, filters.Pagination.Limit, filters.Pagination.Offset)
-	if err != nil {
-		logger.Error("failed to get tracks by artist id", zap.Error(err))
-		return nil, err
-	}
-	defer rows.Close()
-
-	tracks := make([]*repository.Track, 0)
-	for rows.Next() {
-		var track repository.Track
-		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID)
-		if err != nil {
-			logger.Error("failed to scan track", zap.Error(err))
-			return nil, err
-		}
-		tracks = append(tracks, &track)
-	}
-
-	if err := rows.Err(); err != nil {
-		logger.Error("failed to get tracks by artist id", zap.Error(err))
-		return nil, err
-	}
-
-	return tracks, nil
-}
-
-func (r *TrackPostgresRepository) CreateStream(ctx context.Context, createData *repository.TrackStreamCreateData) (int64, error) {
+func (r *TrackPostgresRepository) CreateStream(ctx context.Context, createData *repoModel.TrackStreamCreateData) (int64, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting to create stream in db", zap.Any("createData", createData), zap.String("query", CreateStreamQuery))
 	var streamID int64
@@ -167,10 +141,10 @@ func (r *TrackPostgresRepository) CreateStream(ctx context.Context, createData *
 	return streamID, nil
 }
 
-func (r *TrackPostgresRepository) GetStreamByID(ctx context.Context, id int64) (*repository.TrackStream, error) {
+func (r *TrackPostgresRepository) GetStreamByID(ctx context.Context, id int64) (*repoModel.TrackStream, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting stream by id from db", zap.Int64("id", id), zap.String("query", GetStreamByIDQuery))
-	var stream repository.TrackStream
+	var stream repoModel.TrackStream
 	err := r.db.QueryRow(GetStreamByIDQuery, id).Scan(&stream.ID, &stream.UserID, &stream.TrackID, &stream.Duration)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -184,7 +158,7 @@ func (r *TrackPostgresRepository) GetStreamByID(ctx context.Context, id int64) (
 	return &stream, nil
 }
 
-func (r *TrackPostgresRepository) UpdateStreamDuration(ctx context.Context, endedStream *repository.TrackStreamUpdateData) error {
+func (r *TrackPostgresRepository) UpdateStreamDuration(ctx context.Context, endedStream *repoModel.TrackStreamUpdateData) error {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting to update stream duration in db", zap.Any("endedStream", endedStream), zap.String("query", UpdateStreamDurationQuery))
 	result, err := r.db.Exec(UpdateStreamDurationQuery, endedStream.Duration, endedStream.StreamID)
@@ -207,7 +181,7 @@ func (r *TrackPostgresRepository) UpdateStreamDuration(ctx context.Context, ende
 	return nil
 }
 
-func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID int64, filters *repository.TrackFilters) ([]*repository.TrackStream, error) {
+func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID int64, filters *repoModel.TrackFilters) ([]*repoModel.TrackStream, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting streams by user id from db", zap.Int64("userID", userID), zap.String("query", GetStreamsByUserIDQuery))
 	rows, err := r.db.Query(GetStreamsByUserIDQuery, userID, filters.Pagination.Limit, filters.Pagination.Offset)
@@ -217,9 +191,9 @@ func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID
 	}
 	defer rows.Close()
 
-	streams := make([]*repository.TrackStream, 0)
+	streams := make([]*repoModel.TrackStream, 0)
 	for rows.Next() {
-		var stream repository.TrackStream
+		var stream repoModel.TrackStream
 		err := rows.Scan(&stream.ID, &stream.UserID, &stream.TrackID, &stream.Duration)
 		if err != nil {
 			logger.Error("failed to scan stream", zap.Error(err))
@@ -236,7 +210,7 @@ func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID
 	return streams, nil
 }
 
-func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int64) (map[int64]*repository.Track, error) {
+func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int64) (map[int64]*repoModel.Track, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting tracks by ids from db", zap.Any("ids", ids), zap.String("query", GetTracksByIDsQuery))
 	rows, err := r.db.Query(GetTracksByIDsQuery, pq.Array(ids))
@@ -246,9 +220,9 @@ func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int6
 	}
 	defer rows.Close()
 
-	tracks := make(map[int64]*repository.Track)
+	tracks := make(map[int64]*repoModel.Track)
 	for rows.Next() {
-		var track repository.Track
+		var track repoModel.Track
 		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID)
 		if err != nil {
 			logger.Error("failed to scan track", zap.Error(err))
@@ -269,6 +243,35 @@ func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int6
 				return nil, customErrors.ErrTrackNotFound
 			}
 		}
+	}
+
+	return tracks, nil
+}
+
+func (r *TrackPostgresRepository) GetTracksByIDsFiltered(ctx context.Context, ids []int64, filters *repoModel.TrackFilters) ([]*repoModel.Track, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting tracks by ids from db", zap.Any("ids", ids), zap.String("query", GetTracksByIDsFilteredQuery))
+	rows, err := r.db.Query(GetTracksByIDsFilteredQuery, pq.Array(ids), filters.Pagination.Limit, filters.Pagination.Offset)
+	if err != nil {
+		logger.Error("failed to get tracks by ids", zap.Error(err))
+		return nil, err
+	}
+	defer rows.Close()
+
+	tracks := make([]*repoModel.Track, 0)
+	for rows.Next() {
+		var track repoModel.Track
+		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID)
+		if err != nil {
+			logger.Error("failed to scan track", zap.Error(err))
+			return nil, err
+		}
+		tracks = append(tracks, &track)
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.Error("failed to get tracks by ids", zap.Error(err))
+		return nil, err
 	}
 
 	return tracks, nil

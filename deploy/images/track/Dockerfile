@@ -17,15 +17,15 @@ COPY ./init ./init
 
 COPY ./config ./config
 
-COPY ./microservices/album ./microservices/album
-
 COPY ./microservices/interceptors ./microservices/interceptors
+
+COPY ./microservices/track ./microservices/track
 
 COPY ./config.yaml ./config.yaml
 
 COPY ./.env ./.env
 
-RUN go build -o main microservices/album/cmd/main.go
+RUN go build -o main microservices/track/cmd/main.go
 
 FROM alpine:latest
 
@@ -37,6 +37,6 @@ COPY --from=builder /app/config.yaml .
 
 COPY --from=builder /app/.env .
 
-EXPOSE 5003
+EXPOSE 5002
 
 CMD ["./main"]
