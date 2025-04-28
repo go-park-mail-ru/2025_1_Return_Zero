@@ -209,3 +209,21 @@ func ArtistFiltersFromProtoToUsecase(filters *protoModel.Filters) *usecaseModel.
 		Pagination: PaginationFromProtoToUsecase(filters.Pagination),
 	}
 }
+
+func ArtistStreamCreateDataFromProtoToUsecase(data *protoModel.ArtistStreamCreateDataList) *usecaseModel.ArtistStreamCreateDataList {
+	artistIDs := make([]int64, len(data.ArtistIds.Ids))
+	for i, id := range data.ArtistIds.Ids {
+		artistIDs[i] = id.Id
+	}
+	return &usecaseModel.ArtistStreamCreateDataList{
+		ArtistIDs: artistIDs,
+		UserID:    data.UserId.Id,
+	}
+}
+
+func ArtistStreamCreateDataFromUsecaseToRepository(data *usecaseModel.ArtistStreamCreateDataList) *repoModel.ArtistStreamCreateDataList {
+	return &repoModel.ArtistStreamCreateDataList{
+		ArtistIDs: data.ArtistIDs,
+		UserID:    data.UserID,
+	}
+}

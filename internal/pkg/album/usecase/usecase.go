@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 
@@ -27,7 +28,7 @@ func (u *albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.A
 
 	protoAlbums, err := (*u.albumClient).GetAllAlbums(ctx, protoFilters)
 	if err != nil {
-		return nil, err
+		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
 
 	albumIDs := make([]*artistProto.AlbumID, 0, len(protoAlbums.Albums))
@@ -37,7 +38,7 @@ func (u *albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.A
 
 	protoArtists, err := (*u.artistClient).GetArtistsByAlbumIDs(ctx, &artistProto.AlbumIDList{Ids: albumIDs})
 	if err != nil {
-		return nil, err
+		return nil, customErrors.HandleArtistGRPCError(err)
 	}
 
 	artistWithTitleMap := model.ArtistWithTitleMapFromProtoToUsecase(protoArtists.Artists)
@@ -54,7 +55,7 @@ func (u *albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.A
 func (u *albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
 	protoAlbumIDs, err := (*u.artistClient).GetAlbumIDsByArtistID(ctx, &artistProto.ArtistID{Id: artistID})
 	if err != nil {
-		return nil, err
+		return nil, customErrors.HandleArtistGRPCError(err)
 	}
 
 	albumIDs := make([]*albumProto.AlbumID, 0, len(protoAlbumIDs.Ids))
@@ -65,7 +66,7 @@ func (u *albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, 
 
 	protoAlbums, err := (*u.albumClient).GetAlbumsByIDs(ctx, &albumProto.AlbumIDList{Ids: albumIDs})
 	if err != nil {
-		return nil, err
+		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
 
 	artistAlbumIDs := make([]*artistProto.AlbumID, 0, len(protoAlbumIDs.Ids))
@@ -75,7 +76,7 @@ func (u *albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, 
 
 	protoArtists, err := (*u.artistClient).GetArtistsByAlbumIDs(ctx, &artistProto.AlbumIDList{Ids: artistAlbumIDs})
 	if err != nil {
-		return nil, err
+		return nil, customErrors.HandleArtistGRPCError(err)
 	}
 
 	artistWithTitleMap := model.ArtistWithTitleMapFromProtoToUsecase(protoArtists.Artists)
@@ -87,4 +88,22 @@ func (u *albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, 
 		albums = append(albums, usecaseAlbum)
 	}
 	return albums, nil
+}
+
+func (u *albumUsecase) GetAlbumByID(ctx context.Context, id int64) (*usecaseModel.Album, error) {
+	protoAlbum, err := (*u.albumClient).GetAlbumByID(ctx, &albumProto.AlbumID{Id: id})
+	if err != nil {
+		return nil, customErrors.HandleAlbumGRPCError(err)
+	}
+
+	protoArtists, err := (*u.artistClient).GetArtistsByAlbumID(ctx, &artistProto.AlbumID{Id: id})
+	if err != nil {
+		return nil, customErrors.HandleArtistGRPCError(err)
+	}
+
+	artistWithTitleList := model.ArtistWithTitleListFromProtoToUsecase(protoArtists.Artists)
+
+	usecaseAlbum := model.AlbumFromProtoToUsecase(protoAlbum)
+	usecaseAlbum.Artists = artistWithTitleList
+	return usecaseAlbum, nil
 }

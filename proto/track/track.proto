@@ -14,8 +14,23 @@ service TrackService {
     rpc GetLastListenedTracks(UserIDWithFilters) returns (TrackList);
 	rpc GetTracksByIDs(TrackIDList) returns (TrackList);
     rpc GetTracksByIDsFiltered(TrackIDListWithFilters) returns (TrackList);
+    rpc GetAlbumIDByTrackID(TrackID) returns (AlbumID);
+    rpc GetTracksByAlbumID(AlbumID) returns (TrackList);
+    rpc GetMinutesListenedByUserID(UserID) returns (MinutesListened);
+    rpc GetTracksListenedByUserID(UserID) returns (TracksListened);
 }
 
+message AlbumID {
+    int64 id = 1;
+}
+
+message MinutesListened {
+    int64 minutes = 1;
+}
+
+message TracksListened {
+    int64 tracks = 1;
+}
 
 message Track {
     int64 id = 1;

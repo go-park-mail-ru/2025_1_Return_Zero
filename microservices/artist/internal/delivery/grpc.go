@@ -6,6 +6,7 @@ import (
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/internal/domain"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/model"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type ArtistService struct {
@@ -101,4 +102,20 @@ func (s *ArtistService) GetTrackIDsByArtistID(ctx context.Context, req *artistPr
 		trackIDList = append(trackIDList, &artistProto.TrackID{Id: trackID})
 	}
 	return &artistProto.TrackIDList{Ids: trackIDList}, nil
+}
+
+func (s *ArtistService) CreateStreamsByArtistIDs(ctx context.Context, req *artistProto.ArtistStreamCreateDataList) (*emptypb.Empty, error) {
+	err := s.artistUsecase.CreateStreamsByArtistIDs(ctx, model.ArtistStreamCreateDataFromProtoToUsecase(req))
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *ArtistService) GetArtistsListenedByUserID(ctx context.Context, req *artistProto.UserID) (*artistProto.ArtistListened, error) {
+	artistsListened, err := s.artistUsecase.GetArtistsListenedByUserID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &artistProto.ArtistListened{ArtistsListened: artistsListened}, nil
 }

@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/internal/domain"
+	trackErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/model/errors"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/model/repository"
 	"github.com/lib/pq"
 	"go.uber.org/zap"
@@ -72,6 +72,31 @@ const (
 		ORDER BY ts.listeners_count DESC, id DESC
 		LIMIT $2 OFFSET $3
 	`
+
+	GetAlbumIDByTrackIDQuery = `
+		SELECT album_id
+		FROM track
+		WHERE id = $1
+	`
+
+	GetTracksByAlbumIDQuery = `
+		SELECT id, title, thumbnail_url, duration, album_id
+		FROM track
+		WHERE album_id = $1
+		ORDER BY position ASC
+	`
+
+	GetMinutesListenedByUserIDQuery = `
+		SELECT COALESCE(SUM(duration) / 60, 0)
+		FROM stream
+		WHERE user_id = $1
+	`
+
+	GetTracksListenedByUserIDQuery = `
+		SELECT COUNT(DISTINCT track_id)
+		FROM stream
+		WHERE user_id = $1
+	`
 )
 
 type TrackPostgresRepository struct {
@@ -88,7 +113,7 @@ func (r *TrackPostgresRepository) GetAllTracks(ctx context.Context, filters *rep
 	rows, err := r.db.Query(GetAllTracksQuery, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
 		logger.Error("failed to get all tracks", zap.Error(err))
-		return nil, err
+		return nil, trackErrors.NewInternalError("failed to get all tracks: %v", err)
 	}
 	defer rows.Close()
 
@@ -98,14 +123,14 @@ func (r *TrackPostgresRepository) GetAllTracks(ctx context.Context, filters *rep
 		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID)
 		if err != nil {
 			logger.Error("failed to scan track", zap.Error(err))
-			return nil, err
+			return nil, trackErrors.NewInternalError("failed to scan track: %v", err)
 		}
 		tracks = append(tracks, &track)
 	}
 
 	if err := rows.Err(); err != nil {
 		logger.Error("failed to get all tracks", zap.Error(err))
-		return nil, err
+		return nil, trackErrors.NewInternalError("failed to get all tracks: %v", err)
 	}
 
 	return tracks, nil
@@ -119,10 +144,10 @@ func (r *TrackPostgresRepository) GetTrackByID(ctx context.Context, id int64) (*
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("track not found", zap.Error(err))
-			return nil, customErrors.ErrTrackNotFound
+			return nil, trackErrors.ErrTrackNotFound
 		}
 		logger.Error("failed to get track by id", zap.Error(err))
-		return nil, err
+		return nil, trackErrors.NewInternalError("failed to get track by id: %v", err)
 	}
 
 	return &trackObject, nil
@@ -135,7 +160,7 @@ func (r *TrackPostgresRepository) CreateStream(ctx context.Context, createData *
 	err := r.db.QueryRow(CreateStreamQuery, createData.TrackID, createData.UserID).Scan(&streamID)
 	if err != nil {
 		logger.Error("failed to create stream", zap.Error(err))
-		return 0, err
+		return 0, trackErrors.NewInternalError("failed to create stream: %v", err)
 	}
 
 	return streamID, nil
@@ -149,10 +174,10 @@ func (r *TrackPostgresRepository) GetStreamByID(ctx context.Context, id int64) (
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("stream not found", zap.Error(err))
-			return nil, customErrors.ErrStreamNotFound
+			return nil, trackErrors.ErrStreamNotFound
 		}
 		logger.Error("failed to get stream by id", zap.Error(err))
-		return nil, err
+		return nil, trackErrors.NewInternalError("failed to get stream by id: %v", err)
 	}
 
 	return &stream, nil
@@ -164,18 +189,18 @@ func (r *TrackPostgresRepository) UpdateStreamDuration(ctx context.Context, ende
 	result, err := r.db.Exec(UpdateStreamDurationQuery, endedStream.Duration, endedStream.StreamID)
 	if err != nil {
 		logger.Error("failed to update stream duration", zap.Error(err))
-		return err
+		return trackErrors.NewInternalError("failed to update stream duration: %v", err)
 	}
 
 	rows, err := result.RowsAffected()
 	if err != nil {
 		logger.Error("failed to get rows affected", zap.Error(err))
-		return err
+		return trackErrors.NewInternalError("failed to get rows affected: %v", err)
 	}
 
 	if rows == 0 {
-		logger.Error("stream not found", zap.Error(customErrors.ErrFailedToUpdateStreamDuration))
-		return customErrors.ErrFailedToUpdateStreamDuration
+		logger.Error("stream not found", zap.Error(trackErrors.ErrFailedToUpdateStreamDuration))
+		return trackErrors.ErrFailedToUpdateStreamDuration
 	}
 
 	return nil
@@ -187,7 +212,7 @@ func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID
 	rows, err := r.db.Query(GetStreamsByUserIDQuery, userID, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
 		logger.Error("failed to get streams by user id", zap.Error(err))
-		return nil, err
+		return nil, trackErrors.NewInternalError("failed to get streams by user id: %v", err)
 	}
 	defer rows.Close()
 
@@ -197,14 +222,14 @@ func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID
 		err := rows.Scan(&stream.ID, &stream.UserID, &stream.TrackID, &stream.Duration)
 		if err != nil {
 			logger.Error("failed to scan stream", zap.Error(err))
-			return nil, err
+			return nil, trackErrors.NewInternalError("failed to scan stream: %v", err)
 		}
 		streams = append(streams, &stream)
 	}
 
 	if err := rows.Err(); err != nil {
 		logger.Error("failed to get streams by user id", zap.Error(err))
-		return nil, err
+		return nil, trackErrors.NewInternalError("failed to get streams by user id: %v", err)
 	}
 
 	return streams, nil
@@ -216,7 +241,7 @@ func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int6
 	rows, err := r.db.Query(GetTracksByIDsQuery, pq.Array(ids))
 	if err != nil {
 		logger.Error("failed to get tracks by ids", zap.Error(err))
-		return nil, err
+		return nil, trackErrors.NewInternalError("failed to get tracks by ids: %v", err)
 	}
 	defer rows.Close()
 
@@ -226,21 +251,21 @@ func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int6
 		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID)
 		if err != nil {
 			logger.Error("failed to scan track", zap.Error(err))
-			return nil, err
+			return nil, trackErrors.NewInternalError("failed to scan track: %v", err)
 		}
 		tracks[track.ID] = &track
 	}
 
 	if err := rows.Err(); err != nil {
 		logger.Error("failed to get tracks by ids", zap.Error(err))
-		return nil, err
+		return nil, trackErrors.NewInternalError("failed to get tracks by ids: %v", err)
 	}
 
 	if len(tracks) > 0 {
 		for _, id := range ids {
 			if _, ok := tracks[id]; !ok {
 				logger.Error("track not found", zap.Int64("id", id))
-				return nil, customErrors.ErrTrackNotFound
+				return nil, trackErrors.ErrTrackNotFound
 			}
 		}
 	}
@@ -254,7 +279,7 @@ func (r *TrackPostgresRepository) GetTracksByIDsFiltered(ctx context.Context, id
 	rows, err := r.db.Query(GetTracksByIDsFilteredQuery, pq.Array(ids), filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
 		logger.Error("failed to get tracks by ids", zap.Error(err))
-		return nil, err
+		return nil, trackErrors.NewInternalError("failed to get tracks by ids: %v", err)
 	}
 	defer rows.Close()
 
@@ -264,15 +289,78 @@ func (r *TrackPostgresRepository) GetTracksByIDsFiltered(ctx context.Context, id
 		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID)
 		if err != nil {
 			logger.Error("failed to scan track", zap.Error(err))
-			return nil, err
+			return nil, trackErrors.NewInternalError("failed to scan track: %v", err)
 		}
 		tracks = append(tracks, &track)
 	}
 
 	if err := rows.Err(); err != nil {
 		logger.Error("failed to get tracks by ids", zap.Error(err))
-		return nil, err
+		return nil, trackErrors.NewInternalError("failed to get tracks by ids: %v", err)
 	}
 
 	return tracks, nil
+}
+
+func (r *TrackPostgresRepository) GetAlbumIDByTrackID(ctx context.Context, id int64) (int64, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting album id by track id from db", zap.Int64("id", id), zap.String("query", GetAlbumIDByTrackIDQuery))
+	var albumID int64
+	err := r.db.QueryRow(GetAlbumIDByTrackIDQuery, id).Scan(&albumID)
+	if err != nil {
+		logger.Error("failed to get album id by track id", zap.Error(err))
+		return 0, trackErrors.NewInternalError("failed to get album id by track id: %v", err)
+	}
+
+	return albumID, nil
+}
+
+func (r *TrackPostgresRepository) GetTracksByAlbumID(ctx context.Context, id int64) ([]*repoModel.Track, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting tracks by album id from db", zap.Int64("id", id), zap.String("query", GetTracksByAlbumIDQuery))
+	rows, err := r.db.Query(GetTracksByAlbumIDQuery, id)
+	if err != nil {
+		logger.Error("failed to get tracks by album id", zap.Error(err))
+		return nil, trackErrors.NewInternalError("failed to get tracks by album id: %v", err)
+	}
+	defer rows.Close()
+
+	tracks := make([]*repoModel.Track, 0)
+	for rows.Next() {
+		var track repoModel.Track
+		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID)
+		if err != nil {
+			logger.Error("failed to scan track", zap.Error(err))
+			return nil, trackErrors.NewInternalError("failed to scan track: %v", err)
+		}
+		tracks = append(tracks, &track)
+	}
+
+	return tracks, nil
+}
+
+func (r *TrackPostgresRepository) GetMinutesListenedByUserID(ctx context.Context, userID int64) (int64, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting minutes listened by user id from db", zap.Int64("userID", userID), zap.String("query", GetMinutesListenedByUserIDQuery))
+	var minutesListened int64
+	err := r.db.QueryRow(GetMinutesListenedByUserIDQuery, userID).Scan(&minutesListened)
+	if err != nil {
+		logger.Error("failed to get minutes listened by user id", zap.Error(err))
+		return 0, trackErrors.NewInternalError("failed to get minutes listened by user id: %v", err)
+	}
+
+	return minutesListened, nil
+}
+
+func (r *TrackPostgresRepository) GetTracksListenedByUserID(ctx context.Context, userID int64) (int64, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting tracks listened by user id from db", zap.Int64("userID", userID), zap.String("query", GetTracksListenedByUserIDQuery))
+	var tracksListened int64
+	err := r.db.QueryRow(GetTracksListenedByUserIDQuery, userID).Scan(&tracksListened)
+	if err != nil {
+		logger.Error("failed to get tracks listened by user id", zap.Error(err))
+		return 0, trackErrors.NewInternalError("failed to get tracks listened by user id: %v", err)
+	}
+
+	return tracksListened, nil
 }

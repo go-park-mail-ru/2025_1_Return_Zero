@@ -29,3 +29,8 @@ type Pagination struct {
 type AlbumFilters struct {
 	Pagination *Pagination
 }
+
+type AlbumStreamCreateData struct {
+	AlbumID int64
+	UserID  int64
+}

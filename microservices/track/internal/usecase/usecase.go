@@ -3,10 +3,10 @@ package usecase
 import (
 	"context"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/internal/domain"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/model"
+	trackErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/model/errors"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/model/usecase"
 	"go.uber.org/zap"
 )
@@ -60,8 +60,8 @@ func (u *TrackUsecase) UpdateStreamDuration(ctx context.Context, stream *usecase
 	}
 
 	if existingStream.UserID != stream.UserID {
-		logger.Warn("updating stream doesn't belong to user", zap.Error(err))
-		return customErrors.ErrStreamNotFound
+		logger.Warn("updating stream doesn't belong to user", zap.Error(trackErrors.ErrStreamPermissionDenied))
+		return trackErrors.ErrStreamPermissionDenied
 	}
 
 	repoStream := model.TrackStreamUpdateDataFromUsecaseToRepository(stream)
@@ -121,4 +121,41 @@ func (u *TrackUsecase) GetTracksByIDsFiltered(ctx context.Context, ids []int64, 
 	}
 
 	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
+}
+
+func (u *TrackUsecase) GetAlbumIDByTrackID(ctx context.Context, id int64) (int64, error) {
+	repoAlbumID, err := u.trackRepo.GetAlbumIDByTrackID(ctx, id)
+	if err != nil {
+		return 0, err
+	}
+	return repoAlbumID, nil
+}
+
+func (u *TrackUsecase) GetTracksByAlbumID(ctx context.Context, id int64) ([]*usecaseModel.Track, error) {
+	repoTracks, err := u.trackRepo.GetTracksByAlbumID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	usecaseTracks := make([]*usecaseModel.Track, len(repoTracks))
+	for i, repoTrack := range repoTracks {
+		usecaseTracks[i] = model.TrackFromRepositoryToUsecase(repoTrack)
+	}
+	return usecaseTracks, nil
+}
+
+func (u *TrackUsecase) GetMinutesListenedByUserID(ctx context.Context, userID int64) (int64, error) {
+	repoMinutesListened, err := u.trackRepo.GetMinutesListenedByUserID(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+	return repoMinutesListened, nil
+}
+
+func (u *TrackUsecase) GetTracksListenedByUserID(ctx context.Context, userID int64) (int64, error) {
+	repoTracksListened, err := u.trackRepo.GetTracksListenedByUserID(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+	return repoTracksListened, nil
 }

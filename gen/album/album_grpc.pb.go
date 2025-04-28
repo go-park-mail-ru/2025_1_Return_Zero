@@ -7,6 +7,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -23,6 +24,7 @@ type AlbumServiceClient interface {
 	GetAlbumTitleByID(ctx context.Context, in *AlbumID, opts ...grpc.CallOption) (*AlbumTitle, error)
 	GetAlbumTitleByIDs(ctx context.Context, in *AlbumIDList, opts ...grpc.CallOption) (*AlbumTitleMap, error)
 	GetAlbumsByIDs(ctx context.Context, in *AlbumIDList, opts ...grpc.CallOption) (*AlbumList, error)
+	CreateStream(ctx context.Context, in *AlbumStreamCreateData, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type albumServiceClient struct {
@@ -78,6 +80,15 @@ func (c *albumServiceClient) GetAlbumsByIDs(ctx context.Context, in *AlbumIDList
 	return out, nil
 }
 
+func (c *albumServiceClient) CreateStream(ctx context.Context, in *AlbumStreamCreateData, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/album.AlbumService/CreateStream", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AlbumServiceServer is the server API for AlbumService service.
 // All implementations must embed UnimplementedAlbumServiceServer
 // for forward compatibility
@@ -87,6 +98,7 @@ type AlbumServiceServer interface {
 	GetAlbumTitleByID(context.Context, *AlbumID) (*AlbumTitle, error)
 	GetAlbumTitleByIDs(context.Context, *AlbumIDList) (*AlbumTitleMap, error)
 	GetAlbumsByIDs(context.Context, *AlbumIDList) (*AlbumList, error)
+	CreateStream(context.Context, *AlbumStreamCreateData) (*emptypb.Empty, error)
 	mustEmbedUnimplementedAlbumServiceServer()
 }
 
@@ -108,6 +120,9 @@ func (UnimplementedAlbumServiceServer) GetAlbumTitleByIDs(context.Context, *Albu
 }
 func (UnimplementedAlbumServiceServer) GetAlbumsByIDs(context.Context, *AlbumIDList) (*AlbumList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAlbumsByIDs not implemented")
+}
+func (UnimplementedAlbumServiceServer) CreateStream(context.Context, *AlbumStreamCreateData) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateStream not implemented")
 }
 func (UnimplementedAlbumServiceServer) mustEmbedUnimplementedAlbumServiceServer() {}
 
@@ -212,6 +227,24 @@ func _AlbumService_GetAlbumsByIDs_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AlbumService_CreateStream_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AlbumStreamCreateData)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AlbumServiceServer).CreateStream(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/album.AlbumService/CreateStream",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AlbumServiceServer).CreateStream(ctx, req.(*AlbumStreamCreateData))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AlbumService_ServiceDesc is the grpc.ServiceDesc for AlbumService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -238,6 +271,10 @@ var AlbumService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAlbumsByIDs",
 			Handler:    _AlbumService_GetAlbumsByIDs_Handler,
+		},
+		{
+			MethodName: "CreateStream",
+			Handler:    _AlbumService_CreateStream_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

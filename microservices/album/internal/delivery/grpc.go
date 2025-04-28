@@ -6,6 +6,7 @@ import (
 	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 	domain "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/album/internal/domain"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/album/model"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type AlbumService struct {
@@ -68,4 +69,12 @@ func (s *AlbumService) GetAlbumsByIDs(ctx context.Context, req *albumProto.Album
 		return nil, err
 	}
 	return model.AlbumListFromUsecaseToProto(albums), nil
+}
+
+func (s *AlbumService) CreateStream(ctx context.Context, req *albumProto.AlbumStreamCreateData) (*emptypb.Empty, error) {
+	err := s.albumUsecase.CreateStream(ctx, req.AlbumId.Id, req.UserId.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
 }

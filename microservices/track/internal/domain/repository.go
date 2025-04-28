@@ -15,6 +15,10 @@ type Repository interface {
 	GetStreamsByUserID(ctx context.Context, userID int64, filters *repoModel.TrackFilters) ([]*repoModel.TrackStream, error)
 	GetTracksByIDs(ctx context.Context, ids []int64) (map[int64]*repoModel.Track, error)
 	GetTracksByIDsFiltered(ctx context.Context, ids []int64, filters *repoModel.TrackFilters) ([]*repoModel.Track, error)
+	GetAlbumIDByTrackID(ctx context.Context, id int64) (int64, error)
+	GetTracksByAlbumID(ctx context.Context, id int64) ([]*repoModel.Track, error)
+	GetMinutesListenedByUserID(ctx context.Context, userID int64) (int64, error)
+	GetTracksListenedByUserID(ctx context.Context, userID int64) (int64, error)
 }
 
 type S3Repository interface {

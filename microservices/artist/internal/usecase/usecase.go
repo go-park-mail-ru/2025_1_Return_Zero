@@ -96,3 +96,20 @@ func (u *artistUsecase) GetTrackIDsByArtistID(ctx context.Context, id int64) ([]
 	}
 	return repoTrackIDs, nil
 }
+
+func (u *artistUsecase) CreateStreamsByArtistIDs(ctx context.Context, data *usecaseModel.ArtistStreamCreateDataList) error {
+	repoData := model.ArtistStreamCreateDataFromUsecaseToRepository(data)
+	err := u.artistRepo.CreateStreamsByArtistIDs(ctx, repoData)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *artistUsecase) GetArtistsListenedByUserID(ctx context.Context, userID int64) (int64, error) {
+	repoArtistsListened, err := u.artistRepo.GetArtistsListenedByUserID(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+	return repoArtistsListened, nil
+}

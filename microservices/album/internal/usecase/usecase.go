@@ -64,10 +64,9 @@ func (u *AlbumUsecase) GetAlbumsByIDs(ctx context.Context, ids []int64) ([]*usec
 		return nil, err
 	}
 
-	albumsInOrder := make([]*usecaseModel.Album, len(ids))
-	for i, id := range ids {
-		albumsInOrder[i] = model.AlbumFromRepositoryToUsecase(albums[id])
-	}
+	return model.AlbumListFromRepositoryToUsecase(albums), nil
+}
 
-	return albumsInOrder, nil
+func (u *AlbumUsecase) CreateStream(ctx context.Context, albumID int64, userID int64) error {
+	return u.albumRepository.CreateStream(ctx, albumID, userID)
 }

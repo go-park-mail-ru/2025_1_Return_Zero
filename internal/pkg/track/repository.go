@@ -15,4 +15,5 @@ type Repository interface {
 	UpdateStreamDuration(ctx context.Context, endedStream *repoModel.TrackStreamUpdateData) error
 	GetStreamsByUserID(ctx context.Context, userID int64, filters *repoModel.TrackFilters) ([]*repoModel.TrackStream, error)
 	GetTracksByIDs(ctx context.Context, ids []int64) (map[int64]*repoModel.Track, error)
+	GetTracksByAlbumID(ctx context.Context, id int64) ([]*repoModel.Track, error)
 }

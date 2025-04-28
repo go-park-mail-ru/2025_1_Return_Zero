@@ -397,6 +397,21 @@ func TrackStreamUpdateDataFromUsecaseToProto(usecaseTrackStream *usecase.TrackSt
 	}
 }
 
+func ArtistIdsFromUsecaseToArtistProto(artistIDs []int64) *artistProto.ArtistIDList {
+	artistIds := make([]*artistProto.ArtistID, 0, len(artistIDs))
+	for _, id := range artistIDs {
+		artistIds = append(artistIds, &artistProto.ArtistID{Id: id})
+	}
+	return &artistProto.ArtistIDList{Ids: artistIds}
+}
+
+func ArtistStreamCreateDataListFromUsecaseToProto(userID int64, artistIDs []int64) *artistProto.ArtistStreamCreateDataList {
+	return &artistProto.ArtistStreamCreateDataList{
+		ArtistIds: ArtistIdsFromUsecaseToArtistProto(artistIDs),
+		UserId:    &artistProto.UserID{Id: userID},
+	}
+}
+
 // /////////////////////////////////// USER ////////////////////////////////////
 func PrivacyRepositoryToUsecase(repositoryPrivacy *repository.UserPrivacySettings) *usecase.UserPrivacy {
 	return &usecase.UserPrivacy{

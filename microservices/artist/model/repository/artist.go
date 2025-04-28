@@ -31,3 +31,8 @@ type Pagination struct {
 type Filters struct {
 	Pagination *Pagination
 }
+
+type ArtistStreamCreateDataList struct {
+	ArtistIDs []int64
+	UserID    int64
+}

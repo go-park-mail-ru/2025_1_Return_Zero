@@ -117,3 +117,17 @@ func AlbumTitleMapFromUsecaseToProto(albumTitles *usecaseModel.AlbumTitleMap) *a
 		Titles: albumTitleMap,
 	}
 }
+
+func AlbumStreamCreateDataFromUsecaseToProto(albumStreamCreateData *usecaseModel.AlbumStreamCreateData) *albumProto.AlbumStreamCreateData {
+	return &albumProto.AlbumStreamCreateData{
+		AlbumId: &albumProto.AlbumID{Id: albumStreamCreateData.AlbumID},
+		UserId:  &albumProto.UserID{Id: albumStreamCreateData.UserID},
+	}
+}
+
+func AlbumStreamCreateDataFromProtoToUsecase(albumStreamCreateData *albumProto.AlbumStreamCreateData) *usecaseModel.AlbumStreamCreateData {
+	return &usecaseModel.AlbumStreamCreateData{
+		AlbumID: albumStreamCreateData.AlbumId.Id,
+		UserID:  albumStreamCreateData.UserId.Id,
+	}
+}

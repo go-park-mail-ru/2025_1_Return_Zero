@@ -5,6 +5,7 @@ option go_package = "./album";
 package album;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 service AlbumService {
 	rpc GetAllAlbums(Filters) returns (AlbumList);
@@ -12,6 +13,11 @@ service AlbumService {
 	rpc GetAlbumTitleByID(AlbumID) returns (AlbumTitle);
 	rpc GetAlbumTitleByIDs(AlbumIDList) returns (AlbumTitleMap);
 	rpc GetAlbumsByIDs(AlbumIDList) returns (AlbumList);
+	rpc CreateStream(AlbumStreamCreateData) returns (google.protobuf.Empty);
+}
+
+message UserID {
+    int64 id = 1;
 }
 
 
@@ -57,4 +63,9 @@ message Pagination {
 
 message Filters {
 	Pagination pagination = 1;
+}
+
+message AlbumStreamCreateData {
+    AlbumID album_id = 1;
+    UserID user_id = 2;
 }

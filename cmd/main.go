@@ -107,6 +107,8 @@ func main() {
 	r.HandleFunc("/api/v1/streams/{id}", trackHandler.UpdateStreamDuration).Methods("PUT", "PATCH")
 
 	r.HandleFunc("/api/v1/albums", albumHandler.GetAllAlbums).Methods("GET")
+	r.HandleFunc("/api/v1/albums/{id}", albumHandler.GetAlbumByID).Methods("GET")
+	r.HandleFunc("/api/v1/albums/{id}/tracks", trackHandler.GetTracksByAlbumID).Methods("GET")
 
 	r.HandleFunc("/api/v1/artists", artistHandler.GetAllArtists).Methods("GET")
 	r.HandleFunc("/api/v1/artists/{id}", artistHandler.GetArtistByID).Methods("GET")

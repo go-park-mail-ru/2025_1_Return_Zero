@@ -50,16 +50,6 @@ CREATE TABLE IF NOT EXISTS artist (
     thumbnail_url TEXT NOT NULL DEFAULT '/default_artist.png'
 );
 
-CREATE TABLE IF NOT EXISTS artist_stats (
-    artist_id BIGINT NOT NULL PRIMARY KEY,
-    listeners_count BIGINT NOT NULL DEFAULT 0,
-    favorites_count BIGINT NOT NULL DEFAULT 0,
-    FOREIGN KEY (artist_id)
-        REFERENCES artist (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS album (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     title TEXT NOT NULL,
@@ -72,17 +62,7 @@ CREATE TABLE IF NOT EXISTS album (
     CONSTRAINT album_valid_type_check CHECK (type IN ('album', 'single', 'ep', 'compilation'))
 );
 
-CREATE TABLE IF NOT EXISTS album_stats (
-    album_id BIGINT NOT NULL PRIMARY KEY,
-    listeners_count BIGINT NOT NULL DEFAULT 0,
-    favorites_count BIGINT NOT NULL DEFAULT 0,
-    FOREIGN KEY (album_id)
-        REFERENCES album (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-    CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
-    CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
-);
+
 
 CREATE TABLE IF NOT EXISTS track (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -103,17 +83,7 @@ CREATE TABLE IF NOT EXISTS track (
     CONSTRAINT unique_album_track_check UNIQUE (album_id, position)
 );
 
-CREATE TABLE IF NOT EXISTS track_stats (
-    track_id BIGINT NOT NULL PRIMARY KEY,
-    listeners_count BIGINT NOT NULL DEFAULT 0,
-    favorites_count BIGINT NOT NULL DEFAULT 0,
-    FOREIGN KEY (track_id) 
-        REFERENCES track (id) 
-        ON DELETE CASCADE 
-        ON UPDATE CASCADE,
-    CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
-    CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
-);
+
 
 CREATE TABLE IF NOT EXISTS track_artist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
@@ -271,7 +241,7 @@ CREATE TABLE IF NOT EXISTS favorite_artist (
     CONSTRAINT unique_favorite_artist_check UNIQUE (user_id, artist_id)
 );
 
-CREATE TABLE IF NOT EXISTS stream (
+CREATE TABLE IF NOT EXISTS track_stream (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
@@ -289,13 +259,101 @@ CREATE TABLE IF NOT EXISTS stream (
     CONSTRAINT stream_valid_duration_check CHECK (duration >= 0)
 );
 
+CREATE MATERIALIZED VIEW track_stats AS
+SELECT 
+    t.id AS track_id,
+    COUNT(DISTINCT ts.user_id) AS listeners_count,
+    COUNT(DISTINCT ft.user_id) AS favorites_count
+FROM 
+    track t
+    LEFT JOIN track_stream ts ON t.id = ts.track_id
+    LEFT JOIN favorite_track ft ON t.id = ft.track_id
+GROUP BY 
+    t.id;
+
+CREATE UNIQUE INDEX track_stats_track_id_idx ON track_stats (track_id);
+
+CREATE TABLE IF NOT EXISTS album_stream (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    album_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    duration INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (user_id)
+        REFERENCES "user" (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (album_id)
+        REFERENCES album (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT stream_valid_duration_check CHECK (duration >= 0)
+);
+
+CREATE MATERIALIZED VIEW album_stats AS
+SELECT 
+    a.id AS album_id,
+    COUNT(DISTINCT abs.user_id) AS listeners_count,
+    COUNT(DISTINCT fa.user_id) AS favorites_count
+FROM 
+    album a
+    LEFT JOIN album_stream abs ON a.id = abs.album_id
+    LEFT JOIN favorite_album fa ON a.id = fa.album_id
+GROUP BY 
+    a.id;
+
+CREATE UNIQUE INDEX album_stats_album_id_idx ON album_stats (album_id);
+
+CREATE TABLE IF NOT EXISTS artist_stream (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    artist_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (user_id)
+        REFERENCES "user" (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (artist_id)
+        REFERENCES artist (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+CREATE MATERIALIZED VIEW artist_stats AS
+SELECT 
+    a.id AS artist_id,
+    COUNT(DISTINCT astr.user_id) AS listeners_count,
+    COUNT(DISTINCT fa.user_id) AS favorites_count
+FROM 
+    artist a
+    LEFT JOIN artist_stream astr ON a.id = astr.artist_id
+    LEFT JOIN favorite_artist fa ON a.id = fa.artist_id
+GROUP BY 
+    a.id;
+
+CREATE UNIQUE INDEX artist_stats_artist_id_idx ON artist_stats (artist_id);
+
+
+SELECT cron.schedule('refresh_artist_stats', '0 * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY artist_stats');
+SELECT cron.schedule('refresh_album_stats', '0 * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY album_stats');
+SELECT cron.schedule('refresh_track_stats', '0 * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY track_stats');
+
 ---- create above / drop below ----
+
+DROP INDEX IF EXISTS artist_stats_artist_id_idx;
+DROP INDEX IF EXISTS album_stats_album_id_idx;
+DROP INDEX IF EXISTS track_stats_track_id_idx;
 
 DROP MATERIALIZED VIEW IF EXISTS artist_stats;
 DROP MATERIALIZED VIEW IF EXISTS album_stats;
 DROP MATERIALIZED VIEW IF EXISTS track_stats;
 
 DROP TABLE IF EXISTS stream;
+DROP TABLE IF EXISTS artist_stream;
+DROP TABLE IF EXISTS album_stream;
+DROP TABLE IF EXISTS track_stream;
 DROP TABLE IF EXISTS favorite_artist;
 DROP TABLE IF EXISTS favorite_album;
 DROP TABLE IF EXISTS favorite_track;
@@ -309,9 +367,6 @@ DROP TABLE IF EXISTS track;
 DROP TABLE IF EXISTS album;
 DROP TABLE IF EXISTS artist;
 DROP TABLE IF EXISTS genre;
-DROP TABLE IF EXISTS artist_stats;  
-DROP TABLE IF EXISTS album_stats;
-DROP TABLE IF EXISTS track_stats;
 DROP TABLE IF EXISTS user_settings;
 DROP TABLE IF EXISTS "user";
 

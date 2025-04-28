@@ -12,4 +12,5 @@ type Usecase interface {
 	GetAlbumTitleByID(ctx context.Context, id int64) (string, error)
 	GetAlbumTitleByIDs(ctx context.Context, ids []int64) (*usecaseModel.AlbumTitleMap, error)
 	GetAlbumsByIDs(ctx context.Context, ids []int64) ([]*usecaseModel.Album, error)
+	CreateStream(ctx context.Context, albumID int64, userID int64) error
 }

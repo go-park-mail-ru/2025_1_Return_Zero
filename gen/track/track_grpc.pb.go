@@ -26,6 +26,10 @@ type TrackServiceClient interface {
 	GetLastListenedTracks(ctx context.Context, in *UserIDWithFilters, opts ...grpc.CallOption) (*TrackList, error)
 	GetTracksByIDs(ctx context.Context, in *TrackIDList, opts ...grpc.CallOption) (*TrackList, error)
 	GetTracksByIDsFiltered(ctx context.Context, in *TrackIDListWithFilters, opts ...grpc.CallOption) (*TrackList, error)
+	GetAlbumIDByTrackID(ctx context.Context, in *TrackID, opts ...grpc.CallOption) (*AlbumID, error)
+	GetTracksByAlbumID(ctx context.Context, in *AlbumID, opts ...grpc.CallOption) (*TrackList, error)
+	GetMinutesListenedByUserID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*MinutesListened, error)
+	GetTracksListenedByUserID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*TracksListened, error)
 }
 
 type trackServiceClient struct {
@@ -99,6 +103,42 @@ func (c *trackServiceClient) GetTracksByIDsFiltered(ctx context.Context, in *Tra
 	return out, nil
 }
 
+func (c *trackServiceClient) GetAlbumIDByTrackID(ctx context.Context, in *TrackID, opts ...grpc.CallOption) (*AlbumID, error) {
+	out := new(AlbumID)
+	err := c.cc.Invoke(ctx, "/track.TrackService/GetAlbumIDByTrackID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *trackServiceClient) GetTracksByAlbumID(ctx context.Context, in *AlbumID, opts ...grpc.CallOption) (*TrackList, error) {
+	out := new(TrackList)
+	err := c.cc.Invoke(ctx, "/track.TrackService/GetTracksByAlbumID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *trackServiceClient) GetMinutesListenedByUserID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*MinutesListened, error) {
+	out := new(MinutesListened)
+	err := c.cc.Invoke(ctx, "/track.TrackService/GetMinutesListenedByUserID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *trackServiceClient) GetTracksListenedByUserID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*TracksListened, error) {
+	out := new(TracksListened)
+	err := c.cc.Invoke(ctx, "/track.TrackService/GetTracksListenedByUserID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TrackServiceServer is the server API for TrackService service.
 // All implementations must embed UnimplementedTrackServiceServer
 // for forward compatibility
@@ -110,6 +150,10 @@ type TrackServiceServer interface {
 	GetLastListenedTracks(context.Context, *UserIDWithFilters) (*TrackList, error)
 	GetTracksByIDs(context.Context, *TrackIDList) (*TrackList, error)
 	GetTracksByIDsFiltered(context.Context, *TrackIDListWithFilters) (*TrackList, error)
+	GetAlbumIDByTrackID(context.Context, *TrackID) (*AlbumID, error)
+	GetTracksByAlbumID(context.Context, *AlbumID) (*TrackList, error)
+	GetMinutesListenedByUserID(context.Context, *UserID) (*MinutesListened, error)
+	GetTracksListenedByUserID(context.Context, *UserID) (*TracksListened, error)
 	mustEmbedUnimplementedTrackServiceServer()
 }
 
@@ -137,6 +181,18 @@ func (UnimplementedTrackServiceServer) GetTracksByIDs(context.Context, *TrackIDL
 }
 func (UnimplementedTrackServiceServer) GetTracksByIDsFiltered(context.Context, *TrackIDListWithFilters) (*TrackList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTracksByIDsFiltered not implemented")
+}
+func (UnimplementedTrackServiceServer) GetAlbumIDByTrackID(context.Context, *TrackID) (*AlbumID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAlbumIDByTrackID not implemented")
+}
+func (UnimplementedTrackServiceServer) GetTracksByAlbumID(context.Context, *AlbumID) (*TrackList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTracksByAlbumID not implemented")
+}
+func (UnimplementedTrackServiceServer) GetMinutesListenedByUserID(context.Context, *UserID) (*MinutesListened, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMinutesListenedByUserID not implemented")
+}
+func (UnimplementedTrackServiceServer) GetTracksListenedByUserID(context.Context, *UserID) (*TracksListened, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTracksListenedByUserID not implemented")
 }
 func (UnimplementedTrackServiceServer) mustEmbedUnimplementedTrackServiceServer() {}
 
@@ -277,6 +333,78 @@ func _TrackService_GetTracksByIDsFiltered_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TrackService_GetAlbumIDByTrackID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TrackID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TrackServiceServer).GetAlbumIDByTrackID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/track.TrackService/GetAlbumIDByTrackID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TrackServiceServer).GetAlbumIDByTrackID(ctx, req.(*TrackID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TrackService_GetTracksByAlbumID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AlbumID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TrackServiceServer).GetTracksByAlbumID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/track.TrackService/GetTracksByAlbumID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TrackServiceServer).GetTracksByAlbumID(ctx, req.(*AlbumID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TrackService_GetMinutesListenedByUserID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TrackServiceServer).GetMinutesListenedByUserID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/track.TrackService/GetMinutesListenedByUserID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TrackServiceServer).GetMinutesListenedByUserID(ctx, req.(*UserID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TrackService_GetTracksListenedByUserID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TrackServiceServer).GetTracksListenedByUserID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/track.TrackService/GetTracksListenedByUserID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TrackServiceServer).GetTracksListenedByUserID(ctx, req.(*UserID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TrackService_ServiceDesc is the grpc.ServiceDesc for TrackService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -311,6 +439,22 @@ var TrackService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTracksByIDsFiltered",
 			Handler:    _TrackService_GetTracksByIDsFiltered_Handler,
+		},
+		{
+			MethodName: "GetAlbumIDByTrackID",
+			Handler:    _TrackService_GetAlbumIDByTrackID_Handler,
+		},
+		{
+			MethodName: "GetTracksByAlbumID",
+			Handler:    _TrackService_GetTracksByAlbumID_Handler,
+		},
+		{
+			MethodName: "GetMinutesListenedByUserID",
+			Handler:    _TrackService_GetMinutesListenedByUserID_Handler,
+		},
+		{
+			MethodName: "GetTracksListenedByUserID",
+			Handler:    _TrackService_GetTracksListenedByUserID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

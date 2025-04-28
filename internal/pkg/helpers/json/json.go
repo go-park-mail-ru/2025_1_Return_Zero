@@ -12,8 +12,7 @@ import (
 )
 
 const (
-	MaxBytes      = 1024 * 1024
-	DefaultStatus = http.StatusOK
+	MaxBytes = 1024 * 1024
 )
 
 var (
@@ -62,7 +61,7 @@ func WriteSuccessResponse(w http.ResponseWriter, status int, data interface{}, h
 		Body:   data,
 	}
 
-	WriteJSON(w, DefaultStatus, response, headers)
+	WriteJSON(w, status, response, headers)
 }
 
 func WriteErrorResponse(w http.ResponseWriter, status int, message string, headers http.Header) {
@@ -71,5 +70,5 @@ func WriteErrorResponse(w http.ResponseWriter, status int, message string, heade
 		Error:  message,
 	}
 
-	WriteJSON(w, DefaultStatus, response, headers)
+	WriteJSON(w, status, response, headers)
 }

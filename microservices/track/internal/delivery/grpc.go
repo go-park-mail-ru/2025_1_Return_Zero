@@ -80,3 +80,35 @@ func (s *TrackService) GetTracksByIDsFiltered(ctx context.Context, req *trackPro
 	}
 	return model.TrackListFromUsecaseToProto(tracks), nil
 }
+
+func (s *TrackService) GetAlbumIDByTrackID(ctx context.Context, req *trackProto.TrackID) (*trackProto.AlbumID, error) {
+	albumID, err := s.trackUsecase.GetAlbumIDByTrackID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &trackProto.AlbumID{Id: albumID}, nil
+}
+
+func (s *TrackService) GetTracksByAlbumID(ctx context.Context, req *trackProto.AlbumID) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.GetTracksByAlbumID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromUsecaseToProto(tracks), nil
+}
+
+func (s *TrackService) GetMinutesListenedByUserID(ctx context.Context, req *trackProto.UserID) (*trackProto.MinutesListened, error) {
+	minutesListened, err := s.trackUsecase.GetMinutesListenedByUserID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &trackProto.MinutesListened{Minutes: minutesListened}, nil
+}
+
+func (s *TrackService) GetTracksListenedByUserID(ctx context.Context, req *trackProto.UserID) (*trackProto.TracksListened, error) {
+	tracks, err := s.trackUsecase.GetTracksListenedByUserID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &trackProto.TracksListened{Tracks: tracks}, nil
+}
