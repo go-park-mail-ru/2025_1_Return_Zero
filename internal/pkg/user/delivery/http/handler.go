@@ -242,15 +242,21 @@ func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
-	userAuth, exist := ctxExtractor.UserFromContext(ctx)
+	userID, exist := ctxExtractor.UserFromContext(ctx)
 	if !exist {
 		logger.Error("user not auth")
 		json.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
 		return
 	}
+	userAuth, err := h.usecase.GetUserByID(ctx, userID)
+	if err != nil {
+		logger.Error("failed to get user by session id", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
 
 	const maxUploadSize = 5 << 20
-	err := r.ParseMultipartForm(maxUploadSize)
+	err = r.ParseMultipartForm(maxUploadSize)
 	if err != nil {
 		logger.Error("failed to parse form", zap.Error(err))
 		json.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse form", nil)
@@ -278,7 +284,7 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	avatarURL, err := h.usecase.UploadAvatar(ctx, userAuth.Username, file, userAuth.ID)
+	avatarURL, err := h.usecase.UploadAvatar(ctx, userAuth.Username, file, userID)
 	if err != nil {
 		logger.Error("failed to upload avatar", zap.Error(err))
 		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
@@ -306,15 +312,21 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
 
-	userAuth, exist := ctxExtractor.UserFromContext(ctx)
+	userID, exist := ctxExtractor.UserFromContext(ctx)
 	if !exist {
 		logger.Error("user not auth")
 		json.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
 		return
 	}
+	userAuth, err := h.usecase.GetUserByID(ctx, userID)
+	if err != nil {
+		logger.Error("failed to get user by session id", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
 
 	userDelete := &deliveryModel.UserDelete{}
-	err := json.ReadJSON(w, r, userDelete)
+	err = json.ReadJSON(w, r, userDelete)
 	if err != nil {
 		logger.Error("failed to read change user data", zap.Error(err))
 		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
@@ -386,7 +398,16 @@ func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authUser, isAuth := ctxExtractor.UserFromContext(ctx)
+	var authUser *usecaseModel.User
+	userID, isAuth := ctxExtractor.UserFromContext(ctx)
+	if isAuth {
+		authUser, err = h.usecase.GetUserByID(ctx, userID)
+		if err != nil {
+			logger.Error("failed to get user by session id", zap.Error(err))
+			json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+			return
+		}
+	}
 
 	UserFullDataDelivery := model.UserFullDataUsecaseToDelivery(userFullDataUsecase)
 
@@ -427,14 +448,20 @@ func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
-	userAuth, exist := ctxExtractor.UserFromContext(ctx)
+	userID, exist := ctxExtractor.UserFromContext(ctx)
 	if !exist {
 		logger.Error("user not auth")
 		json.WriteErrorResponse(w, http.StatusBadRequest, "user not auth", nil)
 		return
 	}
+	userAuth, err := h.usecase.GetUserByID(ctx, userID)
+	if err != nil {
+		logger.Error("failed to get user by session id", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
 	userChangeData := &deliveryModel.UserChangeSettings{}
-	err := json.ReadJSON(w, r, userChangeData)
+	err = json.ReadJSON(w, r, userChangeData)
 	if err != nil {
 		logger.Error("failed to read change user data", zap.Error(err))
 		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)

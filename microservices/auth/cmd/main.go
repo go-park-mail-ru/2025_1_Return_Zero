@@ -59,7 +59,7 @@ func main() {
 
 	err = server.Serve(conn)
 	if err != nil {
-		logger.Fatal("Error starting artist service:", zap.Error(err))
+		logger.Fatal("Error starting auth service:", zap.Error(err))
 	}
 
 	c := make(chan os.Signal, 1)

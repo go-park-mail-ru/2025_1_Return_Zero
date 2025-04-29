@@ -3,6 +3,7 @@ package model
 import (
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
 	authProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/auth"
+	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
@@ -334,16 +335,6 @@ func PrivacyFromUsecaseToRepository(usecasePrivacy *usecase.UserPrivacy) *reposi
 	}
 }
 
-func ChangeDataFromUsecaseToRepository(usecaseUser *usecase.UserChangeSettings) *repository.ChangeUserData {
-
-	return &repository.ChangeUserData{
-		Password:    usecaseUser.Password,
-		NewUsername: usecaseUser.NewUsername,
-		NewEmail:    usecaseUser.NewEmail,
-		NewPassword: usecaseUser.NewPassword,
-	}
-}
-
 func PrivacyFromDeliveryToUsecase(deliveryPrivacy *delivery.Privacy) *usecase.UserPrivacy {
 	if deliveryPrivacy == nil {
 		return nil
@@ -388,3 +379,110 @@ func UserIDFromUsecaseToProto(userID int64) *authProto.UserID {
 		Id: userID,
 	}
 }
+
+func RegisterDataFromUsecaseToProto(regData *usecase.User) *userProto.RegisterData {
+	return &userProto.RegisterData{
+		Username: regData.Username,
+		Email:    regData.Email,
+		Password: regData.Password,
+	}
+}
+
+func UserFromProtoToUsecase(protoUser *userProto.UserFront) *usecase.User {
+	return &usecase.User{
+		ID:        protoUser.Id,
+		Username:  protoUser.Username,
+		Email:     protoUser.Email,
+		AvatarUrl: protoUser.Avatar,
+	}
+}
+
+func UserIDFromUsecaseToProtoUser(userID int64) *userProto.UserID {
+	return &userProto.UserID{
+		Id: userID,
+	}
+}
+
+func LoginDataFromUsecaseToProto(loginData *usecase.User) *userProto.LoginData {
+	return &userProto.LoginData{
+		Username: loginData.Username,
+		Email:    loginData.Email,
+		Password: loginData.Password,
+	}
+}
+
+func AvatarDataFromUsecaseToProto(fileURL string, id int64) *userProto.AvatarData {
+	return &userProto.AvatarData{
+		AvatarPath: fileURL,
+		Id:         id,
+	}
+}
+
+func DeleteUserFromUsecaseToProto(user *usecase.User) *userProto.UserDelete {
+	return &userProto.UserDelete{
+		Username: user.Username,
+		Email:    user.Email,
+		Password: user.Password,
+	}
+}
+
+func UsernameFromUsecaseToProto(username string) *userProto.Username {
+	return &userProto.Username{
+		Username: username,
+	}
+}
+
+func PrivacyFromProtoToUsecase(protoPrivacy *userProto.PrivacySettings) *usecase.UserPrivacy {
+	return &usecase.UserPrivacy{
+		IsPublicPlaylists:       protoPrivacy.IsPublicPlaylists,
+		IsPublicMinutesListened: protoPrivacy.IsPublicMinutesListened,
+		IsPublicFavoriteArtists: protoPrivacy.IsPublicFavoriteArtists,
+		IsPublicTracksListened:  protoPrivacy.IsPublicTracksListened,
+		IsPublicFavoriteTracks:  protoPrivacy.IsPublicFavoriteTracks,
+		IsPublicArtistsListened: protoPrivacy.IsPublicArtistsListened,
+	}
+}
+
+func StatisticsFromProtoToUsecase(protoStatistics *userProto.Statistics) *usecase.UserStatistics {
+	return &usecase.UserStatistics{
+		MinutesListened: protoStatistics.MinutesListened,
+		TracksListened:  protoStatistics.TracksListened,
+		ArtistsListened: protoStatistics.ArtistsListened,
+	}
+}
+
+func UserFullDataFromProtoToUsecase(protoUser *userProto.UserFullData) *usecase.UserFullData {
+	privacyUsecase := PrivacyFromProtoToUsecase(protoUser.Privacy)
+	statisticsUsecase := StatisticsFromProtoToUsecase(protoUser.Statistics)
+	return &usecase.UserFullData{
+		Username:   protoUser.Username,
+		Email:      protoUser.Email,
+		AvatarUrl:  protoUser.Avatar,
+		Privacy:    privacyUsecase,
+		Statistics: statisticsUsecase,
+	}
+}
+
+func PrivacyFromUsecaseToProto(username string, usecasePrivacy *usecase.UserPrivacy) *userProto.PrivacySettings {
+	return &userProto.PrivacySettings{
+		Username:                username,
+		IsPublicPlaylists:       usecasePrivacy.IsPublicPlaylists,
+		IsPublicMinutesListened: usecasePrivacy.IsPublicMinutesListened,
+		IsPublicFavoriteArtists: usecasePrivacy.IsPublicFavoriteArtists,
+		IsPublicTracksListened:  usecasePrivacy.IsPublicTracksListened,
+		IsPublicFavoriteTracks:  usecasePrivacy.IsPublicFavoriteTracks,
+		IsPublicArtistsListened: usecasePrivacy.IsPublicArtistsListened,
+	}
+}
+
+func ChangeUserDataFromUsecaseToProto(username string, usecaseUser *usecase.UserChangeSettings) *userProto.ChangeUserDataMessage {
+	return &userProto.ChangeUserDataMessage{
+		Username:   username,
+		NewUsername: usecaseUser.NewUsername,
+		NewEmail:    usecaseUser.NewEmail,
+		NewPassword: usecaseUser.NewPassword,
+		Password:    usecaseUser.Password,
+	}
+}
+
+

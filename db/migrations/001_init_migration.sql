@@ -15,6 +15,20 @@ CREATE TABLE IF NOT EXISTS "user" (
     is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+create TABLE IF NOT EXISTS user_statistics (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    minutes_listened INTEGER NOT NULL DEFAULT 0,
+    tracks_listened INTEGER NOT NULL DEFAULT 0,
+    artists_listened INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (user_id)
+        REFERENCES "user" (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS user_settings (
     user_id BIGINT NOT NULL PRIMARY KEY,
     is_public_playlists BOOLEAN NOT NULL DEFAULT FALSE, 
@@ -47,9 +61,9 @@ CREATE TABLE IF NOT EXISTS artist (
     CONSTRAINT artist_description_length_check CHECK (LENGTH(description) <= 1000),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    thumbnail_url TEXT NOT NULL DEFAULT '/default_artist.png',
-    CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
-    CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
+    thumbnail_url TEXT NOT NULL DEFAULT '/default_artist.png'
+    -- CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
+    -- CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
 
 CREATE TABLE IF NOT EXISTS album (
@@ -61,9 +75,9 @@ CREATE TABLE IF NOT EXISTS album (
     release_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    CONSTRAINT album_valid_type_check CHECK (type IN ('album', 'single', 'ep', 'compilation')),
-    CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
-    CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
+    CONSTRAINT album_valid_type_check CHECK (type IN ('album', 'single', 'ep', 'compilation'))
+    -- CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
+    -- CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
 
 CREATE TABLE IF NOT EXISTS track (
@@ -82,9 +96,9 @@ CREATE TABLE IF NOT EXISTS track (
         ON DELETE CASCADE
         ON UPDATE CASCADE,
     CONSTRAINT track_valid_duration_check CHECK (duration > 0),
-    CONSTRAINT unique_album_track_check UNIQUE (album_id, position),
-    CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
-    CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
+    CONSTRAINT unique_album_track_check UNIQUE (album_id, position)
+    -- CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
+    -- CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
 
 CREATE TABLE IF NOT EXISTS track_artist (
@@ -345,6 +359,7 @@ DROP TABLE IF EXISTS album;
 DROP TABLE IF EXISTS artist;
 DROP TABLE IF EXISTS genre;
 DROP TABLE IF EXISTS user_settings;
+DROP TABLE IF EXISTS user_statistics;
 DROP TABLE IF EXISTS "user";
 
 SELECT cron.unschedule('refresh_artist_stats') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'refresh_artist_stats');

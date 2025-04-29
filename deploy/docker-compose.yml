@@ -55,6 +55,7 @@ services:
       REDIS_PORT: ${REDIS_PORT}
       ARTIST_SERVICE_HOST: artist-grpc
       AUTH_SERVICE_HOST: auth-grpc
+      USER_SERVICE_HOST: user-grpc
     restart: always
     ports:
       - '8080:8080'
@@ -64,6 +65,7 @@ services:
       - redis
       - artist-grpc
       - auth-grpc
+      - user-grpc
 
   artist-grpc:
     build:
@@ -96,6 +98,24 @@ services:
       - redis
     ports:
       - '5004:5004'
+    tty: true
+
+  user-grpc:
+    build:
+      context: ..
+      dockerfile: deploy/images/user/Dockerfile
+    environment:
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: postgres
+    container_name: user-grpc
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - '5005:5005'
     tty: true
 
   nginx:

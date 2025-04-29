@@ -12,6 +12,7 @@ import (
 	_ "github.com/go-park-mail-ru/2025_1_Return_Zero/docs"
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
 	authProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/auth"
+	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
 	grpc "github.com/go-park-mail-ru/2025_1_Return_Zero/init/microservices"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/postgres"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/redis"
@@ -89,20 +90,19 @@ func main() {
 
 	artistClient := artistProto.NewArtistServiceClient(clients.ArtistClient)
 	authClient := authProto.NewAuthServiceClient(clients.AuthClient)
-
-	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), &authClient, userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket))
+	userClient := userProto.NewUserServiceClient(clients.UserClient)
 
 	r.Use(middleware.LoggerMiddleware(logger))
 	r.Use(middleware.RequestId)
 	r.Use(middleware.AccessLog)
-	r.Use(middleware.Auth(newUserUsecase))
+	r.Use(middleware.Auth(&authClient))
 	r.Use(middleware.CorsMiddleware(cfg.Cors))
 	// r.Use(middleware.CSRFMiddleware(cfg.CSRF))
 
 	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration), userRepository.NewUserPostgresRepository(postgresConn)), cfg)
 	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn)), cfg)
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(&artistClient), cfg)
-	userHandler := userHttp.NewUserHandler(newUserUsecase)
+	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(&userClient, &authClient, userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket)))
 
 	r.HandleFunc("/api/v1/tracks", trackHandler.GetAllTracks).Methods("GET")
 	r.HandleFunc("/api/v1/tracks/{id}", trackHandler.GetTrackByID).Methods("GET")
@@ -137,7 +137,7 @@ func main() {
 	if err != nil {
 		logger.Error("Error starting server:", zap.Error(err))
 	}
-
+	
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	<-c
