@@ -5,6 +5,7 @@ import (
 
 	domain "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/internal/domain"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/model"
+	artistErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/model/errors"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/model/usecase"
 )
 
@@ -18,8 +19,8 @@ type artistUsecase struct {
 	artistRepo domain.Repository
 }
 
-func (u *artistUsecase) GetArtistByID(ctx context.Context, id int64) (*usecaseModel.ArtistDetailed, error) {
-	repoArtist, err := u.artistRepo.GetArtistByID(ctx, id)
+func (u *artistUsecase) GetArtistByID(ctx context.Context, id int64, userID int64) (*usecaseModel.ArtistDetailed, error) {
+	repoArtist, err := u.artistRepo.GetArtistByID(ctx, id, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -32,9 +33,9 @@ func (u *artistUsecase) GetArtistByID(ctx context.Context, id int64) (*usecaseMo
 	return model.ArtistDetailedFromRepositoryToUsecase(repoArtist, stats), nil
 }
 
-func (u *artistUsecase) GetAllArtists(ctx context.Context, filters *usecaseModel.Filters) (*usecaseModel.ArtistList, error) {
+func (u *artistUsecase) GetAllArtists(ctx context.Context, filters *usecaseModel.Filters, userID int64) (*usecaseModel.ArtistList, error) {
 	repoFilters := model.ArtistFiltersFromUsecaseToRepository(filters)
-	repoArtists, err := u.artistRepo.GetAllArtists(ctx, repoFilters)
+	repoArtists, err := u.artistRepo.GetAllArtists(ctx, repoFilters, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -112,4 +113,30 @@ func (u *artistUsecase) GetArtistsListenedByUserID(ctx context.Context, userID i
 		return 0, err
 	}
 	return repoArtistsListened, nil
+}
+
+func (u *artistUsecase) LikeArtist(ctx context.Context, request *usecaseModel.LikeRequest) error {
+	repoRequest := model.LikeRequestFromUsecaseToRepository(request)
+
+	exists, err := u.artistRepo.CheckArtistExists(ctx, request.ArtistID)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return artistErrors.NewNotFoundError("artist not found")
+	}
+	if request.IsLike {
+		err := u.artistRepo.LikeArtist(ctx, repoRequest)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	err = u.artistRepo.UnlikeArtist(ctx, repoRequest)
+	if err != nil {
+		return err
+	}
+	return nil
 }

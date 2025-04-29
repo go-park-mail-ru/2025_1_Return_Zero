@@ -29,6 +29,12 @@ var mapErrorStatus = map[error]int{
 	userAvatarFile.ErrFailedToParseImage:         http.StatusBadRequest,
 	customErrors.ErrArtistNotFound:               http.StatusNotFound,
 	customErrors.ErrAlbumNotFound:                http.StatusNotFound,
+	customErrors.ErrStreamHistoryUnauthorized:    http.StatusForbidden,
+	customErrors.ErrStreamUpdateUnauthorized:     http.StatusForbidden,
+	customErrors.ErrStreamCreateUnauthorized:     http.StatusForbidden,
+	customErrors.ErrLikeArtistUnauthorized:       http.StatusForbidden,
+	customErrors.ErrLikeAlbumUnauthorized:        http.StatusForbidden,
+	customErrors.ErrLikeTrackUnauthorized:        http.StatusForbidden,
 }
 
 func ErrorStatus(err error) int {

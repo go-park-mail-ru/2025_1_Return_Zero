@@ -8,18 +8,18 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 service AlbumService {
-	rpc GetAllAlbums(Filters) returns (AlbumList);
-	rpc GetAlbumByID(AlbumID) returns (Album);
+	rpc GetAllAlbums(FiltersWithUserID) returns (AlbumList);
+	rpc GetAlbumByID(AlbumIDWithUserID) returns (Album);
 	rpc GetAlbumTitleByID(AlbumID) returns (AlbumTitle);
 	rpc GetAlbumTitleByIDs(AlbumIDList) returns (AlbumTitleMap);
-	rpc GetAlbumsByIDs(AlbumIDList) returns (AlbumList);
+	rpc GetAlbumsByIDs(AlbumIDListWithUserID) returns (AlbumList);
 	rpc CreateStream(AlbumStreamCreateData) returns (google.protobuf.Empty);
+	rpc LikeAlbum(LikeRequest) returns (google.protobuf.Empty);
 }
 
 message UserID {
     int64 id = 1;
 }
-
 
 enum AlbumType {
 	AlbumTypeAlbum       = 0;
@@ -32,8 +32,18 @@ message AlbumID {
 	int64 id = 1;
 }
 
+message AlbumIDWithUserID {
+	AlbumID album_id = 1;
+	UserID user_id = 2;
+}
+
 message AlbumIDList {
 	repeated AlbumID ids = 1;
+}
+
+message AlbumIDListWithUserID {
+	AlbumIDList ids = 1;
+	UserID user_id = 2;
 }
 
 message Album {
@@ -42,6 +52,7 @@ message Album {
 	AlbumType type = 3;
 	string thumbnail = 4;
 	google.protobuf.Timestamp release_date = 5;
+	bool is_favorite = 6;
 }
 
 message AlbumList {
@@ -65,7 +76,18 @@ message Filters {
 	Pagination pagination = 1;
 }
 
+message FiltersWithUserID {
+	Filters filters = 1;
+	UserID user_id = 2;
+}
+
 message AlbumStreamCreateData {
     AlbumID album_id = 1;
     UserID user_id = 2;
+}
+
+message LikeRequest {
+	AlbumID album_id = 1;
+	UserID user_id = 2;
+	bool is_like = 3;
 }

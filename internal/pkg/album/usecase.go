@@ -10,4 +10,5 @@ type Usecase interface {
 	GetAllAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error)
 	GetAlbumsByArtistID(ctx context.Context, artistID int64, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error)
 	GetAlbumByID(ctx context.Context, id int64) (*usecaseModel.Album, error)
+	LikeAlbum(ctx context.Context, request *usecaseModel.AlbumLikeRequest) error
 }

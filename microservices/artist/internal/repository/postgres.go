@@ -16,16 +16,18 @@ import (
 
 const (
 	GetAllArtistsQuery = `
-		SELECT id, title, description, thumbnail_url
+		SELECT artist.id, artist.title, artist.description, artist.thumbnail_url, (favorite_artist.user_id IS NOT NULL) AS is_favorite
 		FROM artist
 		JOIN artist_stats ON artist.id = artist_stats.artist_id
+		LEFT JOIN favorite_artist ON artist.id = favorite_artist.artist_id AND favorite_artist.user_id = $3
 		ORDER BY artist_stats.listeners_count DESC, id DESC
 		LIMIT $1 OFFSET $2
 	`
 	GetArtistByIDQuery = `
-		SELECT id, title, description, thumbnail_url
+		SELECT artist.id, artist.title, artist.description, artist.thumbnail_url, (favorite_artist.user_id IS NOT NULL) AS is_favorite
 		FROM artist
-		WHERE id = $1
+		LEFT JOIN favorite_artist ON artist.id = favorite_artist.artist_id AND favorite_artist.user_id = $2
+		WHERE artist.id = $1
 	`
 	GetArtistTitleByIDQuery = `
 		SELECT title
@@ -99,6 +101,19 @@ const (
 		FROM artist_stream
 		WHERE user_id = $1
 	`
+
+	LikeArtistByUserIDQuery = `
+		INSERT INTO favorite_artist (artist_id, user_id) VALUES ($1, $2)
+		ON CONFLICT (artist_id, user_id) DO NOTHING
+	`
+
+	UnlikeArtistByUserIDQuery = `
+		DELETE FROM favorite_artist WHERE artist_id = $1 AND user_id = $2
+	`
+
+	CheckArtistExistsQuery = `
+		SELECT EXISTS (SELECT 1 FROM artist WHERE id = $1)
+	`
 )
 
 type artistPostgresRepository struct {
@@ -109,10 +124,10 @@ func NewArtistPostgresRepository(db *sql.DB) domain.Repository {
 	return &artistPostgresRepository{db: db}
 }
 
-func (r *artistPostgresRepository) GetAllArtists(ctx context.Context, filters *repoModel.Filters) ([]*repoModel.Artist, error) {
+func (r *artistPostgresRepository) GetAllArtists(ctx context.Context, filters *repoModel.Filters, userID int64) ([]*repoModel.Artist, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting all artists with filters from db", zap.Any("filters", filters), zap.String("query", GetAllArtistsQuery))
-	rows, err := r.db.QueryContext(ctx, GetAllArtistsQuery, filters.Pagination.Limit, filters.Pagination.Offset)
+	rows, err := r.db.QueryContext(ctx, GetAllArtistsQuery, filters.Pagination.Limit, filters.Pagination.Offset, userID)
 	if err != nil {
 		logger.Error("failed to get all artists", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get all artists: %v", err)
@@ -122,24 +137,27 @@ func (r *artistPostgresRepository) GetAllArtists(ctx context.Context, filters *r
 	artists := make([]*repoModel.Artist, 0)
 	for rows.Next() {
 		var artist repoModel.Artist
-		err = rows.Scan(&artist.ID, &artist.Title, &artist.Description, &artist.Thumbnail)
+		var isFavorite sql.NullBool
+		err = rows.Scan(&artist.ID, &artist.Title, &artist.Description, &artist.Thumbnail, &isFavorite)
 		if err != nil {
 			logger.Error("failed to scan artist", zap.Error(err))
 			return nil, artistErrors.NewInternalError("failed to scan artist: %v", err)
 		}
+		artist.IsFavorite = isFavorite.Valid && isFavorite.Bool
 		artists = append(artists, &artist)
 	}
 
 	return artists, nil
 }
 
-func (r *artistPostgresRepository) GetArtistByID(ctx context.Context, id int64) (*repoModel.Artist, error) {
+func (r *artistPostgresRepository) GetArtistByID(ctx context.Context, id int64, userID int64) (*repoModel.Artist, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artist by id from db", zap.Int64("id", id), zap.String("query", GetArtistByIDQuery))
-	row := r.db.QueryRowContext(ctx, GetArtistByIDQuery, id)
+	row := r.db.QueryRowContext(ctx, GetArtistByIDQuery, id, userID)
 
 	var artistObject repoModel.Artist
-	err := row.Scan(&artistObject.ID, &artistObject.Title, &artistObject.Description, &artistObject.Thumbnail)
+	var isFavorite sql.NullBool
+	err := row.Scan(&artistObject.ID, &artistObject.Title, &artistObject.Description, &artistObject.Thumbnail, &isFavorite)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -149,6 +167,8 @@ func (r *artistPostgresRepository) GetArtistByID(ctx context.Context, id int64) 
 		logger.Error("failed to get artist by id", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get artist by id: %v", err)
 	}
+
+	artistObject.IsFavorite = isFavorite.Valid && isFavorite.Bool
 
 	return &artistObject, nil
 }
@@ -386,4 +406,46 @@ func (r *artistPostgresRepository) GetArtistsListenedByUserID(ctx context.Contex
 	}
 
 	return artistsListened, nil
+}
+
+func (r *artistPostgresRepository) CheckArtistExists(ctx context.Context, id int64) (bool, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Checking if artist exists", zap.Int64("id", id), zap.String("query", CheckArtistExistsQuery))
+	row := r.db.QueryRowContext(ctx, CheckArtistExistsQuery, id)
+
+	var exists bool
+	err := row.Scan(&exists)
+	if err != nil {
+		logger.Error("failed to check if artist exists", zap.Error(err))
+		return false, artistErrors.NewInternalError("failed to check if artist exists: %v", err)
+	}
+
+	return exists, nil
+}
+
+// Мы не проверяем, какое значение было у зафаворченного исполнителя, а просто задаем его новое значение игнорируя предидущее. Такое подход по идее должен избавить нас от лишних проверок и запросов в бд.
+func (r *artistPostgresRepository) LikeArtist(ctx context.Context, request *repoModel.LikeRequest) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting to like artist", zap.Any("request", request), zap.Int64("artistID", request.ArtistID), zap.Int64("userID", request.UserID))
+
+	_, err := r.db.ExecContext(ctx, LikeArtistByUserIDQuery, request.ArtistID, request.UserID)
+	if err != nil {
+		logger.Error("failed to like artist", zap.Error(err))
+		return artistErrors.NewInternalError("failed to like artist: %v", err)
+	}
+
+	return nil
+}
+
+func (r *artistPostgresRepository) UnlikeArtist(ctx context.Context, request *repoModel.LikeRequest) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting to unlike artist", zap.Any("request", request), zap.Int64("artistID", request.ArtistID), zap.Int64("userID", request.UserID))
+
+	_, err := r.db.ExecContext(ctx, UnlikeArtistByUserIDQuery, request.ArtistID, request.UserID)
+	if err != nil {
+		logger.Error("failed to unlike artist", zap.Error(err))
+		return artistErrors.NewInternalError("failed to unlike artist: %v", err)
+	}
+
+	return nil
 }

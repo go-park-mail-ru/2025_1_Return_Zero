@@ -19,12 +19,13 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AlbumServiceClient interface {
-	GetAllAlbums(ctx context.Context, in *Filters, opts ...grpc.CallOption) (*AlbumList, error)
-	GetAlbumByID(ctx context.Context, in *AlbumID, opts ...grpc.CallOption) (*Album, error)
+	GetAllAlbums(ctx context.Context, in *FiltersWithUserID, opts ...grpc.CallOption) (*AlbumList, error)
+	GetAlbumByID(ctx context.Context, in *AlbumIDWithUserID, opts ...grpc.CallOption) (*Album, error)
 	GetAlbumTitleByID(ctx context.Context, in *AlbumID, opts ...grpc.CallOption) (*AlbumTitle, error)
 	GetAlbumTitleByIDs(ctx context.Context, in *AlbumIDList, opts ...grpc.CallOption) (*AlbumTitleMap, error)
-	GetAlbumsByIDs(ctx context.Context, in *AlbumIDList, opts ...grpc.CallOption) (*AlbumList, error)
+	GetAlbumsByIDs(ctx context.Context, in *AlbumIDListWithUserID, opts ...grpc.CallOption) (*AlbumList, error)
 	CreateStream(ctx context.Context, in *AlbumStreamCreateData, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	LikeAlbum(ctx context.Context, in *LikeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type albumServiceClient struct {
@@ -35,7 +36,7 @@ func NewAlbumServiceClient(cc grpc.ClientConnInterface) AlbumServiceClient {
 	return &albumServiceClient{cc}
 }
 
-func (c *albumServiceClient) GetAllAlbums(ctx context.Context, in *Filters, opts ...grpc.CallOption) (*AlbumList, error) {
+func (c *albumServiceClient) GetAllAlbums(ctx context.Context, in *FiltersWithUserID, opts ...grpc.CallOption) (*AlbumList, error) {
 	out := new(AlbumList)
 	err := c.cc.Invoke(ctx, "/album.AlbumService/GetAllAlbums", in, out, opts...)
 	if err != nil {
@@ -44,7 +45,7 @@ func (c *albumServiceClient) GetAllAlbums(ctx context.Context, in *Filters, opts
 	return out, nil
 }
 
-func (c *albumServiceClient) GetAlbumByID(ctx context.Context, in *AlbumID, opts ...grpc.CallOption) (*Album, error) {
+func (c *albumServiceClient) GetAlbumByID(ctx context.Context, in *AlbumIDWithUserID, opts ...grpc.CallOption) (*Album, error) {
 	out := new(Album)
 	err := c.cc.Invoke(ctx, "/album.AlbumService/GetAlbumByID", in, out, opts...)
 	if err != nil {
@@ -71,7 +72,7 @@ func (c *albumServiceClient) GetAlbumTitleByIDs(ctx context.Context, in *AlbumID
 	return out, nil
 }
 
-func (c *albumServiceClient) GetAlbumsByIDs(ctx context.Context, in *AlbumIDList, opts ...grpc.CallOption) (*AlbumList, error) {
+func (c *albumServiceClient) GetAlbumsByIDs(ctx context.Context, in *AlbumIDListWithUserID, opts ...grpc.CallOption) (*AlbumList, error) {
 	out := new(AlbumList)
 	err := c.cc.Invoke(ctx, "/album.AlbumService/GetAlbumsByIDs", in, out, opts...)
 	if err != nil {
@@ -89,16 +90,26 @@ func (c *albumServiceClient) CreateStream(ctx context.Context, in *AlbumStreamCr
 	return out, nil
 }
 
+func (c *albumServiceClient) LikeAlbum(ctx context.Context, in *LikeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/album.AlbumService/LikeAlbum", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AlbumServiceServer is the server API for AlbumService service.
 // All implementations must embed UnimplementedAlbumServiceServer
 // for forward compatibility
 type AlbumServiceServer interface {
-	GetAllAlbums(context.Context, *Filters) (*AlbumList, error)
-	GetAlbumByID(context.Context, *AlbumID) (*Album, error)
+	GetAllAlbums(context.Context, *FiltersWithUserID) (*AlbumList, error)
+	GetAlbumByID(context.Context, *AlbumIDWithUserID) (*Album, error)
 	GetAlbumTitleByID(context.Context, *AlbumID) (*AlbumTitle, error)
 	GetAlbumTitleByIDs(context.Context, *AlbumIDList) (*AlbumTitleMap, error)
-	GetAlbumsByIDs(context.Context, *AlbumIDList) (*AlbumList, error)
+	GetAlbumsByIDs(context.Context, *AlbumIDListWithUserID) (*AlbumList, error)
 	CreateStream(context.Context, *AlbumStreamCreateData) (*emptypb.Empty, error)
+	LikeAlbum(context.Context, *LikeRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedAlbumServiceServer()
 }
 
@@ -106,10 +117,10 @@ type AlbumServiceServer interface {
 type UnimplementedAlbumServiceServer struct {
 }
 
-func (UnimplementedAlbumServiceServer) GetAllAlbums(context.Context, *Filters) (*AlbumList, error) {
+func (UnimplementedAlbumServiceServer) GetAllAlbums(context.Context, *FiltersWithUserID) (*AlbumList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAllAlbums not implemented")
 }
-func (UnimplementedAlbumServiceServer) GetAlbumByID(context.Context, *AlbumID) (*Album, error) {
+func (UnimplementedAlbumServiceServer) GetAlbumByID(context.Context, *AlbumIDWithUserID) (*Album, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAlbumByID not implemented")
 }
 func (UnimplementedAlbumServiceServer) GetAlbumTitleByID(context.Context, *AlbumID) (*AlbumTitle, error) {
@@ -118,11 +129,14 @@ func (UnimplementedAlbumServiceServer) GetAlbumTitleByID(context.Context, *Album
 func (UnimplementedAlbumServiceServer) GetAlbumTitleByIDs(context.Context, *AlbumIDList) (*AlbumTitleMap, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAlbumTitleByIDs not implemented")
 }
-func (UnimplementedAlbumServiceServer) GetAlbumsByIDs(context.Context, *AlbumIDList) (*AlbumList, error) {
+func (UnimplementedAlbumServiceServer) GetAlbumsByIDs(context.Context, *AlbumIDListWithUserID) (*AlbumList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAlbumsByIDs not implemented")
 }
 func (UnimplementedAlbumServiceServer) CreateStream(context.Context, *AlbumStreamCreateData) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateStream not implemented")
+}
+func (UnimplementedAlbumServiceServer) LikeAlbum(context.Context, *LikeRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LikeAlbum not implemented")
 }
 func (UnimplementedAlbumServiceServer) mustEmbedUnimplementedAlbumServiceServer() {}
 
@@ -138,7 +152,7 @@ func RegisterAlbumServiceServer(s grpc.ServiceRegistrar, srv AlbumServiceServer)
 }
 
 func _AlbumService_GetAllAlbums_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Filters)
+	in := new(FiltersWithUserID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -150,13 +164,13 @@ func _AlbumService_GetAllAlbums_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: "/album.AlbumService/GetAllAlbums",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AlbumServiceServer).GetAllAlbums(ctx, req.(*Filters))
+		return srv.(AlbumServiceServer).GetAllAlbums(ctx, req.(*FiltersWithUserID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _AlbumService_GetAlbumByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AlbumID)
+	in := new(AlbumIDWithUserID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -168,7 +182,7 @@ func _AlbumService_GetAlbumByID_Handler(srv interface{}, ctx context.Context, de
 		FullMethod: "/album.AlbumService/GetAlbumByID",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AlbumServiceServer).GetAlbumByID(ctx, req.(*AlbumID))
+		return srv.(AlbumServiceServer).GetAlbumByID(ctx, req.(*AlbumIDWithUserID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -210,7 +224,7 @@ func _AlbumService_GetAlbumTitleByIDs_Handler(srv interface{}, ctx context.Conte
 }
 
 func _AlbumService_GetAlbumsByIDs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AlbumIDList)
+	in := new(AlbumIDListWithUserID)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -222,7 +236,7 @@ func _AlbumService_GetAlbumsByIDs_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/album.AlbumService/GetAlbumsByIDs",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AlbumServiceServer).GetAlbumsByIDs(ctx, req.(*AlbumIDList))
+		return srv.(AlbumServiceServer).GetAlbumsByIDs(ctx, req.(*AlbumIDListWithUserID))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -241,6 +255,24 @@ func _AlbumService_CreateStream_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AlbumServiceServer).CreateStream(ctx, req.(*AlbumStreamCreateData))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AlbumService_LikeAlbum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LikeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AlbumServiceServer).LikeAlbum(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/album.AlbumService/LikeAlbum",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AlbumServiceServer).LikeAlbum(ctx, req.(*LikeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -275,6 +307,10 @@ var AlbumService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateStream",
 			Handler:    _AlbumService_CreateStream_Handler,
+		},
+		{
+			MethodName: "LikeAlbum",
+			Handler:    _AlbumService_LikeAlbum_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

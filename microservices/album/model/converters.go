@@ -58,6 +58,7 @@ func AlbumFromRepositoryToUsecase(album *repoModel.Album) *usecaseModel.Album {
 		Type:        AlbumTypeFromRepositoryToUsecase(album.Type),
 		Thumbnail:   album.Thumbnail,
 		ReleaseDate: album.ReleaseDate,
+		IsFavorite:  album.IsFavorite,
 	}
 }
 
@@ -68,6 +69,7 @@ func AlbumFromUsecaseToProto(album *usecaseModel.Album) *albumProto.Album {
 		Type:        AlbumTypeFromUsecaseToProto(album.Type),
 		Thumbnail:   album.Thumbnail,
 		ReleaseDate: timestamppb.New(album.ReleaseDate),
+		IsFavorite:  album.IsFavorite,
 	}
 }
 
@@ -129,5 +131,20 @@ func AlbumStreamCreateDataFromProtoToUsecase(albumStreamCreateData *albumProto.A
 	return &usecaseModel.AlbumStreamCreateData{
 		AlbumID: albumStreamCreateData.AlbumId.Id,
 		UserID:  albumStreamCreateData.UserId.Id,
+	}
+}
+
+func LikeRequestFromProtoToUsecase(likeRequest *albumProto.LikeRequest) *usecaseModel.LikeRequest {
+	return &usecaseModel.LikeRequest{
+		AlbumID: likeRequest.AlbumId.Id,
+		UserID:  likeRequest.UserId.Id,
+		IsLike:  likeRequest.IsLike,
+	}
+}
+
+func LikeRequestFromUsecaseToRepository(likeRequest *usecaseModel.LikeRequest) *repoModel.LikeRequest {
+	return &repoModel.LikeRequest{
+		AlbumID: likeRequest.AlbumID,
+		UserID:  likeRequest.UserID,
 	}
 }

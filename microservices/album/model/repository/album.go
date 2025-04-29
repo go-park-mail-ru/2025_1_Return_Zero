@@ -19,6 +19,7 @@ type Album struct {
 	Type        AlbumType `sql:"type"`
 	Thumbnail   string    `sql:"thumbnail_url"`
 	ReleaseDate time.Time `sql:"release_date"`
+	IsFavorite  bool      `sql:"is_favorite"`
 }
 
 type Pagination struct {
@@ -31,6 +32,11 @@ type AlbumFilters struct {
 }
 
 type AlbumStreamCreateData struct {
+	AlbumID int64
+	UserID  int64
+}
+
+type LikeRequest struct {
 	AlbumID int64
 	UserID  int64
 }

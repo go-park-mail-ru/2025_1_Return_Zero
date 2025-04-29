@@ -163,6 +163,58 @@ func (x *AlbumID) GetId() int64 {
 	return 0
 }
 
+type AlbumIDWithUserID struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AlbumId       *AlbumID               `protobuf:"bytes,1,opt,name=album_id,json=albumId,proto3" json:"album_id,omitempty"`
+	UserId        *UserID                `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AlbumIDWithUserID) Reset() {
+	*x = AlbumIDWithUserID{}
+	mi := &file_album_album_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AlbumIDWithUserID) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AlbumIDWithUserID) ProtoMessage() {}
+
+func (x *AlbumIDWithUserID) ProtoReflect() protoreflect.Message {
+	mi := &file_album_album_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AlbumIDWithUserID.ProtoReflect.Descriptor instead.
+func (*AlbumIDWithUserID) Descriptor() ([]byte, []int) {
+	return file_album_album_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *AlbumIDWithUserID) GetAlbumId() *AlbumID {
+	if x != nil {
+		return x.AlbumId
+	}
+	return nil
+}
+
+func (x *AlbumIDWithUserID) GetUserId() *UserID {
+	if x != nil {
+		return x.UserId
+	}
+	return nil
+}
+
 type AlbumIDList struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Ids           []*AlbumID             `protobuf:"bytes,1,rep,name=ids,proto3" json:"ids,omitempty"`
@@ -172,7 +224,7 @@ type AlbumIDList struct {
 
 func (x *AlbumIDList) Reset() {
 	*x = AlbumIDList{}
-	mi := &file_album_album_proto_msgTypes[2]
+	mi := &file_album_album_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -184,7 +236,7 @@ func (x *AlbumIDList) String() string {
 func (*AlbumIDList) ProtoMessage() {}
 
 func (x *AlbumIDList) ProtoReflect() protoreflect.Message {
-	mi := &file_album_album_proto_msgTypes[2]
+	mi := &file_album_album_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -197,12 +249,64 @@ func (x *AlbumIDList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AlbumIDList.ProtoReflect.Descriptor instead.
 func (*AlbumIDList) Descriptor() ([]byte, []int) {
-	return file_album_album_proto_rawDescGZIP(), []int{2}
+	return file_album_album_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *AlbumIDList) GetIds() []*AlbumID {
 	if x != nil {
 		return x.Ids
+	}
+	return nil
+}
+
+type AlbumIDListWithUserID struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Ids           *AlbumIDList           `protobuf:"bytes,1,opt,name=ids,proto3" json:"ids,omitempty"`
+	UserId        *UserID                `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AlbumIDListWithUserID) Reset() {
+	*x = AlbumIDListWithUserID{}
+	mi := &file_album_album_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AlbumIDListWithUserID) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AlbumIDListWithUserID) ProtoMessage() {}
+
+func (x *AlbumIDListWithUserID) ProtoReflect() protoreflect.Message {
+	mi := &file_album_album_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AlbumIDListWithUserID.ProtoReflect.Descriptor instead.
+func (*AlbumIDListWithUserID) Descriptor() ([]byte, []int) {
+	return file_album_album_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *AlbumIDListWithUserID) GetIds() *AlbumIDList {
+	if x != nil {
+		return x.Ids
+	}
+	return nil
+}
+
+func (x *AlbumIDListWithUserID) GetUserId() *UserID {
+	if x != nil {
+		return x.UserId
 	}
 	return nil
 }
@@ -214,13 +318,14 @@ type Album struct {
 	Type          AlbumType              `protobuf:"varint,3,opt,name=type,proto3,enum=album.AlbumType" json:"type,omitempty"`
 	Thumbnail     string                 `protobuf:"bytes,4,opt,name=thumbnail,proto3" json:"thumbnail,omitempty"`
 	ReleaseDate   *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=release_date,json=releaseDate,proto3" json:"release_date,omitempty"`
+	IsFavorite    bool                   `protobuf:"varint,6,opt,name=is_favorite,json=isFavorite,proto3" json:"is_favorite,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Album) Reset() {
 	*x = Album{}
-	mi := &file_album_album_proto_msgTypes[3]
+	mi := &file_album_album_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -232,7 +337,7 @@ func (x *Album) String() string {
 func (*Album) ProtoMessage() {}
 
 func (x *Album) ProtoReflect() protoreflect.Message {
-	mi := &file_album_album_proto_msgTypes[3]
+	mi := &file_album_album_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -245,7 +350,7 @@ func (x *Album) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Album.ProtoReflect.Descriptor instead.
 func (*Album) Descriptor() ([]byte, []int) {
-	return file_album_album_proto_rawDescGZIP(), []int{3}
+	return file_album_album_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Album) GetId() int64 {
@@ -283,6 +388,13 @@ func (x *Album) GetReleaseDate() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Album) GetIsFavorite() bool {
+	if x != nil {
+		return x.IsFavorite
+	}
+	return false
+}
+
 type AlbumList struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Albums        []*Album               `protobuf:"bytes,1,rep,name=albums,proto3" json:"albums,omitempty"`
@@ -292,7 +404,7 @@ type AlbumList struct {
 
 func (x *AlbumList) Reset() {
 	*x = AlbumList{}
-	mi := &file_album_album_proto_msgTypes[4]
+	mi := &file_album_album_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -304,7 +416,7 @@ func (x *AlbumList) String() string {
 func (*AlbumList) ProtoMessage() {}
 
 func (x *AlbumList) ProtoReflect() protoreflect.Message {
-	mi := &file_album_album_proto_msgTypes[4]
+	mi := &file_album_album_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -317,7 +429,7 @@ func (x *AlbumList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AlbumList.ProtoReflect.Descriptor instead.
 func (*AlbumList) Descriptor() ([]byte, []int) {
-	return file_album_album_proto_rawDescGZIP(), []int{4}
+	return file_album_album_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *AlbumList) GetAlbums() []*Album {
@@ -336,7 +448,7 @@ type AlbumTitle struct {
 
 func (x *AlbumTitle) Reset() {
 	*x = AlbumTitle{}
-	mi := &file_album_album_proto_msgTypes[5]
+	mi := &file_album_album_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -348,7 +460,7 @@ func (x *AlbumTitle) String() string {
 func (*AlbumTitle) ProtoMessage() {}
 
 func (x *AlbumTitle) ProtoReflect() protoreflect.Message {
-	mi := &file_album_album_proto_msgTypes[5]
+	mi := &file_album_album_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -361,7 +473,7 @@ func (x *AlbumTitle) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AlbumTitle.ProtoReflect.Descriptor instead.
 func (*AlbumTitle) Descriptor() ([]byte, []int) {
-	return file_album_album_proto_rawDescGZIP(), []int{5}
+	return file_album_album_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *AlbumTitle) GetTitle() string {
@@ -380,7 +492,7 @@ type AlbumTitleMap struct {
 
 func (x *AlbumTitleMap) Reset() {
 	*x = AlbumTitleMap{}
-	mi := &file_album_album_proto_msgTypes[6]
+	mi := &file_album_album_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -392,7 +504,7 @@ func (x *AlbumTitleMap) String() string {
 func (*AlbumTitleMap) ProtoMessage() {}
 
 func (x *AlbumTitleMap) ProtoReflect() protoreflect.Message {
-	mi := &file_album_album_proto_msgTypes[6]
+	mi := &file_album_album_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -405,7 +517,7 @@ func (x *AlbumTitleMap) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AlbumTitleMap.ProtoReflect.Descriptor instead.
 func (*AlbumTitleMap) Descriptor() ([]byte, []int) {
-	return file_album_album_proto_rawDescGZIP(), []int{6}
+	return file_album_album_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *AlbumTitleMap) GetTitles() map[int64]*AlbumTitle {
@@ -425,7 +537,7 @@ type Pagination struct {
 
 func (x *Pagination) Reset() {
 	*x = Pagination{}
-	mi := &file_album_album_proto_msgTypes[7]
+	mi := &file_album_album_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -437,7 +549,7 @@ func (x *Pagination) String() string {
 func (*Pagination) ProtoMessage() {}
 
 func (x *Pagination) ProtoReflect() protoreflect.Message {
-	mi := &file_album_album_proto_msgTypes[7]
+	mi := &file_album_album_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -450,7 +562,7 @@ func (x *Pagination) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Pagination.ProtoReflect.Descriptor instead.
 func (*Pagination) Descriptor() ([]byte, []int) {
-	return file_album_album_proto_rawDescGZIP(), []int{7}
+	return file_album_album_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *Pagination) GetOffset() int64 {
@@ -476,7 +588,7 @@ type Filters struct {
 
 func (x *Filters) Reset() {
 	*x = Filters{}
-	mi := &file_album_album_proto_msgTypes[8]
+	mi := &file_album_album_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -488,7 +600,7 @@ func (x *Filters) String() string {
 func (*Filters) ProtoMessage() {}
 
 func (x *Filters) ProtoReflect() protoreflect.Message {
-	mi := &file_album_album_proto_msgTypes[8]
+	mi := &file_album_album_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -501,12 +613,64 @@ func (x *Filters) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Filters.ProtoReflect.Descriptor instead.
 func (*Filters) Descriptor() ([]byte, []int) {
-	return file_album_album_proto_rawDescGZIP(), []int{8}
+	return file_album_album_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *Filters) GetPagination() *Pagination {
 	if x != nil {
 		return x.Pagination
+	}
+	return nil
+}
+
+type FiltersWithUserID struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Filters       *Filters               `protobuf:"bytes,1,opt,name=filters,proto3" json:"filters,omitempty"`
+	UserId        *UserID                `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FiltersWithUserID) Reset() {
+	*x = FiltersWithUserID{}
+	mi := &file_album_album_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FiltersWithUserID) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FiltersWithUserID) ProtoMessage() {}
+
+func (x *FiltersWithUserID) ProtoReflect() protoreflect.Message {
+	mi := &file_album_album_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FiltersWithUserID.ProtoReflect.Descriptor instead.
+func (*FiltersWithUserID) Descriptor() ([]byte, []int) {
+	return file_album_album_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *FiltersWithUserID) GetFilters() *Filters {
+	if x != nil {
+		return x.Filters
+	}
+	return nil
+}
+
+func (x *FiltersWithUserID) GetUserId() *UserID {
+	if x != nil {
+		return x.UserId
 	}
 	return nil
 }
@@ -521,7 +685,7 @@ type AlbumStreamCreateData struct {
 
 func (x *AlbumStreamCreateData) Reset() {
 	*x = AlbumStreamCreateData{}
-	mi := &file_album_album_proto_msgTypes[9]
+	mi := &file_album_album_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -533,7 +697,7 @@ func (x *AlbumStreamCreateData) String() string {
 func (*AlbumStreamCreateData) ProtoMessage() {}
 
 func (x *AlbumStreamCreateData) ProtoReflect() protoreflect.Message {
-	mi := &file_album_album_proto_msgTypes[9]
+	mi := &file_album_album_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -546,7 +710,7 @@ func (x *AlbumStreamCreateData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AlbumStreamCreateData.ProtoReflect.Descriptor instead.
 func (*AlbumStreamCreateData) Descriptor() ([]byte, []int) {
-	return file_album_album_proto_rawDescGZIP(), []int{9}
+	return file_album_album_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *AlbumStreamCreateData) GetAlbumId() *AlbumID {
@@ -563,6 +727,66 @@ func (x *AlbumStreamCreateData) GetUserId() *UserID {
 	return nil
 }
 
+type LikeRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AlbumId       *AlbumID               `protobuf:"bytes,1,opt,name=album_id,json=albumId,proto3" json:"album_id,omitempty"`
+	UserId        *UserID                `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	IsLike        bool                   `protobuf:"varint,3,opt,name=is_like,json=isLike,proto3" json:"is_like,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LikeRequest) Reset() {
+	*x = LikeRequest{}
+	mi := &file_album_album_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LikeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LikeRequest) ProtoMessage() {}
+
+func (x *LikeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_album_album_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LikeRequest.ProtoReflect.Descriptor instead.
+func (*LikeRequest) Descriptor() ([]byte, []int) {
+	return file_album_album_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *LikeRequest) GetAlbumId() *AlbumID {
+	if x != nil {
+		return x.AlbumId
+	}
+	return nil
+}
+
+func (x *LikeRequest) GetUserId() *UserID {
+	if x != nil {
+		return x.UserId
+	}
+	return nil
+}
+
+func (x *LikeRequest) GetIsLike() bool {
+	if x != nil {
+		return x.IsLike
+	}
+	return false
+}
+
 var File_album_album_proto protoreflect.FileDescriptor
 
 const file_album_album_proto_rawDesc = "" +
@@ -571,15 +795,23 @@ const file_album_album_proto_rawDesc = "" +
 	"\x06UserID\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"\x19\n" +
 	"\aAlbumID\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\"/\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\"f\n" +
+	"\x11AlbumIDWithUserID\x12)\n" +
+	"\balbum_id\x18\x01 \x01(\v2\x0e.album.AlbumIDR\aalbumId\x12&\n" +
+	"\auser_id\x18\x02 \x01(\v2\r.album.UserIDR\x06userId\"/\n" +
 	"\vAlbumIDList\x12 \n" +
-	"\x03ids\x18\x01 \x03(\v2\x0e.album.AlbumIDR\x03ids\"\xb0\x01\n" +
+	"\x03ids\x18\x01 \x03(\v2\x0e.album.AlbumIDR\x03ids\"e\n" +
+	"\x15AlbumIDListWithUserID\x12$\n" +
+	"\x03ids\x18\x01 \x01(\v2\x12.album.AlbumIDListR\x03ids\x12&\n" +
+	"\auser_id\x18\x02 \x01(\v2\r.album.UserIDR\x06userId\"\xd1\x01\n" +
 	"\x05Album\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12$\n" +
 	"\x04type\x18\x03 \x01(\x0e2\x10.album.AlbumTypeR\x04type\x12\x1c\n" +
 	"\tthumbnail\x18\x04 \x01(\tR\tthumbnail\x12=\n" +
-	"\frelease_date\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\vreleaseDate\"1\n" +
+	"\frelease_date\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\vreleaseDate\x12\x1f\n" +
+	"\vis_favorite\x18\x06 \x01(\bR\n" +
+	"isFavorite\"1\n" +
 	"\tAlbumList\x12$\n" +
 	"\x06albums\x18\x01 \x03(\v2\f.album.AlbumR\x06albums\"\"\n" +
 	"\n" +
@@ -597,22 +829,30 @@ const file_album_album_proto_rawDesc = "" +
 	"\aFilters\x121\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2\x11.album.PaginationR\n" +
-	"pagination\"j\n" +
+	"pagination\"e\n" +
+	"\x11FiltersWithUserID\x12(\n" +
+	"\afilters\x18\x01 \x01(\v2\x0e.album.FiltersR\afilters\x12&\n" +
+	"\auser_id\x18\x02 \x01(\v2\r.album.UserIDR\x06userId\"j\n" +
 	"\x15AlbumStreamCreateData\x12)\n" +
 	"\balbum_id\x18\x01 \x01(\v2\x0e.album.AlbumIDR\aalbumId\x12&\n" +
-	"\auser_id\x18\x02 \x01(\v2\r.album.UserIDR\x06userId*_\n" +
+	"\auser_id\x18\x02 \x01(\v2\r.album.UserIDR\x06userId\"y\n" +
+	"\vLikeRequest\x12)\n" +
+	"\balbum_id\x18\x01 \x01(\v2\x0e.album.AlbumIDR\aalbumId\x12&\n" +
+	"\auser_id\x18\x02 \x01(\v2\r.album.UserIDR\x06userId\x12\x17\n" +
+	"\ais_like\x18\x03 \x01(\bR\x06isLike*_\n" +
 	"\tAlbumType\x12\x12\n" +
 	"\x0eAlbumTypeAlbum\x10\x00\x12\x0f\n" +
 	"\vAlbumTypeEP\x10\x01\x12\x13\n" +
 	"\x0fAlbumTypeSingle\x10\x02\x12\x18\n" +
-	"\x14AlbumTypeCompilation\x10\x032\xe4\x02\n" +
-	"\fAlbumService\x120\n" +
-	"\fGetAllAlbums\x12\x0e.album.Filters\x1a\x10.album.AlbumList\x12,\n" +
-	"\fGetAlbumByID\x12\x0e.album.AlbumID\x1a\f.album.Album\x126\n" +
+	"\x14AlbumTypeCompilation\x10\x032\xbb\x03\n" +
+	"\fAlbumService\x12:\n" +
+	"\fGetAllAlbums\x12\x18.album.FiltersWithUserID\x1a\x10.album.AlbumList\x126\n" +
+	"\fGetAlbumByID\x12\x18.album.AlbumIDWithUserID\x1a\f.album.Album\x126\n" +
 	"\x11GetAlbumTitleByID\x12\x0e.album.AlbumID\x1a\x11.album.AlbumTitle\x12>\n" +
-	"\x12GetAlbumTitleByIDs\x12\x12.album.AlbumIDList\x1a\x14.album.AlbumTitleMap\x126\n" +
-	"\x0eGetAlbumsByIDs\x12\x12.album.AlbumIDList\x1a\x10.album.AlbumList\x12D\n" +
-	"\fCreateStream\x12\x1c.album.AlbumStreamCreateData\x1a\x16.google.protobuf.EmptyB\tZ\a./albumb\x06proto3"
+	"\x12GetAlbumTitleByIDs\x12\x12.album.AlbumIDList\x1a\x14.album.AlbumTitleMap\x12@\n" +
+	"\x0eGetAlbumsByIDs\x12\x1c.album.AlbumIDListWithUserID\x1a\x10.album.AlbumList\x12D\n" +
+	"\fCreateStream\x12\x1c.album.AlbumStreamCreateData\x1a\x16.google.protobuf.Empty\x127\n" +
+	"\tLikeAlbum\x12\x12.album.LikeRequest\x1a\x16.google.protobuf.EmptyB\tZ\a./albumb\x06proto3"
 
 var (
 	file_album_album_proto_rawDescOnce sync.Once
@@ -627,50 +867,64 @@ func file_album_album_proto_rawDescGZIP() []byte {
 }
 
 var file_album_album_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_album_album_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_album_album_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_album_album_proto_goTypes = []any{
 	(AlbumType)(0),                // 0: album.AlbumType
 	(*UserID)(nil),                // 1: album.UserID
 	(*AlbumID)(nil),               // 2: album.AlbumID
-	(*AlbumIDList)(nil),           // 3: album.AlbumIDList
-	(*Album)(nil),                 // 4: album.Album
-	(*AlbumList)(nil),             // 5: album.AlbumList
-	(*AlbumTitle)(nil),            // 6: album.AlbumTitle
-	(*AlbumTitleMap)(nil),         // 7: album.AlbumTitleMap
-	(*Pagination)(nil),            // 8: album.Pagination
-	(*Filters)(nil),               // 9: album.Filters
-	(*AlbumStreamCreateData)(nil), // 10: album.AlbumStreamCreateData
-	nil,                           // 11: album.AlbumTitleMap.TitlesEntry
-	(*timestamppb.Timestamp)(nil), // 12: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),         // 13: google.protobuf.Empty
+	(*AlbumIDWithUserID)(nil),     // 3: album.AlbumIDWithUserID
+	(*AlbumIDList)(nil),           // 4: album.AlbumIDList
+	(*AlbumIDListWithUserID)(nil), // 5: album.AlbumIDListWithUserID
+	(*Album)(nil),                 // 6: album.Album
+	(*AlbumList)(nil),             // 7: album.AlbumList
+	(*AlbumTitle)(nil),            // 8: album.AlbumTitle
+	(*AlbumTitleMap)(nil),         // 9: album.AlbumTitleMap
+	(*Pagination)(nil),            // 10: album.Pagination
+	(*Filters)(nil),               // 11: album.Filters
+	(*FiltersWithUserID)(nil),     // 12: album.FiltersWithUserID
+	(*AlbumStreamCreateData)(nil), // 13: album.AlbumStreamCreateData
+	(*LikeRequest)(nil),           // 14: album.LikeRequest
+	nil,                           // 15: album.AlbumTitleMap.TitlesEntry
+	(*timestamppb.Timestamp)(nil), // 16: google.protobuf.Timestamp
+	(*emptypb.Empty)(nil),         // 17: google.protobuf.Empty
 }
 var file_album_album_proto_depIdxs = []int32{
-	2,  // 0: album.AlbumIDList.ids:type_name -> album.AlbumID
-	0,  // 1: album.Album.type:type_name -> album.AlbumType
-	12, // 2: album.Album.release_date:type_name -> google.protobuf.Timestamp
-	4,  // 3: album.AlbumList.albums:type_name -> album.Album
-	11, // 4: album.AlbumTitleMap.titles:type_name -> album.AlbumTitleMap.TitlesEntry
-	8,  // 5: album.Filters.pagination:type_name -> album.Pagination
-	2,  // 6: album.AlbumStreamCreateData.album_id:type_name -> album.AlbumID
-	1,  // 7: album.AlbumStreamCreateData.user_id:type_name -> album.UserID
-	6,  // 8: album.AlbumTitleMap.TitlesEntry.value:type_name -> album.AlbumTitle
-	9,  // 9: album.AlbumService.GetAllAlbums:input_type -> album.Filters
-	2,  // 10: album.AlbumService.GetAlbumByID:input_type -> album.AlbumID
-	2,  // 11: album.AlbumService.GetAlbumTitleByID:input_type -> album.AlbumID
-	3,  // 12: album.AlbumService.GetAlbumTitleByIDs:input_type -> album.AlbumIDList
-	3,  // 13: album.AlbumService.GetAlbumsByIDs:input_type -> album.AlbumIDList
-	10, // 14: album.AlbumService.CreateStream:input_type -> album.AlbumStreamCreateData
-	5,  // 15: album.AlbumService.GetAllAlbums:output_type -> album.AlbumList
-	4,  // 16: album.AlbumService.GetAlbumByID:output_type -> album.Album
-	6,  // 17: album.AlbumService.GetAlbumTitleByID:output_type -> album.AlbumTitle
-	7,  // 18: album.AlbumService.GetAlbumTitleByIDs:output_type -> album.AlbumTitleMap
-	5,  // 19: album.AlbumService.GetAlbumsByIDs:output_type -> album.AlbumList
-	13, // 20: album.AlbumService.CreateStream:output_type -> google.protobuf.Empty
-	15, // [15:21] is the sub-list for method output_type
-	9,  // [9:15] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	2,  // 0: album.AlbumIDWithUserID.album_id:type_name -> album.AlbumID
+	1,  // 1: album.AlbumIDWithUserID.user_id:type_name -> album.UserID
+	2,  // 2: album.AlbumIDList.ids:type_name -> album.AlbumID
+	4,  // 3: album.AlbumIDListWithUserID.ids:type_name -> album.AlbumIDList
+	1,  // 4: album.AlbumIDListWithUserID.user_id:type_name -> album.UserID
+	0,  // 5: album.Album.type:type_name -> album.AlbumType
+	16, // 6: album.Album.release_date:type_name -> google.protobuf.Timestamp
+	6,  // 7: album.AlbumList.albums:type_name -> album.Album
+	15, // 8: album.AlbumTitleMap.titles:type_name -> album.AlbumTitleMap.TitlesEntry
+	10, // 9: album.Filters.pagination:type_name -> album.Pagination
+	11, // 10: album.FiltersWithUserID.filters:type_name -> album.Filters
+	1,  // 11: album.FiltersWithUserID.user_id:type_name -> album.UserID
+	2,  // 12: album.AlbumStreamCreateData.album_id:type_name -> album.AlbumID
+	1,  // 13: album.AlbumStreamCreateData.user_id:type_name -> album.UserID
+	2,  // 14: album.LikeRequest.album_id:type_name -> album.AlbumID
+	1,  // 15: album.LikeRequest.user_id:type_name -> album.UserID
+	8,  // 16: album.AlbumTitleMap.TitlesEntry.value:type_name -> album.AlbumTitle
+	12, // 17: album.AlbumService.GetAllAlbums:input_type -> album.FiltersWithUserID
+	3,  // 18: album.AlbumService.GetAlbumByID:input_type -> album.AlbumIDWithUserID
+	2,  // 19: album.AlbumService.GetAlbumTitleByID:input_type -> album.AlbumID
+	4,  // 20: album.AlbumService.GetAlbumTitleByIDs:input_type -> album.AlbumIDList
+	5,  // 21: album.AlbumService.GetAlbumsByIDs:input_type -> album.AlbumIDListWithUserID
+	13, // 22: album.AlbumService.CreateStream:input_type -> album.AlbumStreamCreateData
+	14, // 23: album.AlbumService.LikeAlbum:input_type -> album.LikeRequest
+	7,  // 24: album.AlbumService.GetAllAlbums:output_type -> album.AlbumList
+	6,  // 25: album.AlbumService.GetAlbumByID:output_type -> album.Album
+	8,  // 26: album.AlbumService.GetAlbumTitleByID:output_type -> album.AlbumTitle
+	9,  // 27: album.AlbumService.GetAlbumTitleByIDs:output_type -> album.AlbumTitleMap
+	7,  // 28: album.AlbumService.GetAlbumsByIDs:output_type -> album.AlbumList
+	17, // 29: album.AlbumService.CreateStream:output_type -> google.protobuf.Empty
+	17, // 30: album.AlbumService.LikeAlbum:output_type -> google.protobuf.Empty
+	24, // [24:31] is the sub-list for method output_type
+	17, // [17:24] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_album_album_proto_init() }
@@ -684,7 +938,7 @@ func file_album_album_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_album_album_proto_rawDesc), len(file_album_album_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   11,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

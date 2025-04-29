@@ -20,16 +20,18 @@ func NewArtistService(artistUsecase domain.Usecase) artistProto.ArtistServiceSer
 	}
 }
 
-func (s *ArtistService) GetArtistByID(ctx context.Context, req *artistProto.ArtistID) (*artistProto.ArtistDetailed, error) {
-	artist, err := s.artistUsecase.GetArtistByID(ctx, req.Id)
+func (s *ArtistService) GetArtistByID(ctx context.Context, req *artistProto.ArtistIDWithUserID) (*artistProto.ArtistDetailed, error) {
+	userID := req.UserId.Id
+	artist, err := s.artistUsecase.GetArtistByID(ctx, req.ArtistId.Id, userID)
 	if err != nil {
 		return nil, err
 	}
 	return model.ArtistDetailedFromUsecaseToProto(artist), nil
 }
 
-func (s *ArtistService) GetAllArtists(ctx context.Context, req *artistProto.Filters) (*artistProto.ArtistList, error) {
-	artists, err := s.artistUsecase.GetAllArtists(ctx, model.ArtistFiltersFromProtoToUsecase(req))
+func (s *ArtistService) GetAllArtists(ctx context.Context, req *artistProto.FiltersWithUserID) (*artistProto.ArtistList, error) {
+	userID := req.UserId.Id
+	artists, err := s.artistUsecase.GetAllArtists(ctx, model.ArtistFiltersFromProtoToUsecase(req.Filters), userID)
 	if err != nil {
 		return nil, err
 	}
@@ -118,4 +120,12 @@ func (s *ArtistService) GetArtistsListenedByUserID(ctx context.Context, req *art
 		return nil, err
 	}
 	return &artistProto.ArtistListened{ArtistsListened: artistsListened}, nil
+}
+
+func (s *ArtistService) LikeArtist(ctx context.Context, req *artistProto.LikeRequest) (*emptypb.Empty, error) {
+	err := s.artistUsecase.LikeArtist(ctx, model.LikeRequestFromProtoToUsecase(req))
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
 }

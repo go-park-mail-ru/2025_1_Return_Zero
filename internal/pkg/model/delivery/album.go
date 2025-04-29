@@ -27,6 +27,11 @@ type Album struct {
 	Artists     []*AlbumArtist `json:"artists" description:"Associated artists"`
 	Type        AlbumType      `json:"type" example:"album" description:"Type of the album"`
 	ReleaseDate time.Time      `json:"release_date" example:"2021-01-01" description:"Release date of the album"`
+	IsLiked     bool           `json:"is_liked" example:"true" description:"Whether the album is liked by the user"`
+}
+
+type AlbumLikeRequest struct {
+	IsLike bool `json:"value" example:"true" description:"Whether the album is liked"`
 }
 
 type AlbumFilters struct {

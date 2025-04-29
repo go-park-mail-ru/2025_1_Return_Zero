@@ -1,11 +1,12 @@
 package repository
 
 type Track struct {
-	ID        int64
-	Title     string
-	Thumbnail string
-	Duration  int64
-	AlbumID   int64
+	ID         int64
+	Title      string
+	Thumbnail  string
+	Duration   int64
+	AlbumID    int64
+	IsFavorite bool
 }
 
 type TrackStreamCreateData struct {
@@ -37,4 +38,9 @@ type Pagination struct {
 
 type TrackFilters struct {
 	Pagination *Pagination
+}
+
+type LikeRequest struct {
+	TrackID int64
+	UserID  int64
 }

@@ -20,16 +20,17 @@ func NewAlbumService(albumUsecase domain.Usecase) albumProto.AlbumServiceServer 
 	}
 }
 
-func (s *AlbumService) GetAllAlbums(ctx context.Context, req *albumProto.Filters) (*albumProto.AlbumList, error) {
-	albums, err := s.albumUsecase.GetAllAlbums(ctx, model.AlbumFiltersFromProtoToUsecase(req))
+func (s *AlbumService) GetAllAlbums(ctx context.Context, req *albumProto.FiltersWithUserID) (*albumProto.AlbumList, error) {
+	userID := req.UserId.Id
+	albums, err := s.albumUsecase.GetAllAlbums(ctx, model.AlbumFiltersFromProtoToUsecase(req.Filters), userID)
 	if err != nil {
 		return nil, err
 	}
 	return model.AlbumListFromUsecaseToProto(albums), nil
 }
 
-func (s *AlbumService) GetAlbumByID(ctx context.Context, req *albumProto.AlbumID) (*albumProto.Album, error) {
-	album, err := s.albumUsecase.GetAlbumByID(ctx, req.Id)
+func (s *AlbumService) GetAlbumByID(ctx context.Context, req *albumProto.AlbumIDWithUserID) (*albumProto.Album, error) {
+	album, err := s.albumUsecase.GetAlbumByID(ctx, req.AlbumId.Id, req.UserId.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -59,12 +60,12 @@ func (s *AlbumService) GetAlbumTitleByIDs(ctx context.Context, req *albumProto.A
 	return model.AlbumTitleMapFromUsecaseToProto(albumTitles), nil
 }
 
-func (s *AlbumService) GetAlbumsByIDs(ctx context.Context, req *albumProto.AlbumIDList) (*albumProto.AlbumList, error) {
-	ids := make([]int64, len(req.Ids))
-	for i, id := range req.Ids {
+func (s *AlbumService) GetAlbumsByIDs(ctx context.Context, req *albumProto.AlbumIDListWithUserID) (*albumProto.AlbumList, error) {
+	ids := make([]int64, len(req.Ids.Ids))
+	for i, id := range req.Ids.Ids {
 		ids[i] = id.Id
 	}
-	albums, err := s.albumUsecase.GetAlbumsByIDs(ctx, ids)
+	albums, err := s.albumUsecase.GetAlbumsByIDs(ctx, ids, req.UserId.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -73,6 +74,14 @@ func (s *AlbumService) GetAlbumsByIDs(ctx context.Context, req *albumProto.Album
 
 func (s *AlbumService) CreateStream(ctx context.Context, req *albumProto.AlbumStreamCreateData) (*emptypb.Empty, error) {
 	err := s.albumUsecase.CreateStream(ctx, req.AlbumId.Id, req.UserId.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *AlbumService) LikeAlbum(ctx context.Context, req *albumProto.LikeRequest) (*emptypb.Empty, error) {
+	err := s.albumUsecase.LikeAlbum(ctx, model.LikeRequestFromProtoToUsecase(req))
 	if err != nil {
 		return nil, err
 	}

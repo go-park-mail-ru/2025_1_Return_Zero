@@ -16,6 +16,13 @@ var (
 	ErrFailedToUpdateStreamDuration = errors.New("failed to update stream duration")
 	ErrTrackNotFound                = errors.New("track not found")
 	ErrStreamPermissionDenied       = errors.New("user does not have permission to update this stream")
+	ErrStream                       = errors.New("stream not found")
+	ErrStreamHistoryUnauthorized    = errors.New("unauthorized users can't save to stream history")
+	ErrStreamUpdateUnauthorized     = errors.New("user does not have permission to update this stream")
+	ErrStreamCreateUnauthorized     = errors.New("unauthorized users can't create stream")
+	ErrLikeArtistUnauthorized       = errors.New("unauthorized users can't like artist")
+	ErrLikeAlbumUnauthorized        = errors.New("unauthorized users can't like album")
+	ErrLikeTrackUnauthorized        = errors.New("unauthorized users can't like track")
 )
 
 func HandleAlbumGRPCError(err error) error {
