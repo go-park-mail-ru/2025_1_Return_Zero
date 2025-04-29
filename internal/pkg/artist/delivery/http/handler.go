@@ -99,6 +99,20 @@ func (h *ArtistHandler) GetArtistByID(w http.ResponseWriter, r *http.Request) {
 	json.WriteSuccessResponse(w, http.StatusOK, artistDetailed, nil)
 }
 
+// LikeArtist godoc
+// @Summary Like an artist
+// @Description Like an artist for a user
+// @Tags artists
+// @Accept json
+// @Produce json
+// @Param id path integer true "Artist ID"
+// @Param likeRequest body delivery.ArtistLikeRequest true "Like request"
+// @Success 200 {object} delivery.APIResponse{body=delivery.Message} "Artist liked/unliked"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid artist ID"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "Artist not found"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /artists/{id}/like [post]
 func (h *ArtistHandler) LikeArtist(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)

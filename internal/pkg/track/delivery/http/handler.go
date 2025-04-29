@@ -312,6 +312,19 @@ func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Requ
 	json.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
 }
 
+// GetTracksByAlbumID godoc
+// @Summary Get tracks by album ID
+// @Description Get a list of tracks by a specific album with optional pagination filters
+// @Tags tracks
+// @Accept json
+// @Produce json
+// @Param id path integer true "Album ID"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Track} "List of tracks by album"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid album ID or filters"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "Album not found"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /albums/{id}/tracks [get]
+
 func (h *TrackHandler) GetTracksByAlbumID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
@@ -335,6 +348,19 @@ func (h *TrackHandler) GetTracksByAlbumID(w http.ResponseWriter, r *http.Request
 	json.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
 }
 
+// LikeTrack godoc
+// @Summary Like a track
+// @Description Like a track for a user
+// @Tags tracks
+// @Accept json
+// @Produce json
+// @Param id path integer true "Track ID"
+// @Success 200 {object} delivery.APIResponse{body=delivery.Message} "Track liked/unliked"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid track ID"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "Track not found"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /tracks/{id}/like [post]
 func (h *TrackHandler) LikeTrack(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)

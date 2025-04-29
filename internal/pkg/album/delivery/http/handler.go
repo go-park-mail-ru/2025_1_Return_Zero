@@ -110,6 +110,17 @@ func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Reques
 	json.WriteSuccessResponse(w, http.StatusOK, albums, nil)
 }
 
+// GetAlbumByID godoc
+// @Summary Get album by ID
+// @Description Get an album by its ID
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Param id path integer true "Album ID"
+// @Success 200 {object} delivery.APIResponse{body=delivery.Album} "Album details"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid album ID"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /albums/{id} [get]
 func (h *AlbumHandler) GetAlbumByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
@@ -134,6 +145,20 @@ func (h *AlbumHandler) GetAlbumByID(w http.ResponseWriter, r *http.Request) {
 	json.WriteSuccessResponse(w, http.StatusOK, album, nil)
 }
 
+// LikeAlbum godoc
+// @Summary Like an album
+// @Description Like an album for a user
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Param id path integer true "Album ID"
+// @Param likeRequest body delivery.AlbumLikeRequest true "Like request"
+// @Success 200 {object} delivery.APIResponse{body=delivery.Message} "Album liked/unliked"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid album ID"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "Album not found"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /albums/{id}/like [post]
 func (h *AlbumHandler) LikeAlbum(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
