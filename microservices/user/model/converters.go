@@ -19,6 +19,7 @@ func UserFromRepositoryToUsecase(data *repoModel.User) *usecaseModel.UserFront {
 		Username:  data.Username,
 		Email:     data.Email,
 		Thumbnail: data.Thumbnail,
+		Id:        data.ID,
 	}
 }
 
@@ -40,10 +41,10 @@ func UserDeleteFromUsecaseToRepository(data *usecaseModel.UserDelete) *repoModel
 
 func ChangeUserDataFromUsecaseToRepository(data *usecaseModel.ChangeUserData) *repoModel.ChangeUserData {
 	return &repoModel.ChangeUserData{
-		Password:     data.Password,
-		NewUsername:  data.NewUsername,
-		NewEmail:     data.NewEmail,
-		NewPassword:  data.NewPassword,
+		Password:    data.Password,
+		NewUsername: data.NewUsername,
+		NewEmail:    data.NewEmail,
+		NewPassword: data.NewPassword,
 	}
 }
 
@@ -69,23 +70,13 @@ func PrivacyFromRepositoryToUsecase(data *repoModel.PrivacySettings) *usecaseMod
 	}
 }
 
-func StatisticsFromRepositoryToUsecase(data *repoModel.Statistics) *usecaseModel.Statistics {
-	return &usecaseModel.Statistics{
-		MinutesListened: data.MinutesListened,
-		TracksListened:  data.TracksListened,
-		ArtistsListened: data.ArtistsListened,
-	}
-}
-
 func UserFullDataFromRepositoryToUsecase(data *repoModel.UserFullData) *usecaseModel.UserFullData {
 	privacyUsecase := PrivacyFromRepositoryToUsecase(data.Privacy)
-	statisticsUsecase := StatisticsFromRepositoryToUsecase(data.Statistics)
 	return &usecaseModel.UserFullData{
 		Username:   data.Username,
 		Thumbnail:  data.Thumbnail,
 		Email:      data.Email,
 		Privacy:    privacyUsecase,
-		Statistics: statisticsUsecase,
 	}
 }
 
@@ -99,9 +90,10 @@ func RegisterDataFromProtoToUsecase(data *protoModel.RegisterData) *usecaseModel
 
 func UserFrontFromUsecaseToProto(data *usecaseModel.UserFront) *protoModel.UserFront {
 	return &protoModel.UserFront{
-		Username:  data.Username,
-		Email:     data.Email,
-		Avatar: data.Thumbnail,
+		Username: data.Username,
+		Email:    data.Email,
+		Avatar:   data.Thumbnail,
+		Id:       data.Id,
 	}
 }
 
@@ -123,10 +115,10 @@ func UserDeleteFromProtoToUsecase(data *protoModel.UserDelete) *usecaseModel.Use
 
 func ChangeUserDataFromProtoToUsecase(data *protoModel.ChangeUserDataMessage) *usecaseModel.ChangeUserData {
 	return &usecaseModel.ChangeUserData{
-		Password:     data.Password,
-		NewUsername:  data.NewUsername,
-		NewEmail:     data.NewEmail,
-		NewPassword:  data.NewPassword,
+		Password:    data.Password,
+		NewUsername: data.NewUsername,
+		NewEmail:    data.NewEmail,
+		NewPassword: data.NewPassword,
 	}
 }
 
@@ -150,16 +142,16 @@ func UserFullDataFromUsecaseToProto(data *usecaseModel.UserFullData) *protoModel
 		IsPublicFavoriteTracks:  data.Privacy.IsPublicFavoriteTracks,
 		IsPublicArtistsListened: data.Privacy.IsPublicArtistsListened,
 	}
-	statisticsProto := &protoModel.Statistics{
-		MinutesListened: data.Statistics.MinutesListened,
-		TracksListened:  data.Statistics.TracksListened,
-		ArtistsListened: data.Statistics.ArtistsListened,
-	}
 	return &protoModel.UserFullData{
 		Username:   data.Username,
-		Avatar:  data.Thumbnail,
+		Avatar:     data.Thumbnail,
 		Email:      data.Email,
 		Privacy:    privacyProto,
-		Statistics: statisticsProto,
+	}
+}
+
+func UserIDFromUsecaseToProto(id int64) *protoModel.UserID {
+	return &protoModel.UserID{
+		Id: id,
 	}
 }

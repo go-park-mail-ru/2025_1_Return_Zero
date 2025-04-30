@@ -15,20 +15,6 @@ CREATE TABLE IF NOT EXISTS "user" (
     is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
-create TABLE IF NOT EXISTS user_statistics (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    minutes_listened INTEGER NOT NULL DEFAULT 0,
-    tracks_listened INTEGER NOT NULL DEFAULT 0,
-    artists_listened INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (user_id)
-        REFERENCES "user" (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS user_settings (
     user_id BIGINT NOT NULL PRIMARY KEY,
     is_public_playlists BOOLEAN NOT NULL DEFAULT FALSE, 
@@ -62,8 +48,6 @@ CREATE TABLE IF NOT EXISTS artist (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     thumbnail_url TEXT NOT NULL DEFAULT '/default_artist.png'
-    -- CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
-    -- CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
 
 CREATE TABLE IF NOT EXISTS album (
@@ -76,9 +60,9 @@ CREATE TABLE IF NOT EXISTS album (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT album_valid_type_check CHECK (type IN ('album', 'single', 'ep', 'compilation'))
-    -- CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
-    -- CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
+
+
 
 CREATE TABLE IF NOT EXISTS track (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -97,9 +81,9 @@ CREATE TABLE IF NOT EXISTS track (
         ON UPDATE CASCADE,
     CONSTRAINT track_valid_duration_check CHECK (duration > 0),
     CONSTRAINT unique_album_track_check UNIQUE (album_id, position)
-    -- CONSTRAINT non_negative_listeners_count_check CHECK (listeners_count >= 0),
-    -- CONSTRAINT non_negative_favorites_count_check CHECK (favorites_count >= 0)
 );
+
+
 
 CREATE TABLE IF NOT EXISTS track_artist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
@@ -142,7 +126,7 @@ CREATE TABLE IF NOT EXISTS playlist (
     CONSTRAINT playlist_title_length_check CHECK (LENGTH(title) >= 1 AND LENGTH(title) <= 100),
     description TEXT DEFAULT '',
     CONSTRAINT playlist_description_length_check CHECK (LENGTH(description) <= 1000),
-    user_id BIGINT, -- NULL для подборок
+    user_id BIGINT NOT NULL,
     thumbnail_url TEXT NOT NULL DEFAULT '/default_playlist.png',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -257,7 +241,7 @@ CREATE TABLE IF NOT EXISTS favorite_artist (
     CONSTRAINT unique_favorite_artist_check UNIQUE (user_id, artist_id)
 );
 
-CREATE TABLE IF NOT EXISTS stream (
+CREATE TABLE IF NOT EXISTS track_stream (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
@@ -275,76 +259,101 @@ CREATE TABLE IF NOT EXISTS stream (
     CONSTRAINT stream_valid_duration_check CHECK (duration >= 0)
 );
 
-CREATE MATERIALIZED VIEW artist_stats AS
+CREATE MATERIALIZED VIEW track_stats AS
 SELECT 
-    a.id AS artist_id,
-    COUNT(DISTINCT s.user_id) AS listeners_count,
-    COUNT(DISTINCT fa.user_id) AS favorites_count
+    t.id AS track_id,
+    COUNT(DISTINCT ts.user_id) AS listeners_count,
+    COUNT(DISTINCT ft.user_id) AS favorites_count
 FROM 
-    artist a
-LEFT JOIN 
-    track_artist ta ON a.id = ta.artist_id
-LEFT JOIN 
-    track t ON ta.track_id = t.id
-LEFT JOIN 
-    stream s ON t.id = s.track_id
-LEFT JOIN 
-    favorite_artist fa ON a.id = fa.artist_id
+    track t
+    LEFT JOIN track_stream ts ON t.id = ts.track_id
+    LEFT JOIN favorite_track ft ON t.id = ft.track_id
 GROUP BY 
-    a.id, a.title;
+    t.id;
 
-SELECT cron.schedule(
-    'refresh_artist_stats', 
-    '0 */1 * * *', 
-    $$REFRESH MATERIALIZED VIEW artist_stats$$);
+CREATE UNIQUE INDEX track_stats_track_id_idx ON track_stats (track_id);
+
+CREATE TABLE IF NOT EXISTS album_stream (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    album_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    duration INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (user_id)
+        REFERENCES "user" (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (album_id)
+        REFERENCES album (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT stream_valid_duration_check CHECK (duration >= 0)
+);
 
 CREATE MATERIALIZED VIEW album_stats AS
 SELECT 
     a.id AS album_id,
-    COUNT(DISTINCT s.user_id) AS listeners_count,
+    COUNT(DISTINCT abs.user_id) AS listeners_count,
     COUNT(DISTINCT fa.user_id) AS favorites_count
 FROM 
     album a
-LEFT JOIN 
-    track t ON a.id = t.album_id
-LEFT JOIN 
-    stream s ON t.id = s.track_id
-LEFT JOIN 
-    favorite_album fa ON a.id = fa.album_id
+    LEFT JOIN album_stream abs ON a.id = abs.album_id
+    LEFT JOIN favorite_album fa ON a.id = fa.album_id
 GROUP BY 
-    a.id, a.title;
+    a.id;
 
-SELECT cron.schedule(
-    'refresh_album_stats', 
-    '0 */1 * * *', 
-    $$REFRESH MATERIALIZED VIEW album_stats$$);
+CREATE UNIQUE INDEX album_stats_album_id_idx ON album_stats (album_id);
 
-CREATE MATERIALIZED VIEW track_stats AS
+CREATE TABLE IF NOT EXISTS artist_stream (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    artist_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (user_id)
+        REFERENCES "user" (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (artist_id)
+        REFERENCES artist (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+CREATE MATERIALIZED VIEW artist_stats AS
 SELECT 
-    t.id AS track_id,
-    COUNT(DISTINCT s.user_id) AS listeners_count,
+    a.id AS artist_id,
+    COUNT(DISTINCT astr.user_id) AS listeners_count,
     COUNT(DISTINCT fa.user_id) AS favorites_count
 FROM 
-    track t
-LEFT JOIN 
-    stream s ON t.id = s.track_id
-LEFT JOIN 
-    favorite_track fa ON t.id = fa.track_id
+    artist a
+    LEFT JOIN artist_stream astr ON a.id = astr.artist_id
+    LEFT JOIN favorite_artist fa ON a.id = fa.artist_id
 GROUP BY 
-    t.id, t.title;
+    a.id;
 
-SELECT cron.schedule(
-    'refresh_track_stats', 
-    '0 */1 * * *', 
-    $$REFRESH MATERIALIZED VIEW track_stats$$);
+CREATE UNIQUE INDEX artist_stats_artist_id_idx ON artist_stats (artist_id);
+
+
+SELECT cron.schedule('refresh_artist_stats', '0 * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY artist_stats');
+SELECT cron.schedule('refresh_album_stats', '0 * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY album_stats');
+SELECT cron.schedule('refresh_track_stats', '0 * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY track_stats');
 
 ---- create above / drop below ----
+
+DROP INDEX IF EXISTS artist_stats_artist_id_idx;
+DROP INDEX IF EXISTS album_stats_album_id_idx;
+DROP INDEX IF EXISTS track_stats_track_id_idx;
 
 DROP MATERIALIZED VIEW IF EXISTS artist_stats;
 DROP MATERIALIZED VIEW IF EXISTS album_stats;
 DROP MATERIALIZED VIEW IF EXISTS track_stats;
 
-DROP TABLE IF EXISTS stream;
+DROP TABLE IF EXISTS track_stream;
+DROP TABLE IF EXISTS artist_stream;
+DROP TABLE IF EXISTS album_stream;
+DROP TABLE IF EXISTS track_stream;
 DROP TABLE IF EXISTS favorite_artist;
 DROP TABLE IF EXISTS favorite_album;
 DROP TABLE IF EXISTS favorite_track;
@@ -359,7 +368,6 @@ DROP TABLE IF EXISTS album;
 DROP TABLE IF EXISTS artist;
 DROP TABLE IF EXISTS genre;
 DROP TABLE IF EXISTS user_settings;
-DROP TABLE IF EXISTS user_statistics;
 DROP TABLE IF EXISTS "user";
 
 SELECT cron.unschedule('refresh_artist_stats') WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'refresh_artist_stats');

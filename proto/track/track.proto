@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+option go_package = "./track";
+
+package track;
+
+import "google/protobuf/empty.proto";
+
+service TrackService {
+	rpc GetAllTracks(Filters) returns (TrackList);
+	rpc GetTrackByID(TrackID) returns (TrackDetailed);
+	rpc CreateStream(TrackStreamCreateData) returns (StreamID);
+	rpc UpdateStreamDuration(TrackStreamUpdateData) returns (google.protobuf.Empty);
+    rpc GetLastListenedTracks(UserIDWithFilters) returns (TrackList);
+	rpc GetTracksByIDs(TrackIDList) returns (TrackList);
+    rpc GetTracksByIDsFiltered(TrackIDListWithFilters) returns (TrackList);
+    rpc GetAlbumIDByTrackID(TrackID) returns (AlbumID);
+    rpc GetTracksByAlbumID(AlbumID) returns (TrackList);
+    rpc GetMinutesListenedByUserID(UserID) returns (MinutesListened);
+    rpc GetTracksListenedByUserID(UserID) returns (TracksListened);
+}
+
+message AlbumID {
+    int64 id = 1;
+}
+
+message MinutesListened {
+    int64 minutes = 1;
+}
+
+message TracksListened {
+    int64 tracks = 1;
+}
+
+message Track {
+    int64 id = 1;
+    string title = 2;
+    string thumbnail = 3;
+    int64 duration = 4;
+    int64 album_id = 5;
+}
+
+message TrackList {
+    repeated Track tracks = 1;
+}
+
+message TrackID {
+    int64 id = 1;
+}
+
+message TrackIDList {
+    repeated TrackID ids = 1;
+}
+
+message TrackIDListWithFilters {
+    TrackIDList ids = 1;
+    Filters filters = 2;
+}
+
+message UserID {
+    int64 id = 1;
+}
+
+message UserIDWithFilters {
+    UserID user_id = 1;
+    Filters filters = 2;
+}
+
+message StreamID {
+    int64 id = 1;
+}
+
+message TrackStreamCreateData {
+    TrackID track_id = 1;
+    UserID user_id = 2;
+}
+
+message TrackStreamUpdateData {
+    StreamID stream_id = 1;
+    UserID user_id = 2;
+    int64 duration = 3;
+}
+
+message TrackStream {
+    int64 id = 1;
+    TrackID track_id = 2;
+    int64 duration = 3;
+}
+
+message TrackStreamList {
+    repeated TrackStream streams = 1;
+}
+
+message TrackStreamListWithFilters {
+    TrackStreamList streams = 1;
+    Filters filters = 2;
+}
+
+message TrackDetailed {
+    Track track = 1;
+    string file_url = 2;
+}
+
+message Pagination {
+    int64 offset = 1;
+    int64 limit = 2;
+}
+
+message Filters {
+    Pagination pagination = 1;
+}
+
+

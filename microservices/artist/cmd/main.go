@@ -58,7 +58,7 @@ func main() {
 	artistService := delivery.NewArtistService(artistUsecase)
 	artistProto.RegisterArtistServiceServer(server, artistService)
 
-	logger.Info("Artist service started on port %s...", zap.String("port", port))
+	logger.Info("Artist service started", zap.String("port", port))
 
 	err = server.Serve(conn)
 	if err != nil {

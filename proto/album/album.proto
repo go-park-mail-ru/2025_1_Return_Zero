@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+option go_package = "./album";
+
+package album;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service AlbumService {
+	rpc GetAllAlbums(Filters) returns (AlbumList);
+	rpc GetAlbumByID(AlbumID) returns (Album);
+	rpc GetAlbumTitleByID(AlbumID) returns (AlbumTitle);
+	rpc GetAlbumTitleByIDs(AlbumIDList) returns (AlbumTitleMap);
+	rpc GetAlbumsByIDs(AlbumIDList) returns (AlbumList);
+	rpc CreateStream(AlbumStreamCreateData) returns (google.protobuf.Empty);
+}
+
+message UserID {
+    int64 id = 1;
+}
+
+
+enum AlbumType {
+	AlbumTypeAlbum       = 0;
+	AlbumTypeEP          = 1;
+	AlbumTypeSingle      = 2;
+	AlbumTypeCompilation = 3;
+}
+
+message AlbumID {
+	int64 id = 1;
+}
+
+message AlbumIDList {
+	repeated AlbumID ids = 1;
+}
+
+message Album {
+	int64 id = 1;
+	string title = 2;
+	AlbumType type = 3;
+	string thumbnail = 4;
+	google.protobuf.Timestamp release_date = 5;
+}
+
+message AlbumList {
+	repeated Album albums = 1;
+}
+
+message AlbumTitle {
+	string title = 1;
+}
+
+message AlbumTitleMap {
+	map<int64, AlbumTitle> titles = 1;
+}
+
+message Pagination {
+	int64 offset = 1;
+	int64 limit = 2;
+}
+
+message Filters {
+	Pagination pagination = 1;
+}
+
+message AlbumStreamCreateData {
+    AlbumID album_id = 1;
+    UserID user_id = 2;
+}

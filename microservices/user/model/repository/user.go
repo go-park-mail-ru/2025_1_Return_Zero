@@ -42,16 +42,9 @@ type PrivacySettings struct {
 	IsPublicArtistsListened bool `sql:"is_public_artists_listened"`
 }
 
-type Statistics struct {
-	MinutesListened int64 `sql:"minutes_listened"`
-	TracksListened  int64 `sql:"tracks_listened"`
-	ArtistsListened int64 `sql:"artists_listened"`
-}
-
 type UserFullData struct {
 	Username   string `sql:"username"`
 	Thumbnail  string `sql:"thumbnail_url"`
 	Email      string `sql:"email"`
 	Privacy    *PrivacySettings
-	Statistics *Statistics
 }

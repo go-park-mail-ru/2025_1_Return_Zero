@@ -10,6 +10,7 @@ type UserFront struct {
 	Username  string
 	Email     string
 	Thumbnail string
+	Id        int64
 }
 
 type LoginData struct {
@@ -25,7 +26,7 @@ type UserDelete struct {
 }
 
 type ChangeUserData struct {
-	Password string
+	Password    string
 	NewUsername string
 	NewEmail    string
 	NewPassword string
@@ -40,16 +41,9 @@ type PrivacySettings struct {
 	IsPublicArtistsListened bool
 }
 
-type Statistics struct {
-	MinutesListened int64
-	TracksListened  int64
-	ArtistsListened int64
-}
-
 type UserFullData struct {
-	Username   string 
-	Thumbnail  string 
+	Username   string
+	Thumbnail  string
 	Email      string
 	Privacy    *PrivacySettings
-	Statistics *Statistics
 }

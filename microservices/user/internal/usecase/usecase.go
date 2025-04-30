@@ -4,8 +4,8 @@ import (
 	"context"
 
 	domain "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/internal/domain"
-	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/model/usecase"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/model"
+	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/model/usecase"
 )
 
 func NewUserUsecase(userRepository domain.Repository) domain.Usecase {
@@ -69,4 +69,12 @@ func (u *userUsecase) GetUserByID(ctx context.Context, id int64) (*usecaseModel.
 		return nil, err
 	}
 	return model.UserFromRepositoryToUsecase(userRepoData), nil
+}
+
+func (u *userUsecase) GetIDByUsername(ctx context.Context, username string) (int64, error) {
+	id, err := u.userRepo.GetIDByUsername(ctx, username)
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
 }

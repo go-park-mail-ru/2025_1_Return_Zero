@@ -410,7 +410,6 @@ func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 	}
 
 	UserFullDataDelivery := model.UserFullDataUsecaseToDelivery(userFullDataUsecase)
-
 	isSameUser := isAuth && authUser.Username == userFullDataUsecase.Username
 
 	if !isSameUser {

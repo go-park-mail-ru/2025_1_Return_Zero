@@ -32,7 +32,7 @@ func (u *artistUsecase) GetArtistByID(ctx context.Context, id int64) (*usecaseMo
 	return model.ArtistDetailedFromRepositoryToUsecase(repoArtist, stats), nil
 }
 
-func (u *artistUsecase) GetAllArtists(ctx context.Context, filters *usecaseModel.ArtistFilters) (*usecaseModel.ArtistList, error) {
+func (u *artistUsecase) GetAllArtists(ctx context.Context, filters *usecaseModel.Filters) (*usecaseModel.ArtistList, error) {
 	repoFilters := model.ArtistFiltersFromUsecaseToRepository(filters)
 	repoArtists, err := u.artistRepo.GetAllArtists(ctx, repoFilters)
 	if err != nil {
@@ -79,4 +79,37 @@ func (u *artistUsecase) GetArtistsByAlbumIDs(ctx context.Context, ids []int64) (
 		return nil, err
 	}
 	return model.ArtistWithTitleMapFromRepositoryToUsecase(repoArtists), nil
+}
+
+func (u *artistUsecase) GetAlbumIDsByArtistID(ctx context.Context, id int64) ([]int64, error) {
+	repoAlbumIDs, err := u.artistRepo.GetAlbumIDsByArtistID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return repoAlbumIDs, nil
+}
+
+func (u *artistUsecase) GetTrackIDsByArtistID(ctx context.Context, id int64) ([]int64, error) {
+	repoTrackIDs, err := u.artistRepo.GetTrackIDsByArtistID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return repoTrackIDs, nil
+}
+
+func (u *artistUsecase) CreateStreamsByArtistIDs(ctx context.Context, data *usecaseModel.ArtistStreamCreateDataList) error {
+	repoData := model.ArtistStreamCreateDataFromUsecaseToRepository(data)
+	err := u.artistRepo.CreateStreamsByArtistIDs(ctx, repoData)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *artistUsecase) GetArtistsListenedByUserID(ctx context.Context, userID int64) (int64, error) {
+	repoArtistsListened, err := u.artistRepo.GetArtistsListenedByUserID(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+	return repoArtistsListened, nil
 }

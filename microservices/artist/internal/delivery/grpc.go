@@ -6,6 +6,7 @@ import (
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/internal/domain"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/model"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type ArtistService struct {
@@ -13,7 +14,7 @@ type ArtistService struct {
 	artistUsecase domain.Usecase
 }
 
-func NewArtistService(artistUsecase domain.Usecase) *ArtistService {
+func NewArtistService(artistUsecase domain.Usecase) artistProto.ArtistServiceServer {
 	return &ArtistService{
 		artistUsecase: artistUsecase,
 	}
@@ -75,4 +76,46 @@ func (s *ArtistService) GetArtistsByAlbumIDs(ctx context.Context, req *artistPro
 		return nil, err
 	}
 	return model.ArtistWithTitleMapFromUsecaseToProto(artists), nil
+}
+
+func (s *ArtistService) GetAlbumIDsByArtistID(ctx context.Context, req *artistProto.ArtistID) (*artistProto.AlbumIDList, error) {
+	albumIDs, err := s.artistUsecase.GetAlbumIDsByArtistID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	albumIDList := make([]*artistProto.AlbumID, 0, len(albumIDs))
+	for _, albumID := range albumIDs {
+		albumIDList = append(albumIDList, &artistProto.AlbumID{Id: albumID})
+	}
+	return &artistProto.AlbumIDList{Ids: albumIDList}, nil
+}
+
+func (s *ArtistService) GetTrackIDsByArtistID(ctx context.Context, req *artistProto.ArtistID) (*artistProto.TrackIDList, error) {
+	trackIDs, err := s.artistUsecase.GetTrackIDsByArtistID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	trackIDList := make([]*artistProto.TrackID, 0, len(trackIDs))
+	for _, trackID := range trackIDs {
+		trackIDList = append(trackIDList, &artistProto.TrackID{Id: trackID})
+	}
+	return &artistProto.TrackIDList{Ids: trackIDList}, nil
+}
+
+func (s *ArtistService) CreateStreamsByArtistIDs(ctx context.Context, req *artistProto.ArtistStreamCreateDataList) (*emptypb.Empty, error) {
+	err := s.artistUsecase.CreateStreamsByArtistIDs(ctx, model.ArtistStreamCreateDataFromProtoToUsecase(req))
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *ArtistService) GetArtistsListenedByUserID(ctx context.Context, req *artistProto.UserID) (*artistProto.ArtistListened, error) {
+	artistsListened, err := s.artistUsecase.GetArtistsListenedByUserID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &artistProto.ArtistListened{ArtistsListened: artistsListened}, nil
 }

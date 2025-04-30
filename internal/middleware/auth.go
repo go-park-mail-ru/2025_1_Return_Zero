@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	authProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/auth"
@@ -25,6 +26,7 @@ func Auth(authClient *authProto.AuthServiceClient) func(http.Handler) http.Handl
 				return
 			}
 			userID := model.UserIDFromProtoToUsecase(userIDProto)
+			fmt.Println("User ID in middleware: ", userID)
 			ctx := context.WithValue(r.Context(), ctxExtractor.UserContextKey{}, userID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})

@@ -4,6 +4,8 @@ option go_package = "./artist";
 
 package artist;
 
+import "google/protobuf/empty.proto";
+
 service ArtistService {
 	rpc GetAllArtists(Filters) returns (ArtistList);
 	rpc GetArtistByID(ArtistID) returns (ArtistDetailed);
@@ -12,10 +14,26 @@ service ArtistService {
 	rpc GetArtistsByTrackIDs(TrackIDList) returns (ArtistWithRoleMap);
 	rpc GetArtistsByAlbumID(AlbumID) returns (ArtistWithTitleList);
 	rpc GetArtistsByAlbumIDs(AlbumIDList) returns (ArtistWithTitleMap);
+	rpc GetAlbumIDsByArtistID(ArtistID) returns (AlbumIDList);
+	rpc GetTrackIDsByArtistID(ArtistID) returns (TrackIDList);
+	rpc CreateStreamsByArtistIDs(ArtistStreamCreateDataList) returns (google.protobuf.Empty);
+	rpc GetArtistsListenedByUserID(UserID) returns (ArtistListened);
+}
+
+message ArtistListened {
+	int64 artists_listened = 1;
+}
+
+message UserID {
+    int64 id = 1;
 }
 
 message ArtistID {
 	int64 id = 1;
+}
+
+message ArtistIDList {
+	repeated ArtistID ids = 1;
 }
 
 message TrackID {
@@ -89,4 +107,10 @@ message Pagination {
 
 message Filters {
 	Pagination pagination = 1;
+}
+
+
+message ArtistStreamCreateDataList {
+	ArtistIDList artist_ids = 1;
+	UserID user_id = 2;
 }

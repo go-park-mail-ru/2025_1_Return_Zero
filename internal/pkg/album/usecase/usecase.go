@@ -4,72 +4,106 @@ import (
 	"context"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
-	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
+
+	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
+	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
 )
 
-func NewUsecase(albumRepository album.Repository, artistRepository artist.Repository) album.Usecase {
-	return &albumUsecase{albumRepo: albumRepository, artistRepo: artistRepository}
+func NewUsecase(albumClient *albumProto.AlbumServiceClient, artistClient *artistProto.ArtistServiceClient) album.Usecase {
+	return &albumUsecase{albumClient: albumClient, artistClient: artistClient}
 }
 
 type albumUsecase struct {
-	albumRepo  album.Repository
-	artistRepo artist.Repository
+	albumClient  *albumProto.AlbumServiceClient
+	artistClient *artistProto.ArtistServiceClient
 }
 
 func (u *albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
-	repoFilters := &repoModel.AlbumFilters{
-		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
+	protoFilters := &albumProto.Filters{
+		Pagination: model.PaginationFromUsecaseToAlbumProto(filters.Pagination),
 	}
 
-	repoAlbums, err := u.albumRepo.GetAllAlbums(ctx, repoFilters)
+	protoAlbums, err := (*u.albumClient).GetAllAlbums(ctx, protoFilters)
 	if err != nil {
-		return nil, err
+		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
 
-	albumIDs := make([]int64, 0, len(repoAlbums))
-	for _, repoAlbum := range repoAlbums {
-		albumIDs = append(albumIDs, repoAlbum.ID)
+	albumIDs := make([]*artistProto.AlbumID, 0, len(protoAlbums.Albums))
+	for _, protoAlbum := range protoAlbums.Albums {
+		albumIDs = append(albumIDs, &artistProto.AlbumID{Id: protoAlbum.Id})
 	}
 
-	repoArtists, err := u.artistRepo.GetArtistsByAlbumIDs(ctx, albumIDs)
+	protoArtists, err := (*u.artistClient).GetArtistsByAlbumIDs(ctx, &artistProto.AlbumIDList{Ids: albumIDs})
 	if err != nil {
-		return nil, err
+		return nil, customErrors.HandleArtistGRPCError(err)
 	}
 
-	albums := make([]*usecaseModel.Album, 0, len(repoAlbums))
-	for _, repoAlbum := range repoAlbums {
-		usecaseAlbum := model.AlbumFromRepositoryToUsecase(repoAlbum, repoArtists[repoAlbum.ID])
+	artistWithTitleMap := model.ArtistWithTitleMapFromProtoToUsecase(protoArtists.Artists)
+
+	albums := make([]*usecaseModel.Album, 0, len(protoAlbums.Albums))
+	for _, protoAlbum := range protoAlbums.Albums {
+		usecaseAlbum := model.AlbumFromProtoToUsecase(protoAlbum)
+		usecaseAlbum.Artists = artistWithTitleMap[protoAlbum.Id]
 		albums = append(albums, usecaseAlbum)
 	}
 	return albums, nil
 }
 
 func (u *albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
-	repoFilters := &repoModel.AlbumFilters{
-		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
-	}
-	repoAlbums, err := u.albumRepo.GetAlbumsByArtistID(ctx, artistID, repoFilters)
+	protoAlbumIDs, err := (*u.artistClient).GetAlbumIDsByArtistID(ctx, &artistProto.ArtistID{Id: artistID})
 	if err != nil {
-		return nil, err
+		return nil, customErrors.HandleArtistGRPCError(err)
 	}
 
-	albumIDs := make([]int64, 0, len(repoAlbums))
-	for _, repoAlbum := range repoAlbums {
-		albumIDs = append(albumIDs, repoAlbum.ID)
+	albumIDs := make([]*albumProto.AlbumID, 0, len(protoAlbumIDs.Ids))
+	for _, protoAlbumID := range protoAlbumIDs.Ids {
+		newAlbumID := &albumProto.AlbumID{Id: protoAlbumID.Id}
+		albumIDs = append(albumIDs, newAlbumID)
 	}
 
-	repoArtists, err := u.artistRepo.GetArtistsByAlbumIDs(ctx, albumIDs)
+	protoAlbums, err := (*u.albumClient).GetAlbumsByIDs(ctx, &albumProto.AlbumIDList{Ids: albumIDs})
 	if err != nil {
-		return nil, err
+		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
 
-	albums := make([]*usecaseModel.Album, 0, len(repoAlbums))
-	for _, repoAlbum := range repoAlbums {
-		usecaseAlbum := model.AlbumFromRepositoryToUsecase(repoAlbum, repoArtists[repoAlbum.ID])
+	artistAlbumIDs := make([]*artistProto.AlbumID, 0, len(protoAlbumIDs.Ids))
+	for _, protoAlbumID := range protoAlbumIDs.Ids {
+		artistAlbumIDs = append(artistAlbumIDs, &artistProto.AlbumID{Id: protoAlbumID.Id})
+	}
+
+	protoArtists, err := (*u.artistClient).GetArtistsByAlbumIDs(ctx, &artistProto.AlbumIDList{Ids: artistAlbumIDs})
+	if err != nil {
+		return nil, customErrors.HandleArtistGRPCError(err)
+	}
+
+	artistWithTitleMap := model.ArtistWithTitleMapFromProtoToUsecase(protoArtists.Artists)
+
+	albums := make([]*usecaseModel.Album, 0, len(protoAlbums.Albums))
+	for _, protoAlbum := range protoAlbums.Albums {
+		usecaseAlbum := model.AlbumFromProtoToUsecase(protoAlbum)
+		usecaseAlbum.Artists = artistWithTitleMap[protoAlbum.Id]
 		albums = append(albums, usecaseAlbum)
 	}
 	return albums, nil
+}
+
+func (u *albumUsecase) GetAlbumByID(ctx context.Context, id int64) (*usecaseModel.Album, error) {
+	protoAlbum, err := (*u.albumClient).GetAlbumByID(ctx, &albumProto.AlbumID{Id: id})
+	if err != nil {
+		return nil, customErrors.HandleAlbumGRPCError(err)
+	}
+
+	protoArtists, err := (*u.artistClient).GetArtistsByAlbumID(ctx, &artistProto.AlbumID{Id: id})
+	if err != nil {
+		return nil, customErrors.HandleArtistGRPCError(err)
+	}
+
+	artistWithTitleList := model.ArtistWithTitleListFromProtoToUsecase(protoArtists.Artists)
+
+	usecaseAlbum := model.AlbumFromProtoToUsecase(protoAlbum)
+	usecaseAlbum.Artists = artistWithTitleList
+	return usecaseAlbum, nil
 }

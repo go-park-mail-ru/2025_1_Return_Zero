@@ -84,3 +84,11 @@ func (s *UserService) GetUserFullData(ctx context.Context, req *userProto.Userna
 	}
 	return model.UserFullDataFromUsecaseToProto(user), nil
 }
+
+func (s *UserService) GetIDByUsername(ctx context.Context, req *userProto.Username) (*userProto.UserID, error) {
+	id, err := s.userUsecase.GetIDByUsername(ctx, req.Username)
+	if err != nil {
+		return nil, err
+	}
+	return model.UserIDFromUsecaseToProto(id), nil
+}

@@ -13,25 +13,22 @@ import (
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
 	authProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/auth"
 	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
+	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
+	trackProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
 	grpc "github.com/go-park-mail-ru/2025_1_Return_Zero/init/microservices"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/postgres"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/redis"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/s3"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	albumHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/delivery/http"
-	albumRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/repository"
 	albumUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/usecase"
 	artistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/delivery/http"
-	artistRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/repository"
 	artistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/usecase"
-	// authRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth/repository"
+
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	trackHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/delivery/http"
-	trackRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/repository"
 	trackUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/usecase"
-	trackFileRepo "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/trackFile/repository"
 	userHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/delivery/http"
-	userRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/repository"
 	userUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/usecase"
 	userFileRepo "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/userAvatarFile/repository"
 	"github.com/gorilla/mux"
@@ -89,6 +86,8 @@ func main() {
 	}
 
 	artistClient := artistProto.NewArtistServiceClient(clients.ArtistClient)
+	albumClient := albumProto.NewAlbumServiceClient(clients.AlbumClient)
+	trackClient := trackProto.NewTrackServiceClient(clients.TrackClient)
 	authClient := authProto.NewAuthServiceClient(clients.AuthClient)
 	userClient := userProto.NewUserServiceClient(clients.UserClient)
 
@@ -99,10 +98,10 @@ func main() {
 	r.Use(middleware.CorsMiddleware(cfg.Cors))
 	// r.Use(middleware.CSRFMiddleware(cfg.CSRF))
 
-	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration), userRepository.NewUserPostgresRepository(postgresConn)), cfg)
-	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn)), cfg)
+	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(&trackClient, &artistClient, &albumClient), cfg)
+	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(&albumClient, &artistClient), cfg)
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(&artistClient), cfg)
-	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(&userClient, &authClient, userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket)))
+	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(&userClient, &authClient, userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket), &artistClient, &trackClient))
 
 	r.HandleFunc("/api/v1/tracks", trackHandler.GetAllTracks).Methods("GET")
 	r.HandleFunc("/api/v1/tracks/{id}", trackHandler.GetTrackByID).Methods("GET")
@@ -110,6 +109,8 @@ func main() {
 	r.HandleFunc("/api/v1/streams/{id}", trackHandler.UpdateStreamDuration).Methods("PUT", "PATCH")
 
 	r.HandleFunc("/api/v1/albums", albumHandler.GetAllAlbums).Methods("GET")
+	r.HandleFunc("/api/v1/albums/{id}", albumHandler.GetAlbumByID).Methods("GET")
+	r.HandleFunc("/api/v1/albums/{id}/tracks", trackHandler.GetTracksByAlbumID).Methods("GET")
 
 	r.HandleFunc("/api/v1/artists", artistHandler.GetAllArtists).Methods("GET")
 	r.HandleFunc("/api/v1/artists/{id}", artistHandler.GetArtistByID).Methods("GET")
@@ -126,7 +127,7 @@ func main() {
 	r.HandleFunc("/api/v1/user/me", userHandler.DeleteUser).Methods("DELETE")
 	r.HandleFunc("/api/v1/user/{username}", userHandler.GetUserData).Methods("GET")
 
-	r.HandleFunc("/api/v1/user/{username}/history", trackHandler.GetLastListenedTracks).Methods("GET")
+	r.HandleFunc("/api/v1/user/me/history", trackHandler.GetLastListenedTracks).Methods("GET")
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),
@@ -137,7 +138,7 @@ func main() {
 	if err != nil {
 		logger.Error("Error starting server:", zap.Error(err))
 	}
-	
+
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	<-c

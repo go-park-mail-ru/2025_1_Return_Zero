@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
 	"github.com/lib/pq"
 	"go.uber.org/zap"
 )
@@ -116,7 +116,7 @@ func (r *TrackPostgresRepository) GetTrackByID(ctx context.Context, id int64) (*
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("track not found", zap.Error(err))
-			return nil, track.ErrTrackNotFound
+			return nil, customErrors.ErrTrackNotFound
 		}
 		logger.Error("failed to get track by id", zap.Error(err))
 		return nil, err
@@ -175,7 +175,7 @@ func (r *TrackPostgresRepository) GetStreamByID(ctx context.Context, id int64) (
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("stream not found", zap.Error(err))
-			return nil, track.ErrStreamNotFound
+			return nil, customErrors.ErrStreamNotFound
 		}
 		logger.Error("failed to get stream by id", zap.Error(err))
 		return nil, err
@@ -200,8 +200,8 @@ func (r *TrackPostgresRepository) UpdateStreamDuration(ctx context.Context, ende
 	}
 
 	if rows == 0 {
-		logger.Error("stream not found", zap.Error(track.ErrFailedToUpdateStreamDuration))
-		return track.ErrFailedToUpdateStreamDuration
+		logger.Error("stream not found", zap.Error(customErrors.ErrFailedToUpdateStreamDuration))
+		return customErrors.ErrFailedToUpdateStreamDuration
 	}
 
 	return nil
@@ -266,7 +266,7 @@ func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int6
 		for _, id := range ids {
 			if _, ok := tracks[id]; !ok {
 				logger.Error("track not found", zap.Int64("id", id))
-				return nil, track.ErrTrackNotFound
+				return nil, customErrors.ErrTrackNotFound
 			}
 		}
 	}

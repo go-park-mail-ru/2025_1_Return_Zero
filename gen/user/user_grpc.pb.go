@@ -26,6 +26,7 @@ type UserServiceClient interface {
 	ChangeUserData(ctx context.Context, in *ChangeUserDataMessage, opts ...grpc.CallOption) (*Nothing, error)
 	ChangeUserPrivacySettings(ctx context.Context, in *PrivacySettings, opts ...grpc.CallOption) (*Nothing, error)
 	GetUserFullData(ctx context.Context, in *Username, opts ...grpc.CallOption) (*UserFullData, error)
+	GetIDByUsername(ctx context.Context, in *Username, opts ...grpc.CallOption) (*UserID, error)
 }
 
 type userServiceClient struct {
@@ -108,6 +109,15 @@ func (c *userServiceClient) GetUserFullData(ctx context.Context, in *Username, o
 	return out, nil
 }
 
+func (c *userServiceClient) GetIDByUsername(ctx context.Context, in *Username, opts ...grpc.CallOption) (*UserID, error) {
+	out := new(UserID)
+	err := c.cc.Invoke(ctx, "/user.UserService/GetIDByUsername", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -120,6 +130,7 @@ type UserServiceServer interface {
 	ChangeUserData(context.Context, *ChangeUserDataMessage) (*Nothing, error)
 	ChangeUserPrivacySettings(context.Context, *PrivacySettings) (*Nothing, error)
 	GetUserFullData(context.Context, *Username) (*UserFullData, error)
+	GetIDByUsername(context.Context, *Username) (*UserID, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -150,6 +161,9 @@ func (UnimplementedUserServiceServer) ChangeUserPrivacySettings(context.Context,
 }
 func (UnimplementedUserServiceServer) GetUserFullData(context.Context, *Username) (*UserFullData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserFullData not implemented")
+}
+func (UnimplementedUserServiceServer) GetIDByUsername(context.Context, *Username) (*UserID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetIDByUsername not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -308,6 +322,24 @@ func _UserService_GetUserFullData_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_GetIDByUsername_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Username)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetIDByUsername(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/GetIDByUsername",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetIDByUsername(ctx, req.(*Username))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -346,6 +378,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserFullData",
 			Handler:    _UserService_GetUserFullData_Handler,
+		},
+		{
+			MethodName: "GetIDByUsername",
+			Handler:    _UserService_GetIDByUsername_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

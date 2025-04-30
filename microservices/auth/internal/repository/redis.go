@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"time"
 
+	authErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/auth/model/errors"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	domain "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/auth/internal/domain"
 	"github.com/gomodule/redigo/redis"
@@ -38,7 +39,7 @@ func (r *authRedisRepository) CreateSession(ctx context.Context, userID int64) (
 	expiration := int(SessionTTL.Seconds())
 	_, err := redis.DoContext(conn, ctx, "SETEX", SID, expiration, userID)
 	if err != nil {
-		return "", err
+		return "", authErrors.NewCreateSessionError("failed to create session: %v", err)
 	}
 	return SID, nil
 }
@@ -50,7 +51,7 @@ func (r *authRedisRepository) DeleteSession(ctx context.Context, sessionID strin
 	logger.Info("Deleting session")
 	_, err := redis.DoContext(conn, ctx, "DEL", sessionID)
 	if err != nil {
-		return err
+		return authErrors.NewDeleteSessionError("failed to delete session: %v", err)
 	}
 	return nil
 }
@@ -62,7 +63,7 @@ func (r *authRedisRepository) GetSession(ctx context.Context, sessionID string) 
 	logger.Info("Getting session")
 	id, err := redis.Int64(redis.DoContext(conn, ctx, "GET", sessionID))
 	if err != nil {
-		return -1, err
+		return -1, authErrors.NewGetSessionError("failed to get session: %v", err)
 	}
 	return id, nil
 }

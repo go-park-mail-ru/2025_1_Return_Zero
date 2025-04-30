@@ -106,3 +106,27 @@ func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Reques
 	albums := model.AlbumsFromUsecaseToDelivery(usecaseAlbums)
 	json.WriteSuccessResponse(w, http.StatusOK, albums, nil)
 }
+
+func (h *AlbumHandler) GetAlbumByID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		logger.Error("failed to parse album ID", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	usecaseAlbum, err := h.usecase.GetAlbumByID(ctx, id)
+	if err != nil {
+		logger.Error("failed to get album", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	album := model.AlbumFromUsecaseToDelivery(usecaseAlbum, usecaseAlbum.Artists)
+	json.WriteSuccessResponse(w, http.StatusOK, album, nil)
+}

@@ -14,4 +14,5 @@ type Usecase interface {
 	ChangeUserPrivacySettings(ctx context.Context, username string, privacySettings *usecaseModel.PrivacySettings) error
 	GetFullUserData(ctx context.Context, username string) (*usecaseModel.UserFullData, error)
 	GetUserByID(ctx context.Context, id int64) (*usecaseModel.UserFront, error)
+	GetIDByUsername(ctx context.Context, username string) (int64, error)
 }

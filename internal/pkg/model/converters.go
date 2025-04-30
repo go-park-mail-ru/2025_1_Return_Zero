@@ -1,9 +1,11 @@
 package model
 
 import (
+	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
-	authProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/auth"
+	trackProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
 	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
+	authProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/auth"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
@@ -25,8 +27,22 @@ func PaginationFromDeliveryToUsecase(deliveryPagination *delivery.Pagination) *u
 	}
 }
 
-func PaginationFromUsecaseToProto(usecasePagination *usecase.Pagination) *artistProto.Pagination {
+func PaginationFromUsecaseToArtistProto(usecasePagination *usecase.Pagination) *artistProto.Pagination {
 	return &artistProto.Pagination{
+		Offset: int64(usecasePagination.Offset),
+		Limit:  int64(usecasePagination.Limit),
+	}
+}
+
+func PaginationFromUsecaseToAlbumProto(usecasePagination *usecase.Pagination) *albumProto.Pagination {
+	return &albumProto.Pagination{
+		Offset: int64(usecasePagination.Offset),
+		Limit:  int64(usecasePagination.Limit),
+	}
+}
+
+func PaginationFromUsecaseToTrackProto(usecasePagination *usecase.Pagination) *trackProto.Pagination {
+	return &trackProto.Pagination{
 		Offset: int64(usecasePagination.Offset),
 		Limit:  int64(usecasePagination.Limit),
 	}
@@ -86,7 +102,59 @@ func AlbumArtistsFromRepositoryToUsecase(repositoryAlbumArtists []*repository.Ar
 	return albumArtists
 }
 
+func AlbumFromProtoToUsecase(protoAlbum *albumProto.Album) *usecase.Album {
+	var albumType usecase.AlbumType
+
+	switch protoAlbum.Type {
+	case albumProto.AlbumType_AlbumTypeAlbum:
+		albumType = usecase.AlbumTypeAlbum
+	case albumProto.AlbumType_AlbumTypeEP:
+		albumType = usecase.AlbumTypeEP
+	case albumProto.AlbumType_AlbumTypeSingle:
+		albumType = usecase.AlbumTypeSingle
+	case albumProto.AlbumType_AlbumTypeCompilation:
+		albumType = usecase.AlbumTypeCompilation
+	default:
+		albumType = usecase.AlbumTypeAlbum
+	}
+
+	return &usecase.Album{
+		ID:          protoAlbum.Id,
+		Title:       protoAlbum.Title,
+		Type:        albumType,
+		Thumbnail:   protoAlbum.Thumbnail,
+		ReleaseDate: protoAlbum.ReleaseDate.AsTime(),
+	}
+}
+
+func AlbumIdsFromUsecaseToAlbumProto(usecaseAlbumIds []int64) []*albumProto.AlbumID {
+	albumIds := make([]*albumProto.AlbumID, 0, len(usecaseAlbumIds))
+	for _, id := range usecaseAlbumIds {
+		albumIds = append(albumIds, &albumProto.AlbumID{Id: id})
+	}
+	return albumIds
+}
+
 ///////////////////////////////////// ARTIST ////////////////////////////////////
+
+func ArtistWithTitleListFromProtoToUsecase(protoArtistWithTitleList []*artistProto.ArtistWithTitle) []*usecase.AlbumArtist {
+	artistWithTitleList := make([]*usecase.AlbumArtist, 0, len(protoArtistWithTitleList))
+	for _, protoArtistWithTitle := range protoArtistWithTitleList {
+		artistWithTitleList = append(artistWithTitleList, &usecase.AlbumArtist{
+			ID:    protoArtistWithTitle.Id,
+			Title: protoArtistWithTitle.Title,
+		})
+	}
+	return artistWithTitleList
+}
+
+func ArtistWithTitleMapFromProtoToUsecase(protoArtistWithTitleMap map[int64]*artistProto.ArtistWithTitleList) map[int64][]*usecase.AlbumArtist {
+	artistWithTitleMap := make(map[int64][]*usecase.AlbumArtist, len(protoArtistWithTitleMap))
+	for id, protoArtistWithTitleList := range protoArtistWithTitleMap {
+		artistWithTitleMap[id] = ArtistWithTitleListFromProtoToUsecase(protoArtistWithTitleList.Artists)
+	}
+	return artistWithTitleMap
+}
 
 func ArtistsFromUsecaseToDelivery(usecaseArtists []*usecase.Artist) []*delivery.Artist {
 	artists := make([]*delivery.Artist, 0, len(usecaseArtists))
@@ -136,6 +204,36 @@ func ArtistDetailedFromUsecaseToDelivery(usecaseArtistDetailed *usecase.ArtistDe
 		Favorites: usecaseArtistDetailed.Favorites,
 		Listeners: usecaseArtistDetailed.Listeners,
 	}
+}
+
+func TrackIdsFromUsecaseToArtistProto(usecaseTrackIds []int64) []*artistProto.TrackID {
+	trackIds := make([]*artistProto.TrackID, 0, len(usecaseTrackIds))
+	for _, id := range usecaseTrackIds {
+		trackIds = append(trackIds, &artistProto.TrackID{Id: id})
+	}
+	return trackIds
+}
+
+func ArtistWithRoleListFromProtoToUsecase(protoArtistWithRoleList []*artistProto.ArtistWithRole) []*usecase.TrackArtist {
+	artistWithRoleList := make([]*usecase.TrackArtist, 0, len(protoArtistWithRoleList))
+	for _, protoArtistWithRole := range protoArtistWithRoleList {
+		artistWithRoleList = append(artistWithRoleList, &usecase.TrackArtist{
+			ID:    protoArtistWithRole.Id,
+			Title: protoArtistWithRole.Title,
+			Role:  protoArtistWithRole.Role,
+		})
+	}
+	return artistWithRoleList
+}
+
+func UserIDFromUsecaseToProtoArtist(userID int64) *artistProto.UserID {
+	return &artistProto.UserID{
+		Id: userID,
+	}
+}
+
+func ArtistsListenedFromProtoToUsecase(protoArtistsNum *artistProto.ArtistListened) int64 {
+	return protoArtistsNum.ArtistsListened
 }
 
 ///////////////////////////////////// TRACK ////////////////////////////////////
@@ -230,6 +328,55 @@ func TrackDetailedFromRepositoryToUsecase(repositoryTrack *repository.TrackWithF
 	}
 }
 
+func TrackIdsFromUsecaseToTrackProto(usecaseTrackIds []*usecase.Track) []*trackProto.TrackID {
+	trackIds := make([]*trackProto.TrackID, 0, len(usecaseTrackIds))
+	for _, usecaseTrack := range usecaseTrackIds {
+		trackIds = append(trackIds, &trackProto.TrackID{Id: usecaseTrack.ID})
+	}
+	return trackIds
+}
+
+func TrackFromProtoToUsecase(protoTrack *trackProto.Track, protoAlbum *albumProto.AlbumTitle, protoArtists *artistProto.ArtistWithRoleList) *usecase.Track {
+	return &usecase.Track{
+		ID:        protoTrack.Id,
+		Title:     protoTrack.Title,
+		Thumbnail: protoTrack.Thumbnail,
+		Duration:  protoTrack.Duration,
+		AlbumID:   protoTrack.AlbumId,
+		Album:     protoAlbum.Title,
+		Artists:   ArtistWithRoleListFromProtoToUsecase(protoArtists.Artists),
+	}
+}
+
+func TrackDetailedFromProtoToUsecase(protoTrack *trackProto.TrackDetailed, protoAlbum *albumProto.AlbumTitle, protoArtists *artistProto.ArtistWithRoleList) *usecase.TrackDetailed {
+	return &usecase.TrackDetailed{
+		Track:   *TrackFromProtoToUsecase(protoTrack.Track, protoAlbum, protoArtists),
+		FileUrl: protoTrack.FileUrl,
+	}
+}
+
+func TrackIDListFromArtistToTrackProto(protoArtist *artistProto.TrackIDList) *trackProto.TrackIDList {
+	trackIds := make([]*trackProto.TrackID, 0, len(protoArtist.Ids))
+	for _, id := range protoArtist.Ids {
+		trackIds = append(trackIds, &trackProto.TrackID{Id: id.Id})
+	}
+	return &trackProto.TrackIDList{Ids: trackIds}
+}
+
+func UserIDFromUsecaseToProtoTrack(userID int64) *trackProto.UserID {
+	return &trackProto.UserID{
+		Id: userID,
+	}
+}
+
+func TracksListenedFromProtoToUsecase(protoTracksNum *trackProto.TracksListened) int64 {
+	return protoTracksNum.Tracks
+}
+
+func MinutesListenedFromProtoToUsecase(protoMinutesNum *trackProto.MinutesListened) int64 {
+	return protoMinutesNum.Minutes
+}
+
 ///////////////////////////////////// STREAM ////////////////////////////////////
 
 func TrackStreamCreateDataFromDeliveryToUsecase(deliveryTrackStream *delivery.TrackStreamCreateData) *usecase.TrackStreamCreateData {
@@ -258,6 +405,36 @@ func TrackStreamUpdateDataFromDeliveryToUsecase(repositoryTrackStream *delivery.
 		StreamID: streamID,
 		Duration: repositoryTrackStream.Duration,
 		UserID:   userID,
+	}
+}
+
+func TrackStreamCreateDataFromUsecaseToProto(usecaseTrackStream *usecase.TrackStreamCreateData) *trackProto.TrackStreamCreateData {
+	return &trackProto.TrackStreamCreateData{
+		TrackId: &trackProto.TrackID{Id: usecaseTrackStream.TrackID},
+		UserId:  &trackProto.UserID{Id: usecaseTrackStream.UserID},
+	}
+}
+
+func TrackStreamUpdateDataFromUsecaseToProto(usecaseTrackStream *usecase.TrackStreamUpdateData) *trackProto.TrackStreamUpdateData {
+	return &trackProto.TrackStreamUpdateData{
+		StreamId: &trackProto.StreamID{Id: usecaseTrackStream.StreamID},
+		Duration: usecaseTrackStream.Duration,
+		UserId:   &trackProto.UserID{Id: usecaseTrackStream.UserID},
+	}
+}
+
+func ArtistIdsFromUsecaseToArtistProto(artistIDs []int64) *artistProto.ArtistIDList {
+	artistIds := make([]*artistProto.ArtistID, 0, len(artistIDs))
+	for _, id := range artistIDs {
+		artistIds = append(artistIds, &artistProto.ArtistID{Id: id})
+	}
+	return &artistProto.ArtistIDList{Ids: artistIds}
+}
+
+func ArtistStreamCreateDataListFromUsecaseToProto(userID int64, artistIDs []int64) *artistProto.ArtistStreamCreateDataList {
+	return &artistProto.ArtistStreamCreateDataList{
+		ArtistIds: ArtistIdsFromUsecaseToArtistProto(artistIDs),
+		UserId:    &artistProto.UserID{Id: userID},
 	}
 }
 
@@ -360,26 +537,6 @@ func ChangeDataFromDeliveryToUsecase(deliveryUser *delivery.UserChangeSettings) 
 	}
 }
 
-func SessionIDFromProtoToUsecase(protoSessionID *authProto.SessionID) string {
-	return protoSessionID.SessionId
-}
-
-func UserIDFromProtoToUsecase(protoUserID *authProto.UserID) int64 {
-	return protoUserID.Id
-}
-
-func SessionIDFromUsecaseToProto(sessionID string) *authProto.SessionID {
-	return &authProto.SessionID{
-		SessionId: sessionID,
-	}
-}
-
-func UserIDFromUsecaseToProto(userID int64) *authProto.UserID {
-	return &authProto.UserID{
-		Id: userID,
-	}
-}
-
 func RegisterDataFromUsecaseToProto(regData *usecase.User) *userProto.RegisterData {
 	return &userProto.RegisterData{
 		Username: regData.Username,
@@ -401,6 +558,10 @@ func UserIDFromUsecaseToProtoUser(userID int64) *userProto.UserID {
 	return &userProto.UserID{
 		Id: userID,
 	}
+}
+
+func UserIDFromProtoToUsecaseUser(protoUserID *userProto.UserID) int64 {
+	return protoUserID.Id
 }
 
 func LoginDataFromUsecaseToProto(loginData *usecase.User) *userProto.LoginData {
@@ -443,23 +604,13 @@ func PrivacyFromProtoToUsecase(protoPrivacy *userProto.PrivacySettings) *usecase
 	}
 }
 
-func StatisticsFromProtoToUsecase(protoStatistics *userProto.Statistics) *usecase.UserStatistics {
-	return &usecase.UserStatistics{
-		MinutesListened: protoStatistics.MinutesListened,
-		TracksListened:  protoStatistics.TracksListened,
-		ArtistsListened: protoStatistics.ArtistsListened,
-	}
-}
-
 func UserFullDataFromProtoToUsecase(protoUser *userProto.UserFullData) *usecase.UserFullData {
 	privacyUsecase := PrivacyFromProtoToUsecase(protoUser.Privacy)
-	statisticsUsecase := StatisticsFromProtoToUsecase(protoUser.Statistics)
 	return &usecase.UserFullData{
 		Username:   protoUser.Username,
 		Email:      protoUser.Email,
 		AvatarUrl:  protoUser.Avatar,
 		Privacy:    privacyUsecase,
-		Statistics: statisticsUsecase,
 	}
 }
 
@@ -477,7 +628,7 @@ func PrivacyFromUsecaseToProto(username string, usecasePrivacy *usecase.UserPriv
 
 func ChangeUserDataFromUsecaseToProto(username string, usecaseUser *usecase.UserChangeSettings) *userProto.ChangeUserDataMessage {
 	return &userProto.ChangeUserDataMessage{
-		Username:   username,
+		Username:    username,
 		NewUsername: usecaseUser.NewUsername,
 		NewEmail:    usecaseUser.NewEmail,
 		NewPassword: usecaseUser.NewPassword,
@@ -485,4 +636,23 @@ func ChangeUserDataFromUsecaseToProto(username string, usecaseUser *usecase.User
 	}
 }
 
+/////////////////////////////////////// AUTH ////////////////////////////////////
+func SessionIDFromProtoToUsecase(protoSessionID *authProto.SessionID) string {
+	return protoSessionID.SessionId
+}
 
+func UserIDFromProtoToUsecase(protoUserID *authProto.UserID) int64 {
+	return protoUserID.Id
+}
+
+func SessionIDFromUsecaseToProto(sessionID string) *authProto.SessionID {
+	return &authProto.SessionID{
+		SessionId: sessionID,
+	}
+}
+
+func UserIDFromUsecaseToProto(userID int64) *authProto.UserID {
+	return &authProto.UserID{
+		Id: userID,
+	}
+}

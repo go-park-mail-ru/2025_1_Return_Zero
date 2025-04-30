@@ -15,7 +15,14 @@ type Repository interface {
 	DeleteUser(ctx context.Context, userRepo *repoModel.UserDelete) error
 	ChangeUserData(ctx context.Context, username string, changeData *repoModel.ChangeUserData) error
 	ChangeUserPrivacySettings(ctx context.Context, username string, privacySettings *repoModel.PrivacySettings) error
-	GetUserStats(ctx context.Context, id int64) (*repoModel.Statistics, error)
 	GetUserPrivacy(ctx context.Context, id int64) (*repoModel.PrivacySettings, error)
 	GetFullUserData(ctx context.Context, username string) (*repoModel.UserFullData, error)
+}
+
+type S3Repository interface {
+	GetPresignedURL(fileKey string) (string, error)
+	UploadUserAvatar(ctx context.Context, username string, fileContent []byte) (string, error)
+	DeleteUserAvatar(ctx context.Context, fileKey string) error
+	GetAvatarURL(ctx context.Context, fileKey string) (string, error)
+	GetAvatarKey(ctx context.Context, username string) (string, error)
 }

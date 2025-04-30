@@ -11,6 +11,8 @@ import (
 
 type Clients struct {
 	ArtistClient *grpc.ClientConn
+	AlbumClient  *grpc.ClientConn
+	TrackClient  *grpc.ClientConn
 	AuthClient   *grpc.ClientConn
 	UserClient   *grpc.ClientConn
 }
@@ -19,6 +21,16 @@ func InitGrpc(cfg *config.Services, logger *zap.SugaredLogger) (*Clients, error)
 	artistClient, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.ArtistService.Host, cfg.ArtistService.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logger.Fatal("Error creating artist client:", zap.Error(err))
+	}
+
+	albumClient, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.AlbumService.Host, cfg.AlbumService.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logger.Fatal("Error creating album client:", zap.Error(err))
+	}
+
+	trackClient, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.TrackService.Host, cfg.TrackService.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		logger.Fatal("Error creating track client:", zap.Error(err))
 	}
 
 	authClient, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.AuthService.Host, cfg.AuthService.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -33,6 +45,8 @@ func InitGrpc(cfg *config.Services, logger *zap.SugaredLogger) (*Clients, error)
 
 	return &Clients{
 		ArtistClient: artistClient,
+		AlbumClient:  albumClient,
+		TrackClient:  trackClient,
 		AuthClient:  authClient,
 		UserClient:  userClient,
 	}, nil

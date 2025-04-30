@@ -13,6 +13,7 @@ service UserService {
     rpc ChangeUserData(ChangeUserDataMessage) returns (Nothing);
     rpc ChangeUserPrivacySettings(PrivacySettings) returns (Nothing);
     rpc GetUserFullData(Username) returns (UserFullData);
+    rpc GetIDByUsername(Username) returns (UserID);
 }
 
 message Username {
@@ -77,17 +78,10 @@ message PrivacySettings {
     bool is_public_artists_listened = 7;
 }
 
-message Statistics {
-    int64 minutes_listened = 1;
-    int64 tracks_listened = 2;
-    int64 artists_listened = 3;
-}
-
 message UserFullData {
     string username = 1;
     string email = 2;
     string avatar = 3;
 
     PrivacySettings privacy = 4;
-    Statistics statistics = 5;
 }

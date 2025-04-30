@@ -59,6 +59,7 @@ INSERT INTO track (title, album_id, duration, thumbnail_url, file_url, position)
     ('Tabun', 2, 263, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/tabun.jpg', 'tabun.mp3', 5),
     ('Ghost City Tokyo', 6, 204, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/ghostcitytokyo.jpg', 'ghostcitytokyo.mp3', 1);
 
+
 INSERT INTO genre_track (genre_id, track_id) VALUES
     (1, 1),
     (2, 1),

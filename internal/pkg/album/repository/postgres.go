@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"github.com/lib/pq"
@@ -93,7 +94,7 @@ func (r *albumPostgresRepository) GetAlbumByID(ctx context.Context, id int64) (*
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("album not found", zap.Error(err))
-			return nil, album.ErrAlbumNotFound
+			return nil, customErrors.ErrAlbumNotFound
 		}
 		logger.Error("failed to get album by id", zap.Error(err))
 		return nil, err
@@ -142,7 +143,7 @@ func (r *albumPostgresRepository) GetAlbumTitleByID(ctx context.Context, id int6
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("album not found", zap.Error(err))
-			return "", album.ErrAlbumNotFound
+			return "", customErrors.ErrAlbumNotFound
 		}
 		logger.Error("failed to get album title by id", zap.Error(err))
 		return "", err
