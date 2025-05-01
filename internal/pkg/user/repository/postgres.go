@@ -118,9 +118,9 @@ const (
 			WHERE user_id = $1
 	`
 	getNumUniqueArtistQuery = `
-			SELECT COUNT(DISTINCT aa.artist_id) AS unique_artists_listened
-			FROM artist_stream s
-			WHERE s.user_id = $1;
+			SELECT COUNT(DISTINCT artist_id) AS unique_artists_listened
+			FROM artist_stream
+			WHERE user_id = $1;
 	`
 	getUserPrivacySettingsQuery = `
 			SELECT is_public_playlists, is_public_minutes_listened, is_public_favorite_artists,
