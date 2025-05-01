@@ -16,4 +16,5 @@ type Usecase interface {
 	ChangeUserData(ctx context.Context, username string, userChangeData *usecaseModel.UserChangeSettings) (*usecaseModel.UserFullData, error)
 	DeleteUser(ctx context.Context, user *usecaseModel.User, SID string) error
 	GetUserData(ctx context.Context, username string) (*usecaseModel.UserFullData, error)
+	GetUserByID(ctx context.Context, id int64) (*usecaseModel.User, error)
 }

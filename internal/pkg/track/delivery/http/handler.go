@@ -175,13 +175,12 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to create stream for unauthorized user")
 		json.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
 		return
 	}
-	userID := user.ID
 
 	trackStreamCreateData := &delivery.TrackStreamCreateData{
 		TrackID: trackID,
@@ -228,14 +227,12 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to update stream duration for unauthorized user")
 		json.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
 		return
 	}
-
-	userID := user.ID
 
 	var streamUpdateData delivery.TrackStreamUpdateData
 
@@ -289,14 +286,14 @@ func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to get last listened tracks for unauthorized user")
 		json.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
 		return
 	}
 
-	usecaseTracks, err := h.usecase.GetLastListenedTracks(ctx, user.ID, &usecaseModel.TrackFilters{
+	usecaseTracks, err := h.usecase.GetLastListenedTracks(ctx, userID, &usecaseModel.TrackFilters{
 		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
 	})
 

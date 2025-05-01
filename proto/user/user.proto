@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+option go_package = "./user";
+
+package user;
+
+service UserService {
+    rpc CreateUser(RegisterData) returns (UserFront);
+    rpc LoginUser(LoginData) returns (UserFront);
+    rpc GetUserByID(UserID) returns (UserFront);
+    rpc UploadAvatar(AvatarData) returns (Nothing);
+    rpc DeleteUser(UserDelete) returns (Nothing);
+    rpc ChangeUserData(ChangeUserDataMessage) returns (Nothing);
+    rpc ChangeUserPrivacySettings(PrivacySettings) returns (Nothing);
+    rpc GetUserFullData(Username) returns (UserFullData);
+    rpc GetIDByUsername(Username) returns (UserID);
+}
+
+message Username {
+    string username = 1;
+}
+
+message Nothing {
+    bool dummy = 1;
+}
+
+message RegisterData {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message LoginData {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message UserFront {
+    string username = 1;
+    string email = 2;
+    string avatar = 3;
+    int64 id = 4;
+}
+
+message UserID {
+    int64 id = 1;
+}
+
+message AvatarData {
+    string avatar_path = 1;
+    int64 id = 2;
+}
+
+message UserDelete {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message ChangeUserDataMessage {
+    string username = 1;
+    string password = 2;
+
+    string new_username = 3;
+    string new_email = 4;
+    string new_password = 5;
+}
+
+message PrivacySettings {
+    string username = 1;
+
+    bool is_public_playlists = 2;
+    bool is_public_minutes_listened = 3;
+    bool is_public_favorite_artists = 4;
+    bool is_public_tracks_listened = 5;
+    bool is_public_favorite_tracks = 6;
+    bool is_public_artists_listened = 7;
+}
+
+message UserFullData {
+    string username = 1;
+    string email = 2;
+    string avatar = 3;
+
+    PrivacySettings privacy = 4;
+}
