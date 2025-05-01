@@ -73,10 +73,10 @@ func PrivacyFromRepositoryToUsecase(data *repoModel.PrivacySettings) *usecaseMod
 func UserFullDataFromRepositoryToUsecase(data *repoModel.UserFullData) *usecaseModel.UserFullData {
 	privacyUsecase := PrivacyFromRepositoryToUsecase(data.Privacy)
 	return &usecaseModel.UserFullData{
-		Username:   data.Username,
-		Thumbnail:  data.Thumbnail,
-		Email:      data.Email,
-		Privacy:    privacyUsecase,
+		Username:  data.Username,
+		Thumbnail: data.Thumbnail,
+		Email:     data.Email,
+		Privacy:   privacyUsecase,
 	}
 }
 
@@ -133,20 +133,24 @@ func PrivacySettingsFromProtoToUsecase(data *protoModel.PrivacySettings) *usecas
 	}
 }
 
-func UserFullDataFromUsecaseToProto(data *usecaseModel.UserFullData) *protoModel.UserFullData {
-	privacyProto := &protoModel.PrivacySettings{
-		IsPublicPlaylists:       data.Privacy.IsPublicPlaylists,
-		IsPublicMinutesListened: data.Privacy.IsPublicMinutesListened,
-		IsPublicFavoriteArtists: data.Privacy.IsPublicFavoriteArtists,
-		IsPublicTracksListened:  data.Privacy.IsPublicTracksListened,
-		IsPublicFavoriteTracks:  data.Privacy.IsPublicFavoriteTracks,
-		IsPublicArtistsListened: data.Privacy.IsPublicArtistsListened,
+func PrivacySettingsFromUsecaseToProto(data *usecaseModel.PrivacySettings) *protoModel.PrivacySettings {
+	return &protoModel.PrivacySettings{
+		IsPublicPlaylists:       data.IsPublicPlaylists,
+		IsPublicMinutesListened: data.IsPublicMinutesListened,
+		IsPublicFavoriteArtists: data.IsPublicFavoriteArtists,
+		IsPublicTracksListened:  data.IsPublicTracksListened,
+		IsPublicFavoriteTracks:  data.IsPublicFavoriteTracks,
+		IsPublicArtistsListened: data.IsPublicArtistsListened,
 	}
+}
+
+func UserFullDataFromUsecaseToProto(data *usecaseModel.UserFullData) *protoModel.UserFullData {
+	privacyProto := PrivacySettingsFromUsecaseToProto(data.Privacy)
 	return &protoModel.UserFullData{
-		Username:   data.Username,
-		Avatar:     data.Thumbnail,
-		Email:      data.Email,
-		Privacy:    privacyProto,
+		Username: data.Username,
+		Avatar:   data.Thumbnail,
+		Email:    data.Email,
+		Privacy:  privacyProto,
 	}
 }
 
@@ -154,4 +158,17 @@ func UserIDFromUsecaseToProto(id int64) *protoModel.UserID {
 	return &protoModel.UserID{
 		Id: id,
 	}
+}
+
+func AvatarUrlFromUsecaseToProto(url string) *protoModel.AvatarUrl {
+	return &protoModel.AvatarUrl{
+		Url: url,
+	}
+}
+
+func FileKeyFromUsecaseToProto(fileKey string) *protoModel.FileKey {
+	return &protoModel.FileKey{
+		FileKey: fileKey,
+	}
+	
 }

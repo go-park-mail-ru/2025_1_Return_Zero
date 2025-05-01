@@ -636,6 +636,27 @@ func ChangeUserDataFromUsecaseToProto(username string, usecaseUser *usecase.User
 	}
 }
 
+func FileKeyFromUsecaseToProto(avatarURL string) *userProto.FileKey {
+	return &userProto.FileKey{
+		FileKey: avatarURL,
+	}
+}
+
+func AvatarUrlFromProtoToUsecase(protoAvatarURL *userProto.AvatarUrl) string {
+	return protoAvatarURL.Url
+}
+
+func AvatarImageFromUsecaseToProto(username string, image []byte) *userProto.AvatarImage {
+	return &userProto.AvatarImage{
+		Username: username,
+		Image:    image,
+	}
+}
+
+func FileKeyFromProtoToUsecase(protoFileKey *userProto.FileKey) string {
+	return protoFileKey.FileKey
+}
+
 /////////////////////////////////////// AUTH ////////////////////////////////////
 func SessionIDFromProtoToUsecase(protoSessionID *authProto.SessionID) string {
 	return protoSessionID.SessionId

@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/postgres"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/s3"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/interceptors"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/internal/delivery"
@@ -54,8 +55,16 @@ func main() {
 	}
 	defer postgresPool.Close()
 
+	fmt.Println("config ", cfg.S3.S3ImagesBucket)
+	s3, err := s3.InitS3(cfg.S3)
+	if err != nil {
+		logger.Error("Error initializing S3:", zap.Error(err))
+		return
+	}
+
 	userRepository := repository.NewUserPostgresRepository(postgresPool)
-	userUsecase := usecase.NewUserUsecase(userRepository)
+	userS3Repository := repository.NewS3Repository(s3, cfg.S3.S3ImagesBucket)
+	userUsecase := usecase.NewUserUsecase(userRepository, userS3Repository)
 	userService := delivery.NewUserService(userUsecase)
 	userProto.RegisterUserServiceServer(server, userService)
 

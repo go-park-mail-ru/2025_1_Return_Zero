@@ -18,7 +18,6 @@ import (
 	grpc "github.com/go-park-mail-ru/2025_1_Return_Zero/init/microservices"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/postgres"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/redis"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/s3"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	albumHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/delivery/http"
 	albumUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/usecase"
@@ -30,7 +29,6 @@ import (
 	trackUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/usecase"
 	userHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/delivery/http"
 	userUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/usecase"
-	userFileRepo "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/userAvatarFile/repository"
 	"github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
@@ -64,12 +62,6 @@ func main() {
 	}
 	defer postgresConn.Close()
 
-	s3, err := s3.InitS3(cfg.S3)
-	if err != nil {
-		logger.Error("Error initializing S3:", zap.Error(err))
-		return
-	}
-
 	r := mux.NewRouter()
 	logger.Info("Server starting on port %s...", zap.String("port", fmt.Sprintf(":%d", cfg.Port)))
 
@@ -101,7 +93,7 @@ func main() {
 	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(&trackClient, &artistClient, &albumClient), cfg)
 	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(&albumClient, &artistClient), cfg)
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(&artistClient), cfg)
-	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(&userClient, &authClient, userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket), &artistClient, &trackClient))
+	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(&userClient, &authClient, &artistClient, &trackClient))
 
 	r.HandleFunc("/api/v1/tracks", trackHandler.GetAllTracks).Methods("GET")
 	r.HandleFunc("/api/v1/tracks/{id}", trackHandler.GetTrackByID).Methods("GET")

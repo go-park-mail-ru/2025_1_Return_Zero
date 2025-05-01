@@ -15,4 +15,7 @@ type Usecase interface {
 	GetFullUserData(ctx context.Context, username string) (*usecaseModel.UserFullData, error)
 	GetUserByID(ctx context.Context, id int64) (*usecaseModel.UserFront, error)
 	GetIDByUsername(ctx context.Context, username string) (int64, error)
+	GetUserPrivacySettings(ctx context.Context, id int64) (*usecaseModel.PrivacySettings, error)
+	GetAvatarURL(ctx context.Context, fileKey string) (string, error)
+	UploadUserAvatar(ctx context.Context, username string, file []byte) (string, error)
 }

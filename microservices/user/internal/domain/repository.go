@@ -20,9 +20,6 @@ type Repository interface {
 }
 
 type S3Repository interface {
-	GetPresignedURL(fileKey string) (string, error)
-	UploadUserAvatar(ctx context.Context, username string, fileContent []byte) (string, error)
-	DeleteUserAvatar(ctx context.Context, fileKey string) error
 	GetAvatarURL(ctx context.Context, fileKey string) (string, error)
-	GetAvatarKey(ctx context.Context, username string) (string, error)
+	UploadUserAvatar(ctx context.Context, fileKey string, file []byte) (string, error)
 }

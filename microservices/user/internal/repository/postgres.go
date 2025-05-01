@@ -13,8 +13,8 @@ import (
 
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	domain "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/internal/domain"
-	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/model/repository"
 	userErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/model/errors"
+	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/model/repository"
 	"go.uber.org/zap"
 )
 
@@ -487,9 +487,9 @@ func (r *userPostgresRepository) GetFullUserData(ctx context.Context, username s
 		return nil, err
 	}
 	return &repoModel.UserFullData{
-		Username:   user.Username,
-		Email:      user.Email,
-		Thumbnail:  user.Thumbnail,
-		Privacy:    privacy,
+		Username:  user.Username,
+		Email:     user.Email,
+		Thumbnail: user.Thumbnail,
+		Privacy:   privacy,
 	}, nil
 }

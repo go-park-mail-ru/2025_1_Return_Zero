@@ -13,18 +13,16 @@ import (
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/userAvatarFile"
 )
 
 var (
 	ErrWrongUsername = errors.New("wrong username")
 )
 
-func NewUserUsecase(userClient *userProto.UserServiceClient, authClient *authProto.AuthServiceClient, userFileRepo userAvatarFile.Repository, artistClient *artistProto.ArtistServiceClient, trackClient *trackProto.TrackServiceClient) user.Usecase {
+func NewUserUsecase(userClient *userProto.UserServiceClient, authClient *authProto.AuthServiceClient, artistClient *artistProto.ArtistServiceClient, trackClient *trackProto.TrackServiceClient) user.Usecase {
 	return &userUsecase{
 		userClient:   userClient,
 		authClient:   authClient,
-		userFileRepo: userFileRepo,
 		trackClient:  trackClient,
 		artistClient: artistClient,
 	}
@@ -33,7 +31,6 @@ func NewUserUsecase(userClient *userProto.UserServiceClient, authClient *authPro
 type userUsecase struct {
 	userClient   *userProto.UserServiceClient
 	authClient   *authProto.AuthServiceClient
-	userFileRepo userAvatarFile.Repository
 	artistClient *artistProto.ArtistServiceClient
 	trackClient  *trackProto.TrackServiceClient
 }
@@ -44,11 +41,11 @@ func (u *userUsecase) CreateUser(ctx context.Context, user *usecaseModel.User) (
 		return nil, "", cusstomErrors.HandleUserGRPCError(err)
 	}
 	userUsecase := model.UserFromProtoToUsecase(newUser)
-	avatar_url, err := u.userFileRepo.GetAvatarURL(ctx, userUsecase.AvatarUrl)
+	avatar_url, err := (*u.userClient).GetUserAvatarURL(ctx, model.FileKeyFromUsecaseToProto(userUsecase.AvatarUrl))
 	if err != nil {
 		return nil, "", err
 	}
-	userUsecase.AvatarUrl = avatar_url
+	userUsecase.AvatarUrl = model.AvatarUrlFromProtoToUsecase(avatar_url)
 	sessionID, err := (*u.authClient).CreateSession(ctx, model.UserIDFromUsecaseToProto(userUsecase.ID))
 	if err != nil {
 		return nil, "", cusstomErrors.HandleAuthGRPCError(err)
@@ -67,11 +64,11 @@ func (u *userUsecase) GetUserBySID(ctx context.Context, SID string) (*usecaseMod
 		return nil, cusstomErrors.HandleUserGRPCError(err)
 	}
 	userUsecase := model.UserFromProtoToUsecase(user)
-	avatar_url, err := u.userFileRepo.GetAvatarURL(ctx, userUsecase.AvatarUrl)
+	avatar_url, err := (*u.userClient).GetUserAvatarURL(ctx, model.FileKeyFromUsecaseToProto(userUsecase.AvatarUrl))
 	if err != nil {
 		return nil, err
 	}
-	userUsecase.AvatarUrl = avatar_url
+	userUsecase.AvatarUrl = model.AvatarUrlFromProtoToUsecase(avatar_url)
 	return userUsecase, nil
 }
 
@@ -81,11 +78,11 @@ func (u *userUsecase) LoginUser(ctx context.Context, user *usecaseModel.User) (*
 		return nil, "", cusstomErrors.HandleUserGRPCError(err)
 	}
 	userUsecase := model.UserFromProtoToUsecase(loginUser)
-	avatar_url, err := u.userFileRepo.GetAvatarURL(ctx, userUsecase.AvatarUrl)
+	avatar_url, err := (*u.userClient).GetUserAvatarURL(ctx, model.FileKeyFromUsecaseToProto(userUsecase.AvatarUrl))
 	if err != nil {
 		return nil, "", err
 	}
-	userUsecase.AvatarUrl = avatar_url
+	userUsecase.AvatarUrl = model.AvatarUrlFromProtoToUsecase(avatar_url)
 	sessionID, err := (*u.authClient).CreateSession(ctx, model.UserIDFromUsecaseToProto(userUsecase.ID))
 	if err != nil {
 		return nil, "", cusstomErrors.HandleAuthGRPCError(err)
@@ -102,21 +99,26 @@ func (u *userUsecase) Logout(ctx context.Context, SID string) error {
 }
 
 func (u *userUsecase) UploadAvatar(ctx context.Context, username string, fileAvatar io.Reader, ID int64) (string, error) {
-	fileURL, err := u.userFileRepo.UploadUserAvatar(ctx, username, fileAvatar)
+	image, err := io.ReadAll(fileAvatar)
 	if err != nil {
 		return "", err
 	}
-
-	_, err = (*u.userClient).UploadAvatar(ctx, model.AvatarDataFromUsecaseToProto(fileURL, ID))
+	fileURL, err := (*u.userClient).UploadUserAvatar(ctx, model.AvatarImageFromUsecaseToProto(username, image))
+	if err != nil {
+		return "", err
+	}
+	fileUrlUsecase := model.FileKeyFromProtoToUsecase(fileURL)
+	_, err = (*u.userClient).UploadAvatar(ctx, model.AvatarDataFromUsecaseToProto(fileUrlUsecase, ID))
 	if err != nil {
 		return "", cusstomErrors.HandleUserGRPCError(err)
 	}
 
-	avatarURL, err := u.userFileRepo.GetAvatarURL(ctx, fileURL)
+	avatarUrl, err := (*u.userClient).GetUserAvatarURL(ctx, model.FileKeyFromUsecaseToProto(fileUrlUsecase))
 	if err != nil {
 		return "", err
 	}
-	return avatarURL, nil
+	avatarUrlUsecase := model.AvatarUrlFromProtoToUsecase(avatarUrl)
+	return avatarUrlUsecase, nil
 }
 
 func (u *userUsecase) DeleteUser(ctx context.Context, user *usecaseModel.User, SID string) error {
@@ -197,11 +199,12 @@ func (u *userUsecase) GetUserData(ctx context.Context, username string) (*usecas
 		MinutesListened: minutesListened,
 	}
 	userFullDataUsecase.Statistics = stats
-	avatarURL, err := u.userFileRepo.GetAvatarURL(ctx, userFullDataUsecase.AvatarUrl)
+	avatarURL, err := (*u.userClient).GetUserAvatarURL(ctx, model.FileKeyFromUsecaseToProto(userFullDataUsecase.AvatarUrl))
 	if err != nil {
 		return nil, err
 	}
-	userFullDataUsecase.AvatarUrl = avatarURL
+	avatarURLUsecase := model.AvatarUrlFromProtoToUsecase(avatarURL)
+	userFullDataUsecase.AvatarUrl = avatarURLUsecase
 	return userFullDataUsecase, nil
 }
 
@@ -233,10 +236,11 @@ func (u *userUsecase) GetUserByID(ctx context.Context, id int64) (*usecaseModel.
 		return nil, cusstomErrors.HandleUserGRPCError(err)
 	}
 	userUsecase := model.UserFromProtoToUsecase(user)
-	avatarURL, err := u.userFileRepo.GetAvatarURL(ctx, userUsecase.AvatarUrl)
+	avatarURL, err := (*u.userClient).GetUserAvatarURL(ctx, model.FileKeyFromUsecaseToProto(userUsecase.AvatarUrl))
 	if err != nil {
 		return nil, err
 	}
-	userUsecase.AvatarUrl = avatarURL
+	avatarURLUsecase := model.AvatarUrlFromProtoToUsecase(avatarURL)
+	userUsecase.AvatarUrl = avatarURLUsecase
 	return userUsecase, nil
 }

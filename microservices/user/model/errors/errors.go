@@ -55,10 +55,34 @@ func NewPasswordRequierdError(format string, args ...interface{}) error {
 	}
 }
 
+func NewEmptyS3KeyError(format string, args ...interface{}) error {
+	return &UserError{
+		Code:    codes.InvalidArgument,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
+func NewUnsupportedImageFormatError(format string, args ...interface{}) error {
+	return &UserError{
+		Code:    codes.InvalidArgument,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
+func NewFailedToUploadAvatarError(format string, args ...interface{}) error {
+	return &UserError{
+		Code:    codes.Internal,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
 var (
-	ErrUserNotFound     = NewNotFoundError("user not found")
-	ErrUserExist        = NewUserExistError("user already exist")
-	ErrCreateSalt       = NewCreateSaltError("failed to create salt")
-	ErrWrongPassword    = NewWrongPasswordError("wrong password")
-	ErrPasswordRequierd = NewPasswordRequierdError("password required")
+	ErrUserNotFound           = NewNotFoundError("user not found")
+	ErrUserExist              = NewUserExistError("user already exist")
+	ErrCreateSalt             = NewCreateSaltError("failed to create salt")
+	ErrWrongPassword          = NewWrongPasswordError("wrong password")
+	ErrPasswordRequierd       = NewPasswordRequierdError("password required")
+	ErrEmptyS3Key             = NewEmptyS3KeyError("s3 key is empty")
+	ErrUnsupportedImageFormat = NewUnsupportedImageFormatError("unsupported image format")
+	ErrFailedToUploadAvatar   = NewFailedToUploadAvatarError("failed to upload avatar")
 )

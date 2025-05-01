@@ -8,14 +8,16 @@ import (
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/model/usecase"
 )
 
-func NewUserUsecase(userRepository domain.Repository) domain.Usecase {
+func NewUserUsecase(userRepository domain.Repository, s3Repository domain.S3Repository) domain.Usecase {
 	return &userUsecase{
 		userRepo: userRepository,
+		s3Repo:   s3Repository,
 	}
 }
 
 type userUsecase struct {
 	userRepo domain.Repository
+	s3Repo   domain.S3Repository
 }
 
 func (u *userUsecase) CreateUser(ctx context.Context, registerData *usecaseModel.RegisterData) (*usecaseModel.UserFront, error) {
@@ -77,4 +79,28 @@ func (u *userUsecase) GetIDByUsername(ctx context.Context, username string) (int
 		return 0, err
 	}
 	return id, nil
+}
+
+func (u *userUsecase) GetUserPrivacySettings(ctx context.Context, id int64) (*usecaseModel.PrivacySettings, error) {
+	privacySettingsRepoData, err := u.userRepo.GetUserPrivacy(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return model.PrivacyFromRepositoryToUsecase(privacySettingsRepoData), nil
+}
+
+func (u *userUsecase) GetAvatarURL(ctx context.Context, fileKey string) (string, error) {
+	avatarURL, err := u.s3Repo.GetAvatarURL(ctx, fileKey)
+	if err != nil {
+		return "", err
+	}
+	return avatarURL, nil
+}
+
+func (u *userUsecase) UploadUserAvatar(ctx context.Context, username string, file []byte) (string, error) {
+	avatarURL, err := u.s3Repo.UploadUserAvatar(ctx, username, file)
+	if err != nil {
+		return "", err
+	}
+	return avatarURL, nil
 }

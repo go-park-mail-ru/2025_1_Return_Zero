@@ -14,10 +14,26 @@ service UserService {
     rpc ChangeUserPrivacySettings(PrivacySettings) returns (Nothing);
     rpc GetUserFullData(Username) returns (UserFullData);
     rpc GetIDByUsername(Username) returns (UserID);
+    rpc GetUserPrivacyByID(UserID) returns (PrivacySettings);
+    rpc GetUserAvatarURL(FileKey) returns (AvatarUrl);
+    rpc UploadUserAvatar(AvatarImage) returns (FileKey);
+}
+
+message AvatarImage {
+    string username = 1;
+    bytes image = 2;
 }
 
 message Username {
     string username = 1;
+}
+
+message FileKey {
+    string file_key = 1;
+}
+
+message AvatarUrl {
+    string url = 1;
 }
 
 message Nothing {

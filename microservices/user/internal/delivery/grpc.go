@@ -92,3 +92,27 @@ func (s *UserService) GetIDByUsername(ctx context.Context, req *userProto.Userna
 	}
 	return model.UserIDFromUsecaseToProto(id), nil
 }
+
+func (s *UserService) GetUserPrivacyByID(ctx context.Context, req *userProto.UserID) (*userProto.PrivacySettings, error) {
+	settings, err := s.userUsecase.GetUserPrivacySettings(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.PrivacySettingsFromUsecaseToProto(settings), nil
+}
+
+func (s *UserService) GetUserAvatarURL(ctx context.Context, req *userProto.FileKey) (*userProto.AvatarUrl, error) {
+	avatarURL, err := s.userUsecase.GetAvatarURL(ctx, req.FileKey)
+	if err != nil {
+		return nil, err
+	}
+	return model.AvatarUrlFromUsecaseToProto(avatarURL), nil
+}
+
+func (s *UserService) UploadUserAvatar(ctx context.Context, req *userProto.AvatarImage) (*userProto.FileKey, error) {
+	fileKey, err := s.userUsecase.UploadUserAvatar(ctx, req.Username, req.Image)
+	if err != nil {
+		return nil, err
+	}
+	return model.FileKeyFromUsecaseToProto(fileKey), nil
+}

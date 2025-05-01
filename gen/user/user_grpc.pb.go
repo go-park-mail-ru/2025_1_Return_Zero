@@ -27,6 +27,9 @@ type UserServiceClient interface {
 	ChangeUserPrivacySettings(ctx context.Context, in *PrivacySettings, opts ...grpc.CallOption) (*Nothing, error)
 	GetUserFullData(ctx context.Context, in *Username, opts ...grpc.CallOption) (*UserFullData, error)
 	GetIDByUsername(ctx context.Context, in *Username, opts ...grpc.CallOption) (*UserID, error)
+	GetUserPrivacyByID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*PrivacySettings, error)
+	GetUserAvatarURL(ctx context.Context, in *FileKey, opts ...grpc.CallOption) (*AvatarUrl, error)
+	UploadUserAvatar(ctx context.Context, in *AvatarImage, opts ...grpc.CallOption) (*FileKey, error)
 }
 
 type userServiceClient struct {
@@ -118,6 +121,33 @@ func (c *userServiceClient) GetIDByUsername(ctx context.Context, in *Username, o
 	return out, nil
 }
 
+func (c *userServiceClient) GetUserPrivacyByID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*PrivacySettings, error) {
+	out := new(PrivacySettings)
+	err := c.cc.Invoke(ctx, "/user.UserService/GetUserPrivacyByID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetUserAvatarURL(ctx context.Context, in *FileKey, opts ...grpc.CallOption) (*AvatarUrl, error) {
+	out := new(AvatarUrl)
+	err := c.cc.Invoke(ctx, "/user.UserService/GetUserAvatarURL", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) UploadUserAvatar(ctx context.Context, in *AvatarImage, opts ...grpc.CallOption) (*FileKey, error) {
+	out := new(FileKey)
+	err := c.cc.Invoke(ctx, "/user.UserService/UploadUserAvatar", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -131,6 +161,9 @@ type UserServiceServer interface {
 	ChangeUserPrivacySettings(context.Context, *PrivacySettings) (*Nothing, error)
 	GetUserFullData(context.Context, *Username) (*UserFullData, error)
 	GetIDByUsername(context.Context, *Username) (*UserID, error)
+	GetUserPrivacyByID(context.Context, *UserID) (*PrivacySettings, error)
+	GetUserAvatarURL(context.Context, *FileKey) (*AvatarUrl, error)
+	UploadUserAvatar(context.Context, *AvatarImage) (*FileKey, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -164,6 +197,15 @@ func (UnimplementedUserServiceServer) GetUserFullData(context.Context, *Username
 }
 func (UnimplementedUserServiceServer) GetIDByUsername(context.Context, *Username) (*UserID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetIDByUsername not implemented")
+}
+func (UnimplementedUserServiceServer) GetUserPrivacyByID(context.Context, *UserID) (*PrivacySettings, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserPrivacyByID not implemented")
+}
+func (UnimplementedUserServiceServer) GetUserAvatarURL(context.Context, *FileKey) (*AvatarUrl, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserAvatarURL not implemented")
+}
+func (UnimplementedUserServiceServer) UploadUserAvatar(context.Context, *AvatarImage) (*FileKey, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UploadUserAvatar not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -340,6 +382,60 @@ func _UserService_GetIDByUsername_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_GetUserPrivacyByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetUserPrivacyByID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/GetUserPrivacyByID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetUserPrivacyByID(ctx, req.(*UserID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetUserAvatarURL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FileKey)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetUserAvatarURL(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/GetUserAvatarURL",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetUserAvatarURL(ctx, req.(*FileKey))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_UploadUserAvatar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AvatarImage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UploadUserAvatar(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/UploadUserAvatar",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UploadUserAvatar(ctx, req.(*AvatarImage))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -382,6 +478,18 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetIDByUsername",
 			Handler:    _UserService_GetIDByUsername_Handler,
+		},
+		{
+			MethodName: "GetUserPrivacyByID",
+			Handler:    _UserService_GetUserPrivacyByID_Handler,
+		},
+		{
+			MethodName: "GetUserAvatarURL",
+			Handler:    _UserService_GetUserAvatarURL_Handler,
+		},
+		{
+			MethodName: "UploadUserAvatar",
+			Handler:    _UserService_UploadUserAvatar_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
