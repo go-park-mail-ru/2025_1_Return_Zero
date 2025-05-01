@@ -10,8 +10,10 @@ import (
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	_ "github.com/go-park-mail-ru/2025_1_Return_Zero/docs"
-	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
+	authProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/auth"
+	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
+	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 	trackProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
 	grpc "github.com/go-park-mail-ru/2025_1_Return_Zero/init/microservices"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/postgres"
@@ -22,12 +24,11 @@ import (
 	albumUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/usecase"
 	artistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/delivery/http"
 	artistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/usecase"
-	authRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth/repository"
+
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	trackHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/delivery/http"
 	trackUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/usecase"
 	userHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/delivery/http"
-	userRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/repository"
 	userUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/usecase"
 	userFileRepo "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/userAvatarFile/repository"
 	"github.com/gorilla/mux"
@@ -70,7 +71,7 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	logger.Info("Server starting", zap.String("port", fmt.Sprintf(":%d", cfg.Port)))
+	logger.Info("Server starting on port %s...", zap.String("port", fmt.Sprintf(":%d", cfg.Port)))
 
 	r.PathPrefix("/api/v1/docs/").Handler(httpSwagger.Handler(
 		httpSwagger.URL("/api/v1/docs/doc.json"),
@@ -87,19 +88,20 @@ func main() {
 	artistClient := artistProto.NewArtistServiceClient(clients.ArtistClient)
 	albumClient := albumProto.NewAlbumServiceClient(clients.AlbumClient)
 	trackClient := trackProto.NewTrackServiceClient(clients.TrackClient)
-	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisPool), userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket))
+	authClient := authProto.NewAuthServiceClient(clients.AuthClient)
+	userClient := userProto.NewUserServiceClient(clients.UserClient)
 
 	r.Use(middleware.LoggerMiddleware(logger))
 	r.Use(middleware.RequestId)
 	r.Use(middleware.AccessLog)
-	r.Use(middleware.Auth(newUserUsecase))
+	r.Use(middleware.Auth(&authClient))
 	r.Use(middleware.CorsMiddleware(cfg.Cors))
 	// r.Use(middleware.CSRFMiddleware(cfg.CSRF))
 
 	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(&trackClient, &artistClient, &albumClient), cfg)
 	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(&albumClient, &artistClient), cfg)
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(&artistClient), cfg)
-	userHandler := userHttp.NewUserHandler(newUserUsecase)
+	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(&userClient, &authClient, userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket), &artistClient, &trackClient))
 
 	r.HandleFunc("/api/v1/tracks", trackHandler.GetAllTracks).Methods("GET")
 	r.HandleFunc("/api/v1/tracks/{id}", trackHandler.GetTrackByID).Methods("GET")
