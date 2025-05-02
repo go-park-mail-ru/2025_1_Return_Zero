@@ -121,7 +121,7 @@ func (h *PlaylistHandler) CreatePlaylist(w http.ResponseWriter, r *http.Request)
 // @Success 200 {object} delivery.APIResponse{body=[]delivery.Playlist} "List of playlists"
 // @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
-// @Router /playlists [get]
+// @Router /playlists/me [get]
 func (h *PlaylistHandler) GetCombinedPlaylistsForCurrentUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
