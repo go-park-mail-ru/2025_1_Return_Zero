@@ -515,6 +515,47 @@ paths:
       summary: Like an album
       tags:
       - albums
+  /albums/{id}/tracks:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of tracks by a specific album with optional pagination
+        filters
+      parameters:
+      - description: Album ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of tracks by album
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Track'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid album ID or filters
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "404":
+          description: Album not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get tracks by album ID
+      tags:
+      - tracks
   /artists:
     get:
       consumes:
@@ -1050,6 +1091,46 @@ paths:
       tags:
       - playlists
   /playlists/{id}/tracks:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of tracks by a specific playlist with optional pagination
+        filters
+      parameters:
+      - description: Playlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of tracks by playlist
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Track'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid playlist ID or filters
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "404":
+          description: Playlist not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get playlist tracks
+      tags:
+      - tracks
     post:
       consumes:
       - application/json

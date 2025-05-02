@@ -324,7 +324,6 @@ func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Requ
 // @Failure 404 {object} delivery.APINotFoundErrorResponse "Album not found"
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /albums/{id}/tracks [get]
-
 func (h *TrackHandler) GetTracksByAlbumID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
@@ -402,6 +401,18 @@ func (h *TrackHandler) LikeTrack(w http.ResponseWriter, r *http.Request) {
 	}, nil)
 }
 
+// GetPlaylistTracks godoc
+// @Summary Get playlist tracks
+// @Description Get a list of tracks by a specific playlist with optional pagination filters
+// @Tags tracks
+// @Accept json
+// @Produce json
+// @Param id path integer true "Playlist ID"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Track} "List of tracks by playlist"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid playlist ID or filters"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "Playlist not found"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /playlists/{id}/tracks [get]
 func (h *TrackHandler) GetPlaylistTracks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
