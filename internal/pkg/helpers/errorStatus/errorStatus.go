@@ -35,6 +35,19 @@ var mapErrorStatus = map[error]int{
 	customErrors.ErrLikeArtistUnauthorized:       http.StatusForbidden,
 	customErrors.ErrLikeAlbumUnauthorized:        http.StatusForbidden,
 	customErrors.ErrLikeTrackUnauthorized:        http.StatusForbidden,
+	customErrors.ErrPlaylistNotFound:             http.StatusNotFound,
+	customErrors.ErrPlaylistPermissionDenied:     http.StatusForbidden,
+	customErrors.ErrPlaylistBadRequest:           http.StatusBadRequest,
+	customErrors.ErrUnsupportedImageFormat:       http.StatusBadRequest,
+	customErrors.ErrImageTooBig:                  http.StatusBadRequest,
+	customErrors.ErrFailedToParseImage:           http.StatusBadRequest,
+	customErrors.ErrFailedToUploadImage:          http.StatusBadRequest,
+	customErrors.ErrPlaylistImageNotUploaded:     http.StatusBadRequest,
+	customErrors.ErrFailedToCreatePlaylist:       http.StatusBadRequest,
+	customErrors.ErrPlaylistUnauthorized:         http.StatusForbidden,
+	customErrors.ErrPlaylistDuplicate:            http.StatusBadRequest,
+	customErrors.ErrPlaylistTrackNotFound:        http.StatusNotFound,
+	customErrors.ErrPlaylistTrackDuplicate:       http.StatusBadRequest,
 }
 
 func ErrorStatus(err error) int {

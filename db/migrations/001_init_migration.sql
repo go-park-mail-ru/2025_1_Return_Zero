@@ -127,6 +127,7 @@ CREATE TABLE IF NOT EXISTS playlist (
     description TEXT DEFAULT '',
     CONSTRAINT playlist_description_length_check CHECK (LENGTH(description) <= 1000),
     user_id BIGINT NOT NULL,
+    is_public BOOLEAN NOT NULL DEFAULT TRUE,
     thumbnail_url TEXT NOT NULL DEFAULT '/default_playlist.png',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -137,11 +138,26 @@ CREATE TABLE IF NOT EXISTS playlist (
     CONSTRAINT unique_user_playlist_check UNIQUE (user_id, title)
 );
 
+CREATE TABLE IF NOT EXISTS favorite_playlist (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    playlist_id BIGINT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    FOREIGN KEY (user_id)
+        REFERENCES "user" (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (playlist_id)
+        REFERENCES playlist (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    CONSTRAINT unique_user_favorite_playlist_check UNIQUE (user_id, playlist_id)
+);
+
 CREATE TABLE IF NOT EXISTS playlist_track (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     playlist_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
-    position BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     FOREIGN KEY (playlist_id)
@@ -152,7 +168,6 @@ CREATE TABLE IF NOT EXISTS playlist_track (
         REFERENCES track (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-    CONSTRAINT unique_playlist_position_check UNIQUE (playlist_id, position),
     CONSTRAINT unique_playlist_track_check UNIQUE (playlist_id, track_id)
 );
 
@@ -359,6 +374,7 @@ DROP TABLE IF EXISTS favorite_album;
 DROP TABLE IF EXISTS favorite_track;
 DROP TABLE IF EXISTS genre_album;
 DROP TABLE IF EXISTS genre_track;
+DROP TABLE IF EXISTS favorite_playlist;
 DROP TABLE IF EXISTS playlist_track;
 DROP TABLE IF EXISTS playlist;
 DROP TABLE IF EXISTS album_artist;

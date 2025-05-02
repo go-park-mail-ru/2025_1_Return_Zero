@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+option go_package = "./playlist";
+
+package playlist;
+
+import "google/protobuf/empty.proto";
+service PlaylistService {
+    rpc CreatePlaylist(CreatePlaylistRequest) returns (Playlist);
+    rpc GetPlaylistByID(GetPlaylistByIDRequest) returns (Playlist);
+    rpc GetCombinedPlaylistsByUserID(GetCombinedPlaylistsByUserIDRequest) returns (PlaylistList);
+    rpc UpdatePlaylist(UpdatePlaylistRequest) returns (Playlist);
+    rpc UploadPlaylistThumbnail(UploadPlaylistThumbnailRequest) returns (UploadPlaylistThumbnailResponse);
+    rpc AddTrackToPlaylist(AddTrackToPlaylistRequest) returns (google.protobuf.Empty);
+    rpc RemoveTrackFromPlaylist(RemoveTrackFromPlaylistRequest) returns (google.protobuf.Empty);
+    rpc GetPlaylistTrackIds(GetPlaylistTrackIdsRequest) returns (GetPlaylistTrackIdsResponse);
+    rpc RemovePlaylist(RemovePlaylistRequest) returns (google.protobuf.Empty);
+    rpc GetPlaylistsToAdd(GetPlaylistsToAddRequest) returns (GetPlaylistsToAddResponse);
+}
+
+message PlaylistID {
+    int64 id = 1;
+}
+
+message Playlist {
+    int64 id = 1;
+    string title = 2;
+    int64 user_id = 3;
+    string thumbnail = 4;
+    
+}
+
+message PlaylistWithIsIncludedTrack {
+    Playlist playlist = 1;
+    bool is_included_track = 2;
+}
+
+message PlaylistList {
+    repeated Playlist playlists = 1;
+}
+
+message CreatePlaylistRequest {
+    int64 user_id = 1;
+    string title = 2;
+    string thumbnail = 3;
+}
+
+message GetPlaylistByIDRequest {
+    int64 id = 1;
+    int64 user_id = 2;
+}
+
+message UpdatePlaylistRequest {
+    int64 id = 1;
+    int64 user_id = 2;
+    string title = 3;
+    string thumbnail = 4;
+}
+
+message UploadPlaylistThumbnailRequest {
+    string title = 1;
+    bytes thumbnail = 2;
+}
+
+message UploadPlaylistThumbnailResponse {
+    string thumbnail = 1;
+}
+
+message GetCombinedPlaylistsByUserIDRequest {
+    int64 user_id = 1;
+}
+
+message GetPlaylistsToAddRequest {
+    int64 user_id = 1;
+    int64 track_id = 2;
+}
+
+message GetPlaylistsToAddResponse {
+    repeated PlaylistWithIsIncludedTrack playlists = 1;
+}
+
+message AddTrackToPlaylistRequest {
+    int64 user_id = 1;
+    int64 playlist_id = 2;
+    int64 track_id = 3;
+}
+
+message RemoveTrackFromPlaylistRequest {
+    int64 user_id = 1;
+    int64 playlist_id = 2;
+    int64 track_id = 3;
+}
+
+message GetPlaylistTrackIdsRequest {
+    int64 user_id = 1;
+    int64 playlist_id = 2;
+}
+
+message GetPlaylistTrackIdsResponse {
+    repeated int64 track_ids = 1;
+}
+
+message RemovePlaylistRequest {
+    int64 user_id = 1;
+    int64 playlist_id = 2;
+}   
+
+message LikePlaylistRequest {
+    int64 user_id = 1;
+    int64 playlist_id = 2;
+    bool is_like = 3;
+}

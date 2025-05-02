@@ -401,3 +401,27 @@ func (h *TrackHandler) LikeTrack(w http.ResponseWriter, r *http.Request) {
 		Message: "track liked/unliked",
 	}, nil)
 }
+
+func (h *TrackHandler) GetPlaylistTracks(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		logger.Error("failed to parse playlist ID", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	usecaseTracks, err := h.usecase.GetPlaylistTracks(ctx, id)
+	if err != nil {
+		logger.Error("failed to get playlist tracks", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
+	json.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
+}

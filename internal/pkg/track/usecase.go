@@ -15,4 +15,5 @@ type Usecase interface {
 	GetLastListenedTracks(ctx context.Context, userID int64, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error)
 	GetTracksByAlbumID(ctx context.Context, id int64) ([]*usecaseModel.Track, error)
 	LikeTrack(ctx context.Context, request *usecaseModel.TrackLikeRequest) error
+	GetPlaylistTracks(ctx context.Context, id int64) ([]*usecaseModel.Track, error)
 }

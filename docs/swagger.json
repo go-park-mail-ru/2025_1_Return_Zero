@@ -737,6 +737,535 @@
                 }
             }
         },
+        "/playlists": {
+            "get": {
+                "description": "Retrieves all playlists accessible to the current user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "playlists"
+                ],
+                "summary": "Get combined playlists for current user",
+                "responses": {
+                    "200": {
+                        "description": "List of playlists",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Playlist"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new playlist with a title and thumbnail image",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "playlists"
+                ],
+                "summary": "Create a new playlist",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Playlist title",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Playlist thumbnail image",
+                        "name": "thumbnail",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created playlist",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.Playlist"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid form data",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "413": {
+                        "description": "Request entity too large",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIRequestEntityTooLargeErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/playlists/to-add": {
+            "get": {
+                "description": "Retrieves all playlists owned by the current user with information about whether the track is already included",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "playlists"
+                ],
+                "summary": "Get playlists available for adding a track",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Track ID to check inclusion status",
+                        "name": "trackId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of playlists with track inclusion status",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.PlaylistWithIsIncludedTrack"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid track ID",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/playlists/{id}": {
+            "get": {
+                "description": "Retrieves a specific playlist by its ID with all its details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "playlists"
+                ],
+                "summary": "Get a playlist by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Playlist ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Playlist details",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.Playlist"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Playlist not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a playlist's title and/or thumbnail",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "playlists"
+                ],
+                "summary": "Update a playlist",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Playlist ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "New playlist title",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "New playlist thumbnail image",
+                        "name": "thumbnail",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated playlist",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.Playlist"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID or form data",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Playlist not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a playlist by its ID (only available to the playlist owner)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "playlists"
+                ],
+                "summary": "Remove a playlist",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Playlist ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Playlist removed successfully",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.Message"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - user is not the playlist owner",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIForbiddenErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Playlist not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/playlists/{id}/tracks": {
+            "post": {
+                "description": "Adds a track to a specific playlist",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "playlists"
+                ],
+                "summary": "Add a track to a playlist",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Playlist ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Track information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.AddTrackToPlaylistRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Track added successfully",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid ID or request body",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Playlist or track not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/playlists/{id}/tracks/{trackId}": {
+            "delete": {
+                "description": "Removes a track from a specific playlist",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "playlists"
+                ],
+                "summary": "Remove a track from a playlist",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Playlist ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Track ID",
+                        "name": "trackId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Track removed successfully",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid IDs",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Playlist or track not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/streams/{id}": {
             "put": {
                 "description": "updates listening duration at the end of stream",
@@ -1424,6 +1953,20 @@
                 }
             }
         },
+        "delivery.APIRequestEntityTooLargeErrorResponse": {
+            "description": "API request entity too large error response structure",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Request entity too large"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 413
+                }
+            }
+        },
         "delivery.APIResponse": {
             "description": "API response wrapper",
             "type": "object",
@@ -1446,6 +1989,15 @@
                 "status": {
                     "type": "integer",
                     "example": 401
+                }
+            }
+        },
+        "delivery.AddTrackToPlaylistRequest": {
+            "description": "Add track to playlist request structure",
+            "type": "object",
+            "properties": {
+                "track_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -1627,6 +2179,45 @@
                 "msg": {
                     "type": "string",
                     "example": "object have been successfully created/updated"
+                }
+            }
+        },
+        "delivery.Playlist": {
+            "description": "Playlist structure",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "thumbnail": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "delivery.PlaylistWithIsIncludedTrack": {
+            "description": "Playlist with is included track structure",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "is_included": {
+                    "type": "boolean"
+                },
+                "thumbnail": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },

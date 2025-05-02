@@ -62,10 +62,16 @@ type TrackService struct {
 	Host string
 }
 
+type PlaylistService struct {
+	Port int `mapstructure:"port"`
+	Host string
+}
+
 type Services struct {
-	ArtistService ArtistService `mapstructure:"artist_service"`
-	AlbumService  AlbumService  `mapstructure:"album_service"`
-	TrackService  TrackService  `mapstructure:"track_service"`
+	ArtistService   ArtistService   `mapstructure:"artist_service"`
+	AlbumService    AlbumService    `mapstructure:"album_service"`
+	TrackService    TrackService    `mapstructure:"track_service"`
+	PlaylistService PlaylistService `mapstructure:"playlist_service"`
 }
 
 type PaginationConfig struct {
@@ -119,5 +125,7 @@ func LoadConfig() (*Config, error) {
 	config.Services.ArtistService.Host = os.Getenv("ARTIST_SERVICE_HOST")
 	config.Services.AlbumService.Host = os.Getenv("ALBUM_SERVICE_HOST")
 	config.Services.TrackService.Host = os.Getenv("TRACK_SERVICE_HOST")
+	config.Services.PlaylistService.Host = os.Getenv("PLAYLIST_SERVICE_HOST")
+
 	return &config, nil
 }

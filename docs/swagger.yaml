@@ -40,6 +40,16 @@ definitions:
         example: 404
         type: integer
     type: object
+  delivery.APIRequestEntityTooLargeErrorResponse:
+    description: API request entity too large error response structure
+    properties:
+      error:
+        example: Request entity too large
+        type: string
+      status:
+        example: 413
+        type: integer
+    type: object
   delivery.APIResponse:
     description: API response wrapper
     properties:
@@ -56,6 +66,12 @@ definitions:
         type: string
       status:
         example: 401
+        type: integer
+    type: object
+  delivery.AddTrackToPlaylistRequest:
+    description: Add track to playlist request structure
+    properties:
+      track_id:
         type: integer
     type: object
   delivery.Album:
@@ -185,6 +201,32 @@ definitions:
     properties:
       msg:
         example: object have been successfully created/updated
+        type: string
+    type: object
+  delivery.Playlist:
+    description: Playlist structure
+    properties:
+      id:
+        type: integer
+      thumbnail:
+        type: string
+      title:
+        type: string
+      username:
+        type: string
+    type: object
+  delivery.PlaylistWithIsIncludedTrack:
+    description: Playlist with is included track structure
+    properties:
+      id:
+        type: integer
+      is_included:
+        type: boolean
+      thumbnail:
+        type: string
+      title:
+        type: string
+      username:
         type: string
     type: object
   delivery.Privacy:
@@ -798,6 +840,341 @@ paths:
       summary: Register a new user
       tags:
       - auth
+  /playlists:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all playlists accessible to the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of playlists
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Playlist'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get combined playlists for current user
+      tags:
+      - playlists
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create a new playlist with a title and thumbnail image
+      parameters:
+      - description: Playlist title
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Playlist thumbnail image
+        in: formData
+        name: thumbnail
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created playlist
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Playlist'
+              type: object
+        "400":
+          description: Bad request - invalid form data
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "413":
+          description: Request entity too large
+          schema:
+            $ref: '#/definitions/delivery.APIRequestEntityTooLargeErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Create a new playlist
+      tags:
+      - playlists
+  /playlists/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a playlist by its ID (only available to the playlist owner)
+      parameters:
+      - description: Playlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Playlist removed successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Message'
+              type: object
+        "400":
+          description: Bad request - invalid ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "403":
+          description: Forbidden - user is not the playlist owner
+          schema:
+            $ref: '#/definitions/delivery.APIForbiddenErrorResponse'
+        "404":
+          description: Playlist not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Remove a playlist
+      tags:
+      - playlists
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a specific playlist by its ID with all its details
+      parameters:
+      - description: Playlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Playlist details
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Playlist'
+              type: object
+        "400":
+          description: Bad request - invalid ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "404":
+          description: Playlist not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get a playlist by ID
+      tags:
+      - playlists
+    put:
+      consumes:
+      - multipart/form-data
+      description: Update a playlist's title and/or thumbnail
+      parameters:
+      - description: Playlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: New playlist title
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: New playlist thumbnail image
+        in: formData
+        name: thumbnail
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated playlist
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Playlist'
+              type: object
+        "400":
+          description: Bad request - invalid ID or form data
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "404":
+          description: Playlist not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Update a playlist
+      tags:
+      - playlists
+  /playlists/{id}/tracks:
+    post:
+      consumes:
+      - application/json
+      description: Adds a track to a specific playlist
+      parameters:
+      - description: Playlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Track information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.AddTrackToPlaylistRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Track added successfully
+          schema:
+            $ref: '#/definitions/delivery.APIResponse'
+        "400":
+          description: Bad request - invalid ID or request body
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "404":
+          description: Playlist or track not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Add a track to a playlist
+      tags:
+      - playlists
+  /playlists/{id}/tracks/{trackId}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a track from a specific playlist
+      parameters:
+      - description: Playlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Track ID
+        in: path
+        name: trackId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Track removed successfully
+          schema:
+            $ref: '#/definitions/delivery.APIResponse'
+        "400":
+          description: Bad request - invalid IDs
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "404":
+          description: Playlist or track not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Remove a track from a playlist
+      tags:
+      - playlists
+  /playlists/to-add:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all playlists owned by the current user with information
+        about whether the track is already included
+      parameters:
+      - description: Track ID to check inclusion status
+        in: query
+        name: trackId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of playlists with track inclusion status
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.PlaylistWithIsIncludedTrack'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid track ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get playlists available for adding a track
+      tags:
+      - playlists
   /streams/{id}:
     put:
       description: updates listening duration at the end of stream

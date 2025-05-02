@@ -3,6 +3,7 @@ package model
 import (
 	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
+	playlistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/playlist"
 	trackProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
@@ -573,4 +574,155 @@ func ChangeDataFromDeliveryToUsecase(deliveryUser *delivery.UserChangeSettings) 
 		NewPassword: deliveryUser.NewPassword,
 		Privacy:     privacyDelivery,
 	}
+}
+
+///////////////////////////////////// PLAYLIST ////////////////////////////////////
+
+func UploadPlaylistThumbnailRequestFromUsecaseToProto(title string, thumbnail []byte) *playlistProto.UploadPlaylistThumbnailRequest {
+	return &playlistProto.UploadPlaylistThumbnailRequest{
+		Title:     title,
+		Thumbnail: thumbnail,
+	}
+}
+
+func CreatePlaylistRequestFromUsecaseToProto(usecasePlaylist *usecase.CreatePlaylistRequest, thumbnail string) *playlistProto.CreatePlaylistRequest {
+	return &playlistProto.CreatePlaylistRequest{
+		Title:     usecasePlaylist.Title,
+		UserId:    usecasePlaylist.UserID,
+		Thumbnail: thumbnail,
+	}
+}
+
+func PlaylistFromProtoToUsecase(protoPlaylist *playlistProto.Playlist, username string) *usecase.Playlist {
+	return &usecase.Playlist{
+		ID:        protoPlaylist.Id,
+		Title:     protoPlaylist.Title,
+		Thumbnail: protoPlaylist.Thumbnail,
+		Username:  username,
+	}
+}
+
+func CreatePlaylistRequestFromDeliveryToUsecase(deliveryPlaylist *delivery.CreatePlaylistRequest, userID int64) *usecase.CreatePlaylistRequest {
+	return &usecase.CreatePlaylistRequest{
+		Title:     deliveryPlaylist.Title,
+		UserID:    userID,
+		Thumbnail: deliveryPlaylist.Thumbnail,
+	}
+}
+
+func PlaylistFromUsecaseToDelivery(usecasePlaylist *usecase.Playlist) *delivery.Playlist {
+	return &delivery.Playlist{
+		ID:        usecasePlaylist.ID,
+		Title:     usecasePlaylist.Title,
+		Thumbnail: usecasePlaylist.Thumbnail,
+		Username:  usecasePlaylist.Username,
+	}
+}
+
+func PlaylistsFromUsecaseToDelivery(usecasePlaylists []*usecase.Playlist) []*delivery.Playlist {
+	deliveryPlaylists := make([]*delivery.Playlist, 0, len(usecasePlaylists))
+	for _, usecasePlaylist := range usecasePlaylists {
+		deliveryPlaylists = append(deliveryPlaylists, PlaylistFromUsecaseToDelivery(usecasePlaylist))
+	}
+	return deliveryPlaylists
+}
+
+func AddTrackToPlaylistRequestFromDeliveryToUsecase(deliveryAddTrackToPlaylist *delivery.AddTrackToPlaylistRequest, userID int64, playlistID int64) *usecase.AddTrackToPlaylistRequest {
+	return &usecase.AddTrackToPlaylistRequest{
+		UserID:     userID,
+		PlaylistID: playlistID,
+		TrackID:    deliveryAddTrackToPlaylist.TrackID,
+	}
+}
+
+func RemoveTrackFromPlaylistRequestFromDeliveryToUsecase(trackID int64, userID int64, playlistID int64) *usecase.RemoveTrackFromPlaylistRequest {
+	return &usecase.RemoveTrackFromPlaylistRequest{
+		UserID:     userID,
+		PlaylistID: playlistID,
+		TrackID:    trackID,
+	}
+}
+
+func AddTrackToPlaylistRequestFromUsecaseToProto(usecaseAddTrackToPlaylist *usecase.AddTrackToPlaylistRequest) *playlistProto.AddTrackToPlaylistRequest {
+	return &playlistProto.AddTrackToPlaylistRequest{
+		PlaylistId: usecaseAddTrackToPlaylist.PlaylistID,
+		TrackId:    usecaseAddTrackToPlaylist.TrackID,
+		UserId:     usecaseAddTrackToPlaylist.UserID,
+	}
+}
+
+func RemoveTrackFromPlaylistRequestFromUsecaseToProto(usecaseRemoveTrackFromPlaylist *usecase.RemoveTrackFromPlaylistRequest) *playlistProto.RemoveTrackFromPlaylistRequest {
+	return &playlistProto.RemoveTrackFromPlaylistRequest{
+		PlaylistId: usecaseRemoveTrackFromPlaylist.PlaylistID,
+		TrackId:    usecaseRemoveTrackFromPlaylist.TrackID,
+		UserId:     usecaseRemoveTrackFromPlaylist.UserID,
+	}
+}
+
+func UpdatePlaylistRequestFromUsecaseToProto(usecaseUpdatePlaylist *usecase.UpdatePlaylistRequest, thumbnail string) *playlistProto.UpdatePlaylistRequest {
+	return &playlistProto.UpdatePlaylistRequest{
+		Id:        usecaseUpdatePlaylist.PlaylistID,
+		Title:     usecaseUpdatePlaylist.Title,
+		Thumbnail: thumbnail,
+		UserId:    usecaseUpdatePlaylist.UserID,
+	}
+}
+
+func UpdatePlaylistRequestFromDeliveryToUsecase(deliveryUpdatePlaylist *delivery.UpdatePlaylistRequest, userID int64, playlistID int64) *usecase.UpdatePlaylistRequest {
+	return &usecase.UpdatePlaylistRequest{
+		UserID:     userID,
+		PlaylistID: playlistID,
+		Title:      deliveryUpdatePlaylist.Title,
+		Thumbnail:  deliveryUpdatePlaylist.Thumbnail,
+	}
+}
+
+func RemovePlaylistRequestFromUsecaseToProto(usecaseRemovePlaylist *usecase.RemovePlaylistRequest) *playlistProto.RemovePlaylistRequest {
+	return &playlistProto.RemovePlaylistRequest{
+		UserId:     usecaseRemovePlaylist.UserID,
+		PlaylistId: usecaseRemovePlaylist.PlaylistID,
+	}
+}
+
+func RemovePlaylistRequestFromDeliveryToUsecase(playlistID int64, userID int64) *usecase.RemovePlaylistRequest {
+	return &usecase.RemovePlaylistRequest{
+		UserID:     userID,
+		PlaylistID: playlistID,
+	}
+}
+
+func GetPlaylistsToAddRequestFromDeliveryToUsecase(trackID int64, userID int64) *usecase.GetPlaylistsToAddRequest {
+	return &usecase.GetPlaylistsToAddRequest{
+		UserID:  userID,
+		TrackID: trackID,
+	}
+}
+
+func GetPlaylistsToAddRequestFromUsecaseToProto(usecaseGetPlaylistsToAdd *usecase.GetPlaylistsToAddRequest) *playlistProto.GetPlaylistsToAddRequest {
+	return &playlistProto.GetPlaylistsToAddRequest{
+		UserId:  usecaseGetPlaylistsToAdd.UserID,
+		TrackId: usecaseGetPlaylistsToAdd.TrackID,
+	}
+}
+
+func GetPlaylistsToAddResponseFromProtoToUsecase(proto *playlistProto.GetPlaylistsToAddResponse, username string) []*usecase.PlaylistWithIsIncludedTrack {
+	usecasePlaylists := make([]*usecase.PlaylistWithIsIncludedTrack, 0, len(proto.Playlists))
+	for _, protoPlaylist := range proto.Playlists {
+		usecasePlaylists = append(usecasePlaylists, &usecase.PlaylistWithIsIncludedTrack{
+			Playlist:   *PlaylistFromProtoToUsecase(protoPlaylist.Playlist, username),
+			IsIncluded: protoPlaylist.IsIncludedTrack,
+		})
+	}
+	return usecasePlaylists
+}
+
+func PlaylistsWithIsIncludedTrackFromUsecaseToDelivery(usecasePlaylists []*usecase.PlaylistWithIsIncludedTrack) []*delivery.PlaylistWithIsIncludedTrack {
+	deliveryPlaylists := make([]*delivery.PlaylistWithIsIncludedTrack, 0, len(usecasePlaylists))
+	for _, usecasePlaylist := range usecasePlaylists {
+		deliveryPlaylists = append(deliveryPlaylists, &delivery.PlaylistWithIsIncludedTrack{
+			Playlist:   *PlaylistFromUsecaseToDelivery(&usecasePlaylist.Playlist),
+			IsIncluded: usecasePlaylist.IsIncluded,
+		})
+	}
+	return deliveryPlaylists
 }
