@@ -809,54 +809,6 @@ const docTemplate = `{
             }
         },
         "/playlists": {
-            "get": {
-                "description": "Retrieves all playlists accessible to the current user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "playlists"
-                ],
-                "summary": "Get combined playlists for current user",
-                "responses": {
-                    "200": {
-                        "description": "List of playlists",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/delivery.Playlist"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
-                        }
-                    }
-                }
-            },
             "post": {
                 "description": "Create a new playlist with a title and thumbnail image",
                 "consumes": [
@@ -920,6 +872,56 @@ const docTemplate = `{
                         "description": "Request entity too large",
                         "schema": {
                             "$ref": "#/definitions/delivery.APIRequestEntityTooLargeErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/playlists/me": {
+            "get": {
+                "description": "Retrieves all playlists accessible to the current user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "playlists"
+                ],
+                "summary": "Get combined playlists for current user",
+                "responses": {
+                    "200": {
+                        "description": "List of playlists",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Playlist"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
                         }
                     },
                     "500": {
@@ -2323,7 +2325,7 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "thumbnail": {
+                "thumbnail_url": {
                     "type": "string"
                 },
                 "title": {
@@ -2344,7 +2346,7 @@ const docTemplate = `{
                 "is_included": {
                     "type": "boolean"
                 },
-                "thumbnail": {
+                "thumbnail_url": {
                     "type": "string"
                 },
                 "title": {

@@ -208,7 +208,7 @@ definitions:
     properties:
       id:
         type: integer
-      thumbnail:
+      thumbnail_url:
         type: string
       title:
         type: string
@@ -222,7 +222,7 @@ definitions:
         type: integer
       is_included:
         type: boolean
-      thumbnail:
+      thumbnail_url:
         type: string
       title:
         type: string
@@ -882,35 +882,6 @@ paths:
       tags:
       - auth
   /playlists:
-    get:
-      consumes:
-      - application/json
-      description: Retrieves all playlists accessible to the current user
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: List of playlists
-          schema:
-            allOf:
-            - $ref: '#/definitions/delivery.APIResponse'
-            - properties:
-                body:
-                  items:
-                    $ref: '#/definitions/delivery.Playlist'
-                  type: array
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
-      summary: Get combined playlists for current user
-      tags:
-      - playlists
     post:
       consumes:
       - multipart/form-data
@@ -1213,6 +1184,36 @@ paths:
           schema:
             $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
       summary: Remove a track from a playlist
+      tags:
+      - playlists
+  /playlists/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all playlists accessible to the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of playlists
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Playlist'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get combined playlists for current user
       tags:
       - playlists
   /playlists/to-add:

@@ -12,7 +12,7 @@ type CreatePlaylistRequest struct {
 type Playlist struct {
 	ID        int64  `json:"id"`
 	Title     string `json:"title"`
-	Thumbnail string `json:"thumbnail"`
+	Thumbnail string `json:"thumbnail_url"`
 	Username  string `json:"username"`
 }
 
