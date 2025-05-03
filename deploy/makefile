@@ -5,7 +5,7 @@ endif
 
 # deploy
 deploy:
-	docker-compose up -d --build
+	docker compose up -d --build
 
 # docker down
 undeploy:
