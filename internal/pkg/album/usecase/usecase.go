@@ -23,12 +23,9 @@ type albumUsecase struct {
 }
 
 func (u *albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
-	var userID int64
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		userID = -1
-	} else {
-		userID = user.ID
 	}
 
 	protoFilters := &albumProto.FiltersWithUserID{
@@ -65,12 +62,9 @@ func (u *albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.A
 }
 
 func (u *albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
-	var userID int64
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		userID = -1
-	} else {
-		userID = user.ID
 	}
 
 	protoAlbumIDs, err := (*u.artistClient).GetAlbumIDsByArtistID(ctx, &artistProto.ArtistID{Id: artistID})
@@ -115,13 +109,11 @@ func (u *albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, 
 }
 
 func (u *albumUsecase) GetAlbumByID(ctx context.Context, id int64) (*usecaseModel.Album, error) {
-	var userID int64
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		userID = -1
-	} else {
-		userID = user.ID
 	}
+
 	protoAlbum, err := (*u.albumClient).GetAlbumByID(ctx, &albumProto.AlbumIDWithUserID{
 		AlbumId: &albumProto.AlbumID{Id: id},
 		UserId:  &albumProto.UserID{Id: userID},

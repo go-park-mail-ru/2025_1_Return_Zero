@@ -93,13 +93,13 @@ const (
 
 	GetMinutesListenedByUserIDQuery = `
 		SELECT COALESCE(SUM(duration) / 60, 0)
-		FROM stream
+		FROM track_stream
 		WHERE user_id = $1
 	`
 
 	GetTracksListenedByUserIDQuery = `
 		SELECT COUNT(DISTINCT track_id)
-		FROM stream
+		FROM track_stream
 		WHERE user_id = $1
 	`
 

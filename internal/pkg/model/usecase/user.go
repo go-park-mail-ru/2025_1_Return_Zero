@@ -60,3 +60,10 @@ type UserChangeSettings struct {
 	NewEmail    string
 	NewPassword string
 }
+
+type ChangeSettings struct {
+	Password    string
+	NewUsername string
+	NewEmail    string
+	NewPassword string
+}

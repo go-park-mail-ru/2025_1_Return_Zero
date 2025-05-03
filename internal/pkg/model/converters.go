@@ -3,7 +3,9 @@ package model
 import (
 	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
+	authProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/auth"
 	trackProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
+	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
@@ -244,6 +246,16 @@ func ArtistWithRoleListFromProtoToUsecase(protoArtistWithRoleList []*artistProto
 	return artistWithRoleList
 }
 
+func UserIDFromUsecaseToProtoArtist(userID int64) *artistProto.UserID {
+	return &artistProto.UserID{
+		Id: userID,
+	}
+}
+
+func ArtistsListenedFromProtoToUsecase(protoArtistsNum *artistProto.ArtistListened) int64 {
+	return protoArtistsNum.ArtistsListened
+}
+
 func ArtistLikeRequestFromUsecaseToProto(usecaseLikeRequest *usecase.ArtistLikeRequest) *artistProto.LikeRequest {
 	return &artistProto.LikeRequest{
 		ArtistId: &artistProto.ArtistID{Id: usecaseLikeRequest.ArtistID},
@@ -405,6 +417,20 @@ func TrackLikeRequestFromDeliveryToUsecase(deliveryLikeRequest *delivery.TrackLi
 	}
 }
 
+func UserIDFromUsecaseToProtoTrack(userID int64) *trackProto.UserID {
+	return &trackProto.UserID{
+		Id: userID,
+	}
+}
+
+func TracksListenedFromProtoToUsecase(protoTracksNum *trackProto.TracksListened) int64 {
+	return protoTracksNum.Tracks
+}
+
+func MinutesListenedFromProtoToUsecase(protoMinutesNum *trackProto.MinutesListened) int64 {
+	return protoMinutesNum.Minutes
+}
+
 ///////////////////////////////////// STREAM ////////////////////////////////////
 
 func TrackStreamCreateDataFromDeliveryToUsecase(deliveryTrackStream *delivery.TrackStreamCreateData) *usecase.TrackStreamCreateData {
@@ -540,16 +566,6 @@ func PrivacyFromUsecaseToRepository(usecasePrivacy *usecase.UserPrivacy) *reposi
 	}
 }
 
-func ChangeDataFromUsecaseToRepository(usecaseUser *usecase.UserChangeSettings) *repository.ChangeUserData {
-
-	return &repository.ChangeUserData{
-		Password:    usecaseUser.Password,
-		NewUsername: usecaseUser.NewUsername,
-		NewEmail:    usecaseUser.NewEmail,
-		NewPassword: usecaseUser.NewPassword,
-	}
-}
-
 func PrivacyFromDeliveryToUsecase(deliveryPrivacy *delivery.Privacy) *usecase.UserPrivacy {
 	if deliveryPrivacy == nil {
 		return nil
@@ -572,5 +588,146 @@ func ChangeDataFromDeliveryToUsecase(deliveryUser *delivery.UserChangeSettings) 
 		NewEmail:    deliveryUser.NewEmail,
 		NewPassword: deliveryUser.NewPassword,
 		Privacy:     privacyDelivery,
+	}
+}
+
+func RegisterDataFromUsecaseToProto(regData *usecase.User) *userProto.RegisterData {
+	return &userProto.RegisterData{
+		Username: regData.Username,
+		Email:    regData.Email,
+		Password: regData.Password,
+	}
+}
+
+func UserFromProtoToUsecase(protoUser *userProto.UserFront) *usecase.User {
+	return &usecase.User{
+		ID:        protoUser.Id,
+		Username:  protoUser.Username,
+		Email:     protoUser.Email,
+		AvatarUrl: protoUser.Avatar,
+	}
+}
+
+func UserIDFromUsecaseToProtoUser(userID int64) *userProto.UserID {
+	return &userProto.UserID{
+		Id: userID,
+	}
+}
+
+func UserIDFromProtoToUsecaseUser(protoUserID *userProto.UserID) int64 {
+	return protoUserID.Id
+}
+
+func LoginDataFromUsecaseToProto(loginData *usecase.User) *userProto.LoginData {
+	return &userProto.LoginData{
+		Username: loginData.Username,
+		Email:    loginData.Email,
+		Password: loginData.Password,
+	}
+}
+
+func AvatarDataFromUsecaseToProto(fileURL string, id int64) *userProto.AvatarData {
+	return &userProto.AvatarData{
+		AvatarPath: fileURL,
+		Id:         id,
+	}
+}
+
+func DeleteUserFromUsecaseToProto(user *usecase.User) *userProto.UserDelete {
+	return &userProto.UserDelete{
+		Username: user.Username,
+		Email:    user.Email,
+		Password: user.Password,
+	}
+}
+
+func UsernameFromUsecaseToProto(username string) *userProto.Username {
+	return &userProto.Username{
+		Username: username,
+	}
+}
+
+func PrivacyFromProtoToUsecase(protoPrivacy *userProto.PrivacySettings) *usecase.UserPrivacy {
+	return &usecase.UserPrivacy{
+		IsPublicPlaylists:       protoPrivacy.IsPublicPlaylists,
+		IsPublicMinutesListened: protoPrivacy.IsPublicMinutesListened,
+		IsPublicFavoriteArtists: protoPrivacy.IsPublicFavoriteArtists,
+		IsPublicTracksListened:  protoPrivacy.IsPublicTracksListened,
+		IsPublicFavoriteTracks:  protoPrivacy.IsPublicFavoriteTracks,
+		IsPublicArtistsListened: protoPrivacy.IsPublicArtistsListened,
+	}
+}
+
+func UserFullDataFromProtoToUsecase(protoUser *userProto.UserFullData) *usecase.UserFullData {
+	privacyUsecase := PrivacyFromProtoToUsecase(protoUser.Privacy)
+	return &usecase.UserFullData{
+		Username:  protoUser.Username,
+		Email:     protoUser.Email,
+		AvatarUrl: protoUser.Avatar,
+		Privacy:   privacyUsecase,
+	}
+}
+
+func PrivacyFromUsecaseToProto(username string, usecasePrivacy *usecase.UserPrivacy) *userProto.PrivacySettings {
+	return &userProto.PrivacySettings{
+		Username:                username,
+		IsPublicPlaylists:       usecasePrivacy.IsPublicPlaylists,
+		IsPublicMinutesListened: usecasePrivacy.IsPublicMinutesListened,
+		IsPublicFavoriteArtists: usecasePrivacy.IsPublicFavoriteArtists,
+		IsPublicTracksListened:  usecasePrivacy.IsPublicTracksListened,
+		IsPublicFavoriteTracks:  usecasePrivacy.IsPublicFavoriteTracks,
+		IsPublicArtistsListened: usecasePrivacy.IsPublicArtistsListened,
+	}
+}
+
+func ChangeUserDataFromUsecaseToProto(username string, usecaseUser *usecase.UserChangeSettings) *userProto.ChangeUserDataMessage {
+	return &userProto.ChangeUserDataMessage{
+		Username:    username,
+		NewUsername: usecaseUser.NewUsername,
+		NewEmail:    usecaseUser.NewEmail,
+		NewPassword: usecaseUser.NewPassword,
+		Password:    usecaseUser.Password,
+	}
+}
+
+func FileKeyFromUsecaseToProto(avatarURL string) *userProto.FileKey {
+	return &userProto.FileKey{
+		FileKey: avatarURL,
+	}
+}
+
+func AvatarUrlFromProtoToUsecase(protoAvatarURL *userProto.AvatarUrl) string {
+	return protoAvatarURL.Url
+}
+
+func AvatarImageFromUsecaseToProto(username string, image []byte) *userProto.AvatarImage {
+	return &userProto.AvatarImage{
+		Username: username,
+		Image:    image,
+	}
+}
+
+func FileKeyFromProtoToUsecase(protoFileKey *userProto.FileKey) string {
+	return protoFileKey.FileKey
+}
+
+// ///////////////////////////////////// AUTH ////////////////////////////////////
+func SessionIDFromProtoToUsecase(protoSessionID *authProto.SessionID) string {
+	return protoSessionID.SessionId
+}
+
+func UserIDFromProtoToUsecase(protoUserID *authProto.UserID) int64 {
+	return protoUserID.Id
+}
+
+func SessionIDFromUsecaseToProto(sessionID string) *authProto.SessionID {
+	return &authProto.SessionID{
+		SessionId: sessionID,
+	}
+}
+
+func UserIDFromUsecaseToProto(userID int64) *authProto.UserID {
+	return &authProto.UserID{
+		Id: userID,
 	}
 }

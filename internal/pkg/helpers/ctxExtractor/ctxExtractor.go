@@ -8,10 +8,10 @@ import (
 
 type UserContextKey struct{}
 
-func UserFromContext(ctx context.Context) (*usecaseModel.User, bool) {
-	user, ok := ctx.Value(UserContextKey{}).(*usecaseModel.User)
+func UserFromContext(ctx context.Context) (int64, bool) {
+	user, ok := ctx.Value(UserContextKey{}).(int64)
 	if !ok {
-		return nil, false
+		return -1, false
 	}
 	return user, true
 }

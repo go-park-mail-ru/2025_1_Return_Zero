@@ -117,7 +117,7 @@ func (h *ArtistHandler) LikeArtist(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to like artist for unauthorized user")
 		err := customErrors.ErrLikeArtistUnauthorized
@@ -140,7 +140,7 @@ func (h *ArtistHandler) LikeArtist(w http.ResponseWriter, r *http.Request) {
 
 	json.ReadJSON(w, r, deliveryLikeRequest)
 
-	usecaseLikeRequest := model.ArtistLikeRequestFromDeliveryToUsecase(deliveryLikeRequest, user.ID, id)
+	usecaseLikeRequest := model.ArtistLikeRequestFromDeliveryToUsecase(deliveryLikeRequest, userID, id)
 
 	err = h.usecase.LikeArtist(ctx, usecaseLikeRequest)
 	if err != nil {
