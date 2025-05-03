@@ -1,25 +1,31 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"time"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	_ "github.com/go-park-mail-ru/2025_1_Return_Zero/docs"
+	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
+	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
+	trackProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
+	grpc "github.com/go-park-mail-ru/2025_1_Return_Zero/init/microservices"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/postgres"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/redis"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/s3"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/middleware"
 	albumHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/delivery/http"
-	albumRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/repository"
 	albumUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/usecase"
 	artistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/delivery/http"
-	artistRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/repository"
 	artistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/usecase"
 	authRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth/repository"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	trackHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/delivery/http"
-	trackRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/repository"
 	trackUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/usecase"
-	trackFileRepo "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/trackFile/repository"
 	userHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/delivery/http"
 	userRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/repository"
 	userUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/usecase"
@@ -35,7 +41,7 @@ import (
 // @host returnzero.ru
 // @BasePath /api/v1
 func main() {
-	logger, err := middleware.NewZapLogger()
+	logger, err := logger.NewZapLogger()
 	if err != nil {
 		logger.Error("Error creating logger:", zap.Error(err))
 		return
@@ -64,7 +70,7 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	logger.Info("Server starting on port %s...", zap.String("port", cfg.Port))
+	logger.Info("Server starting", zap.String("port", fmt.Sprintf(":%d", cfg.Port)))
 
 	r.PathPrefix("/api/v1/docs/").Handler(httpSwagger.Handler(
 		httpSwagger.URL("/api/v1/docs/doc.json"),
@@ -72,6 +78,15 @@ func main() {
 		httpSwagger.DocExpansion("none"),
 	))
 
+	clients, err := grpc.InitGrpc(&cfg.Services, logger)
+	if err != nil {
+		logger.Error("Error initializing gRPC clients:", zap.Error(err))
+		return
+	}
+
+	artistClient := artistProto.NewArtistServiceClient(clients.ArtistClient)
+	albumClient := albumProto.NewAlbumServiceClient(clients.AlbumClient)
+	trackClient := trackProto.NewTrackServiceClient(clients.TrackClient)
 	newUserUsecase := userUsecase.NewUserUsecase(userRepository.NewUserPostgresRepository(postgresConn), authRepository.NewAuthRedisRepository(redisPool), userFileRepo.NewS3Repository(s3, cfg.S3.S3ImagesBucket))
 
 	r.Use(middleware.LoggerMiddleware(logger))
@@ -79,11 +94,11 @@ func main() {
 	r.Use(middleware.AccessLog)
 	r.Use(middleware.Auth(newUserUsecase))
 	r.Use(middleware.CorsMiddleware(cfg.Cors))
-	r.Use(middleware.CSRFMiddleware(cfg.CSRF))
+	// r.Use(middleware.CSRFMiddleware(cfg.CSRF))
 
-	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackRepository.NewTrackPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn), albumRepository.NewAlbumPostgresRepository(postgresConn), trackFileRepo.NewS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration), userRepository.NewUserPostgresRepository(postgresConn)), cfg)
-	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumRepository.NewAlbumPostgresRepository(postgresConn), artistRepository.NewArtistPostgresRepository(postgresConn)), cfg)
-	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistRepository.NewArtistPostgresRepository(postgresConn)), cfg)
+	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(&trackClient, &artistClient, &albumClient), cfg)
+	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(&albumClient, &artistClient), cfg)
+	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(&artistClient), cfg)
 	userHandler := userHttp.NewUserHandler(newUserUsecase)
 
 	r.HandleFunc("/api/v1/tracks", trackHandler.GetAllTracks).Methods("GET")
@@ -92,6 +107,8 @@ func main() {
 	r.HandleFunc("/api/v1/streams/{id}", trackHandler.UpdateStreamDuration).Methods("PUT", "PATCH")
 
 	r.HandleFunc("/api/v1/albums", albumHandler.GetAllAlbums).Methods("GET")
+	r.HandleFunc("/api/v1/albums/{id}", albumHandler.GetAlbumByID).Methods("GET")
+	r.HandleFunc("/api/v1/albums/{id}/tracks", trackHandler.GetTracksByAlbumID).Methods("GET")
 
 	r.HandleFunc("/api/v1/artists", artistHandler.GetAllArtists).Methods("GET")
 	r.HandleFunc("/api/v1/artists/{id}", artistHandler.GetArtistByID).Methods("GET")
@@ -108,10 +125,25 @@ func main() {
 	r.HandleFunc("/api/v1/user/me", userHandler.DeleteUser).Methods("DELETE")
 	r.HandleFunc("/api/v1/user/{username}", userHandler.GetUserData).Methods("GET")
 
-	r.HandleFunc("/api/v1/user/{username}/history", trackHandler.GetLastListenedTracks).Methods("GET")
+	r.HandleFunc("/api/v1/user/me/history", trackHandler.GetLastListenedTracks).Methods("GET")
 
-	err = http.ListenAndServe(cfg.Port, r)
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", cfg.Port),
+		Handler: r,
+	}
+
+	err = srv.ListenAndServe()
 	if err != nil {
 		logger.Error("Error starting server:", zap.Error(err))
 	}
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	<-c
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	srv.Shutdown(ctx)
+	logger.Info("Composer server stopped")
 }

@@ -3,45 +3,41 @@ package usecase
 import (
 	"context"
 
+	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
+	customErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
-	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
 
-func NewUsecase(artistRepository artist.Repository) artist.Usecase {
+func NewUsecase(artistClient *artistProto.ArtistServiceClient) artist.Usecase {
 	return &artistUsecase{
-		artistRepo: artistRepository,
+		artistClient: artistClient,
 	}
 }
 
 type artistUsecase struct {
-	artistRepo artist.Repository
+	artistClient *artistProto.ArtistServiceClient
 }
 
 func (u *artistUsecase) GetArtistByID(ctx context.Context, id int64) (*usecaseModel.ArtistDetailed, error) {
-	repoArtist, err := u.artistRepo.GetArtistByID(ctx, id)
+	protoArtist, err := (*u.artistClient).GetArtistByID(ctx, &artistProto.ArtistID{Id: id})
 	if err != nil {
-		return nil, err
+		return nil, customErrors.HandleArtistGRPCError(err)
 	}
 
-	stats, err := u.artistRepo.GetArtistStats(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-
-	return model.ArtistDetailedFromRepositoryToUsecase(repoArtist, stats), nil
+	return model.ArtistDetailedFromProtoToUsecase(protoArtist), nil
 }
 
 func (u *artistUsecase) GetAllArtists(ctx context.Context, filters *usecaseModel.ArtistFilters) ([]*usecaseModel.Artist, error) {
-	repoFilters := &repoModel.ArtistFilters{
-		Pagination: model.PaginationFromUsecaseToRepository(filters.Pagination),
+	protoFilters := &artistProto.Filters{
+		Pagination: model.PaginationFromUsecaseToArtistProto(filters.Pagination),
 	}
 
-	repoArtists, err := u.artistRepo.GetAllArtists(ctx, repoFilters)
+	protoArtists, err := (*u.artistClient).GetAllArtists(ctx, protoFilters)
 	if err != nil {
-		return nil, err
+		return nil, customErrors.HandleArtistGRPCError(err)
 	}
 
-	return model.ArtistsFromRepositoryToUsecase(repoArtists), nil
+	return model.ArtistsFromProtoToUsecase(protoArtists.Artists), nil
 }

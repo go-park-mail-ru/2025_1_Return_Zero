@@ -32,6 +32,9 @@ docker-remove:
 	-docker rmi -f $$(docker images -q)
 	-docker image prune -f
 
+protogen-all:
+	protoc -I proto proto/**/*.proto --go_out=gen --go-grpc_out=gen
+
 clean:
 	$(RM) -rf *.out *.html
 

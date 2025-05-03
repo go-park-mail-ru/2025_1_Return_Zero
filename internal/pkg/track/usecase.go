@@ -2,13 +2,8 @@ package track
 
 import (
 	"context"
-	"errors"
 
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
-)
-
-var (
-	ErrStreamPermissionDenied = errors.New("user does not have permission to update this stream")
 )
 
 type Usecase interface {
@@ -17,5 +12,6 @@ type Usecase interface {
 	GetTracksByArtistID(ctx context.Context, id int64, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error)
 	CreateStream(ctx context.Context, stream *usecaseModel.TrackStreamCreateData) (int64, error)
 	UpdateStreamDuration(ctx context.Context, endedStream *usecaseModel.TrackStreamUpdateData) error
-	GetLastListenedTracks(ctx context.Context, username string, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error)
+	GetLastListenedTracks(ctx context.Context, userID int64, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error)
+	GetTracksByAlbumID(ctx context.Context, id int64) ([]*usecaseModel.Track, error)
 }

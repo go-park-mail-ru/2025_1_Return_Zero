@@ -6,7 +6,10 @@ import (
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/errorStatus"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/json"
+	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/pagination"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/gorilla/mux"
@@ -36,11 +39,11 @@ func NewAlbumHandler(usecase album.Usecase, cfg *config.Config) *AlbumHandler {
 // @Router /albums [get]
 func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
-	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
+	logger := loggerPkg.LoggerFromContext(ctx)
+	pagination, err := pagination.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -50,13 +53,13 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		logger.Error("failed to get albums", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
 	albums := model.AlbumsFromUsecaseToDelivery(usecaseAlbums)
 
-	helpers.WriteSuccessResponse(w, http.StatusOK, albums, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, albums, nil)
 }
 
 // GetAlbumsByArtistID godoc
@@ -74,11 +77,11 @@ func (h *AlbumHandler) GetAllAlbums(w http.ResponseWriter, r *http.Request) {
 // @Router /artists/{id}/albums [get]
 func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
-	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
+	logger := loggerPkg.LoggerFromContext(ctx)
+	pagination, err := pagination.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -87,7 +90,7 @@ func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Reques
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		logger.Error("failed to parse artist ID", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -96,10 +99,34 @@ func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Reques
 	})
 	if err != nil {
 		logger.Error("failed to get albums", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
 	albums := model.AlbumsFromUsecaseToDelivery(usecaseAlbums)
-	helpers.WriteSuccessResponse(w, http.StatusOK, albums, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, albums, nil)
+}
+
+func (h *AlbumHandler) GetAlbumByID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		logger.Error("failed to parse album ID", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	usecaseAlbum, err := h.usecase.GetAlbumByID(ctx, id)
+	if err != nil {
+		logger.Error("failed to get album", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	album := model.AlbumFromUsecaseToDelivery(usecaseAlbum, usecaseAlbum.Artists)
+	json.WriteSuccessResponse(w, http.StatusOK, album, nil)
 }

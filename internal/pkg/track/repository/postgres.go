@@ -5,9 +5,8 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
-
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
+	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"github.com/lib/pq"
 	"go.uber.org/zap"
@@ -81,7 +80,7 @@ func NewTrackPostgresRepository(db *sql.DB) *TrackPostgresRepository {
 }
 
 func (r *TrackPostgresRepository) GetAllTracks(ctx context.Context, filters *repository.TrackFilters) ([]*repository.Track, error) {
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting all tracks from db", zap.Any("filters", filters), zap.String("query", GetAllTracksQuery))
 	rows, err := r.db.Query(GetAllTracksQuery, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
@@ -110,14 +109,14 @@ func (r *TrackPostgresRepository) GetAllTracks(ctx context.Context, filters *rep
 }
 
 func (r *TrackPostgresRepository) GetTrackByID(ctx context.Context, id int64) (*repository.TrackWithFileKey, error) {
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting track by id from db", zap.Int64("id", id), zap.String("query", GetTrackByIDQuery))
 	var trackObject repository.TrackWithFileKey
 	err := r.db.QueryRow(GetTrackByIDQuery, id).Scan(&trackObject.ID, &trackObject.Title, &trackObject.Thumbnail, &trackObject.Duration, &trackObject.AlbumID, &trackObject.FileKey)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("track not found", zap.Error(err))
-			return nil, track.ErrTrackNotFound
+			return nil, customErrors.ErrTrackNotFound
 		}
 		logger.Error("failed to get track by id", zap.Error(err))
 		return nil, err
@@ -127,7 +126,7 @@ func (r *TrackPostgresRepository) GetTrackByID(ctx context.Context, id int64) (*
 }
 
 func (r *TrackPostgresRepository) GetTracksByArtistID(ctx context.Context, artistID int64, filters *repository.TrackFilters) ([]*repository.Track, error) {
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting tracks by artist id from db", zap.Int64("artistID", artistID), zap.String("query", GetTracksByArtistIDQuery))
 	rows, err := r.db.Query(GetTracksByArtistIDQuery, artistID, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
@@ -156,7 +155,7 @@ func (r *TrackPostgresRepository) GetTracksByArtistID(ctx context.Context, artis
 }
 
 func (r *TrackPostgresRepository) CreateStream(ctx context.Context, createData *repository.TrackStreamCreateData) (int64, error) {
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting to create stream in db", zap.Any("createData", createData), zap.String("query", CreateStreamQuery))
 	var streamID int64
 	err := r.db.QueryRow(CreateStreamQuery, createData.TrackID, createData.UserID).Scan(&streamID)
@@ -169,14 +168,14 @@ func (r *TrackPostgresRepository) CreateStream(ctx context.Context, createData *
 }
 
 func (r *TrackPostgresRepository) GetStreamByID(ctx context.Context, id int64) (*repository.TrackStream, error) {
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting stream by id from db", zap.Int64("id", id), zap.String("query", GetStreamByIDQuery))
 	var stream repository.TrackStream
 	err := r.db.QueryRow(GetStreamByIDQuery, id).Scan(&stream.ID, &stream.UserID, &stream.TrackID, &stream.Duration)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("stream not found", zap.Error(err))
-			return nil, track.ErrStreamNotFound
+			return nil, customErrors.ErrStreamNotFound
 		}
 		logger.Error("failed to get stream by id", zap.Error(err))
 		return nil, err
@@ -186,7 +185,7 @@ func (r *TrackPostgresRepository) GetStreamByID(ctx context.Context, id int64) (
 }
 
 func (r *TrackPostgresRepository) UpdateStreamDuration(ctx context.Context, endedStream *repository.TrackStreamUpdateData) error {
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting to update stream duration in db", zap.Any("endedStream", endedStream), zap.String("query", UpdateStreamDurationQuery))
 	result, err := r.db.Exec(UpdateStreamDurationQuery, endedStream.Duration, endedStream.StreamID)
 	if err != nil {
@@ -201,15 +200,15 @@ func (r *TrackPostgresRepository) UpdateStreamDuration(ctx context.Context, ende
 	}
 
 	if rows == 0 {
-		logger.Error("stream not found", zap.Error(track.ErrFailedToUpdateStreamDuration))
-		return track.ErrFailedToUpdateStreamDuration
+		logger.Error("stream not found", zap.Error(customErrors.ErrFailedToUpdateStreamDuration))
+		return customErrors.ErrFailedToUpdateStreamDuration
 	}
 
 	return nil
 }
 
 func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID int64, filters *repository.TrackFilters) ([]*repository.TrackStream, error) {
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting streams by user id from db", zap.Int64("userID", userID), zap.String("query", GetStreamsByUserIDQuery))
 	rows, err := r.db.Query(GetStreamsByUserIDQuery, userID, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
@@ -238,7 +237,7 @@ func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID
 }
 
 func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int64) (map[int64]*repository.Track, error) {
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting tracks by ids from db", zap.Any("ids", ids), zap.String("query", GetTracksByIDsQuery))
 	rows, err := r.db.Query(GetTracksByIDsQuery, pq.Array(ids))
 	if err != nil {
@@ -267,7 +266,7 @@ func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int6
 		for _, id := range ids {
 			if _, ok := tracks[id]; !ok {
 				logger.Error("track not found", zap.Int64("id", id))
-				return nil, track.ErrTrackNotFound
+				return nil, customErrors.ErrTrackNotFound
 			}
 		}
 	}

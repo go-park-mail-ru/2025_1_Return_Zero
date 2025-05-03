@@ -2,13 +2,8 @@ package artist
 
 import (
 	"context"
-	"errors"
 
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
-)
-
-var (
-	ErrArtistNotFound = errors.New("artist not found")
 )
 
 type Repository interface {

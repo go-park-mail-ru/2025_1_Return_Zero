@@ -2,13 +2,8 @@ package album
 
 import (
 	"context"
-	"errors"
 
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
-)
-
-var (
-	ErrAlbumNotFound = errors.New("album not found")
 )
 
 type Repository interface {

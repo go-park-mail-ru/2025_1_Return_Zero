@@ -6,7 +6,10 @@ import (
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/errorStatus"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/json"
+	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/pagination"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/gorilla/mux"
@@ -36,11 +39,11 @@ func NewArtistHandler(usecase artist.Usecase, cfg *config.Config) *ArtistHandler
 // @Router /artists [get]
 func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
-	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
+	logger := loggerPkg.LoggerFromContext(ctx)
+	pagination, err := pagination.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
@@ -50,12 +53,12 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		logger.Error("failed to get artists", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
 	artists := model.ArtistsFromUsecaseToDelivery(usecaseArtists)
-	helpers.WriteSuccessResponse(w, http.StatusOK, artists, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, artists, nil)
 }
 
 // GetArtistByID godoc
@@ -71,24 +74,24 @@ func (h *ArtistHandler) GetAllArtists(w http.ResponseWriter, r *http.Request) {
 // @Router /artists/{id} [get]
 func (h *ArtistHandler) GetArtistByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		logger.Error("failed to parse artist ID", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	usecaseArtist, err := h.usecase.GetArtistByID(ctx, id)
 	if err != nil {
 		logger.Error("failed to get artist", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
 	artistDetailed := model.ArtistDetailedFromUsecaseToDelivery(usecaseArtist)
-	helpers.WriteSuccessResponse(w, http.StatusOK, artistDetailed, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, artistDetailed, nil)
 }

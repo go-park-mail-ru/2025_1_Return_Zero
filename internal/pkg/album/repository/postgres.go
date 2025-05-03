@@ -6,7 +6,8 @@ import (
 	"errors"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
+	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"github.com/lib/pq"
 	"go.uber.org/zap"
@@ -55,7 +56,7 @@ func NewAlbumPostgresRepository(db *sql.DB) album.Repository {
 }
 
 func (r *albumPostgresRepository) GetAllAlbums(ctx context.Context, filters *repoModel.AlbumFilters) ([]*repoModel.Album, error) {
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting all albums from db", zap.Any("filters", filters), zap.String("query", GetAllAlbumsQuery))
 	rows, err := r.db.Query(GetAllAlbumsQuery, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
@@ -84,7 +85,7 @@ func (r *albumPostgresRepository) GetAllAlbums(ctx context.Context, filters *rep
 }
 
 func (r *albumPostgresRepository) GetAlbumByID(ctx context.Context, id int64) (*repoModel.Album, error) {
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting album by id from db", zap.Int64("id", id), zap.String("query", GetAlbumByIDQuery))
 	row := r.db.QueryRow(GetAlbumByIDQuery, id)
 
@@ -93,7 +94,7 @@ func (r *albumPostgresRepository) GetAlbumByID(ctx context.Context, id int64) (*
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("album not found", zap.Error(err))
-			return nil, album.ErrAlbumNotFound
+			return nil, customErrors.ErrAlbumNotFound
 		}
 		logger.Error("failed to get album by id", zap.Error(err))
 		return nil, err
@@ -103,7 +104,7 @@ func (r *albumPostgresRepository) GetAlbumByID(ctx context.Context, id int64) (*
 }
 
 func (r *albumPostgresRepository) GetAlbumTitleByIDs(ctx context.Context, ids []int64) (map[int64]string, error) {
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting album title by ids from db", zap.Any("ids", ids), zap.String("query", GetAlbumTitleByIDsQuery))
 	rows, err := r.db.Query(GetAlbumTitleByIDsQuery, pq.Array(ids))
 	if err != nil {
@@ -133,7 +134,7 @@ func (r *albumPostgresRepository) GetAlbumTitleByIDs(ctx context.Context, ids []
 }
 
 func (r *albumPostgresRepository) GetAlbumTitleByID(ctx context.Context, id int64) (string, error) {
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting album title by id from db", zap.Int64("id", id), zap.String("query", GetAlbumTitleByIDQuery))
 	row := r.db.QueryRow(GetAlbumTitleByIDQuery, id)
 
@@ -142,7 +143,7 @@ func (r *albumPostgresRepository) GetAlbumTitleByID(ctx context.Context, id int6
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("album not found", zap.Error(err))
-			return "", album.ErrAlbumNotFound
+			return "", customErrors.ErrAlbumNotFound
 		}
 		logger.Error("failed to get album title by id", zap.Error(err))
 		return "", err
@@ -152,7 +153,7 @@ func (r *albumPostgresRepository) GetAlbumTitleByID(ctx context.Context, id int6
 }
 
 func (r *albumPostgresRepository) GetAlbumsByArtistID(ctx context.Context, artistID int64, filters *repoModel.AlbumFilters) ([]*repoModel.Album, error) {
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting albums by artist id from db", zap.Int64("artistID", artistID), zap.String("query", GetAlbumsByArtistIDQuery))
 	rows, err := r.db.Query(GetAlbumsByArtistIDQuery, artistID, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {

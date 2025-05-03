@@ -4,7 +4,6 @@ import (
 	"os"
 	"time"
 
-	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	"github.com/spf13/viper"
 )
 
@@ -48,14 +47,43 @@ type Cors struct {
 	MaxAge           int      `mapstructure:"max_age"`
 }
 
+type ArtistService struct {
+	Port int `mapstructure:"port"`
+	Host string
+}
+
+type AlbumService struct {
+	Port int `mapstructure:"port"`
+	Host string
+}
+
+type TrackService struct {
+	Port int `mapstructure:"port"`
+	Host string
+}
+
+type Services struct {
+	ArtistService ArtistService `mapstructure:"artist_service"`
+	AlbumService  AlbumService  `mapstructure:"album_service"`
+	TrackService  TrackService  `mapstructure:"track_service"`
+}
+
+type PaginationConfig struct {
+	MaxOffset     int `mapstructure:"max_offset"`
+	MaxLimit      int `mapstructure:"max_limit"`
+	DefaultOffset int `mapstructure:"default_offset"`
+	DefaultLimit  int `mapstructure:"default_limit"`
+}
+
 type Config struct {
 	Cors       Cors
-	Port       string `mapstructure:"port"`
-	Pagination deliveryModel.PaginationConfig
+	Port       int `mapstructure:"port"`
+	Pagination PaginationConfig
 	Postgres   PostgresConfig
 	S3         S3Config
 	Redis      RedisConfig
 	CSRF       CSRFConfig
+	Services   Services
 }
 
 func LoadConfig() (*Config, error) {
@@ -88,5 +116,8 @@ func LoadConfig() (*Config, error) {
 	config.Redis.RedisHost = os.Getenv("REDIS_HOST")
 	config.Redis.RedisPort = os.Getenv("REDIS_PORT")
 
+	config.Services.ArtistService.Host = os.Getenv("ARTIST_SERVICE_HOST")
+	config.Services.AlbumService.Host = os.Getenv("ALBUM_SERVICE_HOST")
+	config.Services.TrackService.Host = os.Getenv("TRACK_SERVICE_HOST")
 	return &config, nil
 }

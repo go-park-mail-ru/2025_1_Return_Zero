@@ -6,7 +6,11 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/errorStatus"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/json"
+	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/pagination"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
@@ -43,11 +47,11 @@ func NewTrackHandler(usecase track.Usecase, cfg *config.Config) *TrackHandler {
 // @Router /tracks [get]
 func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
-	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
+	logger := loggerPkg.LoggerFromContext(ctx)
+	pagination, err := pagination.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -58,11 +62,11 @@ func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
 	if err != nil {
 		logger.Error("failed to get tracks", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
-	helpers.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
 }
 
 // GetTrackByID godoc
@@ -79,27 +83,27 @@ func (h *TrackHandler) GetAllTracks(w http.ResponseWriter, r *http.Request) {
 // @Router /tracks/{id} [get]
 func (h *TrackHandler) GetTrackByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		logger.Error("failed to parse track ID", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	usecaseTrack, err := h.usecase.GetTrackByID(ctx, id)
 	if err != nil {
 		logger.Error("failed to get track", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
 	trackDetailed := model.TrackDetailedFromUsecaseToDelivery(usecaseTrack)
 
-	helpers.WriteSuccessResponse(w, http.StatusOK, trackDetailed, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, trackDetailed, nil)
 }
 
 // GetTracksByArtistID godoc
@@ -118,11 +122,11 @@ func (h *TrackHandler) GetTrackByID(w http.ResponseWriter, r *http.Request) {
 // @Router /artists/{id}/tracks [get]
 func (h *TrackHandler) GetTracksByArtistID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
-	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
+	logger := loggerPkg.LoggerFromContext(ctx)
+	pagination, err := pagination.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -131,7 +135,7 @@ func (h *TrackHandler) GetTracksByArtistID(w http.ResponseWriter, r *http.Reques
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		logger.Error("failed to parse artist ID", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
@@ -140,12 +144,12 @@ func (h *TrackHandler) GetTracksByArtistID(w http.ResponseWriter, r *http.Reques
 	})
 	if err != nil {
 		logger.Error("failed to get tracks", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
 	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
-	helpers.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
 }
 
 // CreateStream godoc
@@ -160,21 +164,21 @@ func (h *TrackHandler) GetTracksByArtistID(w http.ResponseWriter, r *http.Reques
 // @Router /tracks/{id}/stream [post]
 func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	trackID, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		logger.Error("failed to parse track ID", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
-	user, exists := helpers.UserFromContext(ctx)
+	user, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to create stream for unauthorized user")
-		helpers.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
+		json.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
 		return
 	}
 	userID := user.ID
@@ -187,7 +191,7 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 	streamID, err := h.usecase.CreateStream(ctx, model.TrackStreamCreateDataFromDeliveryToUsecase(trackStreamCreateData))
 	if err != nil {
 		logger.Error("failed to save track stream", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
@@ -195,7 +199,7 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 		ID: streamID,
 	}
 
-	helpers.WriteSuccessResponse(w, http.StatusOK, createResponse, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, createResponse, nil)
 }
 
 // CreateStream godoc
@@ -213,21 +217,21 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 // @Router /streams/{id} [put]
 func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 
 	streamID, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		logger.Error("failed to parse track ID", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
-	user, exists := helpers.UserFromContext(ctx)
+	user, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to update stream duration for unauthorized user")
-		helpers.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
+		json.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
 		return
 	}
 
@@ -235,30 +239,30 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 
 	var streamUpdateData delivery.TrackStreamUpdateData
 
-	err = helpers.ReadJSON(w, r, &streamUpdateData)
+	err = json.ReadJSON(w, r, &streamUpdateData)
 	if err != nil {
 		logger.Warn("failed to read stream duration", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	valid, err := govalidator.ValidateStruct(streamUpdateData)
 	if !valid {
 		logger.Warn("invalid stream duration", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	err = h.usecase.UpdateStreamDuration(ctx, model.TrackStreamUpdateDataFromDeliveryToUsecase(&streamUpdateData, userID, streamID))
 	if err != nil {
 		logger.Error("failed to update stream duration", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
 	responseMessage := delivery.Message{Message: "stream duration was successfully updated"}
 
-	helpers.WriteSuccessResponse(w, http.StatusOK, responseMessage, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, responseMessage, nil)
 }
 
 // GetLastListenedTracks godoc
@@ -277,32 +281,54 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 // @Router /users/{username}/history [get]
 func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
-	pagination, err := helpers.GetPagination(r, &h.cfg.Pagination)
+	logger := loggerPkg.LoggerFromContext(ctx)
+	pagination, err := pagination.GetPagination(r, &h.cfg.Pagination)
 	if err != nil {
 		logger.Error("failed to get pagination", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
-	vars := mux.Vars(r)
-	username := vars["username"]
-	if username == "" {
-		logger.Error("username is required")
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "username is required", nil)
+	user, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		logger.Warn("attempt to get last listened tracks for unauthorized user")
+		json.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
 		return
 	}
 
-	usecaseTracks, err := h.usecase.GetLastListenedTracks(ctx, username, &usecaseModel.TrackFilters{
+	usecaseTracks, err := h.usecase.GetLastListenedTracks(ctx, user.ID, &usecaseModel.TrackFilters{
 		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
 	})
 
 	if err != nil {
 		logger.Error("failed to get last listened tracks", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
 	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
-	helpers.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
+}
+
+func (h *TrackHandler) GetTracksByAlbumID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		logger.Error("failed to parse album ID", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	usecaseTracks, err := h.usecase.GetTracksByAlbumID(ctx, id)
+	if err != nil {
+		logger.Error("failed to get tracks by album ID", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
+	json.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
 }

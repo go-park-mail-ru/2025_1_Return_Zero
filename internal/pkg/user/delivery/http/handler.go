@@ -9,7 +9,10 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/gorilla/mux"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/errorStatus"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/json"
+	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
@@ -93,35 +96,35 @@ func createCookie(name string, value string, expiration time.Time, path string) 
 // @Router /auth/signup [post]
 func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 
 	regData := &deliveryModel.RegisterData{}
-	err := helpers.ReadJSON(w, r, regData)
+	err := json.ReadJSON(w, r, regData)
 	if err != nil {
 		logger.Error("failed to read registration data", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	if regData.Username == "default_avatar" {
 		logger.Error("username is system word")
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "Wrong username", nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "Wrong username", nil)
 		return
 	}
 	isValid, err := validateData(regData)
 	if err != nil || !isValid {
 		logger.Error("failed to validate registration data", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
 		return
 	}
 	user, sessionId, err := h.usecase.CreateUser(ctx, registerToUsecaseModel(regData))
 	if err != nil {
 		logger.Error("failed to create user", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 	cookie := createCookie("session_id", sessionId, time.Now().Add(24*time.Hour), "/")
 	http.SetCookie(w, cookie)
-	helpers.WriteSuccessResponse(w, http.StatusOK, toUserToFront(user), nil)
+	json.WriteSuccessResponse(w, http.StatusOK, toUserToFront(user), nil)
 }
 
 // Login godoc
@@ -136,30 +139,30 @@ func (h *UserHandler) Signup(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/login [post]
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 
 	logData := &deliveryModel.LoginData{}
-	err := helpers.ReadJSON(w, r, logData)
+	err := json.ReadJSON(w, r, logData)
 	if err != nil {
 		logger.Error("failed to read login data", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	isValid, err := validateData(logData)
 	if err != nil || !isValid {
 		logger.Error("failed to validate login data", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
 		return
 	}
 	user, sessionId, err := h.usecase.LoginUser(ctx, loginToUsecaseModel(logData))
 	if err != nil {
 		logger.Error("failed to login user", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 	cookie := createCookie("session_id", sessionId, time.Now().Add(24*time.Hour), "/")
 	http.SetCookie(w, cookie)
-	helpers.WriteSuccessResponse(w, http.StatusOK, toUserToFront(user), nil)
+	json.WriteSuccessResponse(w, http.StatusOK, toUserToFront(user), nil)
 }
 
 // Logout godoc
@@ -173,18 +176,18 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/logout [post]
 func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
 		logger.Error("failed to get session id", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	sessionId := cookie.Value
 	err = h.usecase.Logout(ctx, sessionId)
 	if err != nil {
 		logger.Error("failed to logout user", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 	cookie.Expires = time.Now().AddDate(0, 0, -1)
@@ -194,7 +197,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		Message: "Successfully logged out",
 	}
 
-	helpers.WriteSuccessResponse(w, http.StatusOK, msg, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, msg, nil)
 }
 
 // CheckUser godoc
@@ -208,21 +211,21 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 // @Router /auth/check [get]
 func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
 		logger.Error("failed to get session id", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	sessionId := cookie.Value
 	user, err := h.usecase.GetUserBySID(ctx, sessionId)
 	if err != nil {
 		logger.Error("failed to get user by session id", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
-	helpers.WriteSuccessResponse(w, http.StatusOK, toUserToFront(user), nil)
+	json.WriteSuccessResponse(w, http.StatusOK, toUserToFront(user), nil)
 }
 
 // UploadAvatar godoc
@@ -238,11 +241,11 @@ func (h *UserHandler) CheckUser(w http.ResponseWriter, r *http.Request) {
 // @Router /user/me/avatar [post]
 func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
-	userAuth, exist := helpers.UserFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
+	userAuth, exist := ctxExtractor.UserFromContext(ctx)
 	if !exist {
 		logger.Error("user not auth")
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
 		return
 	}
 
@@ -250,41 +253,41 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(maxUploadSize)
 	if err != nil {
 		logger.Error("failed to parse form", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse form", nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse form", nil)
 		return
 	}
 
 	file, fileHeader, err := r.FormFile("avatar")
 	if err != nil {
 		logger.Error("failed to get file from form", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "failed to get file from form", nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "failed to get file from form", nil)
 		return
 	}
 	defer file.Close()
 
 	if fileHeader.Size > maxUploadSize {
 		logger.Error("file size exceeds limit", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "file size exceeds limit", nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "file size exceeds limit", nil)
 		return
 	}
 
 	contentType := fileHeader.Header.Get("Content-Type")
 	if !strings.HasPrefix(contentType, "image/") {
 		logger.Error("invalid file type", zap.String("contentType", contentType))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "only image files are allowed", nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "only image files are allowed", nil)
 		return
 	}
 
-	avatarURL, err := h.usecase.UploadAvatar(ctx, userAuth.Username, file)
+	avatarURL, err := h.usecase.UploadAvatar(ctx, userAuth.Username, file, userAuth.ID)
 	if err != nil {
 		logger.Error("failed to upload avatar", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 	msg := &deliveryModel.AvatarURL{
 		AvatarUrl: avatarURL,
 	}
-	helpers.WriteSuccessResponse(w, http.StatusOK, msg, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, msg, nil)
 }
 
 // DeleteUser godoc
@@ -301,40 +304,40 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 // @Router /user/me [delete]
 func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 
-	userAuth, exist := helpers.UserFromContext(ctx)
+	userAuth, exist := ctxExtractor.UserFromContext(ctx)
 	if !exist {
 		logger.Error("user not auth")
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
 		return
 	}
 
 	userDelete := &deliveryModel.UserDelete{}
-	err := helpers.ReadJSON(w, r, userDelete)
+	err := json.ReadJSON(w, r, userDelete)
 	if err != nil {
 		logger.Error("failed to read change user data", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	isValid, err := validateData(userDelete)
 	if err != nil || !isValid {
 		logger.Error("failed to validate change user data", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
 		return
 	}
 
 	if userAuth.Username != userDelete.Username || userAuth.Email != userDelete.Email {
 		logger.Error("wrong user")
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "user not found in context", nil)
 		return
 	}
 
 	cookie, err := r.Cookie("session_id")
 	if err != nil {
 		logger.Error("failed to get session id", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	sessionId := cookie.Value
@@ -343,7 +346,7 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	err = h.usecase.DeleteUser(ctx, usecaseUser, sessionId)
 	if err != nil {
 		logger.Error("failed to delete user", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 	cookie.Expires = time.Now().AddDate(0, 0, -1)
@@ -351,7 +354,7 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	msg := &deliveryModel.Message{
 		Message: "User successfully deleted",
 	}
-	helpers.WriteSuccessResponse(w, http.StatusOK, msg, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, msg, nil)
 }
 
 // GetUserData godoc
@@ -366,24 +369,24 @@ func (h *UserHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 // @Router /user/{username} [get]
 func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
 
 	vars := mux.Vars(r)
 	username, ok := vars["username"]
 	if !ok {
 		logger.Error("username not found in URL")
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "username not found in URL", nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "username not found in URL", nil)
 		return
 	}
 
 	userFullDataUsecase, err := h.usecase.GetUserData(ctx, username)
 	if err != nil {
 		logger.Error("failed to get user by username", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
-	authUser, isAuth := helpers.UserFromContext(ctx)
+	authUser, isAuth := ctxExtractor.UserFromContext(ctx)
 
 	UserFullDataDelivery := model.UserFullDataUsecaseToDelivery(userFullDataUsecase)
 
@@ -408,7 +411,7 @@ func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	helpers.WriteSuccessResponse(w, http.StatusOK, UserFullDataDelivery, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, UserFullDataDelivery, nil)
 }
 
 // ChangeUserData godoc
@@ -423,44 +426,44 @@ func (h *UserHandler) GetUserData(w http.ResponseWriter, r *http.Request) {
 // @Router /user/me [put]
 func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	logger := helpers.LoggerFromContext(ctx)
-	userAuth, exist := helpers.UserFromContext(ctx)
+	logger := loggerPkg.LoggerFromContext(ctx)
+	userAuth, exist := ctxExtractor.UserFromContext(ctx)
 	if !exist {
 		logger.Error("user not auth")
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "user not auth", nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "user not auth", nil)
 		return
 	}
 	userChangeData := &deliveryModel.UserChangeSettings{}
-	err := helpers.ReadJSON(w, r, userChangeData)
+	err := json.ReadJSON(w, r, userChangeData)
 	if err != nil {
 		logger.Error("failed to read change user data", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	isValid, err := validateData(userChangeData)
 	if err != nil {
 		logger.Error("failed to validate change user data", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 	if !isValid {
 		logger.Error("failed to validate change user data", zap.Error(err))
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, ErrValidationFailed.Error(), nil)
 		return
 	}
 	userChangeDataUsecase := model.ChangeDataFromDeliveryToUsecase(userChangeData)
 	if userChangeDataUsecase == nil {
 		logger.Error("failed to convert change user data")
-		helpers.WriteErrorResponse(w, http.StatusBadRequest, "failed to convert change user data", nil)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "failed to convert change user data", nil)
 		return
 	}
 	newUser, err := h.usecase.ChangeUserData(ctx, userAuth.Username, userChangeDataUsecase)
 	if err != nil {
 		logger.Error("failed to change user data", zap.Error(err))
-		helpers.WriteErrorResponse(w, helpers.ErrorStatus(err), err.Error(), nil)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
 	newUserDelivery := model.UserFullDataUsecaseToDelivery(newUser)
-	helpers.WriteSuccessResponse(w, http.StatusOK, newUserDelivery, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, newUserDelivery, nil)
 }
