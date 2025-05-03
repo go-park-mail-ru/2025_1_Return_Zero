@@ -5,6 +5,7 @@ type Artist struct {
 	Title       string
 	Description string
 	Thumbnail   string
+	IsFavorite  bool
 }
 
 type ArtistList struct {
@@ -56,4 +57,10 @@ type Filters struct {
 type ArtistStreamCreateDataList struct {
 	ArtistIDs []int64
 	UserID    int64
+}
+
+type LikeRequest struct {
+	ArtistID int64
+	UserID   int64
+	IsLike   bool
 }

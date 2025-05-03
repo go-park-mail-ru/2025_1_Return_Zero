@@ -21,11 +21,12 @@ func FiltersFromUsecaseToRepository(filters *usecaseModel.TrackFilters) *repoMod
 
 func TrackFromRepositoryToUsecase(track *repoModel.Track) *usecaseModel.Track {
 	return &usecaseModel.Track{
-		ID:        track.ID,
-		Title:     track.Title,
-		Thumbnail: track.Thumbnail,
-		Duration:  track.Duration,
-		AlbumID:   track.AlbumID,
+		ID:         track.ID,
+		Title:      track.Title,
+		Thumbnail:  track.Thumbnail,
+		Duration:   track.Duration,
+		AlbumID:    track.AlbumID,
+		IsFavorite: track.IsFavorite,
 	}
 }
 
@@ -60,11 +61,12 @@ func TrackStreamUpdateDataFromUsecaseToRepository(stream *usecaseModel.TrackStre
 
 func TrackFromUsecaseToProto(track *usecaseModel.Track) *trackProto.Track {
 	return &trackProto.Track{
-		Id:        track.ID,
-		Title:     track.Title,
-		Thumbnail: track.Thumbnail,
-		Duration:  track.Duration,
-		AlbumId:   track.AlbumID,
+		Id:         track.ID,
+		Title:      track.Title,
+		Thumbnail:  track.Thumbnail,
+		Duration:   track.Duration,
+		AlbumId:    track.AlbumID,
+		IsFavorite: track.IsFavorite,
 	}
 }
 
@@ -115,14 +117,30 @@ func TrackStreamUpdateDataFromProtoToUsecase(stream *trackProto.TrackStreamUpdat
 	}
 }
 
-func TrackIDListFromProtoToUsecase(ids []*trackProto.TrackID) []int64 {
-	usecaseIDs := make([]int64, len(ids))
-	for i, id := range ids {
+func TrackIDListFromProtoToUsecase(ids *trackProto.TrackIDList) ([]int64, int64) {
+	usecaseIDs := make([]int64, len(ids.Ids))
+	for i, id := range ids.Ids {
 		usecaseIDs[i] = id.Id
 	}
-	return usecaseIDs
+	return usecaseIDs, ids.UserId.Id
 }
 
-func TrackIDListWithFiltersFromProtoToUsecase(trackIdsWithFilters *trackProto.TrackIDListWithFilters) ([]int64, *usecaseModel.TrackFilters) {
-	return TrackIDListFromProtoToUsecase(trackIdsWithFilters.Ids.Ids), FiltersFromProtoToUsecase(trackIdsWithFilters.Filters)
+func TrackIDListWithFiltersFromProtoToUsecase(trackIdsWithFilters *trackProto.TrackIDListWithFilters) ([]int64, *usecaseModel.TrackFilters, int64) {
+	usecaseIDs, userID := TrackIDListFromProtoToUsecase(trackIdsWithFilters.Ids)
+	return usecaseIDs, FiltersFromProtoToUsecase(trackIdsWithFilters.Filters), userID
+}
+
+func LikeRequestFromProtoToUsecase(likeRequest *trackProto.LikeRequest) *usecaseModel.LikeRequest {
+	return &usecaseModel.LikeRequest{
+		TrackID: likeRequest.TrackId.Id,
+		UserID:  likeRequest.UserId.Id,
+		IsLike:  likeRequest.IsLike,
+	}
+}
+
+func LikeRequestFromUsecaseToRepository(likeRequest *usecaseModel.LikeRequest) *repoModel.LikeRequest {
+	return &repoModel.LikeRequest{
+		TrackID: likeRequest.TrackID,
+		UserID:  likeRequest.UserID,
+	}
 }

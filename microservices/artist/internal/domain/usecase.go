@@ -7,8 +7,8 @@ import (
 )
 
 type Usecase interface {
-	GetAllArtists(ctx context.Context, filters *usecaseModel.Filters) (*usecaseModel.ArtistList, error)
-	GetArtistByID(ctx context.Context, id int64) (*usecaseModel.ArtistDetailed, error)
+	GetAllArtists(ctx context.Context, filters *usecaseModel.Filters, userID int64) (*usecaseModel.ArtistList, error)
+	GetArtistByID(ctx context.Context, id int64, userID int64) (*usecaseModel.ArtistDetailed, error)
 	GetArtistTitleByID(ctx context.Context, id int64) (string, error)
 	GetArtistsByTrackID(ctx context.Context, id int64) (*usecaseModel.ArtistWithRoleList, error)
 	GetArtistsByTrackIDs(ctx context.Context, trackIDs []int64) (*usecaseModel.ArtistWithRoleMap, error)
@@ -18,4 +18,5 @@ type Usecase interface {
 	GetTrackIDsByArtistID(ctx context.Context, id int64) ([]int64, error)
 	CreateStreamsByArtistIDs(ctx context.Context, data *usecaseModel.ArtistStreamCreateDataList) error
 	GetArtistsListenedByUserID(ctx context.Context, userID int64) (int64, error)
+	LikeArtist(ctx context.Context, request *usecaseModel.LikeRequest) error
 }

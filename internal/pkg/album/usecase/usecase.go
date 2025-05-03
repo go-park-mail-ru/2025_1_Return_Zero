@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
@@ -22,8 +23,16 @@ type albumUsecase struct {
 }
 
 func (u *albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
-	protoFilters := &albumProto.Filters{
-		Pagination: model.PaginationFromUsecaseToAlbumProto(filters.Pagination),
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
+	}
+
+	protoFilters := &albumProto.FiltersWithUserID{
+		Filters: &albumProto.Filters{
+			Pagination: model.PaginationFromUsecaseToAlbumProto(filters.Pagination),
+		},
+		UserId: &albumProto.UserID{Id: userID},
 	}
 
 	protoAlbums, err := (*u.albumClient).GetAllAlbums(ctx, protoFilters)
@@ -53,6 +62,11 @@ func (u *albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.A
 }
 
 func (u *albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
+	}
+
 	protoAlbumIDs, err := (*u.artistClient).GetAlbumIDsByArtistID(ctx, &artistProto.ArtistID{Id: artistID})
 	if err != nil {
 		return nil, customErrors.HandleArtistGRPCError(err)
@@ -64,7 +78,11 @@ func (u *albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, 
 		albumIDs = append(albumIDs, newAlbumID)
 	}
 
-	protoAlbums, err := (*u.albumClient).GetAlbumsByIDs(ctx, &albumProto.AlbumIDList{Ids: albumIDs})
+	protoAlbums, err := (*u.albumClient).GetAlbumsByIDs(ctx, &albumProto.AlbumIDListWithUserID{
+		Ids:    &albumProto.AlbumIDList{Ids: albumIDs},
+		UserId: &albumProto.UserID{Id: userID},
+	})
+
 	if err != nil {
 		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
@@ -91,7 +109,15 @@ func (u *albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, 
 }
 
 func (u *albumUsecase) GetAlbumByID(ctx context.Context, id int64) (*usecaseModel.Album, error) {
-	protoAlbum, err := (*u.albumClient).GetAlbumByID(ctx, &albumProto.AlbumID{Id: id})
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
+	}
+
+	protoAlbum, err := (*u.albumClient).GetAlbumByID(ctx, &albumProto.AlbumIDWithUserID{
+		AlbumId: &albumProto.AlbumID{Id: id},
+		UserId:  &albumProto.UserID{Id: userID},
+	})
 	if err != nil {
 		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
@@ -106,4 +132,13 @@ func (u *albumUsecase) GetAlbumByID(ctx context.Context, id int64) (*usecaseMode
 	usecaseAlbum := model.AlbumFromProtoToUsecase(protoAlbum)
 	usecaseAlbum.Artists = artistWithTitleList
 	return usecaseAlbum, nil
+}
+
+func (u *albumUsecase) LikeAlbum(ctx context.Context, request *usecaseModel.AlbumLikeRequest) error {
+	protoRequest := model.AlbumLikeRequestFromUsecaseToProto(request)
+	_, err := (*u.albumClient).LikeAlbum(ctx, protoRequest)
+	if err != nil {
+		return customErrors.HandleAlbumGRPCError(err)
+	}
+	return nil
 }

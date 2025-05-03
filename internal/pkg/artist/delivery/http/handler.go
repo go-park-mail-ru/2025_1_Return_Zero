@@ -6,11 +6,14 @@ import (
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/errorStatus"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/json"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/pagination"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -94,4 +97,59 @@ func (h *ArtistHandler) GetArtistByID(w http.ResponseWriter, r *http.Request) {
 
 	artistDetailed := model.ArtistDetailedFromUsecaseToDelivery(usecaseArtist)
 	json.WriteSuccessResponse(w, http.StatusOK, artistDetailed, nil)
+}
+
+// LikeArtist godoc
+// @Summary Like an artist
+// @Description Like an artist for a user
+// @Tags artists
+// @Accept json
+// @Produce json
+// @Param id path integer true "Artist ID"
+// @Param likeRequest body delivery.ArtistLikeRequest true "Like request"
+// @Success 200 {object} delivery.APIResponse{body=delivery.Message} "Artist liked/unliked"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid artist ID"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "Artist not found"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /artists/{id}/like [post]
+func (h *ArtistHandler) LikeArtist(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		logger.Warn("attempt to like artist for unauthorized user")
+		err := customErrors.ErrLikeArtistUnauthorized
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		logger.Error("failed to parse artist ID", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	deliveryLikeRequest := &deliveryModel.ArtistLikeRequest{
+		IsLike: true,
+	}
+
+	json.ReadJSON(w, r, deliveryLikeRequest)
+
+	usecaseLikeRequest := model.ArtistLikeRequestFromDeliveryToUsecase(deliveryLikeRequest, userID, id)
+
+	err = h.usecase.LikeArtist(ctx, usecaseLikeRequest)
+	if err != nil {
+		logger.Error("failed to like artist", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	json.WriteSuccessResponse(w, http.StatusOK, deliveryModel.Message{
+		Message: "artist liked/unliked",
+	}, nil)
 }

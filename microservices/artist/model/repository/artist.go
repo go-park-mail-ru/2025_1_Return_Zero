@@ -5,6 +5,7 @@ type Artist struct {
 	Title       string `sql:"title"`
 	Description string `sql:"description"`
 	Thumbnail   string `sql:"thumbnail_url"`
+	IsFavorite  bool   `sql:"is_favorite"`
 }
 
 type ArtistWithTitle struct {
@@ -35,4 +36,9 @@ type Filters struct {
 type ArtistStreamCreateDataList struct {
 	ArtistIDs []int64
 	UserID    int64
+}
+
+type LikeRequest struct {
+	ArtistID int64
+	UserID   int64
 }

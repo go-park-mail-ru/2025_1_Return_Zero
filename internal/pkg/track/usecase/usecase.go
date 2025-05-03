@@ -6,6 +6,7 @@ import (
 	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
 	trackProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
 	customErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
@@ -23,8 +24,14 @@ type trackUsecase struct {
 }
 
 func (u *trackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
-	protoFilters := &trackProto.Filters{
-		Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination),
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
+	}
+
+	protoFilters := &trackProto.UserIDWithFilters{
+		UserId:  &trackProto.UserID{Id: userID},
+		Filters: &trackProto.Filters{Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination)},
 	}
 	protoTracks, err := (*u.trackClient).GetAllTracks(ctx, protoFilters)
 	if err != nil {
@@ -61,7 +68,12 @@ func (u *trackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.T
 }
 
 func (u *trackUsecase) GetTrackByID(ctx context.Context, id int64) (*usecaseModel.TrackDetailed, error) {
-	protoTrack, err := (*u.trackClient).GetTrackByID(ctx, &trackProto.TrackID{Id: id})
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
+	}
+
+	protoTrack, err := (*u.trackClient).GetTrackByID(ctx, &trackProto.TrackIDWithUserID{TrackId: &trackProto.TrackID{Id: id}, UserId: &trackProto.UserID{Id: userID}})
 	if err != nil {
 		return nil, customErrors.HandleTrackGRPCError(err)
 	}
@@ -82,8 +94,9 @@ func (u *trackUsecase) GetTrackByID(ctx context.Context, id int64) (*usecaseMode
 }
 
 func (u *trackUsecase) GetTracksByArtistID(ctx context.Context, id int64, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
-	protoFilters := &trackProto.Filters{
-		Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination),
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
 	}
 
 	artistTrackIDs, err := (*u.artistClient).GetTrackIDsByArtistID(ctx, &artistProto.ArtistID{Id: id})
@@ -91,7 +104,12 @@ func (u *trackUsecase) GetTracksByArtistID(ctx context.Context, id int64, filter
 		return nil, customErrors.HandleArtistGRPCError(err)
 	}
 
-	protoTracks, err := (*u.trackClient).GetTracksByIDsFiltered(ctx, &trackProto.TrackIDListWithFilters{Ids: model.TrackIDListFromArtistToTrackProto(artistTrackIDs), Filters: protoFilters})
+	protoFilters := &trackProto.TrackIDListWithFilters{
+		Ids:     model.TrackIDListFromArtistToTrackProto(artistTrackIDs, userID),
+		Filters: &trackProto.Filters{Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination)},
+	}
+
+	protoTracks, err := (*u.trackClient).GetTracksByIDsFiltered(ctx, protoFilters)
 	if err != nil {
 		return nil, customErrors.HandleTrackGRPCError(err)
 	}
@@ -215,7 +233,15 @@ func (u *trackUsecase) GetLastListenedTracks(ctx context.Context, userID int64, 
 }
 
 func (u *trackUsecase) GetTracksByAlbumID(ctx context.Context, id int64) ([]*usecaseModel.Track, error) {
-	protoAlbumID := &trackProto.AlbumID{Id: id}
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
+	}
+
+	protoAlbumID := &trackProto.AlbumIDWithUserID{
+		AlbumId: &trackProto.AlbumID{Id: id},
+		UserId:  &trackProto.UserID{Id: userID},
+	}
 	protoTracks, err := (*u.trackClient).GetTracksByAlbumID(ctx, protoAlbumID)
 	if err != nil {
 		return nil, customErrors.HandleTrackGRPCError(err)
@@ -243,4 +269,13 @@ func (u *trackUsecase) GetTracksByAlbumID(ctx context.Context, id int64) ([]*use
 	}
 
 	return tracks, nil
+}
+
+func (u *trackUsecase) LikeTrack(ctx context.Context, request *usecaseModel.TrackLikeRequest) error {
+	protoRequest := model.TrackLikeRequestFromUsecaseToProto(request)
+	_, err := (*u.trackClient).LikeTrack(ctx, protoRequest)
+	if err != nil {
+		return customErrors.HandleTrackGRPCError(err)
+	}
+	return nil
 }

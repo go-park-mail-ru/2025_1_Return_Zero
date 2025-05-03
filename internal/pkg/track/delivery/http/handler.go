@@ -7,6 +7,7 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
+	customErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/errorStatus"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/json"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
@@ -19,9 +20,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const (
-	ErrUnauthorized = "unauthorized users can't save to stream history"
-)
+const ()
 
 type TrackHandler struct {
 	usecase track.Usecase
@@ -178,7 +177,8 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to create stream for unauthorized user")
-		json.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
+		err := customErrors.ErrStreamCreateUnauthorized
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
@@ -230,7 +230,8 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to update stream duration for unauthorized user")
-		json.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
+		err := customErrors.ErrStreamUpdateUnauthorized
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
@@ -275,7 +276,7 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid username or filters"
 // @Failure 404 {object} delivery.APINotFoundErrorResponse "User not found"
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
-// @Router /users/{username}/history [get]
+// @Router /users/me/history [get]
 func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
@@ -289,7 +290,8 @@ func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Requ
 	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to get last listened tracks for unauthorized user")
-		json.WriteErrorResponse(w, http.StatusUnauthorized, ErrUnauthorized, nil)
+		err := customErrors.ErrStreamHistoryUnauthorized
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
@@ -306,6 +308,19 @@ func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Requ
 	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
 	json.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
 }
+
+// GetTracksByAlbumID godoc
+// @Summary Get tracks by album ID
+// @Description Get a list of tracks by a specific album with optional pagination filters
+// @Tags tracks
+// @Accept json
+// @Produce json
+// @Param id path integer true "Album ID"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Track} "List of tracks by album"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid album ID or filters"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "Album not found"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /albums/{id}/tracks [get]
 
 func (h *TrackHandler) GetTracksByAlbumID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -328,4 +343,58 @@ func (h *TrackHandler) GetTracksByAlbumID(w http.ResponseWriter, r *http.Request
 
 	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
 	json.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
+}
+
+// LikeTrack godoc
+// @Summary Like a track
+// @Description Like a track for a user
+// @Tags tracks
+// @Accept json
+// @Produce json
+// @Param id path integer true "Track ID"
+// @Success 200 {object} delivery.APIResponse{body=delivery.Message} "Track liked/unliked"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid track ID"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "Track not found"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /tracks/{id}/like [post]
+func (h *TrackHandler) LikeTrack(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		logger.Warn("attempt to like track for unauthorized user")
+		err := customErrors.ErrLikeTrackUnauthorized
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		logger.Error("failed to parse track ID", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	deliveryLikeRequest := &delivery.TrackLikeRequest{
+		IsLike: true,
+	}
+
+	json.ReadJSON(w, r, deliveryLikeRequest)
+
+	usecaseLikeRequest := model.TrackLikeRequestFromDeliveryToUsecase(deliveryLikeRequest, userID, id)
+
+	err = h.usecase.LikeTrack(ctx, usecaseLikeRequest)
+	if err != nil {
+		logger.Error("failed to like track", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	json.WriteSuccessResponse(w, http.StatusOK, delivery.Message{
+		Message: "track liked/unliked",
+	}, nil)
 }

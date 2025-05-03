@@ -79,6 +79,139 @@ const docTemplate = `{
                 }
             }
         },
+        "/albums/{id}": {
+            "get": {
+                "description": "Get an album by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "albums"
+                ],
+                "summary": "Get album by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Album ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Album details",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.Album"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid album ID",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/albums/{id}/like": {
+            "post": {
+                "description": "Like an album for a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "albums"
+                ],
+                "summary": "Like an album",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Album ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Like request",
+                        "name": "likeRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.AlbumLikeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Album liked/unliked",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.Message"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid album ID",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Album not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/artists": {
             "get": {
                 "description": "Get a list of artists with optional pagination filters",
@@ -259,6 +392,83 @@ const docTemplate = `{
                         "description": "Bad request - invalid artist ID",
                         "schema": {
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/artists/{id}/like": {
+            "post": {
+                "description": "Like an artist for a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "artists"
+                ],
+                "summary": "Like an artist",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Artist ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Like request",
+                        "name": "likeRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.ArtistLikeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Artist liked/unliked",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.Message"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid artist ID",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Artist not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
                         }
                     },
                     "500": {
@@ -739,6 +949,74 @@ const docTemplate = `{
                 }
             }
         },
+        "/tracks/{id}/like": {
+            "post": {
+                "description": "Like a track for a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tracks"
+                ],
+                "summary": "Like a track",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Track ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Track liked/unliked",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "$ref": "#/definitions/delivery.Message"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid track ID",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Track not found",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APINotFoundErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/tracks/{id}/stream": {
             "post": {
                 "description": "Creates stream for track by id, essentially it means saving track to listening history",
@@ -1017,7 +1295,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/{username}/history": {
+        "/users/me/history": {
             "get": {
                 "description": "Retrieves a list of tracks last listened by a specific user with pagination",
                 "consumes": [
@@ -1191,6 +1469,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1
                 },
+                "is_liked": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "release_date": {
                     "type": "string",
                     "example": "2021-01-01"
@@ -1227,6 +1509,15 @@ const docTemplate = `{
                 }
             }
         },
+        "delivery.AlbumLikeRequest": {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
         "delivery.AlbumType": {
             "type": "string",
             "enum": [
@@ -1254,6 +1545,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1
                 },
+                "is_liked": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "thumbnail_url": {
                     "type": "string",
                     "example": "https://example.com/artist.jpg"
@@ -1280,6 +1575,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1
                 },
+                "is_liked": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "listeners_count": {
                     "type": "integer",
                     "example": 1000
@@ -1291,6 +1590,16 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "Inabakumori"
+                }
+            }
+        },
+        "delivery.ArtistLikeRequest": {
+            "description": "A request to like or unlike an artist. Should be authenticated",
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -1414,6 +1723,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1
                 },
+                "is_liked": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "thumbnail_url": {
                     "type": "string",
                     "example": "https://example.com/image.jpg"
@@ -1469,6 +1782,10 @@ const docTemplate = `{
                 "id": {
                     "type": "integer",
                     "example": 1
+                },
+                "is_liked": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "thumbnail_url": {
                     "type": "string",

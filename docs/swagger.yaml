@@ -68,6 +68,9 @@ definitions:
       id:
         example: 1
         type: integer
+      is_liked:
+        example: true
+        type: boolean
       release_date:
         example: "2021-01-01"
         type: string
@@ -92,6 +95,12 @@ definitions:
         example: Inabakumori
         type: string
     type: object
+  delivery.AlbumLikeRequest:
+    properties:
+      value:
+        example: true
+        type: boolean
+    type: object
   delivery.AlbumType:
     enum:
     - album
@@ -113,6 +122,9 @@ definitions:
       id:
         example: 1
         type: integer
+      is_liked:
+        example: false
+        type: boolean
       thumbnail_url:
         example: https://example.com/artist.jpg
         type: string
@@ -132,6 +144,9 @@ definitions:
       id:
         example: 1
         type: integer
+      is_liked:
+        example: false
+        type: boolean
       listeners_count:
         example: 1000
         type: integer
@@ -141,6 +156,13 @@ definitions:
       title:
         example: Inabakumori
         type: string
+    type: object
+  delivery.ArtistLikeRequest:
+    description: A request to like or unlike an artist. Should be authenticated
+    properties:
+      value:
+        example: true
+        type: boolean
     type: object
   delivery.AvatarURL:
     properties:
@@ -225,6 +247,9 @@ definitions:
       id:
         example: 1
         type: integer
+      is_liked:
+        example: false
+        type: boolean
       thumbnail_url:
         example: https://example.com/image.jpg
         type: string
@@ -265,6 +290,9 @@ definitions:
       id:
         example: 1
         type: integer
+      is_liked:
+        example: false
+        type: boolean
       thumbnail_url:
         example: https://example.com/image.jpg
         type: string
@@ -361,6 +389,88 @@ paths:
           schema:
             $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
       summary: Get albums
+      tags:
+      - albums
+  /albums/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get an album by its ID
+      parameters:
+      - description: Album ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Album details
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Album'
+              type: object
+        "400":
+          description: Bad request - invalid album ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get album by ID
+      tags:
+      - albums
+  /albums/{id}/like:
+    post:
+      consumes:
+      - application/json
+      description: Like an album for a user
+      parameters:
+      - description: Album ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Like request
+        in: body
+        name: likeRequest
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.AlbumLikeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Album liked/unliked
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Message'
+              type: object
+        "400":
+          description: Bad request - invalid album ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "404":
+          description: Album not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Like an album
       tags:
       - albums
   /artists:
@@ -480,6 +590,54 @@ paths:
       summary: Get albums by artist ID
       tags:
       - albums
+  /artists/{id}/like:
+    post:
+      consumes:
+      - application/json
+      description: Like an artist for a user
+      parameters:
+      - description: Artist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Like request
+        in: body
+        name: likeRequest
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.ArtistLikeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Artist liked/unliked
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Message'
+              type: object
+        "400":
+          description: Bad request - invalid artist ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "404":
+          description: Artist not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Like an artist
+      tags:
+      - artists
   /artists/{id}/tracks:
     get:
       consumes:
@@ -767,6 +925,48 @@ paths:
       summary: Get track by ID
       tags:
       - tracks
+  /tracks/{id}/like:
+    post:
+      consumes:
+      - application/json
+      description: Like a track for a user
+      parameters:
+      - description: Track ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Track liked/unliked
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Message'
+              type: object
+        "400":
+          description: Bad request - invalid track ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "404":
+          description: Track not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Like a track
+      tags:
+      - tracks
   /tracks/{id}/stream:
     post:
       description: Creates stream for track by id, essentially it means saving track
@@ -941,7 +1141,7 @@ paths:
       summary: Upload user avatar
       tags:
       - user
-  /users/{username}/history:
+  /users/me/history:
     get:
       consumes:
       - application/json

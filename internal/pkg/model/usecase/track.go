@@ -14,6 +14,7 @@ type Track struct {
 	AlbumID   int64
 	Album     string
 	Artists   []*TrackArtist
+	IsLiked   bool
 }
 
 type TrackStreamUpdateData struct {
@@ -40,4 +41,10 @@ type TrackDetailed struct {
 
 type TrackFilters struct {
 	Pagination *Pagination
+}
+
+type TrackLikeRequest struct {
+	TrackID int64
+	IsLike  bool
+	UserID  int64
 }

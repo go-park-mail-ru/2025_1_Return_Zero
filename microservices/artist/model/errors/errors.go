@@ -34,6 +34,13 @@ func NewInternalError(format string, args ...interface{}) error {
 	}
 }
 
+func NewBadRequestError(format string, args ...interface{}) error {
+	return &ArtistError{
+		Code:    codes.InvalidArgument,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
 var (
 	ErrArtistNotFound = NewNotFoundError("artist not found")
 )

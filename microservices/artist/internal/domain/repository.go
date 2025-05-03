@@ -7,8 +7,8 @@ import (
 )
 
 type Repository interface {
-	GetAllArtists(ctx context.Context, filters *repoModel.Filters) ([]*repoModel.Artist, error)
-	GetArtistByID(ctx context.Context, id int64) (*repoModel.Artist, error)
+	GetAllArtists(ctx context.Context, filters *repoModel.Filters, userID int64) ([]*repoModel.Artist, error)
+	GetArtistByID(ctx context.Context, id int64, userID int64) (*repoModel.Artist, error)
 	GetArtistTitleByID(ctx context.Context, id int64) (string, error)
 	GetArtistsByTrackID(ctx context.Context, id int64) ([]*repoModel.ArtistWithRole, error)
 	GetArtistsByTrackIDs(ctx context.Context, trackIDs []int64) (map[int64][]*repoModel.ArtistWithRole, error)
@@ -19,4 +19,7 @@ type Repository interface {
 	GetTrackIDsByArtistID(ctx context.Context, id int64) ([]int64, error)
 	CreateStreamsByArtistIDs(ctx context.Context, data *repoModel.ArtistStreamCreateDataList) error
 	GetArtistsListenedByUserID(ctx context.Context, userID int64) (int64, error)
+	LikeArtist(ctx context.Context, request *repoModel.LikeRequest) error
+	UnlikeArtist(ctx context.Context, request *repoModel.LikeRequest) error
+	CheckArtistExists(ctx context.Context, id int64) (bool, error)
 }
