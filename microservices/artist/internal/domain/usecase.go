@@ -19,4 +19,5 @@ type Usecase interface {
 	CreateStreamsByArtistIDs(ctx context.Context, data *usecaseModel.ArtistStreamCreateDataList) error
 	GetArtistsListenedByUserID(ctx context.Context, userID int64) (int64, error)
 	LikeArtist(ctx context.Context, request *usecaseModel.LikeRequest) error
+	GetFavoriteArtists(ctx context.Context, filters *usecaseModel.Filters, userID int64) (*usecaseModel.ArtistList, error)
 }

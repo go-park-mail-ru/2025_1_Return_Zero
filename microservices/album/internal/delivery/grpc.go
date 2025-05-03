@@ -87,3 +87,11 @@ func (s *AlbumService) LikeAlbum(ctx context.Context, req *albumProto.LikeReques
 	}
 	return &emptypb.Empty{}, nil
 }
+
+func (s *AlbumService) GetFavoriteAlbums(ctx context.Context, req *albumProto.FiltersWithUserID) (*albumProto.AlbumList, error) {
+	albums, err := s.albumUsecase.GetFavoriteAlbums(ctx, model.AlbumFiltersFromProtoToUsecase(req.Filters), req.UserId.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.AlbumListFromUsecaseToProto(albums), nil
+}

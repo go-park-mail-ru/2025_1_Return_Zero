@@ -16,6 +16,7 @@ type CreatePlaylistRequest struct {
 	Title     string `sql:"title"`
 	UserID    int64  `sql:"user_id"`
 	Thumbnail string `sql:"thumbnail"`
+	IsPublic  bool   `sql:"is_public"`
 }
 
 type GetToAddByUserIdRequest struct {

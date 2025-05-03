@@ -117,3 +117,11 @@ func (s *TrackService) LikeTrack(ctx context.Context, req *trackProto.LikeReques
 	}
 	return &emptypb.Empty{}, nil
 }
+
+func (s *TrackService) GetFavoriteTracks(ctx context.Context, req *trackProto.FavoriteRequest) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.GetFavoriteTracks(ctx, model.FavoriteRequestFromProtoToUsecase(req))
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromUsecaseToProto(tracks), nil
+}

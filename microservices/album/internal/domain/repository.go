@@ -16,4 +16,5 @@ type Repository interface {
 	LikeAlbum(ctx context.Context, request *repoModel.LikeRequest) error
 	CheckAlbumExists(ctx context.Context, albumID int64) (bool, error)
 	UnlikeAlbum(ctx context.Context, request *repoModel.LikeRequest) error
+	GetFavoriteAlbums(ctx context.Context, filters *repoModel.AlbumFilters, userID int64) ([]*repoModel.Album, error)
 }

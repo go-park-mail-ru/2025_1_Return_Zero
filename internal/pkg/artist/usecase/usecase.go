@@ -4,6 +4,7 @@ import (
 	"context"
 
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
+	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
 	customErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
@@ -11,14 +12,16 @@ import (
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 )
 
-func NewUsecase(artistClient *artistProto.ArtistServiceClient) artist.Usecase {
+func NewUsecase(artistClient *artistProto.ArtistServiceClient, userClient *userProto.UserServiceClient) artist.Usecase {
 	return &artistUsecase{
 		artistClient: artistClient,
+		userClient:   userClient,
 	}
 }
 
 type artistUsecase struct {
 	artistClient *artistProto.ArtistServiceClient
+	userClient   *userProto.UserServiceClient
 }
 
 func (u *artistUsecase) GetArtistByID(ctx context.Context, id int64) (*usecaseModel.ArtistDetailed, error) {
@@ -66,4 +69,39 @@ func (u *artistUsecase) LikeArtist(ctx context.Context, request *usecaseModel.Ar
 		return customErrors.HandleArtistGRPCError(err)
 	}
 	return nil
+}
+
+func (u *artistUsecase) GetFavoriteArtists(ctx context.Context, filters *usecaseModel.ArtistFilters, username string) ([]*usecaseModel.Artist, error) {
+	profileUserID, err := (*u.userClient).GetIDByUsername(ctx, &userProto.Username{Username: username})
+	if err != nil {
+		return nil, customErrors.HandleUserGRPCError(err)
+	}
+
+	profilePrivacy, err := (*u.userClient).GetUserPrivacyByID(ctx, &userProto.UserID{Id: profileUserID.Id})
+	if err != nil {
+		return nil, customErrors.HandleUserGRPCError(err)
+	}
+
+	currentUserID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		currentUserID = -1
+	}
+
+	if !profilePrivacy.IsPublicFavoriteArtists && profileUserID.Id != currentUserID {
+		return []*usecaseModel.Artist{}, nil
+	}
+
+	protoFilters := &artistProto.FiltersWithUserID{
+		Filters: &artistProto.Filters{
+			Pagination: model.PaginationFromUsecaseToArtistProto(filters.Pagination),
+		},
+		UserId: &artistProto.UserID{Id: profileUserID.Id},
+	}
+
+	protoArtists, err := (*u.artistClient).GetFavoriteArtists(ctx, protoFilters)
+	if err != nil {
+		return nil, customErrors.HandleArtistGRPCError(err)
+	}
+
+	return model.ArtistsFromProtoToUsecase(protoArtists.Artists), nil
 }

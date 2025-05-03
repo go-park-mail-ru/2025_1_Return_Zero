@@ -16,4 +16,5 @@ type Usecase interface {
 	GetTracksByAlbumID(ctx context.Context, id int64) ([]*usecaseModel.Track, error)
 	LikeTrack(ctx context.Context, request *usecaseModel.TrackLikeRequest) error
 	GetPlaylistTracks(ctx context.Context, id int64) ([]*usecaseModel.Track, error)
+	GetFavoriteTracks(ctx context.Context, filters *usecaseModel.TrackFilters, username string) ([]*usecaseModel.Track, error)
 }

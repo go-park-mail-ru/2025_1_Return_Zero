@@ -7,6 +7,7 @@ import (
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
 	playlistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/playlist"
 	trackProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
+	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
 	customErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
@@ -14,8 +15,8 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
 )
 
-func NewUsecase(trackClient *trackProto.TrackServiceClient, artistClient *artistProto.ArtistServiceClient, albumClient *albumProto.AlbumServiceClient, playlistClient *playlistProto.PlaylistServiceClient) track.Usecase {
-	return &trackUsecase{trackClient: trackClient, artistClient: artistClient, albumClient: albumClient, playlistClient: playlistClient}
+func NewUsecase(trackClient *trackProto.TrackServiceClient, artistClient *artistProto.ArtistServiceClient, albumClient *albumProto.AlbumServiceClient, playlistClient *playlistProto.PlaylistServiceClient, userClient *userProto.UserServiceClient) track.Usecase {
+	return &trackUsecase{trackClient: trackClient, artistClient: artistClient, albumClient: albumClient, playlistClient: playlistClient, userClient: userClient}
 }
 
 type trackUsecase struct {
@@ -23,6 +24,7 @@ type trackUsecase struct {
 	artistClient   *artistProto.ArtistServiceClient
 	albumClient    *albumProto.AlbumServiceClient
 	playlistClient *playlistProto.PlaylistServiceClient
+	userClient     *userProto.UserServiceClient
 }
 
 func (u *trackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
@@ -337,4 +339,65 @@ func (u *trackUsecase) GetPlaylistTracks(ctx context.Context, id int64) ([]*usec
 	}
 
 	return tracks, nil
+}
+
+func (u *trackUsecase) GetFavoriteTracks(ctx context.Context, filters *usecaseModel.TrackFilters, username string) ([]*usecaseModel.Track, error) {
+	profileUserID, err := (*u.userClient).GetIDByUsername(ctx, &userProto.Username{Username: username})
+	if err != nil {
+		return nil, customErrors.HandleUserGRPCError(err)
+	}
+
+	requestUserID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		requestUserID = -1
+	}
+
+	profilePrivacy, err := (*u.userClient).GetUserPrivacyByID(ctx, &userProto.UserID{Id: profileUserID.Id})
+	if err != nil {
+		return nil, customErrors.HandleUserGRPCError(err)
+	}
+
+	if !profilePrivacy.IsPublicFavoriteTracks && requestUserID != profileUserID.Id {
+		return make([]*usecaseModel.Track, 0), nil
+	}
+
+	protoFilters := &trackProto.FavoriteRequest{
+		ProfileUserId: &trackProto.UserID{Id: profileUserID.Id},
+		RequestUserId: &trackProto.UserID{Id: requestUserID},
+		Filters:       &trackProto.Filters{Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination)},
+	}
+
+	protoTracks, err := (*u.trackClient).GetFavoriteTracks(ctx, protoFilters)
+	if err != nil {
+		return nil, customErrors.HandleTrackGRPCError(err)
+	}
+
+	trackIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		trackIDs = append(trackIDs, protoTrack.Id)
+	}
+
+	albumIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		albumIDs = append(albumIDs, protoTrack.AlbumId)
+	}
+
+	protoArtists, err := (*u.artistClient).GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
+	if err != nil {
+		return nil, customErrors.HandleArtistGRPCError(err)
+	}
+
+	protoAlbumTitles, err := (*u.albumClient).GetAlbumTitleByIDs(ctx, &albumProto.AlbumIDList{Ids: model.AlbumIdsFromUsecaseToAlbumProto(albumIDs)})
+	if err != nil {
+		return nil, customErrors.HandleAlbumGRPCError(err)
+	}
+
+	tracks := make([]*usecaseModel.Track, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		track := model.TrackFromProtoToUsecase(protoTrack, protoAlbumTitles.Titles[protoTrack.AlbumId], protoArtists.Artists[protoTrack.Id])
+		tracks = append(tracks, track)
+	}
+
+	return tracks, nil
+
 }

@@ -19,4 +19,5 @@ type Usecase interface {
 	GetMinutesListenedByUserID(ctx context.Context, userID int64) (int64, error)
 	GetTracksListenedByUserID(ctx context.Context, userID int64) (int64, error)
 	LikeTrack(ctx context.Context, likeRequest *usecaseModel.LikeRequest) error
+	GetFavoriteTracks(ctx context.Context, favoriteRequest *usecaseModel.FavoriteRequest) ([]*usecaseModel.Track, error)
 }

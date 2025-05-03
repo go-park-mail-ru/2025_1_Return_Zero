@@ -114,6 +114,16 @@ const (
 	UnlikeTrackQuery = `
 		DELETE FROM favorite_track WHERE track_id = $1 AND user_id = $2
 	`
+
+	GetFavoriteTracksQuery = `
+		SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id, (ft_req.user_id IS NOT NULL) AS is_favorite
+		FROM track t
+		JOIN favorite_track ft_prof ON t.id = ft_prof.track_id
+		LEFT JOIN favorite_track ft_req ON t.id = ft_req.track_id AND ft_req.user_id = $1
+		WHERE ft_prof.user_id = $2
+		ORDER BY ft_prof.created_at DESC, t.id DESC
+		LIMIT $3 OFFSET $4
+	`
 )
 
 type TrackPostgresRepository struct {
@@ -417,4 +427,33 @@ func (r *TrackPostgresRepository) UnlikeTrack(ctx context.Context, likeRequest *
 	}
 
 	return nil
+}
+
+func (r *TrackPostgresRepository) GetFavoriteTracks(ctx context.Context, favoriteRequest *repoModel.FavoriteRequest) ([]*repoModel.Track, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting favorite tracks from db", zap.Any("favoriteRequest", favoriteRequest), zap.String("query", GetFavoriteTracksQuery))
+	rows, err := r.db.QueryContext(ctx, GetFavoriteTracksQuery, favoriteRequest.RequestUserID, favoriteRequest.ProfileUserID, favoriteRequest.Filters.Pagination.Limit, favoriteRequest.Filters.Pagination.Offset)
+	if err != nil {
+		logger.Error("failed to get favorite tracks", zap.Error(err))
+		return nil, trackErrors.NewInternalError("failed to get favorite tracks: %v", err)
+	}
+	defer rows.Close()
+
+	tracks := make([]*repoModel.Track, 0)
+	for rows.Next() {
+		var track repoModel.Track
+		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID, &track.IsFavorite)
+		if err != nil {
+			logger.Error("failed to scan track", zap.Error(err))
+			return nil, trackErrors.NewInternalError("failed to scan track: %v", err)
+		}
+		tracks = append(tracks, &track)
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.Error("failed to get favorite tracks", zap.Error(err))
+		return nil, trackErrors.NewInternalError("failed to get favorite tracks: %v", err)
+	}
+
+	return tracks, nil
 }

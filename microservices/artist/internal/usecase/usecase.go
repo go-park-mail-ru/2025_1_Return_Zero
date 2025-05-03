@@ -140,3 +140,12 @@ func (u *artistUsecase) LikeArtist(ctx context.Context, request *usecaseModel.Li
 	}
 	return nil
 }
+
+func (u *artistUsecase) GetFavoriteArtists(ctx context.Context, filters *usecaseModel.Filters, userID int64) (*usecaseModel.ArtistList, error) {
+	repoFilters := model.ArtistFiltersFromUsecaseToRepository(filters)
+	repoArtists, err := u.artistRepo.GetFavoriteArtists(ctx, repoFilters, userID)
+	if err != nil {
+		return nil, err
+	}
+	return model.ArtistListFromRepositoryToUsecase(repoArtists), nil
+}

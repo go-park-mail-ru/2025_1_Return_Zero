@@ -20,6 +20,7 @@ service TrackService {
     rpc GetTracksListenedByUserID(UserID) returns (TracksListened);
     rpc LikeTrack(LikeRequest) returns (google.protobuf.Empty);
     rpc SearchTracks(Query) returns (TrackList);
+    rpc GetFavoriteTracks(FavoriteRequest) returns (TrackList);
 }
 
 message Query {
@@ -132,4 +133,10 @@ message LikeRequest {
     TrackID track_id = 1;
     UserID user_id = 2;
     bool is_like = 3;
+}
+
+message FavoriteRequest {
+    UserID profile_user_id = 1;
+    UserID request_user_id = 2;
+    Filters filters = 3;
 }

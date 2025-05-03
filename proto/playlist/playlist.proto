@@ -43,6 +43,7 @@ message CreatePlaylistRequest {
     int64 user_id = 1;
     string title = 2;
     string thumbnail = 3;
+    bool is_public = 4;
 }
 
 message GetPlaylistByIDRequest {

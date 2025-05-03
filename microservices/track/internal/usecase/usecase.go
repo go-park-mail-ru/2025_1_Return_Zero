@@ -185,3 +185,13 @@ func (u *TrackUsecase) LikeTrack(ctx context.Context, request *usecaseModel.Like
 	}
 	return nil
 }
+
+func (u *TrackUsecase) GetFavoriteTracks(ctx context.Context, favoriteRequest *usecaseModel.FavoriteRequest) ([]*usecaseModel.Track, error) {
+	repoRequest := model.FavoriteRequestFromUsecaseToRepository(favoriteRequest)
+	repoTracks, err := u.trackRepo.GetFavoriteTracks(ctx, repoRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
+}

@@ -13,6 +13,7 @@ func CreatePlaylistRequestFromProtoToUsecase(proto *protoModel.CreatePlaylistReq
 		Title:     proto.GetTitle(),
 		UserID:    proto.GetUserId(),
 		Thumbnail: proto.GetThumbnail(),
+		IsPublic:  proto.GetIsPublic(),
 	}
 }
 
@@ -21,6 +22,7 @@ func CreatePlaylistRequestFromUsecaseToRepository(usecase *usecaseModel.CreatePl
 		Title:     usecase.Title,
 		UserID:    usecase.UserID,
 		Thumbnail: usecase.Thumbnail,
+		IsPublic:  usecase.IsPublic,
 	}
 }
 

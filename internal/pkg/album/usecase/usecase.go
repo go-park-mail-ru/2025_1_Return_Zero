@@ -142,3 +142,37 @@ func (u *albumUsecase) LikeAlbum(ctx context.Context, request *usecaseModel.Albu
 	}
 	return nil
 }
+
+func (u *albumUsecase) GetFavoriteAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters, userID int64) ([]*usecaseModel.Album, error) {
+	protoFilters := &albumProto.FiltersWithUserID{
+		Filters: &albumProto.Filters{
+			Pagination: model.PaginationFromUsecaseToAlbumProto(filters.Pagination),
+		},
+		UserId: &albumProto.UserID{Id: userID},
+	}
+
+	protoAlbums, err := (*u.albumClient).GetFavoriteAlbums(ctx, protoFilters)
+	if err != nil {
+		return nil, customErrors.HandleAlbumGRPCError(err)
+	}
+
+	albumIDs := make([]*artistProto.AlbumID, 0, len(protoAlbums.Albums))
+	for _, protoAlbum := range protoAlbums.Albums {
+		albumIDs = append(albumIDs, &artistProto.AlbumID{Id: protoAlbum.Id})
+	}
+
+	protoArtists, err := (*u.artistClient).GetArtistsByAlbumIDs(ctx, &artistProto.AlbumIDList{Ids: albumIDs})
+	if err != nil {
+		return nil, customErrors.HandleArtistGRPCError(err)
+	}
+
+	artistWithTitleMap := model.ArtistWithTitleMapFromProtoToUsecase(protoArtists.Artists)
+
+	albums := make([]*usecaseModel.Album, 0, len(protoAlbums.Albums))
+	for _, protoAlbum := range protoAlbums.Albums {
+		usecaseAlbum := model.AlbumFromProtoToUsecase(protoAlbum)
+		usecaseAlbum.Artists = artistWithTitleMap[protoAlbum.Id]
+		albums = append(albums, usecaseAlbum)
+	}
+	return albums, nil
+}

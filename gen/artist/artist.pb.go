@@ -1277,7 +1277,7 @@ const file_artist_artist_proto_rawDesc = "" +
 	"\vLikeRequest\x12-\n" +
 	"\tartist_id\x18\x01 \x01(\v2\x10.artist.ArtistIDR\bartistId\x12'\n" +
 	"\auser_id\x18\x02 \x01(\v2\x0e.artist.UserIDR\x06userId\x12\x17\n" +
-	"\ais_like\x18\x03 \x01(\bR\x06isLike2\xc4\x06\n" +
+	"\ais_like\x18\x03 \x01(\bR\x06isLike2\x89\a\n" +
 	"\rArtistService\x12>\n" +
 	"\rGetAllArtists\x12\x19.artist.FiltersWithUserID\x1a\x12.artist.ArtistList\x12C\n" +
 	"\rGetArtistByID\x12\x1a.artist.ArtistIDWithUserID\x1a\x16.artist.ArtistDetailed\x12;\n" +
@@ -1291,7 +1291,8 @@ const file_artist_artist_proto_rawDesc = "" +
 	"\x18CreateStreamsByArtistIDs\x12\".artist.ArtistStreamCreateDataList\x1a\x16.google.protobuf.Empty\x12D\n" +
 	"\x1aGetArtistsListenedByUserID\x12\x0e.artist.UserID\x1a\x16.artist.ArtistListened\x129\n" +
 	"\n" +
-	"LikeArtist\x12\x13.artist.LikeRequest\x1a\x16.google.protobuf.EmptyB\n" +
+	"LikeArtist\x12\x13.artist.LikeRequest\x1a\x16.google.protobuf.Empty\x12C\n" +
+	"\x12GetFavoriteArtists\x12\x19.artist.FiltersWithUserID\x1a\x12.artist.ArtistListB\n" +
 	"Z\b./artistb\x06proto3"
 
 var (
@@ -1369,20 +1370,22 @@ var file_artist_artist_proto_depIdxs = []int32{
 	22, // 29: artist.ArtistService.CreateStreamsByArtistIDs:input_type -> artist.ArtistStreamCreateDataList
 	1,  // 30: artist.ArtistService.GetArtistsListenedByUserID:input_type -> artist.UserID
 	23, // 31: artist.ArtistService.LikeArtist:input_type -> artist.LikeRequest
-	12, // 32: artist.ArtistService.GetAllArtists:output_type -> artist.ArtistList
-	10, // 33: artist.ArtistService.GetArtistByID:output_type -> artist.ArtistDetailed
-	11, // 34: artist.ArtistService.GetArtistTitleByID:output_type -> artist.ArtistTitle
-	17, // 35: artist.ArtistService.GetArtistsByTrackID:output_type -> artist.ArtistWithRoleList
-	18, // 36: artist.ArtistService.GetArtistsByTrackIDs:output_type -> artist.ArtistWithRoleMap
-	14, // 37: artist.ArtistService.GetArtistsByAlbumID:output_type -> artist.ArtistWithTitleList
-	15, // 38: artist.ArtistService.GetArtistsByAlbumIDs:output_type -> artist.ArtistWithTitleMap
-	8,  // 39: artist.ArtistService.GetAlbumIDsByArtistID:output_type -> artist.AlbumIDList
-	7,  // 40: artist.ArtistService.GetTrackIDsByArtistID:output_type -> artist.TrackIDList
-	26, // 41: artist.ArtistService.CreateStreamsByArtistIDs:output_type -> google.protobuf.Empty
-	0,  // 42: artist.ArtistService.GetArtistsListenedByUserID:output_type -> artist.ArtistListened
-	26, // 43: artist.ArtistService.LikeArtist:output_type -> google.protobuf.Empty
-	32, // [32:44] is the sub-list for method output_type
-	20, // [20:32] is the sub-list for method input_type
+	21, // 32: artist.ArtistService.GetFavoriteArtists:input_type -> artist.FiltersWithUserID
+	12, // 33: artist.ArtistService.GetAllArtists:output_type -> artist.ArtistList
+	10, // 34: artist.ArtistService.GetArtistByID:output_type -> artist.ArtistDetailed
+	11, // 35: artist.ArtistService.GetArtistTitleByID:output_type -> artist.ArtistTitle
+	17, // 36: artist.ArtistService.GetArtistsByTrackID:output_type -> artist.ArtistWithRoleList
+	18, // 37: artist.ArtistService.GetArtistsByTrackIDs:output_type -> artist.ArtistWithRoleMap
+	14, // 38: artist.ArtistService.GetArtistsByAlbumID:output_type -> artist.ArtistWithTitleList
+	15, // 39: artist.ArtistService.GetArtistsByAlbumIDs:output_type -> artist.ArtistWithTitleMap
+	8,  // 40: artist.ArtistService.GetAlbumIDsByArtistID:output_type -> artist.AlbumIDList
+	7,  // 41: artist.ArtistService.GetTrackIDsByArtistID:output_type -> artist.TrackIDList
+	26, // 42: artist.ArtistService.CreateStreamsByArtistIDs:output_type -> google.protobuf.Empty
+	0,  // 43: artist.ArtistService.GetArtistsListenedByUserID:output_type -> artist.ArtistListened
+	26, // 44: artist.ArtistService.LikeArtist:output_type -> google.protobuf.Empty
+	12, // 45: artist.ArtistService.GetFavoriteArtists:output_type -> artist.ArtistList
+	33, // [33:46] is the sub-list for method output_type
+	20, // [20:33] is the sub-list for method input_type
 	20, // [20:20] is the sub-list for extension type_name
 	20, // [20:20] is the sub-list for extension extendee
 	0,  // [0:20] is the sub-list for field type_name

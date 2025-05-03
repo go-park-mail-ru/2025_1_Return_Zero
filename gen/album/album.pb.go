@@ -844,7 +844,7 @@ const file_album_album_proto_rawDesc = "" +
 	"\x0eAlbumTypeAlbum\x10\x00\x12\x0f\n" +
 	"\vAlbumTypeEP\x10\x01\x12\x13\n" +
 	"\x0fAlbumTypeSingle\x10\x02\x12\x18\n" +
-	"\x14AlbumTypeCompilation\x10\x032\xbb\x03\n" +
+	"\x14AlbumTypeCompilation\x10\x032\xfc\x03\n" +
 	"\fAlbumService\x12:\n" +
 	"\fGetAllAlbums\x12\x18.album.FiltersWithUserID\x1a\x10.album.AlbumList\x126\n" +
 	"\fGetAlbumByID\x12\x18.album.AlbumIDWithUserID\x1a\f.album.Album\x126\n" +
@@ -852,7 +852,8 @@ const file_album_album_proto_rawDesc = "" +
 	"\x12GetAlbumTitleByIDs\x12\x12.album.AlbumIDList\x1a\x14.album.AlbumTitleMap\x12@\n" +
 	"\x0eGetAlbumsByIDs\x12\x1c.album.AlbumIDListWithUserID\x1a\x10.album.AlbumList\x12D\n" +
 	"\fCreateStream\x12\x1c.album.AlbumStreamCreateData\x1a\x16.google.protobuf.Empty\x127\n" +
-	"\tLikeAlbum\x12\x12.album.LikeRequest\x1a\x16.google.protobuf.EmptyB\tZ\a./albumb\x06proto3"
+	"\tLikeAlbum\x12\x12.album.LikeRequest\x1a\x16.google.protobuf.Empty\x12?\n" +
+	"\x11GetFavoriteAlbums\x12\x18.album.FiltersWithUserID\x1a\x10.album.AlbumListB\tZ\a./albumb\x06proto3"
 
 var (
 	file_album_album_proto_rawDescOnce sync.Once
@@ -913,15 +914,17 @@ var file_album_album_proto_depIdxs = []int32{
 	5,  // 21: album.AlbumService.GetAlbumsByIDs:input_type -> album.AlbumIDListWithUserID
 	13, // 22: album.AlbumService.CreateStream:input_type -> album.AlbumStreamCreateData
 	14, // 23: album.AlbumService.LikeAlbum:input_type -> album.LikeRequest
-	7,  // 24: album.AlbumService.GetAllAlbums:output_type -> album.AlbumList
-	6,  // 25: album.AlbumService.GetAlbumByID:output_type -> album.Album
-	8,  // 26: album.AlbumService.GetAlbumTitleByID:output_type -> album.AlbumTitle
-	9,  // 27: album.AlbumService.GetAlbumTitleByIDs:output_type -> album.AlbumTitleMap
-	7,  // 28: album.AlbumService.GetAlbumsByIDs:output_type -> album.AlbumList
-	17, // 29: album.AlbumService.CreateStream:output_type -> google.protobuf.Empty
-	17, // 30: album.AlbumService.LikeAlbum:output_type -> google.protobuf.Empty
-	24, // [24:31] is the sub-list for method output_type
-	17, // [17:24] is the sub-list for method input_type
+	12, // 24: album.AlbumService.GetFavoriteAlbums:input_type -> album.FiltersWithUserID
+	7,  // 25: album.AlbumService.GetAllAlbums:output_type -> album.AlbumList
+	6,  // 26: album.AlbumService.GetAlbumByID:output_type -> album.Album
+	8,  // 27: album.AlbumService.GetAlbumTitleByID:output_type -> album.AlbumTitle
+	9,  // 28: album.AlbumService.GetAlbumTitleByIDs:output_type -> album.AlbumTitleMap
+	7,  // 29: album.AlbumService.GetAlbumsByIDs:output_type -> album.AlbumList
+	17, // 30: album.AlbumService.CreateStream:output_type -> google.protobuf.Empty
+	17, // 31: album.AlbumService.LikeAlbum:output_type -> google.protobuf.Empty
+	7,  // 32: album.AlbumService.GetFavoriteAlbums:output_type -> album.AlbumList
+	25, // [25:33] is the sub-list for method output_type
+	17, // [17:25] is the sub-list for method input_type
 	17, // [17:17] is the sub-list for extension type_name
 	17, // [17:17] is the sub-list for extension extendee
 	0,  // [0:17] is the sub-list for field type_name

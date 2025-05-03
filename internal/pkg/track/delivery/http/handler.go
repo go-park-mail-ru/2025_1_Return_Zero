@@ -436,3 +436,50 @@ func (h *TrackHandler) GetPlaylistTracks(w http.ResponseWriter, r *http.Request)
 	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
 	json.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
 }
+
+// GetFavoriteTracks godoc
+// @Summary Get favorite tracks
+// @Description Get a list of favorite tracks for a user
+// @Tags tracks
+// @Accept json
+// @Produce json
+// @Param username path string true "Username"
+// @Param offset query integer false "Offset (default: 0)"
+// @Param limit query integer false "Limit (default: 10, max: 100)"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Track} "List of favorite tracks"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid username or filters"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "User not found"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /users/{username}/tracks [get]
+func (h *TrackHandler) GetFavoriteTracks(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	vars := mux.Vars(r)
+	username := vars["username"]
+	if username == "" {
+		logger.Warn("attempt to get favorite tracks for empty username")
+		err := customErrors.ErrUnauthorized
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	pagination, err := pagination.GetPagination(r, &h.cfg.Pagination)
+	if err != nil {
+		logger.Error("failed to get pagination", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	usecaseTracks, err := h.usecase.GetFavoriteTracks(ctx, &usecaseModel.TrackFilters{
+		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
+	}, username)
+	if err != nil {
+		logger.Error("failed to get favorite tracks", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
+	json.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
+}

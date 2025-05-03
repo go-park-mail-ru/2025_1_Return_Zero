@@ -97,3 +97,13 @@ func (u *AlbumUsecase) LikeAlbum(ctx context.Context, request *usecaseModel.Like
 	}
 	return nil
 }
+
+func (u *AlbumUsecase) GetFavoriteAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters, userID int64) ([]*usecaseModel.Album, error) {
+	repoFilters := model.FiltersFromUsecaseToRepository(filters)
+	albums, err := u.albumRepository.GetFavoriteAlbums(ctx, repoFilters, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return model.AlbumListFromRepositoryToUsecase(albums), nil
+}

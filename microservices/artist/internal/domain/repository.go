@@ -22,4 +22,5 @@ type Repository interface {
 	LikeArtist(ctx context.Context, request *repoModel.LikeRequest) error
 	UnlikeArtist(ctx context.Context, request *repoModel.LikeRequest) error
 	CheckArtistExists(ctx context.Context, id int64) (bool, error)
+	GetFavoriteArtists(ctx context.Context, filters *repoModel.Filters, userID int64) ([]*repoModel.Artist, error)
 }

@@ -28,7 +28,14 @@ func (u *playlistUsecase) CreatePlaylist(ctx context.Context, request *usecaseMo
 		return nil, customErrors.HandlePlaylistGRPCError(err)
 	}
 
-	playlist, err := (*u.playlistClient).CreatePlaylist(ctx, model.CreatePlaylistRequestFromUsecaseToProto(request, thumbnail.GetThumbnail()))
+	privacy, err := (*u.userClient).GetUserPrivacyByID(ctx, &userProto.UserID{
+		Id: request.UserID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	playlist, err := (*u.playlistClient).CreatePlaylist(ctx, model.CreatePlaylistRequestFromUsecaseToProto(request, thumbnail.GetThumbnail(), privacy.IsPublicPlaylists))
 	if err != nil {
 		return nil, customErrors.HandlePlaylistGRPCError(err)
 	}

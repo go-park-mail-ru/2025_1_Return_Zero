@@ -15,8 +15,8 @@ import (
 
 const (
 	CreatePlaylistQuery = `
-		INSERT INTO playlist (title, user_id, thumbnail_url)
-		VALUES ($1, $2, $3)
+		INSERT INTO playlist (title, user_id, thumbnail_url, is_public)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id
 	`
 
@@ -125,7 +125,7 @@ func (r *PlaylistPostgresRepository) CreatePlaylist(ctx context.Context, playlis
 	logger.Info("Creating playlist", zap.Any("playlist", playlistCreateRequest))
 
 	var id int64
-	err := r.db.QueryRowContext(ctx, CreatePlaylistQuery, playlistCreateRequest.Title, playlistCreateRequest.UserID, playlistCreateRequest.Thumbnail).Scan(&id)
+	err := r.db.QueryRowContext(ctx, CreatePlaylistQuery, playlistCreateRequest.Title, playlistCreateRequest.UserID, playlistCreateRequest.Thumbnail, playlistCreateRequest.IsPublic).Scan(&id)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
 			logger.Warn("Failed to create playlist: duplicate title for user", zap.Error(err))

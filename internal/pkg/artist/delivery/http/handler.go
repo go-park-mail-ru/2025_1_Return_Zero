@@ -156,3 +156,49 @@ func (h *ArtistHandler) LikeArtist(w http.ResponseWriter, r *http.Request) {
 		Message: "artist liked/unliked",
 	}, nil)
 }
+
+// GetFavoriteArtists godoc
+// @Summary Get favorite artists
+// @Description Get a list of favorite artists for a user
+// @Tags artists
+// @Accept json
+// @Produce json
+// @Param username path string true "Username"
+// @Param offset query integer false "Offset (default: 0)"
+// @Param limit query integer false "Limit (default: 10, max: 100)"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Artist} "List of favorite artists"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid username"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /user/{username}/artists [get]
+func (h *ArtistHandler) GetFavoriteArtists(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	username := mux.Vars(r)["username"]
+	if username == "" {
+		logger.Warn("attempt to get favorite artists for empty username")
+		err := customErrors.ErrUnauthorized
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	pagination, err := pagination.GetPagination(r, &h.cfg.Pagination)
+	if err != nil {
+		logger.Error("failed to get pagination", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	usecaseArtists, err := h.usecase.GetFavoriteArtists(ctx, &usecaseModel.ArtistFilters{
+		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
+	}, username)
+
+	if err != nil {
+		logger.Error("failed to get artists", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	artists := model.ArtistsFromUsecaseToDelivery(usecaseArtists)
+	json.WriteSuccessResponse(w, http.StatusOK, artists, nil)
+}

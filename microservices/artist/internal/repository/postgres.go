@@ -114,6 +114,15 @@ const (
 	CheckArtistExistsQuery = `
 		SELECT EXISTS (SELECT 1 FROM artist WHERE id = $1)
 	`
+
+	GetFavoriteArtistsQuery = `
+		SELECT artist.id, artist.title, artist.description, artist.thumbnail_url
+		FROM artist
+		JOIN favorite_artist ON artist.id = favorite_artist.artist_id
+		WHERE favorite_artist.user_id = $1
+		ORDER BY favorite_artist.created_at DESC, artist.id DESC
+		LIMIT $2 OFFSET $3
+	`
 )
 
 type artistPostgresRepository struct {
@@ -448,4 +457,31 @@ func (r *artistPostgresRepository) UnlikeArtist(ctx context.Context, request *re
 	}
 
 	return nil
+}
+
+func (r *artistPostgresRepository) GetFavoriteArtists(ctx context.Context, filters *repoModel.Filters, userID int64) ([]*repoModel.Artist, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting favorite artists by user id from db", zap.Int64("userID", userID), zap.String("query", GetFavoriteArtistsQuery))
+	rows, err := r.db.QueryContext(ctx, GetFavoriteArtistsQuery, userID, filters.Pagination.Limit, filters.Pagination.Offset)
+	if err != nil {
+		logger.Error("failed to get favorite artists", zap.Error(err))
+		return nil, artistErrors.NewInternalError("failed to get favorite artists: %v", err)
+	}
+	defer rows.Close()
+
+	var artists []*repoModel.Artist
+	for rows.Next() {
+		var artist repoModel.Artist
+		err := rows.Scan(&artist.ID, &artist.Title, &artist.Description, &artist.Thumbnail)
+		// Так как это мы не отображаем в списке, то можно не делать лишнюю проверку
+		// В идеале поменяем к рк4
+		artist.IsFavorite = false
+		if err != nil {
+			logger.Error("failed to scan artist", zap.Error(err))
+			return nil, artistErrors.NewInternalError("failed to scan artist: %v", err)
+		}
+		artists = append(artists, &artist)
+	}
+
+	return artists, nil
 }

@@ -202,3 +202,47 @@ func (h *AlbumHandler) LikeAlbum(w http.ResponseWriter, r *http.Request) {
 		Message: "album liked/unliked",
 	}, nil)
 }
+
+// GetFavoriteAlbums godoc
+// @Summary Get favorite albums
+// @Description Get a list of favorite albums for a user
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Param offset query integer false "Offset (default: 0)"
+// @Param limit query integer false "Limit (default: 10, max: 100)"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Album} "List of favorite albums"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /albums/me/favorite [get]
+func (h *AlbumHandler) GetFavoriteAlbums(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		logger.Warn("attempt to get favorite albums for unauthorized user")
+		err := customErrors.ErrUnauthorized
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	pagination, err := pagination.GetPagination(r, &h.cfg.Pagination)
+	if err != nil {
+		logger.Error("failed to get pagination", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	usecaseAlbums, err := h.usecase.GetFavoriteAlbums(ctx, &usecaseModel.AlbumFilters{
+		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
+	}, userID)
+	if err != nil {
+		logger.Error("failed to get favorite albums", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	albums := model.AlbumsFromUsecaseToDelivery(usecaseAlbums)
+	json.WriteSuccessResponse(w, http.StatusOK, albums, nil)
+}

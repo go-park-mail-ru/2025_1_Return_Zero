@@ -69,6 +69,15 @@ const (
 		DELETE FROM favorite_album
 		WHERE album_id = $1 AND user_id = $2
 	`
+
+	GetFavoriteAlbumsQuery = `
+		SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date
+		FROM album a
+		JOIN favorite_album fa ON a.id = fa.album_id
+		WHERE fa.user_id = $1
+		ORDER BY fa.created_at DESC, a.id DESC
+		LIMIT $2 OFFSET $3
+	`
 )
 
 type albumPostgresRepository struct {
@@ -252,4 +261,35 @@ func (r *albumPostgresRepository) UnlikeAlbum(ctx context.Context, request *repo
 		return albumErrors.NewInternalError("failed to unlike album: %v", err)
 	}
 	return nil
+}
+
+func (r *albumPostgresRepository) GetFavoriteAlbums(ctx context.Context, filters *repoModel.AlbumFilters, userID int64) ([]*repoModel.Album, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting favorite albums from db", zap.Any("filters", filters), zap.String("query", GetFavoriteAlbumsQuery))
+	rows, err := r.db.Query(GetFavoriteAlbumsQuery, userID, filters.Pagination.Limit, filters.Pagination.Offset)
+	if err != nil {
+		logger.Error("failed to get favorite albums", zap.Error(err))
+		return nil, albumErrors.NewInternalError("failed to get favorite albums: %v", err)
+	}
+	defer rows.Close()
+
+	var albums []*repoModel.Album
+	for rows.Next() {
+		var album repoModel.Album
+		// Ставим по дефолту, так как запрашивашиваются избранные, то есть заведомо известно, что они лайкнуты
+		album.IsFavorite = true
+		err = rows.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ReleaseDate)
+		if err != nil {
+			logger.Error("failed to scan album", zap.Error(err))
+			return nil, albumErrors.NewInternalError("failed to scan album: %v", err)
+		}
+		albums = append(albums, &album)
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.Error("failed to get favorite albums", zap.Error(err))
+		return nil, albumErrors.NewInternalError("failed to get favorite albums: %v", err)
+	}
+
+	return albums, nil
 }

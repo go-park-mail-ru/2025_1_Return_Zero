@@ -24,7 +24,6 @@ import (
 	albumUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/usecase"
 	artistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/delivery/http"
 	artistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/usecase"
-
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	playlistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/playlist/delivery/http"
 	playlistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/playlist/usecase"
@@ -94,13 +93,12 @@ func main() {
 	r.Use(middleware.CorsMiddleware(cfg.Cors))
 	// r.Use(middleware.CSRFMiddleware(cfg.CSRF))
 
-	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(&trackClient, &artistClient, &albumClient, &playlistClient), cfg)
+	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(&trackClient, &artistClient, &albumClient, &playlistClient, &userClient), cfg)
 	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(&albumClient, &artistClient), cfg)
-	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(&artistClient), cfg)
+	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(&artistClient, &userClient), cfg)
 	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(&userClient, &authClient, &artistClient, &trackClient))
-
-	// TODO: change to userClient after merge
 	playlistHandler := playlistHttp.NewPlaylistHandler(playlistUsecase.NewUsecase(&playlistClient, &userClient), cfg)
+
 	r.HandleFunc("/api/v1/tracks", trackHandler.GetAllTracks).Methods("GET")
 	r.HandleFunc("/api/v1/tracks/{id:[0-9]+}", trackHandler.GetTrackByID).Methods("GET")
 	r.HandleFunc("/api/v1/tracks/{id:[0-9]+}/stream", trackHandler.CreateStream).Methods("POST")
@@ -111,6 +109,7 @@ func main() {
 	r.HandleFunc("/api/v1/albums/{id:[0-9]+}", albumHandler.GetAlbumByID).Methods("GET")
 	r.HandleFunc("/api/v1/albums/{id:[0-9]+}/tracks", trackHandler.GetTracksByAlbumID).Methods("GET")
 	r.HandleFunc("/api/v1/albums/{id:[0-9]+}/like", albumHandler.LikeAlbum).Methods("POST")
+	r.HandleFunc("/api/v1/albums/me/favorite", albumHandler.GetFavoriteAlbums).Methods("GET")
 
 	r.HandleFunc("/api/v1/artists", artistHandler.GetAllArtists).Methods("GET")
 	r.HandleFunc("/api/v1/artists/{id:[0-9]+}", artistHandler.GetArtistByID).Methods("GET")
@@ -137,8 +136,9 @@ func main() {
 	r.HandleFunc("/api/v1/user/me", userHandler.ChangeUserData).Methods("PUT")
 	r.HandleFunc("/api/v1/user/me", userHandler.DeleteUser).Methods("DELETE")
 	r.HandleFunc("/api/v1/user/{username}", userHandler.GetUserData).Methods("GET")
-
 	r.HandleFunc("/api/v1/user/me/history", trackHandler.GetLastListenedTracks).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username}/artists", artistHandler.GetFavoriteArtists).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username}/tracks", trackHandler.GetFavoriteTracks).Methods("GET")
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),

@@ -601,11 +601,12 @@ func UploadPlaylistThumbnailRequestFromUsecaseToProto(title string, thumbnail []
 	}
 }
 
-func CreatePlaylistRequestFromUsecaseToProto(usecasePlaylist *usecase.CreatePlaylistRequest, thumbnail string) *playlistProto.CreatePlaylistRequest {
+func CreatePlaylistRequestFromUsecaseToProto(usecasePlaylist *usecase.CreatePlaylistRequest, thumbnail string, isPublic bool) *playlistProto.CreatePlaylistRequest {
 	return &playlistProto.CreatePlaylistRequest{
 		Title:     usecasePlaylist.Title,
 		UserId:    usecasePlaylist.UserID,
 		Thumbnail: thumbnail,
+		IsPublic:  isPublic,
 	}
 }
 

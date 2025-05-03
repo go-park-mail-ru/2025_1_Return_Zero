@@ -19,6 +19,7 @@ type CreatePlaylistRequest struct {
 	Title     string
 	UserID    int64
 	Thumbnail string
+	IsPublic  bool
 }
 
 type UploadPlaylistThumbnailRequest struct {

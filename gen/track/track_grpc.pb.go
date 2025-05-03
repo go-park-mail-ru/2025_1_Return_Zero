@@ -31,6 +31,8 @@ type TrackServiceClient interface {
 	GetMinutesListenedByUserID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*MinutesListened, error)
 	GetTracksListenedByUserID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*TracksListened, error)
 	LikeTrack(ctx context.Context, in *LikeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	SearchTracks(ctx context.Context, in *Query, opts ...grpc.CallOption) (*TrackList, error)
+	GetFavoriteTracks(ctx context.Context, in *FavoriteRequest, opts ...grpc.CallOption) (*TrackList, error)
 }
 
 type trackServiceClient struct {
@@ -149,6 +151,24 @@ func (c *trackServiceClient) LikeTrack(ctx context.Context, in *LikeRequest, opt
 	return out, nil
 }
 
+func (c *trackServiceClient) SearchTracks(ctx context.Context, in *Query, opts ...grpc.CallOption) (*TrackList, error) {
+	out := new(TrackList)
+	err := c.cc.Invoke(ctx, "/track.TrackService/SearchTracks", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *trackServiceClient) GetFavoriteTracks(ctx context.Context, in *FavoriteRequest, opts ...grpc.CallOption) (*TrackList, error) {
+	out := new(TrackList)
+	err := c.cc.Invoke(ctx, "/track.TrackService/GetFavoriteTracks", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TrackServiceServer is the server API for TrackService service.
 // All implementations must embed UnimplementedTrackServiceServer
 // for forward compatibility
@@ -165,6 +185,8 @@ type TrackServiceServer interface {
 	GetMinutesListenedByUserID(context.Context, *UserID) (*MinutesListened, error)
 	GetTracksListenedByUserID(context.Context, *UserID) (*TracksListened, error)
 	LikeTrack(context.Context, *LikeRequest) (*emptypb.Empty, error)
+	SearchTracks(context.Context, *Query) (*TrackList, error)
+	GetFavoriteTracks(context.Context, *FavoriteRequest) (*TrackList, error)
 	mustEmbedUnimplementedTrackServiceServer()
 }
 
@@ -207,6 +229,12 @@ func (UnimplementedTrackServiceServer) GetTracksListenedByUserID(context.Context
 }
 func (UnimplementedTrackServiceServer) LikeTrack(context.Context, *LikeRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LikeTrack not implemented")
+}
+func (UnimplementedTrackServiceServer) SearchTracks(context.Context, *Query) (*TrackList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchTracks not implemented")
+}
+func (UnimplementedTrackServiceServer) GetFavoriteTracks(context.Context, *FavoriteRequest) (*TrackList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFavoriteTracks not implemented")
 }
 func (UnimplementedTrackServiceServer) mustEmbedUnimplementedTrackServiceServer() {}
 
@@ -437,6 +465,42 @@ func _TrackService_LikeTrack_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TrackService_SearchTracks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Query)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TrackServiceServer).SearchTracks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/track.TrackService/SearchTracks",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TrackServiceServer).SearchTracks(ctx, req.(*Query))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TrackService_GetFavoriteTracks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FavoriteRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TrackServiceServer).GetFavoriteTracks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/track.TrackService/GetFavoriteTracks",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TrackServiceServer).GetFavoriteTracks(ctx, req.(*FavoriteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TrackService_ServiceDesc is the grpc.ServiceDesc for TrackService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -491,6 +555,14 @@ var TrackService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "LikeTrack",
 			Handler:    _TrackService_LikeTrack_Handler,
+		},
+		{
+			MethodName: "SearchTracks",
+			Handler:    _TrackService_SearchTracks_Handler,
+		},
+		{
+			MethodName: "GetFavoriteTracks",
+			Handler:    _TrackService_GetFavoriteTracks_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
