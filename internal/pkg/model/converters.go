@@ -144,10 +144,10 @@ func AlbumLikeRequestFromUsecaseToProto(usecaseLikeRequest *usecase.AlbumLikeReq
 	}
 }
 
-func AlbumLikeRequestFromDeliveryToUsecase(deliveryLikeRequest *delivery.AlbumLikeRequest, userID int64, albumID int64) *usecase.AlbumLikeRequest {
+func AlbumLikeRequestFromDeliveryToUsecase(isLike bool, userID int64, albumID int64) *usecase.AlbumLikeRequest {
 	return &usecase.AlbumLikeRequest{
 		AlbumID: albumID,
-		IsLike:  deliveryLikeRequest.IsLike,
+		IsLike:  isLike,
 		UserID:  userID,
 	}
 }
@@ -253,10 +253,10 @@ func ArtistLikeRequestFromUsecaseToProto(usecaseLikeRequest *usecase.ArtistLikeR
 	}
 }
 
-func ArtistLikeRequestFromDeliveryToUsecase(deliveryLikeRequest *delivery.ArtistLikeRequest, userID int64, artistID int64) *usecase.ArtistLikeRequest {
+func ArtistLikeRequestFromDeliveryToUsecase(isLike bool, userID int64, artistID int64) *usecase.ArtistLikeRequest {
 	return &usecase.ArtistLikeRequest{
 		ArtistID: artistID,
-		IsLike:   deliveryLikeRequest.IsLike,
+		IsLike:   isLike,
 		UserID:   userID,
 	}
 }
@@ -398,10 +398,10 @@ func TrackLikeRequestFromUsecaseToProto(usecaseLikeRequest *usecase.TrackLikeReq
 	}
 }
 
-func TrackLikeRequestFromDeliveryToUsecase(deliveryLikeRequest *delivery.TrackLikeRequest, userID int64, trackID int64) *usecase.TrackLikeRequest {
+func TrackLikeRequestFromDeliveryToUsecase(isLike bool, userID int64, trackID int64) *usecase.TrackLikeRequest {
 	return &usecase.TrackLikeRequest{
 		TrackID: trackID,
-		IsLike:  deliveryLikeRequest.IsLike,
+		IsLike:  isLike,
 		UserID:  userID,
 	}
 }

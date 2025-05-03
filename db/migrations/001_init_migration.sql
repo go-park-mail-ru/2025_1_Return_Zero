@@ -2,6 +2,7 @@
 
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
+-- user microservice
 CREATE TABLE IF NOT EXISTS "user" (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
@@ -15,6 +16,7 @@ CREATE TABLE IF NOT EXISTS "user" (
     is_active BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+-- user microservice
 CREATE TABLE IF NOT EXISTS user_settings (
     user_id BIGINT NOT NULL PRIMARY KEY,
     is_public_playlists BOOLEAN NOT NULL DEFAULT FALSE, 
@@ -31,6 +33,7 @@ CREATE TABLE IF NOT EXISTS user_settings (
         ON UPDATE CASCADE
 );
 
+-- genre microservice
 CREATE TABLE IF NOT EXISTS genre (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
@@ -39,6 +42,7 @@ CREATE TABLE IF NOT EXISTS genre (
     CONSTRAINT genre_name_length_check CHECK (LENGTH(name) >= 3 AND LENGTH(name) <= 20)
 );
 
+-- artist microservice
 CREATE TABLE IF NOT EXISTS artist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     title TEXT NOT NULL,
@@ -62,8 +66,7 @@ CREATE TABLE IF NOT EXISTS album (
     CONSTRAINT album_valid_type_check CHECK (type IN ('album', 'single', 'ep', 'compilation'))
 );
 
-
-
+-- track microservice
 CREATE TABLE IF NOT EXISTS track (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     title TEXT NOT NULL,
@@ -75,16 +78,11 @@ CREATE TABLE IF NOT EXISTS track (
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     duration INTEGER NOT NULL,
     position INTEGER NOT NULL,
-    FOREIGN KEY (album_id)
-        REFERENCES album (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
     CONSTRAINT track_valid_duration_check CHECK (duration > 0),
     CONSTRAINT unique_album_track_check UNIQUE (album_id, position)
 );
 
-
-
+-- artist microservice
 CREATE TABLE IF NOT EXISTS track_artist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
     track_id BIGINT NOT NULL,
@@ -92,10 +90,6 @@ CREATE TABLE IF NOT EXISTS track_artist (
     role TEXT NOT NULL DEFAULT 'main',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (track_id) 
-        REFERENCES track (id) 
-        ON DELETE CASCADE 
-        ON UPDATE CASCADE,
     FOREIGN KEY (artist_id) 
         REFERENCES artist (id) 
         ON DELETE CASCADE 
@@ -104,13 +98,10 @@ CREATE TABLE IF NOT EXISTS track_artist (
     CONSTRAINT unique_track_artist_check UNIQUE (track_id, artist_id, role)
 );
 
+-- artist microservice
 CREATE TABLE IF NOT EXISTS album_artist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     album_id BIGINT NOT NULL,
-    FOREIGN KEY (album_id)
-        REFERENCES album (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
     artist_id BIGINT NOT NULL,
     FOREIGN KEY (artist_id)
         REFERENCES artist (id)
@@ -120,6 +111,7 @@ CREATE TABLE IF NOT EXISTS album_artist (
     CONSTRAINT unique_album_artist_check UNIQUE (album_id, artist_id)
 );
 
+-- playlist microservice
 CREATE TABLE IF NOT EXISTS playlist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     title TEXT NOT NULL,
@@ -131,22 +123,15 @@ CREATE TABLE IF NOT EXISTS playlist (
     thumbnail_url TEXT NOT NULL DEFAULT '/default_playlist.png',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (user_id)
-        REFERENCES "user" (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
     CONSTRAINT unique_user_playlist_check UNIQUE (user_id, title)
 );
 
+-- playlist microservice
 CREATE TABLE IF NOT EXISTS favorite_playlist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     playlist_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (user_id)
-        REFERENCES "user" (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
     FOREIGN KEY (playlist_id)
         REFERENCES playlist (id)
         ON DELETE CASCADE
@@ -154,6 +139,7 @@ CREATE TABLE IF NOT EXISTS favorite_playlist (
     CONSTRAINT unique_user_favorite_playlist_check UNIQUE (user_id, playlist_id)
 );
 
+-- playlist microservice
 CREATE TABLE IF NOT EXISTS playlist_track (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     playlist_id BIGINT NOT NULL,
@@ -164,13 +150,10 @@ CREATE TABLE IF NOT EXISTS playlist_track (
         REFERENCES playlist (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
-    FOREIGN KEY (track_id)
-        REFERENCES track (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
     CONSTRAINT unique_playlist_track_check UNIQUE (playlist_id, track_id)
 );
 
+-- genre microservice
 CREATE TABLE IF NOT EXISTS genre_track (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     genre_id BIGINT NOT NULL,
@@ -181,13 +164,10 @@ CREATE TABLE IF NOT EXISTS genre_track (
         REFERENCES genre (id) 
         ON DELETE CASCADE 
         ON UPDATE CASCADE,
-    FOREIGN KEY (track_id) 
-        REFERENCES track (id) 
-        ON DELETE CASCADE 
-        ON UPDATE CASCADE,
     CONSTRAINT unique_genre_track_check UNIQUE (genre_id, track_id)
 );
 
+-- genre microservice
 CREATE TABLE IF NOT EXISTS genre_album (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     genre_id BIGINT NOT NULL,
@@ -198,23 +178,16 @@ CREATE TABLE IF NOT EXISTS genre_album (
         REFERENCES genre (id) 
         ON DELETE CASCADE 
         ON UPDATE CASCADE,
-    FOREIGN KEY (album_id) 
-        REFERENCES album (id) 
-        ON DELETE CASCADE 
-        ON UPDATE CASCADE,
     CONSTRAINT unique_genre_album_check UNIQUE (genre_id, album_id)
 );
 
+-- track microservice
 CREATE TABLE IF NOT EXISTS favorite_track (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     track_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (user_id)
-        REFERENCES "user" (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
     FOREIGN KEY (track_id)
         REFERENCES track (id)
         ON DELETE CASCADE
@@ -222,16 +195,13 @@ CREATE TABLE IF NOT EXISTS favorite_track (
     CONSTRAINT unique_favorite_track_check UNIQUE (user_id, track_id)
 );
 
+-- album microservice
 CREATE TABLE IF NOT EXISTS favorite_album (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     album_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (user_id)
-        REFERENCES "user" (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
     FOREIGN KEY (album_id)
         REFERENCES album (id)
         ON DELETE CASCADE
@@ -239,16 +209,13 @@ CREATE TABLE IF NOT EXISTS favorite_album (
     CONSTRAINT unique_favorite_album_check UNIQUE (user_id, album_id)
 );
 
+-- artist microservice
 CREATE TABLE IF NOT EXISTS favorite_artist (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     artist_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (user_id)
-        REFERENCES "user" (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
     FOREIGN KEY (artist_id)
         REFERENCES artist (id)
         ON DELETE CASCADE
@@ -256,6 +223,7 @@ CREATE TABLE IF NOT EXISTS favorite_artist (
     CONSTRAINT unique_favorite_artist_check UNIQUE (user_id, artist_id)
 );
 
+-- track microservice
 CREATE TABLE IF NOT EXISTS track_stream (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
@@ -263,10 +231,6 @@ CREATE TABLE IF NOT EXISTS track_stream (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     duration INTEGER NOT NULL DEFAULT 0,
-    FOREIGN KEY (user_id)
-        REFERENCES "user" (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
     FOREIGN KEY (track_id)
         REFERENCES track (id)
         ON DELETE CASCADE
@@ -274,6 +238,7 @@ CREATE TABLE IF NOT EXISTS track_stream (
     CONSTRAINT stream_valid_duration_check CHECK (duration >= 0)
 );
 
+-- track microservice
 CREATE MATERIALIZED VIEW track_stats AS
 SELECT 
     t.id AS track_id,
@@ -288,17 +253,13 @@ GROUP BY
 
 CREATE UNIQUE INDEX track_stats_track_id_idx ON track_stats (track_id);
 
+-- album microservice
 CREATE TABLE IF NOT EXISTS album_stream (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     album_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    duration INTEGER NOT NULL DEFAULT 0,
-    FOREIGN KEY (user_id)
-        REFERENCES "user" (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
     FOREIGN KEY (album_id)
         REFERENCES album (id)
         ON DELETE CASCADE
@@ -306,6 +267,7 @@ CREATE TABLE IF NOT EXISTS album_stream (
     CONSTRAINT stream_valid_duration_check CHECK (duration >= 0)
 );
 
+-- album microservice
 CREATE MATERIALIZED VIEW album_stats AS
 SELECT 
     a.id AS album_id,
@@ -320,16 +282,13 @@ GROUP BY
 
 CREATE UNIQUE INDEX album_stats_album_id_idx ON album_stats (album_id);
 
+-- artist microservice
 CREATE TABLE IF NOT EXISTS artist_stream (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id BIGINT NOT NULL,
     artist_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    FOREIGN KEY (user_id)
-        REFERENCES "user" (id)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
     FOREIGN KEY (artist_id)
         REFERENCES artist (id)
         ON DELETE CASCADE

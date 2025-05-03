@@ -19,6 +19,11 @@ service TrackService {
     rpc GetMinutesListenedByUserID(UserID) returns (MinutesListened);
     rpc GetTracksListenedByUserID(UserID) returns (TracksListened);
     rpc LikeTrack(LikeRequest) returns (google.protobuf.Empty);
+    rpc SearchTracks(Query) returns (TrackList);
+}
+
+message Query {
+    string query = 1;
 }
 
 message AlbumID {

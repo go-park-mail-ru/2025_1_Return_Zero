@@ -188,7 +188,7 @@ func (r *albumPostgresRepository) GetAlbumsByIDs(ctx context.Context, ids []int6
 	}
 	defer rows.Close()
 
-	albums := make([]*repoModel.Album, 0)
+	var albums []*repoModel.Album
 	for rows.Next() {
 		var album repoModel.Album
 		err = rows.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ReleaseDate, &album.IsFavorite)

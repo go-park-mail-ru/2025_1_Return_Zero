@@ -177,7 +177,7 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 	user, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to create stream for unauthorized user")
-		err := customErrors.ErrStreamCreateUnauthorized
+		err := customErrors.ErrUnauthorized
 		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
@@ -231,7 +231,7 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 	user, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to update stream duration for unauthorized user")
-		err := customErrors.ErrStreamUpdateUnauthorized
+		err := customErrors.ErrUnauthorized
 		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
@@ -293,7 +293,7 @@ func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Requ
 	user, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to get last listened tracks for unauthorized user")
-		err := customErrors.ErrStreamHistoryUnauthorized
+		err := customErrors.ErrUnauthorized
 		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
@@ -367,7 +367,7 @@ func (h *TrackHandler) LikeTrack(w http.ResponseWriter, r *http.Request) {
 	user, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to like track for unauthorized user")
-		err := customErrors.ErrLikeTrackUnauthorized
+		err := customErrors.ErrUnauthorized
 		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
@@ -381,13 +381,16 @@ func (h *TrackHandler) LikeTrack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deliveryLikeRequest := &delivery.TrackLikeRequest{
-		IsLike: true,
+	var deliveryLikeRequest delivery.TrackLikeRequest
+
+	err = json.ReadJSON(w, r, &deliveryLikeRequest)
+	if err != nil {
+		logger.Warn("failed to read like request", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
 	}
 
-	json.ReadJSON(w, r, deliveryLikeRequest)
-
-	usecaseLikeRequest := model.TrackLikeRequestFromDeliveryToUsecase(deliveryLikeRequest, user.ID, id)
+	usecaseLikeRequest := model.TrackLikeRequestFromDeliveryToUsecase(deliveryLikeRequest.IsLike, user.ID, id)
 
 	err = h.usecase.LikeTrack(ctx, usecaseLikeRequest)
 	if err != nil {

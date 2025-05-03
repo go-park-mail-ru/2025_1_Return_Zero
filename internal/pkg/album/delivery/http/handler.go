@@ -166,7 +166,7 @@ func (h *AlbumHandler) LikeAlbum(w http.ResponseWriter, r *http.Request) {
 	user, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to like album for unauthorized user")
-		err := customErrors.ErrLikeAlbumUnauthorized
+		err := customErrors.ErrUnauthorized
 		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
@@ -180,13 +180,16 @@ func (h *AlbumHandler) LikeAlbum(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deliveryLikeRequest := &deliveryModel.AlbumLikeRequest{
-		IsLike: true,
+	var deliveryLikeRequest deliveryModel.AlbumLikeRequest
+
+	err = json.ReadJSON(w, r, &deliveryLikeRequest)
+	if err != nil {
+		logger.Warn("failed to read like request", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
 	}
 
-	json.ReadJSON(w, r, deliveryLikeRequest)
-
-	usecaseLikeRequest := model.AlbumLikeRequestFromDeliveryToUsecase(deliveryLikeRequest, user.ID, id)
+	usecaseLikeRequest := model.AlbumLikeRequestFromDeliveryToUsecase(deliveryLikeRequest.IsLike, user.ID, id)
 
 	err = h.usecase.LikeAlbum(ctx, usecaseLikeRequest)
 	if err != nil {

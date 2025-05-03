@@ -45,6 +45,6 @@ type TrackFilters struct {
 
 type TrackLikeRequest struct {
 	TrackID int64
-	IsLike  bool
 	UserID  int64
+	IsLike  bool
 }

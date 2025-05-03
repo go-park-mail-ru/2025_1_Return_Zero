@@ -19,6 +19,7 @@ services:
       - '${POSTGRES_PORT}:${POSTGRES_PORT}'
     volumes:
       - 'pgdata:/var/lib/postgresql/data'
+      - './_postgres:/docker-entrypoint-initdb.d'
     tty: true
 
   redis:
