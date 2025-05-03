@@ -174,14 +174,13 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to create stream for unauthorized user")
 		err := customErrors.ErrUnauthorized
 		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
-	userID := user.ID
 
 	trackStreamCreateData := &delivery.TrackStreamCreateData{
 		TrackID: trackID,
@@ -228,15 +227,13 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to update stream duration for unauthorized user")
 		err := customErrors.ErrUnauthorized
 		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
-
-	userID := user.ID
 
 	var streamUpdateData delivery.TrackStreamUpdateData
 
@@ -290,7 +287,7 @@ func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to get last listened tracks for unauthorized user")
 		err := customErrors.ErrUnauthorized
@@ -298,7 +295,7 @@ func (h *TrackHandler) GetLastListenedTracks(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	usecaseTracks, err := h.usecase.GetLastListenedTracks(ctx, user.ID, &usecaseModel.TrackFilters{
+	usecaseTracks, err := h.usecase.GetLastListenedTracks(ctx, userID, &usecaseModel.TrackFilters{
 		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
 	})
 
@@ -364,7 +361,7 @@ func (h *TrackHandler) LikeTrack(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to like track for unauthorized user")
 		err := customErrors.ErrUnauthorized
@@ -390,7 +387,7 @@ func (h *TrackHandler) LikeTrack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usecaseLikeRequest := model.TrackLikeRequestFromDeliveryToUsecase(deliveryLikeRequest.IsLike, user.ID, id)
+	usecaseLikeRequest := model.TrackLikeRequestFromDeliveryToUsecase(deliveryLikeRequest.IsLike, userID, id)
 
 	err = h.usecase.LikeTrack(ctx, usecaseLikeRequest)
 	if err != nil {

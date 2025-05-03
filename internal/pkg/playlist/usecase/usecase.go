@@ -6,20 +6,20 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/playlist"
 
 	playlistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/playlist"
+	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
 	customErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
-	userRepo "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
 )
 
-func NewUsecase(playlistClient *playlistProto.PlaylistServiceClient, userRepo userRepo.Repository) playlist.Usecase {
-	return &playlistUsecase{playlistClient: playlistClient, userRepo: userRepo}
+func NewUsecase(playlistClient *playlistProto.PlaylistServiceClient, userClient *userProto.UserServiceClient) playlist.Usecase {
+	return &playlistUsecase{playlistClient: playlistClient, userClient: userClient}
 }
 
 type playlistUsecase struct {
 	playlistClient *playlistProto.PlaylistServiceClient
-	userRepo       userRepo.Repository
+	userClient     *userProto.UserServiceClient
 }
 
 func (u *playlistUsecase) CreatePlaylist(ctx context.Context, request *usecaseModel.CreatePlaylistRequest) (*usecaseModel.Playlist, error) {
@@ -33,7 +33,9 @@ func (u *playlistUsecase) CreatePlaylist(ctx context.Context, request *usecaseMo
 		return nil, customErrors.HandlePlaylistGRPCError(err)
 	}
 
-	user, err := u.userRepo.GetUserByID(ctx, playlist.GetUserId())
+	user, err := (*u.userClient).GetUserByID(ctx, &userProto.UserID{
+		Id: playlist.GetUserId(),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +55,9 @@ func (u *playlistUsecase) GetCombinedPlaylistsForCurrentUser(ctx context.Context
 
 	usecasePlaylists := make([]*usecaseModel.Playlist, len(playlists.GetPlaylists()))
 	for i, playlist := range playlists.GetPlaylists() {
-		user, err := u.userRepo.GetUserByID(ctx, playlist.GetUserId())
+		user, err := (*u.userClient).GetUserByID(ctx, &userProto.UserID{
+			Id: playlist.GetUserId(),
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -94,7 +98,9 @@ func (u *playlistUsecase) UpdatePlaylist(ctx context.Context, request *usecaseMo
 		return nil, customErrors.HandlePlaylistGRPCError(err)
 	}
 
-	user, err := u.userRepo.GetUserByID(ctx, playlist.GetUserId())
+	user, err := (*u.userClient).GetUserByID(ctx, &userProto.UserID{
+		Id: playlist.GetUserId(),
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -103,12 +109,16 @@ func (u *playlistUsecase) UpdatePlaylist(ctx context.Context, request *usecaseMo
 }
 
 func (u *playlistUsecase) GetPlaylistByID(ctx context.Context, playlistID int64) (*usecaseModel.Playlist, error) {
-	var userID int64
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		userID = -1
-	} else {
-		userID = user.ID
+	}
+
+	user, err := (*u.userClient).GetUserByID(ctx, &userProto.UserID{
+		Id: userID,
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	playlist, err := (*u.playlistClient).GetPlaylistByID(ctx, &playlistProto.GetPlaylistByIDRequest{
@@ -136,7 +146,9 @@ func (u *playlistUsecase) GetPlaylistsToAdd(ctx context.Context, request *usecas
 		return nil, customErrors.HandlePlaylistGRPCError(err)
 	}
 
-	user, err := u.userRepo.GetUserByID(ctx, request.UserID)
+	user, err := (*u.userClient).GetUserByID(ctx, &userProto.UserID{
+		Id: request.UserID,
+	})
 	if err != nil {
 		return nil, err
 	}

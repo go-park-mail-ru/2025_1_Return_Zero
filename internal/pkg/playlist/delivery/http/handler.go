@@ -48,7 +48,7 @@ func (h *PlaylistHandler) CreatePlaylist(w http.ResponseWriter, r *http.Request)
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to create playlist for unauthorized user")
 		err := customErrors.ErrPlaylistUnauthorized
@@ -98,7 +98,7 @@ func (h *PlaylistHandler) CreatePlaylist(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	usecaseRequest := model.CreatePlaylistRequestFromDeliveryToUsecase(request, user.ID)
+	usecaseRequest := model.CreatePlaylistRequestFromDeliveryToUsecase(request, userID)
 
 	playlist, err := h.usecase.CreatePlaylist(ctx, usecaseRequest)
 	if err != nil {
@@ -126,7 +126,7 @@ func (h *PlaylistHandler) GetCombinedPlaylistsForCurrentUser(w http.ResponseWrit
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to get combined playlists for unauthorized user")
 		err := customErrors.ErrPlaylistUnauthorized
@@ -134,7 +134,7 @@ func (h *PlaylistHandler) GetCombinedPlaylistsForCurrentUser(w http.ResponseWrit
 		return
 	}
 
-	playlists, err := h.usecase.GetCombinedPlaylistsForCurrentUser(ctx, user.ID)
+	playlists, err := h.usecase.GetCombinedPlaylistsForCurrentUser(ctx, userID)
 	if err != nil {
 		logger.Error("failed to get combined playlists", zap.Error(err))
 		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
@@ -164,7 +164,7 @@ func (h *PlaylistHandler) AddTrackToPlaylist(w http.ResponseWriter, r *http.Requ
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to add track to playlist for unauthorized user")
 		err := customErrors.ErrPlaylistUnauthorized
@@ -195,7 +195,7 @@ func (h *PlaylistHandler) AddTrackToPlaylist(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	usecaseRequest := model.AddTrackToPlaylistRequestFromDeliveryToUsecase(request, user.ID, playlistIDInt)
+	usecaseRequest := model.AddTrackToPlaylistRequestFromDeliveryToUsecase(request, userID, playlistIDInt)
 
 	err = h.usecase.AddTrackToPlaylist(ctx, usecaseRequest)
 	if err != nil {
@@ -225,7 +225,7 @@ func (h *PlaylistHandler) RemoveTrackFromPlaylist(w http.ResponseWriter, r *http
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to remove track from playlist for unauthorized user")
 		err := customErrors.ErrPlaylistUnauthorized
@@ -262,7 +262,7 @@ func (h *PlaylistHandler) RemoveTrackFromPlaylist(w http.ResponseWriter, r *http
 		return
 	}
 
-	usecaseRequest := model.RemoveTrackFromPlaylistRequestFromDeliveryToUsecase(trackIDInt, user.ID, playlistIDInt)
+	usecaseRequest := model.RemoveTrackFromPlaylistRequestFromDeliveryToUsecase(trackIDInt, userID, playlistIDInt)
 
 	err = h.usecase.RemoveTrackFromPlaylist(ctx, usecaseRequest)
 	if err != nil {
@@ -293,7 +293,7 @@ func (h *PlaylistHandler) UpdatePlaylist(w http.ResponseWriter, r *http.Request)
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to update playlist for unauthorized user")
 		err := customErrors.ErrPlaylistUnauthorized
@@ -336,7 +336,7 @@ func (h *PlaylistHandler) UpdatePlaylist(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
-	usecaseRequest := model.UpdatePlaylistRequestFromDeliveryToUsecase(request, user.ID, playlistIDInt)
+	usecaseRequest := model.UpdatePlaylistRequestFromDeliveryToUsecase(request, userID, playlistIDInt)
 
 	playlist, err := h.usecase.UpdatePlaylist(ctx, usecaseRequest)
 	if err != nil {
@@ -411,7 +411,7 @@ func (h *PlaylistHandler) RemovePlaylist(w http.ResponseWriter, r *http.Request)
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to remove playlist for unauthorized user")
 		err := customErrors.ErrPlaylistUnauthorized
@@ -434,7 +434,7 @@ func (h *PlaylistHandler) RemovePlaylist(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	usecaseRequest := model.RemovePlaylistRequestFromDeliveryToUsecase(playlistIDInt, user.ID)
+	usecaseRequest := model.RemovePlaylistRequestFromDeliveryToUsecase(playlistIDInt, userID)
 
 	err = h.usecase.RemovePlaylist(ctx, usecaseRequest)
 	if err != nil {
@@ -462,7 +462,7 @@ func (h *PlaylistHandler) GetPlaylistsToAdd(w http.ResponseWriter, r *http.Reque
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to get playlists to add for unauthorized user")
 		err := customErrors.ErrPlaylistUnauthorized
@@ -477,7 +477,7 @@ func (h *PlaylistHandler) GetPlaylistsToAdd(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	usecaseRequest := model.GetPlaylistsToAddRequestFromDeliveryToUsecase(int64(trackID), user.ID)
+	usecaseRequest := model.GetPlaylistsToAddRequestFromDeliveryToUsecase(int64(trackID), userID)
 
 	playlists, err := h.usecase.GetPlaylistsToAdd(ctx, usecaseRequest)
 	if err != nil {

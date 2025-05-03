@@ -16,6 +16,14 @@ var (
 	ErrFailedToUpdateStreamDuration = errors.New("failed to update stream duration")
 	ErrTrackNotFound                = errors.New("track not found")
 	ErrStreamPermissionDenied       = errors.New("user does not have permission to update this stream")
+	ErrUserNotFound                 = errors.New("user not found")
+	ErrUserExist                    = errors.New("user already exist")
+	ErrWrongPassword                = errors.New("wrong password")
+	ErrPasswordRequired             = errors.New("password required")
+	ErrCreateSalt                   = errors.New("failed to create salt")
+	ErrCreateSession                = errors.New("failed to create session")
+	ErrDeleteSession                = errors.New("failed to delete session")
+	ErrGetSession                   = errors.New("failed to get session")
 	ErrStream                       = errors.New("stream not found")
 	ErrUnauthorized                 = errors.New("this action is not allowed for unauthorized users")
 	ErrPlaylistNotFound             = errors.New("playlist not found")
@@ -105,7 +113,64 @@ func HandleTrackGRPCError(err error) error {
 	default:
 		return err
 	}
+}
 
+func HandleUserGRPCError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	st, ok := status.FromError(err)
+	if !ok {
+		return err
+	}
+
+	switch st.Code() {
+	case codes.NotFound:
+		return ErrUserNotFound
+	case codes.AlreadyExists:
+		return ErrUserExist
+	case codes.Unauthenticated:
+		return ErrWrongPassword
+	case codes.InvalidArgument:
+		return ErrPasswordRequired
+	case codes.Internal:
+		switch st.Message() {
+		case "failed to create salt":
+			return ErrCreateSalt
+		default:
+			return errors.New("internal server error: " + st.Message())
+		}
+	default:
+		return err
+	}
+}
+
+func HandleAuthGRPCError(err error) error {
+	if err == nil {
+		return nil
+	}
+
+	st, ok := status.FromError(err)
+	if !ok {
+		return err
+	}
+
+	switch st.Code() {
+	case codes.Unavailable:
+		switch st.Message() {
+		case "failed to create session":
+			return ErrCreateSession
+		case "failed to delete session":
+			return ErrDeleteSession
+		case "failed to get session":
+			return ErrGetSession
+		default:
+			return errors.New("internal server error: " + st.Message())
+		}
+	default:
+		return err
+	}
 }
 
 func HandlePlaylistGRPCError(err error) error {

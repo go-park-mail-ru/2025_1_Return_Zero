@@ -163,7 +163,7 @@ func (h *AlbumHandler) LikeAlbum(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
 
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to like album for unauthorized user")
 		err := customErrors.ErrUnauthorized
@@ -189,7 +189,7 @@ func (h *AlbumHandler) LikeAlbum(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	usecaseLikeRequest := model.AlbumLikeRequestFromDeliveryToUsecase(deliveryLikeRequest.IsLike, user.ID, id)
+	usecaseLikeRequest := model.AlbumLikeRequestFromDeliveryToUsecase(deliveryLikeRequest.IsLike, userID, id)
 
 	err = h.usecase.LikeAlbum(ctx, usecaseLikeRequest)
 	if err != nil {

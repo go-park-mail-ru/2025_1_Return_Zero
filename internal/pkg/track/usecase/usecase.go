@@ -26,13 +26,11 @@ type trackUsecase struct {
 }
 
 func (u *trackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
-	var userID int64
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		userID = -1
-	} else {
-		userID = user.ID
 	}
+
 	protoFilters := &trackProto.UserIDWithFilters{
 		UserId:  &trackProto.UserID{Id: userID},
 		Filters: &trackProto.Filters{Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination)},
@@ -72,12 +70,9 @@ func (u *trackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.T
 }
 
 func (u *trackUsecase) GetTrackByID(ctx context.Context, id int64) (*usecaseModel.TrackDetailed, error) {
-	var userID int64
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		userID = -1
-	} else {
-		userID = user.ID
 	}
 
 	protoTrack, err := (*u.trackClient).GetTrackByID(ctx, &trackProto.TrackIDWithUserID{TrackId: &trackProto.TrackID{Id: id}, UserId: &trackProto.UserID{Id: userID}})
@@ -101,12 +96,9 @@ func (u *trackUsecase) GetTrackByID(ctx context.Context, id int64) (*usecaseMode
 }
 
 func (u *trackUsecase) GetTracksByArtistID(ctx context.Context, id int64, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
-	var userID int64
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		userID = -1
-	} else {
-		userID = user.ID
 	}
 
 	artistTrackIDs, err := (*u.artistClient).GetTrackIDsByArtistID(ctx, &artistProto.ArtistID{Id: id})
@@ -243,12 +235,9 @@ func (u *trackUsecase) GetLastListenedTracks(ctx context.Context, userID int64, 
 }
 
 func (u *trackUsecase) GetTracksByAlbumID(ctx context.Context, id int64) ([]*usecaseModel.Track, error) {
-	var userID int64
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		userID = -1
-	} else {
-		userID = user.ID
 	}
 
 	protoAlbumID := &trackProto.AlbumIDWithUserID{
@@ -294,12 +283,9 @@ func (u *trackUsecase) LikeTrack(ctx context.Context, request *usecaseModel.Trac
 }
 
 func (u *trackUsecase) GetPlaylistTracks(ctx context.Context, id int64) ([]*usecaseModel.Track, error) {
-	var userID int64
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		userID = -1
-	} else {
-		userID = user.ID
 	}
 
 	protoPlaylistTrackIds, err := (*u.playlistClient).GetPlaylistTrackIds(ctx, &playlistProto.GetPlaylistTrackIdsRequest{

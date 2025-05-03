@@ -22,12 +22,9 @@ type artistUsecase struct {
 }
 
 func (u *artistUsecase) GetArtistByID(ctx context.Context, id int64) (*usecaseModel.ArtistDetailed, error) {
-	var userID int64
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		userID = -1
-	} else {
-		userID = user.ID
 	}
 
 	protoArtist, err := (*u.artistClient).GetArtistByID(ctx, &artistProto.ArtistIDWithUserID{
@@ -42,12 +39,9 @@ func (u *artistUsecase) GetArtistByID(ctx context.Context, id int64) (*usecaseMo
 }
 
 func (u *artistUsecase) GetAllArtists(ctx context.Context, filters *usecaseModel.ArtistFilters) ([]*usecaseModel.Artist, error) {
-	var userID int64
-	user, exists := ctxExtractor.UserFromContext(ctx)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		userID = -1
-	} else {
-		userID = user.ID
 	}
 
 	protoFilters := &artistProto.FiltersWithUserID{
