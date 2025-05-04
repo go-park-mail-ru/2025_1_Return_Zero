@@ -28,13 +28,13 @@ const (
 
 	// Owned and favorite playlists
 	GetPlaylistsByUserIDQuery = `
-		SELECT p.id, p.title, p.user_id, p.thumbnail_url
+		SELECT DISTINCT p.id, p.title, p.user_id, p.thumbnail_url,
+			CASE WHEN p.user_id = $1 THEN p.created_at ELSE fp.created_at END as effective_created_at
 		FROM playlist p
-		LEFT JOIN favorite_playlist fp ON p.id = fp.playlist_id
-		LEFT JOIN playlist fav ON fp.playlist_id = fav.id
-		WHERE p.user_id = $1 OR (fp.user_id = $1 AND fav.is_public = true)
-		ORDER BY 
-			CASE WHEN p.user_id = $1 THEN p.created_at ELSE fp.created_at END DESC
+		LEFT JOIN favorite_playlist fp ON p.id = fp.playlist_id AND fp.user_id = $1
+		WHERE p.user_id = $1 OR (fp.user_id = $1 AND p.is_public = true)
+		ORDER BY
+			effective_created_at DESC
 	`
 
 	AddTrackToPlaylistQuery = `
@@ -91,6 +91,55 @@ const (
 		FROM playlist p
 		WHERE p.user_id = $2
 		ORDER BY p.created_at DESC
+	`
+
+	UpdatePlaylistsPublisityByUserIDQuery = `
+		UPDATE playlist
+		SET is_public = $2
+		WHERE user_id = $1
+	`
+
+	CheckExistsPlaylistAndNotDifferentUserQuery = `
+		SELECT EXISTS (
+			SELECT 1
+			FROM playlist
+			WHERE id = $1 AND user_id != $2
+		)
+	`
+
+	LikePlaylistQuery = `
+		INSERT INTO favorite_playlist (user_id, playlist_id)
+		VALUES ($1, $2) ON CONFLICT DO NOTHING
+	`
+
+	UnlikePlaylistQuery = `
+		DELETE FROM favorite_playlist
+		WHERE user_id = $1 AND playlist_id = $2
+	`
+
+	GetPlaylistWithIsLikedByIDQuery = `
+		SELECT p.id, p.title, p.user_id, p.thumbnail_url, (fp.user_id IS NOT NULL) as is_liked
+		FROM playlist p
+		LEFT JOIN favorite_playlist fp ON p.id = fp.playlist_id AND fp.user_id = $2
+		WHERE p.id = $1
+	`
+
+	GetProfilePlaylistsQuery = `
+		SELECT p.id, p.title, p.user_id, p.thumbnail_url
+		FROM playlist p
+		WHERE p.user_id = $1
+		ORDER BY p.created_at DESC
+	`
+
+	SearchPlaylistsQuery = `
+		SELECT id, title, user_id, thumbnail_url
+		FROM playlist
+		WHERE (is_public = true OR user_id = $2) AND (search_vector @@ to_tsquery('multilingual', $1)
+		   OR similarity(title_trgm, $3) > 0.3)
+		ORDER BY 
+		    CASE WHEN search_vector @@ to_tsquery('multilingual', $1) THEN 0 ELSE 1 END,
+		    ts_rank(search_vector, to_tsquery('multilingual', $1)) DESC,
+		    similarity(title_trgm, $3) DESC
 	`
 )
 
@@ -361,4 +410,154 @@ func (r *PlaylistPostgresRepository) GetPlaylistsToAdd(ctx context.Context, requ
 	}
 
 	return &response, nil
+}
+
+func (r *PlaylistPostgresRepository) UpdatePlaylistsPublisityByUserID(ctx context.Context, request *repoModel.UpdatePlaylistsPublisityByUserIDRequest) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Updating playlists publisity by user id", zap.Int64("user_id", request.UserID), zap.Bool("is_public", request.IsPublic))
+
+	_, err := r.db.ExecContext(ctx, UpdatePlaylistsPublisityByUserIDQuery, request.UserID, request.IsPublic)
+	if err != nil {
+		logger.Error("Failed to update playlists publisity by user id", zap.Error(err))
+		return playlistErrors.NewInternalError("failed to update playlists publisity by user id: %v", err)
+	}
+
+	return nil
+}
+
+func (r *PlaylistPostgresRepository) CheckExistsPlaylistAndNotDifferentUser(ctx context.Context, playlistID int64, userID int64) (bool, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Checking if playlist exists and is not different user", zap.Int64("playlist_id", playlistID), zap.Int64("user_id", userID))
+
+	var exists bool
+	err := r.db.QueryRowContext(ctx, CheckExistsPlaylistAndNotDifferentUserQuery, playlistID, userID).Scan(&exists)
+	if err != nil {
+		logger.Error("Failed to check if playlist exists and is not different user", zap.Error(err))
+		return false, playlistErrors.NewInternalError("failed to check if playlist exists and is not different user: %v", err)
+	}
+
+	return exists, nil
+}
+
+func (r *PlaylistPostgresRepository) LikePlaylist(ctx context.Context, request *repoModel.LikePlaylistRequest) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Liking playlist", zap.Int64("playlist_id", request.PlaylistID), zap.Int64("user_id", request.UserID))
+
+	exists, err := r.CheckExistsPlaylistAndNotDifferentUser(ctx, request.PlaylistID, request.UserID)
+	if err != nil {
+		logger.Error("Failed to check if playlist exists and is not different user", zap.Error(err))
+		return playlistErrors.NewInternalError("failed to check if playlist exists and is not different user: %v", err)
+	}
+
+	if !exists {
+		logger.Warn("Playlist does not exist or is different user", zap.Int64("playlist_id", request.PlaylistID), zap.Int64("user_id", request.UserID))
+		return playlistErrors.ErrPlaylistNotFound
+	}
+
+	_, err = r.db.ExecContext(ctx, LikePlaylistQuery, request.UserID, request.PlaylistID)
+	if err != nil {
+		logger.Error("Failed to like playlist", zap.Error(err))
+		return playlistErrors.NewInternalError("failed to like playlist: %v", err)
+	}
+
+	return nil
+}
+
+func (r *PlaylistPostgresRepository) UnlikePlaylist(ctx context.Context, request *repoModel.LikePlaylistRequest) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Unliking playlist", zap.Int64("playlist_id", request.PlaylistID), zap.Int64("user_id", request.UserID))
+
+	_, err := r.db.ExecContext(ctx, UnlikePlaylistQuery, request.UserID, request.PlaylistID)
+	if err != nil {
+		logger.Error("Failed to unlike playlist", zap.Error(err))
+		return playlistErrors.NewInternalError("failed to unlike playlist: %v", err)
+	}
+
+	return nil
+}
+
+func (r *PlaylistPostgresRepository) GetPlaylistWithIsLikedByID(ctx context.Context, id int64, userID int64) (*repoModel.PlaylistWithIsLiked, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Getting playlist with is liked by id", zap.Int64("playlist_id", id), zap.Int64("user_id", userID))
+
+	var playlist repoModel.Playlist
+	var isLiked sql.NullBool
+	err := r.db.QueryRowContext(ctx, GetPlaylistWithIsLikedByIDQuery, id, userID).Scan(&playlist.ID, &playlist.Title, &playlist.UserID, &playlist.Thumbnail, &isLiked)
+	if err != nil {
+		logger.Error("Failed to get playlist with is liked by id", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to get playlist with is liked by id: %v", err)
+	}
+
+	return &repoModel.PlaylistWithIsLiked{
+		Playlist: &playlist,
+		IsLiked:  isLiked.Valid && isLiked.Bool,
+	}, nil
+}
+
+func (r *PlaylistPostgresRepository) GetProfilePlaylists(ctx context.Context, request *repoModel.GetProfilePlaylistsRequest) (*repoModel.GetProfilePlaylistsResponse, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Getting profile playlists", zap.Int64("user_id", request.UserID))
+
+	var playlists repoModel.GetProfilePlaylistsResponse
+	rows, err := r.db.QueryContext(ctx, GetProfilePlaylistsQuery, request.UserID)
+	if err != nil {
+		logger.Error("Failed to get profile playlists", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to get profile playlists: %v", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var playlist repoModel.Playlist
+		err := rows.Scan(&playlist.ID, &playlist.Title, &playlist.UserID, &playlist.Thumbnail)
+		if err != nil {
+			logger.Error("Failed to scan playlist", zap.Error(err))
+			return nil, playlistErrors.NewInternalError("failed to scan playlist: %v", err)
+		}
+
+		playlists.Playlists = append(playlists.Playlists, &playlist)
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.Error("Failed to iterate over playlists", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to iterate over playlists: %v", err)
+	}
+
+	return &playlists, nil
+}
+
+func (r *PlaylistPostgresRepository) SearchPlaylists(ctx context.Context, request *repoModel.SearchPlaylistsRequest) (*repoModel.PlaylistList, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Searching playlists", zap.String("query", request.Query))
+
+	words := strings.Fields(request.Query)
+	for i, word := range words {
+		words[i] = word + ":*"
+	}
+	tsQueryString := strings.Join(words, " & ")
+
+	var playlists repoModel.PlaylistList
+	rows, err := r.db.QueryContext(ctx, SearchPlaylistsQuery, tsQueryString, request.UserID, request.Query)
+	if err != nil {
+		logger.Error("Failed to search playlists", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to search playlists: %v", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var playlist repoModel.Playlist
+		err := rows.Scan(&playlist.ID, &playlist.Title, &playlist.UserID, &playlist.Thumbnail)
+		if err != nil {
+			logger.Error("Failed to scan playlist", zap.Error(err))
+			return nil, playlistErrors.NewInternalError("failed to scan playlist: %v", err)
+		}
+
+		playlists.Playlists = append(playlists.Playlists, &playlist)
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.Error("Failed to iterate over playlists", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to iterate over playlists: %v", err)
+	}
+
+	return &playlists, nil
 }

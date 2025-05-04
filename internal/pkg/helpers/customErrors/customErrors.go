@@ -27,7 +27,7 @@ var (
 	ErrStream                       = errors.New("stream not found")
 	ErrUnauthorized                 = errors.New("this action is not allowed for unauthorized users")
 	ErrPlaylistNotFound             = errors.New("playlist not found")
-	ErrPlaylistPermissionDenied     = errors.New("user does not have permission to update this playlist")
+	ErrPlaylistPermissionDenied     = errors.New("user does not have permission for this playlist")
 	ErrPlaylistBadRequest           = errors.New("invalid playlist request")
 	ErrUnsupportedImageFormat       = errors.New("unsupported image format: only JPEG and PNG are allowed")
 	ErrImageTooBig                  = errors.New("image size exceeds 5MB limit")

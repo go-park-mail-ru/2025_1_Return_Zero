@@ -14,7 +14,11 @@ type Usecase interface {
 	RemoveTrackFromPlaylist(ctx context.Context, request *usecase.RemoveTrackFromPlaylistRequest) error
 	GetPlaylistTrackIds(ctx context.Context, request *usecase.GetPlaylistTrackIdsRequest) ([]int64, error)
 	UpdatePlaylist(ctx context.Context, request *usecase.UpdatePlaylistRequest) (*usecase.Playlist, error)
-	GetPlaylistByID(ctx context.Context, request *usecase.GetPlaylistByIDRequest) (*usecase.Playlist, error)
+	GetPlaylistByID(ctx context.Context, request *usecase.GetPlaylistByIDRequest) (*usecase.PlaylistWithIsLiked, error)
 	RemovePlaylist(ctx context.Context, request *usecase.RemovePlaylistRequest) error
 	GetPlaylistsToAdd(ctx context.Context, request *usecase.GetPlaylistsToAddRequest) (*usecase.GetPlaylistsToAddResponse, error)
+	UpdatePlaylistsPublisityByUserID(ctx context.Context, request *usecase.UpdatePlaylistsPublisityByUserIDRequest) error
+	LikePlaylist(ctx context.Context, request *usecase.LikePlaylistRequest) error
+	GetProfilePlaylists(ctx context.Context, request *usecase.GetProfilePlaylistsRequest) (*usecase.GetProfilePlaylistsResponse, error)
+	SearchPlaylists(ctx context.Context, request *usecase.SearchPlaylistsRequest) (*usecase.PlaylistList, error)
 }

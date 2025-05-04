@@ -101,17 +101,21 @@ func (u *PlaylistUsecase) UpdatePlaylist(ctx context.Context, request *usecaseMo
 	return model.PlaylistFromRepositoryToUsecase(repoPlaylist), nil
 }
 
-func (u *PlaylistUsecase) GetPlaylistByID(ctx context.Context, request *usecaseModel.GetPlaylistByIDRequest) (*usecaseModel.Playlist, error) {
-	repoPlaylist, err := u.playlistRepo.GetPlaylistByID(ctx, request.PlaylistID)
+func (u *PlaylistUsecase) GetPlaylistByID(ctx context.Context, request *usecaseModel.GetPlaylistByIDRequest) (*usecaseModel.PlaylistWithIsLiked, error) {
+	playlist, err := u.playlistRepo.GetPlaylistByID(ctx, request.PlaylistID)
 	if err != nil {
 		return nil, err
 	}
 
-	if repoPlaylist.UserID != request.UserID && !repoPlaylist.IsPublic {
+	if playlist.UserID != request.UserID && !playlist.IsPublic {
 		return nil, playlistErrors.ErrPlaylistPermissionDenied
 	}
 
-	return model.PlaylistFromRepositoryToUsecase(repoPlaylist), nil
+	repoPlaylistWithIsLiked, err := u.playlistRepo.GetPlaylistWithIsLikedByID(ctx, request.PlaylistID, request.UserID)
+	if err != nil {
+		return nil, err
+	}
+	return model.PlaylistWithIsLikedFromRepositoryToUsecase(repoPlaylistWithIsLiked), nil
 }
 
 func (u *PlaylistUsecase) RemovePlaylist(ctx context.Context, request *usecaseModel.RemovePlaylistRequest) error {
@@ -139,4 +143,48 @@ func (u *PlaylistUsecase) GetPlaylistsToAdd(ctx context.Context, request *usecas
 		return nil, err
 	}
 	return model.GetPlaylistsToAddResponseFromRepositoryToUsecase(repoResponse), nil
+}
+
+func (u *PlaylistUsecase) UpdatePlaylistsPublisityByUserID(ctx context.Context, request *usecaseModel.UpdatePlaylistsPublisityByUserIDRequest) error {
+	repoRequest := model.UpdatePlaylistsPublisityByUserIDRequestFromUsecaseToRepository(request)
+	err := u.playlistRepo.UpdatePlaylistsPublisityByUserID(ctx, repoRequest)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *PlaylistUsecase) LikePlaylist(ctx context.Context, request *usecaseModel.LikePlaylistRequest) error {
+	repoRequest := model.LikePlaylistRequestFromUsecaseToRepository(request)
+	if request.IsLike {
+		err := u.playlistRepo.LikePlaylist(ctx, repoRequest)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	err := u.playlistRepo.UnlikePlaylist(ctx, repoRequest)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *PlaylistUsecase) GetProfilePlaylists(ctx context.Context, request *usecaseModel.GetProfilePlaylistsRequest) (*usecaseModel.GetProfilePlaylistsResponse, error) {
+	repoRequest := model.GetProfilePlaylistsRequestFromUsecaseToRepository(request)
+	repoResponse, err := u.playlistRepo.GetProfilePlaylists(ctx, repoRequest)
+	if err != nil {
+		return nil, err
+	}
+	return model.GetProfilePlaylistsResponseFromRepositoryToUsecase(repoResponse), nil
+}
+
+func (u *PlaylistUsecase) SearchPlaylists(ctx context.Context, request *usecaseModel.SearchPlaylistsRequest) (*usecaseModel.PlaylistList, error) {
+	repoRequest := model.SearchPlaylistsRequestFromUsecaseToRepository(request)
+	repoResponse, err := u.playlistRepo.SearchPlaylists(ctx, repoRequest)
+	if err != nil {
+		return nil, err
+	}
+	return model.PlaylistListFromRepositoryToUsecase(repoResponse), nil
 }

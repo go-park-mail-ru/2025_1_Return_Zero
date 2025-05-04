@@ -233,3 +233,84 @@ func PlaylistsFromUsecaseToProtoWithIsIncludedTrack(usecase []*usecaseModel.Play
 	}
 	return proto
 }
+
+func UpdatePlaylistsPublisityByUserIDRequestFromProtoToUsecase(proto *protoModel.UpdatePlaylistsPublisityByUserIDRequest) *usecaseModel.UpdatePlaylistsPublisityByUserIDRequest {
+	return &usecaseModel.UpdatePlaylistsPublisityByUserIDRequest{
+		UserID:   proto.GetUserId(),
+		IsPublic: proto.GetIsPublic(),
+	}
+}
+
+func UpdatePlaylistsPublisityByUserIDRequestFromUsecaseToRepository(usecase *usecaseModel.UpdatePlaylistsPublisityByUserIDRequest) *repoModel.UpdatePlaylistsPublisityByUserIDRequest {
+	return &repoModel.UpdatePlaylistsPublisityByUserIDRequest{
+		UserID:   usecase.UserID,
+		IsPublic: usecase.IsPublic,
+	}
+}
+
+func LikePlaylistRequestFromProtoToUsecase(proto *protoModel.LikePlaylistRequest) *usecaseModel.LikePlaylistRequest {
+	return &usecaseModel.LikePlaylistRequest{
+		UserID:     proto.GetUserId(),
+		PlaylistID: proto.GetPlaylistId(),
+		IsLike:     proto.GetIsLike(),
+	}
+}
+
+func LikePlaylistRequestFromUsecaseToRepository(usecase *usecaseModel.LikePlaylistRequest) *repoModel.LikePlaylistRequest {
+	return &repoModel.LikePlaylistRequest{
+		UserID:     usecase.UserID,
+		PlaylistID: usecase.PlaylistID,
+	}
+}
+
+func PlaylistWithIsLikedFromRepositoryToUsecase(repo *repoModel.PlaylistWithIsLiked) *usecaseModel.PlaylistWithIsLiked {
+	return &usecaseModel.PlaylistWithIsLiked{
+		Playlist: PlaylistFromRepositoryToUsecase(repo.Playlist),
+		IsLiked:  repo.IsLiked,
+	}
+}
+
+func PlaylistWithIsLikedFromUsecaseToProto(usecase *usecaseModel.PlaylistWithIsLiked) *protoModel.PlaylistWithIsLiked {
+	return &protoModel.PlaylistWithIsLiked{
+		Playlist: PlaylistFromUsecaseToProto(usecase.Playlist),
+		IsLiked:  usecase.IsLiked,
+	}
+}
+
+func GetProfilePlaylistsRequestFromUsecaseToRepository(usecase *usecaseModel.GetProfilePlaylistsRequest) *repoModel.GetProfilePlaylistsRequest {
+	return &repoModel.GetProfilePlaylistsRequest{
+		UserID: usecase.UserID,
+	}
+}
+
+func GetProfilePlaylistsResponseFromRepositoryToUsecase(repo *repoModel.GetProfilePlaylistsResponse) *usecaseModel.GetProfilePlaylistsResponse {
+	return &usecaseModel.GetProfilePlaylistsResponse{
+		Playlists: PlaylistsFromRepositoryToUsecase(repo.Playlists),
+	}
+}
+
+func GetProfilePlaylistsRequestFromProtoToUsecase(proto *protoModel.GetProfilePlaylistsRequest) *usecaseModel.GetProfilePlaylistsRequest {
+	return &usecaseModel.GetProfilePlaylistsRequest{
+		UserID: proto.GetUserId(),
+	}
+}
+
+func GetProfilePlaylistsResponseFromUsecaseToProto(usecase *usecaseModel.GetProfilePlaylistsResponse) *protoModel.GetProfilePlaylistsResponse {
+	return &protoModel.GetProfilePlaylistsResponse{
+		Playlists: PlaylistsFromUsecaseToProto(usecase.Playlists),
+	}
+}
+
+func SearchPlaylistsRequestFromProtoToUsecase(proto *protoModel.SearchPlaylistsRequest) *usecaseModel.SearchPlaylistsRequest {
+	return &usecaseModel.SearchPlaylistsRequest{
+		UserID: proto.GetUserId(),
+		Query:  proto.GetQuery(),
+	}
+}
+
+func SearchPlaylistsRequestFromUsecaseToRepository(usecase *usecaseModel.SearchPlaylistsRequest) *repoModel.SearchPlaylistsRequest {
+	return &repoModel.SearchPlaylistsRequest{
+		UserID: usecase.UserID,
+		Query:  usecase.Query,
+	}
+}

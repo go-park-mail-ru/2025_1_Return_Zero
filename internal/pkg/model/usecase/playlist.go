@@ -46,3 +46,14 @@ type GetPlaylistsToAddRequest struct {
 	UserID  int64
 	TrackID int64
 }
+
+type LikePlaylistRequest struct {
+	UserID     int64
+	PlaylistID int64
+	IsLike     bool
+}
+
+type PlaylistWithIsLiked struct {
+	Playlist
+	IsLiked bool
+}

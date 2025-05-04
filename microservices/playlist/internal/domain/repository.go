@@ -10,6 +10,7 @@ import (
 type Repository interface {
 	CreatePlaylist(ctx context.Context, playlistCreateRequest *repository.CreatePlaylistRequest) (*repository.Playlist, error)
 	GetPlaylistByID(ctx context.Context, id int64) (*repository.Playlist, error)
+	GetPlaylistWithIsLikedByID(ctx context.Context, id int64, userID int64) (*repository.PlaylistWithIsLiked, error)
 	GetCombinedPlaylistsByUserID(ctx context.Context, userID int64) (*repository.PlaylistList, error)
 	TrackExistsInPlaylist(ctx context.Context, playlistID int64, trackID int64) (bool, error)
 	AddTrackToPlaylist(ctx context.Context, request *repository.AddTrackToPlaylistRequest) error
@@ -18,6 +19,11 @@ type Repository interface {
 	UpdatePlaylist(ctx context.Context, request *repository.UpdatePlaylistRequest) (*repository.Playlist, error)
 	RemovePlaylist(ctx context.Context, request *repository.RemovePlaylistRequest) error
 	GetPlaylistsToAdd(ctx context.Context, request *repository.GetPlaylistsToAddRequest) (*repository.GetPlaylistsToAddResponse, error)
+	UpdatePlaylistsPublisityByUserID(ctx context.Context, request *repository.UpdatePlaylistsPublisityByUserIDRequest) error
+	LikePlaylist(ctx context.Context, request *repository.LikePlaylistRequest) error
+	UnlikePlaylist(ctx context.Context, request *repository.LikePlaylistRequest) error
+	GetProfilePlaylists(ctx context.Context, request *repository.GetProfilePlaylistsRequest) (*repository.GetProfilePlaylistsResponse, error)
+	SearchPlaylists(ctx context.Context, request *repository.SearchPlaylistsRequest) (*repository.PlaylistList, error)
 }
 
 type S3Repository interface {

@@ -83,12 +83,12 @@ func (s *PlaylistService) UpdatePlaylist(ctx context.Context, req *playlistProto
 	return model.PlaylistFromUsecaseToProto(playlist), nil
 }
 
-func (s *PlaylistService) GetPlaylistByID(ctx context.Context, req *playlistProto.GetPlaylistByIDRequest) (*playlistProto.Playlist, error) {
+func (s *PlaylistService) GetPlaylistByID(ctx context.Context, req *playlistProto.GetPlaylistByIDRequest) (*playlistProto.PlaylistWithIsLiked, error) {
 	playlist, err := s.playlistUsecase.GetPlaylistByID(ctx, model.GetPlaylistByIDRequestFromProtoToUsecase(req))
 	if err != nil {
 		return nil, err
 	}
-	return model.PlaylistFromUsecaseToProto(playlist), nil
+	return model.PlaylistWithIsLikedFromUsecaseToProto(playlist), nil
 }
 
 func (s *PlaylistService) RemovePlaylist(ctx context.Context, req *playlistProto.RemovePlaylistRequest) (*emptypb.Empty, error) {
@@ -105,4 +105,36 @@ func (s *PlaylistService) GetPlaylistsToAdd(ctx context.Context, req *playlistPr
 		return nil, err
 	}
 	return model.GetPlaylistsToAddResponseFromUsecaseToProto(playlists), nil
+}
+
+func (s *PlaylistService) UpdatePlaylistsPublisityByUserID(ctx context.Context, req *playlistProto.UpdatePlaylistsPublisityByUserIDRequest) (*emptypb.Empty, error) {
+	err := s.playlistUsecase.UpdatePlaylistsPublisityByUserID(ctx, model.UpdatePlaylistsPublisityByUserIDRequestFromProtoToUsecase(req))
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *PlaylistService) LikePlaylist(ctx context.Context, req *playlistProto.LikePlaylistRequest) (*emptypb.Empty, error) {
+	err := s.playlistUsecase.LikePlaylist(ctx, model.LikePlaylistRequestFromProtoToUsecase(req))
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *PlaylistService) GetProfilePlaylists(ctx context.Context, req *playlistProto.GetProfilePlaylistsRequest) (*playlistProto.GetProfilePlaylistsResponse, error) {
+	playlists, err := s.playlistUsecase.GetProfilePlaylists(ctx, model.GetProfilePlaylistsRequestFromProtoToUsecase(req))
+	if err != nil {
+		return nil, err
+	}
+	return model.GetProfilePlaylistsResponseFromUsecaseToProto(playlists), nil
+}
+
+func (s *PlaylistService) SearchPlaylists(ctx context.Context, req *playlistProto.SearchPlaylistsRequest) (*playlistProto.PlaylistList, error) {
+	playlists, err := s.playlistUsecase.SearchPlaylists(ctx, model.SearchPlaylistsRequestFromProtoToUsecase(req))
+	if err != nil {
+		return nil, err
+	}
+	return model.PlaylistListFromUsecaseToProto(playlists), nil
 }

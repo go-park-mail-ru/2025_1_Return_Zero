@@ -35,3 +35,16 @@ type UpdatePlaylistRequest struct {
 	Title     string `form:"title"`
 	Thumbnail []byte `form:"thumbnail"`
 }
+
+// PlaylistLikeRequest represents a request to like or unlike an playlist
+// @Description A request to like or unlike an playlist. Should be authenticated
+type PlaylistLikeRequest struct {
+	IsLike bool `json:"value" example:"true" description:"Whether to like or unlike the playlist"`
+}
+
+// PlaylistWithIsLiked
+// @Description Playlist with is liked structure
+type PlaylistWithIsLiked struct {
+	Playlist
+	IsLiked bool `json:"is_liked"`
+}

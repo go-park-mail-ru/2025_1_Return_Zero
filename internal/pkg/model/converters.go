@@ -594,6 +594,51 @@ func ChangeDataFromDeliveryToUsecase(deliveryUser *delivery.UserChangeSettings) 
 
 ///////////////////////////////////// PLAYLIST ////////////////////////////////////
 
+func PlaylistsFromProtoToUsecase(protoPlaylists []*playlistProto.Playlist, username string) []*usecase.Playlist {
+	usecasePlaylists := make([]*usecase.Playlist, 0, len(protoPlaylists))
+	for _, protoPlaylist := range protoPlaylists {
+		usecasePlaylists = append(usecasePlaylists, PlaylistFromProtoToUsecase(protoPlaylist, username))
+	}
+	return usecasePlaylists
+}
+
+func PlaylistWithIsLikedFromProtoToUsecase(protoPlaylist *playlistProto.PlaylistWithIsLiked, username string) *usecase.PlaylistWithIsLiked {
+	return &usecase.PlaylistWithIsLiked{
+		Playlist: *PlaylistFromProtoToUsecase(protoPlaylist.Playlist, username),
+		IsLiked:  protoPlaylist.IsLiked,
+	}
+}
+
+func PlaylistWithIsLikedFromUsecaseToDelivery(usecasePlaylist *usecase.PlaylistWithIsLiked) *delivery.PlaylistWithIsLiked {
+	return &delivery.PlaylistWithIsLiked{
+		Playlist: *PlaylistFromUsecaseToDelivery(&usecasePlaylist.Playlist),
+		IsLiked:  usecasePlaylist.IsLiked,
+	}
+}
+
+func LikePlaylistRequestFromDeliveryToUsecase(userID int64, playlistID int64, isLike bool) *usecase.LikePlaylistRequest {
+	return &usecase.LikePlaylistRequest{
+		UserID:     userID,
+		PlaylistID: playlistID,
+		IsLike:     isLike,
+	}
+}
+
+func LikePlaylistRequestFromUsecaseToProto(usecaseLikePlaylist *usecase.LikePlaylistRequest) *playlistProto.LikePlaylistRequest {
+	return &playlistProto.LikePlaylistRequest{
+		UserId:     usecaseLikePlaylist.UserID,
+		PlaylistId: usecaseLikePlaylist.PlaylistID,
+		IsLike:     usecaseLikePlaylist.IsLike,
+	}
+}
+
+func UpdatePlaylistsPublisityByUserIDRequestFromUsecaseToProto(isPublic bool, userID int64) *playlistProto.UpdatePlaylistsPublisityByUserIDRequest {
+	return &playlistProto.UpdatePlaylistsPublisityByUserIDRequest{
+		IsPublic: isPublic,
+		UserId:   userID,
+	}
+}
+
 func UploadPlaylistThumbnailRequestFromUsecaseToProto(title string, thumbnail []byte) *playlistProto.UploadPlaylistThumbnailRequest {
 	return &playlistProto.UploadPlaylistThumbnailRequest{
 		Title:     title,

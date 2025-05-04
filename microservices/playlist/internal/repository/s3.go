@@ -17,6 +17,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 
+	"go.uber.org/zap"
+
 	_ "image/jpeg"
 	_ "image/png"
 )
@@ -42,6 +44,7 @@ func NewPlaylistS3Repository(s3 *s3.S3, bucketName string) domain.S3Repository {
 
 func (r *playlistS3Repository) UploadThumbnail(ctx context.Context, file io.Reader, key string) (string, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Uploading thumbnail", zap.String("key", key))
 	buf := new(bytes.Buffer)
 	_, err := io.Copy(buf, file)
 	if err != nil {

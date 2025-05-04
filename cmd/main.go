@@ -96,7 +96,7 @@ func main() {
 	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(&trackClient, &artistClient, &albumClient, &playlistClient, &userClient), cfg)
 	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(&albumClient, &artistClient), cfg)
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(&artistClient, &userClient), cfg)
-	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(&userClient, &authClient, &artistClient, &trackClient))
+	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(&userClient, &authClient, &artistClient, &trackClient, &playlistClient))
 	playlistHandler := playlistHttp.NewPlaylistHandler(playlistUsecase.NewUsecase(&playlistClient, &userClient), cfg)
 
 	r.HandleFunc("/api/v1/tracks", trackHandler.GetAllTracks).Methods("GET")
@@ -129,6 +129,8 @@ func main() {
 	r.HandleFunc("/api/v1/playlists/{id:[0-9]+}/tracks/{trackId:[0-9]+}", playlistHandler.RemoveTrackFromPlaylist).Methods("DELETE")
 	r.HandleFunc("/api/v1/playlists/{id:[0-9]+}/tracks", trackHandler.GetPlaylistTracks).Methods("GET")
 	r.HandleFunc("/api/v1/playlists/{id:[0-9]+}", playlistHandler.GetPlaylistByID).Methods("GET")
+	r.HandleFunc("/api/v1/playlists/{id:[0-9]+}/like", playlistHandler.LikePlaylist).Methods("POST")
+	r.HandleFunc("/api/v1/playlists/search", playlistHandler.SearchPlaylists).Methods("GET")
 
 	r.HandleFunc("/api/v1/auth/signup", userHandler.Signup).Methods("POST")
 	r.HandleFunc("/api/v1/auth/login", userHandler.Login).Methods("POST")
@@ -142,6 +144,7 @@ func main() {
 	r.HandleFunc("/api/v1/user/me/history", trackHandler.GetLastListenedTracks).Methods("GET")
 	r.HandleFunc("/api/v1/user/{username}/artists", artistHandler.GetFavoriteArtists).Methods("GET")
 	r.HandleFunc("/api/v1/user/{username}/tracks", trackHandler.GetFavoriteTracks).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username}/playlists", playlistHandler.GetProfilePlaylists).Methods("GET")
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),

@@ -357,7 +357,7 @@ func (h *PlaylistHandler) UpdatePlaylist(w http.ResponseWriter, r *http.Request)
 // @Accept json
 // @Produce json
 // @Param id path integer true "Playlist ID"
-// @Success 200 {object} delivery.APIResponse{body=delivery.Playlist} "Playlist details"
+// @Success 200 {object} delivery.APIResponse{body=delivery.PlaylistWithIsLiked} "Playlist details"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid ID"
 // @Failure 404 {object} delivery.APINotFoundErrorResponse "Playlist not found"
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
@@ -388,7 +388,7 @@ func (h *PlaylistHandler) GetPlaylistByID(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	deliveryPlaylist := model.PlaylistFromUsecaseToDelivery(playlist)
+	deliveryPlaylist := model.PlaylistWithIsLikedFromUsecaseToDelivery(playlist)
 
 	json.WriteSuccessResponse(w, http.StatusOK, deliveryPlaylist, nil)
 }
@@ -489,4 +489,132 @@ func (h *PlaylistHandler) GetPlaylistsToAdd(w http.ResponseWriter, r *http.Reque
 	deliveryPlaylists := model.PlaylistsWithIsIncludedTrackFromUsecaseToDelivery(playlists)
 
 	json.WriteSuccessResponse(w, http.StatusOK, deliveryPlaylists, nil)
+}
+
+// LikePlaylist godoc
+// @Summary Like a playlist
+// @Description Like a playlist
+// @Tags playlists
+// @Accept json
+// @Produce json
+// @Param id path integer true "Playlist ID"
+// @Param request body delivery.PlaylistLikeRequest true "Playlist like request"
+// @Success 200 {object} delivery.APIResponse{} "Playlist liked/unliked successfully"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid ID or request body"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "Playlist not found"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /playlists/{id}/like [post]
+func (h *PlaylistHandler) LikePlaylist(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		logger.Warn("attempt to like playlist for unauthorized user")
+		err := customErrors.ErrUnauthorized
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	vars := mux.Vars(r)
+	playlistID := vars["id"]
+	if playlistID == "" {
+		logger.Error("playlist_id is required")
+		json.WriteErrorResponse(w, http.StatusBadRequest, "playlist_id is required", nil)
+		return
+	}
+
+	playlistIDInt, err := strconv.ParseInt(playlistID, 10, 64)
+	if err != nil {
+		logger.Error("failed to parse playlist_id", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	request := &delivery.PlaylistLikeRequest{}
+	err = json.ReadJSON(w, r, request)
+	if err != nil {
+		logger.Error("failed to read playlist_like_request", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	usecaseRequest := model.LikePlaylistRequestFromDeliveryToUsecase(userID, playlistIDInt, request.IsLike)
+
+	err = h.usecase.LikePlaylist(ctx, usecaseRequest)
+	if err != nil {
+		logger.Error("failed to like playlist", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	json.WriteSuccessResponse(w, http.StatusOK, delivery.Message{Message: "Playlist liked/unliked successfully"}, nil)
+}
+
+// GetProfilePlaylists godoc
+// @Summary Get profile playlists
+// @Description Retrieves all playlists owned by a specific user
+// @Tags playlists
+// @Accept json
+// @Produce json
+// @Param username query string true "Username of the user"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Playlist} "List of playlists"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid username"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /user/{username}/playlists [get]
+func (h *PlaylistHandler) GetProfilePlaylists(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	vars := mux.Vars(r)
+	username := vars["username"]
+	if username == "" {
+		logger.Error("username is required")
+		json.WriteErrorResponse(w, http.StatusBadRequest, "username is required", nil)
+		return
+	}
+
+	playlists, err := h.usecase.GetProfilePlaylists(ctx, username)
+	if err != nil {
+		logger.Error("failed to get profile playlists", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	json.WriteSuccessResponse(w, http.StatusOK, playlists, nil)
+}
+
+// SearchPlaylists godoc
+// @Summary Search playlists
+// @Description Search playlists by query
+// @Tags playlists
+// @Accept json
+// @Produce json
+// @Param query query string true "Search query"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Playlist} "List of playlists"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid query"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /playlists/search [get]
+func (h *PlaylistHandler) SearchPlaylists(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		logger.Error("query is required")
+		json.WriteErrorResponse(w, http.StatusBadRequest, "query is required", nil)
+		return
+	}
+
+	playlists, err := h.usecase.SearchPlaylists(ctx, query)
+	if err != nil {
+		logger.Error("failed to search playlists", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	json.WriteSuccessResponse(w, http.StatusOK, playlists, nil)
 }
