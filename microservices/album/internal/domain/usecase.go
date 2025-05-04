@@ -15,4 +15,5 @@ type Usecase interface {
 	CreateStream(ctx context.Context, albumID int64, userID int64) error
 	LikeAlbum(ctx context.Context, request *usecaseModel.LikeRequest) error
 	GetFavoriteAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters, userID int64) ([]*usecaseModel.Album, error)
+	SearchAlbums(ctx context.Context, query string, userID int64) ([]*usecaseModel.Album, error)
 }

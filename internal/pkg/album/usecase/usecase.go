@@ -176,3 +176,40 @@ func (u *albumUsecase) GetFavoriteAlbums(ctx context.Context, filters *usecaseMo
 	}
 	return albums, nil
 }
+
+func (u *albumUsecase) SearchAlbums(ctx context.Context, query string) ([]*usecaseModel.Album, error) {
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
+	}
+
+	protoRequest := &albumProto.Query{
+		Query:  query,
+		UserId: &albumProto.UserID{Id: userID},
+	}
+
+	protoAlbums, err := (*u.albumClient).SearchAlbums(ctx, protoRequest)
+	if err != nil {
+		return nil, customErrors.HandleAlbumGRPCError(err)
+	}
+
+	albumIDs := make([]*artistProto.AlbumID, 0, len(protoAlbums.Albums))
+	for _, protoAlbum := range protoAlbums.Albums {
+		albumIDs = append(albumIDs, &artistProto.AlbumID{Id: protoAlbum.Id})
+	}
+
+	protoArtists, err := (*u.artistClient).GetArtistsByAlbumIDs(ctx, &artistProto.AlbumIDList{Ids: albumIDs})
+	if err != nil {
+		return nil, customErrors.HandleArtistGRPCError(err)
+	}
+
+	artistWithTitleMap := model.ArtistWithTitleMapFromProtoToUsecase(protoArtists.Artists)
+
+	albums := make([]*usecaseModel.Album, 0, len(protoAlbums.Albums))
+	for _, protoAlbum := range protoAlbums.Albums {
+		usecaseAlbum := model.AlbumFromProtoToUsecase(protoAlbum)
+		usecaseAlbum.Artists = artistWithTitleMap[protoAlbum.Id]
+		albums = append(albums, usecaseAlbum)
+	}
+	return albums, nil
+}

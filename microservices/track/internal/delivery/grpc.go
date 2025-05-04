@@ -125,3 +125,11 @@ func (s *TrackService) GetFavoriteTracks(ctx context.Context, req *trackProto.Fa
 	}
 	return model.TrackListFromUsecaseToProto(tracks), nil
 }
+
+func (s *TrackService) SearchTracks(ctx context.Context, req *trackProto.Query) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.SearchTracks(ctx, req.Query, req.UserId.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromUsecaseToProto(tracks), nil
+}

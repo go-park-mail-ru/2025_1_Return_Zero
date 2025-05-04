@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/internal/domain"
@@ -123,6 +124,18 @@ const (
 		WHERE ft_prof.user_id = $2
 		ORDER BY ft_prof.created_at DESC, t.id DESC
 		LIMIT $3 OFFSET $4
+	`
+
+	SearchTracksQuery = `
+		SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id, (ft.user_id IS NOT NULL) AS is_favorite
+		FROM track t
+		LEFT JOIN favorite_track ft ON t.id = ft.track_id AND ft.user_id = $2
+		WHERE t.search_vector @@ to_tsquery('multilingual', $1)
+		   OR similarity(t.title_trgm, $3) > 0.3
+		ORDER BY 
+		    CASE WHEN t.search_vector @@ to_tsquery('multilingual', $1) THEN 0 ELSE 1 END,
+		    ts_rank(t.search_vector, to_tsquery('multilingual', $1)) DESC,
+		    similarity(t.title_trgm, $3) DESC
 	`
 )
 
@@ -453,6 +466,42 @@ func (r *TrackPostgresRepository) GetFavoriteTracks(ctx context.Context, favorit
 	if err := rows.Err(); err != nil {
 		logger.Error("failed to get favorite tracks", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to get favorite tracks: %v", err)
+	}
+
+	return tracks, nil
+}
+
+func (r *TrackPostgresRepository) SearchTracks(ctx context.Context, query string, userID int64) ([]*repoModel.Track, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Searching tracks in db", zap.String("search query", query), zap.String("query", SearchTracksQuery))
+
+	words := strings.Fields(query)
+	for i, word := range words {
+		words[i] = word + ":*"
+	}
+	tsQueryString := strings.Join(words, " & ")
+
+	rows, err := r.db.QueryContext(ctx, SearchTracksQuery, tsQueryString, userID, query)
+	if err != nil {
+		logger.Error("failed to search tracks", zap.Error(err))
+		return nil, trackErrors.NewInternalError("failed to search tracks: %v", err)
+	}
+	defer rows.Close()
+
+	var tracks []*repoModel.Track
+	for rows.Next() {
+		var track repoModel.Track
+		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID, &track.IsFavorite)
+		if err != nil {
+			logger.Error("failed to scan track", zap.Error(err))
+			return nil, trackErrors.NewInternalError("failed to scan track: %v", err)
+		}
+		tracks = append(tracks, &track)
+	}
+
+	if err := rows.Err(); err != nil {
+		logger.Error("failed to search tracks", zap.Error(err))
+		return nil, trackErrors.NewInternalError("failed to search tracks: %v", err)
 	}
 
 	return tracks, nil

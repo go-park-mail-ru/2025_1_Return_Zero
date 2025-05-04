@@ -263,8 +263,7 @@ CREATE TABLE IF NOT EXISTS album_stream (
     FOREIGN KEY (album_id)
         REFERENCES album (id)
         ON DELETE CASCADE
-        ON UPDATE CASCADE,
-    CONSTRAINT stream_valid_duration_check CHECK (duration >= 0)
+        ON UPDATE CASCADE
 );
 
 -- album microservice

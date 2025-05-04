@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	domain "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/internal/domain"
@@ -122,6 +123,18 @@ const (
 		WHERE favorite_artist.user_id = $1
 		ORDER BY favorite_artist.created_at DESC, artist.id DESC
 		LIMIT $2 OFFSET $3
+	`
+
+	SearchArtistsQuery = `
+		SELECT a.id, a.title, a.description, a.thumbnail_url
+		FROM artist a
+		LEFT JOIN favorite_artist fa ON a.id = fa.artist_id AND fa.user_id = $2
+		WHERE a.search_vector @@ to_tsquery('multilingual', $1)
+		   OR similarity(a.title_trgm, $3) > 0.3
+		ORDER BY 
+		    CASE WHEN a.search_vector @@ to_tsquery('multilingual', $1) THEN 0 ELSE 1 END,
+		    ts_rank(a.search_vector, to_tsquery('multilingual', $1)) DESC,
+		    similarity(a.title_trgm, $3) DESC
 	`
 )
 
@@ -483,5 +496,35 @@ func (r *artistPostgresRepository) GetFavoriteArtists(ctx context.Context, filte
 		artists = append(artists, &artist)
 	}
 
+	return artists, nil
+}
+
+func (r *artistPostgresRepository) SearchArtists(ctx context.Context, query string, userID int64) ([]*repoModel.Artist, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting search artists by query from db", zap.String("query", query), zap.Int64("userID", userID), zap.String("query", SearchArtistsQuery))
+
+	words := strings.Fields(query)
+	for i, word := range words {
+		words[i] = word + ":*"
+	}
+	tsQueryString := strings.Join(words, " & ")
+
+	rows, err := r.db.QueryContext(ctx, SearchArtistsQuery, tsQueryString, userID, query)
+	if err != nil {
+		logger.Error("failed to search artists", zap.Error(err))
+		return nil, artistErrors.NewInternalError("failed to search artists: %v", err)
+	}
+	defer rows.Close()
+
+	var artists []*repoModel.Artist
+	for rows.Next() {
+		var artist repoModel.Artist
+		err := rows.Scan(&artist.ID, &artist.Title, &artist.Description, &artist.Thumbnail)
+		if err != nil {
+			logger.Error("failed to scan artist", zap.Error(err))
+			return nil, artistErrors.NewInternalError("failed to scan artist: %v", err)
+		}
+		artists = append(artists, &artist)
+	}
 	return artists, nil
 }

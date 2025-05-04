@@ -137,3 +137,11 @@ func (s *ArtistService) GetFavoriteArtists(ctx context.Context, req *artistProto
 	}
 	return model.ArtistListFromUsecaseToProto(artists), nil
 }
+
+func (s *ArtistService) SearchArtists(ctx context.Context, req *artistProto.Query) (*artistProto.ArtistList, error) {
+	artists, err := s.artistUsecase.SearchArtists(ctx, req.Query, req.UserId.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.ArtistListFromUsecaseToProto(artists), nil
+}

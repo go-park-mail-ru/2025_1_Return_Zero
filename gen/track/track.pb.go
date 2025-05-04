@@ -25,6 +25,7 @@ const (
 type Query struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Query         string                 `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
+	UserId        *UserID                `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -64,6 +65,13 @@ func (x *Query) GetQuery() string {
 		return x.Query
 	}
 	return ""
+}
+
+func (x *Query) GetUserId() *UserID {
+	if x != nil {
+		return x.UserId
+	}
+	return nil
 }
 
 type AlbumID struct {
@@ -1258,9 +1266,10 @@ var File_track_track_proto protoreflect.FileDescriptor
 
 const file_track_track_proto_rawDesc = "" +
 	"\n" +
-	"\x11track/track.proto\x12\x05track\x1a\x1bgoogle/protobuf/empty.proto\"\x1d\n" +
+	"\x11track/track.proto\x12\x05track\x1a\x1bgoogle/protobuf/empty.proto\"E\n" +
 	"\x05Query\x12\x14\n" +
-	"\x05query\x18\x01 \x01(\tR\x05query\"\x19\n" +
+	"\x05query\x18\x01 \x01(\tR\x05query\x12&\n" +
+	"\auser_id\x18\x02 \x01(\v2\r.track.UserIDR\x06userId\"\x19\n" +
 	"\aAlbumID\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"f\n" +
 	"\x11AlbumIDWithUserID\x12)\n" +
@@ -1390,65 +1399,66 @@ var file_track_track_proto_goTypes = []any{
 	(*emptypb.Empty)(nil),              // 24: google.protobuf.Empty
 }
 var file_track_track_proto_depIdxs = []int32{
-	1,  // 0: track.AlbumIDWithUserID.album_id:type_name -> track.AlbumID
-	11, // 1: track.AlbumIDWithUserID.user_id:type_name -> track.UserID
-	5,  // 2: track.TrackList.tracks:type_name -> track.Track
-	7,  // 3: track.TrackIDWithUserID.track_id:type_name -> track.TrackID
-	11, // 4: track.TrackIDWithUserID.user_id:type_name -> track.UserID
-	11, // 5: track.TrackIDList.user_id:type_name -> track.UserID
-	7,  // 6: track.TrackIDList.ids:type_name -> track.TrackID
-	9,  // 7: track.TrackIDListWithFilters.ids:type_name -> track.TrackIDList
-	21, // 8: track.TrackIDListWithFilters.filters:type_name -> track.Filters
-	11, // 9: track.UserIDWithFilters.user_id:type_name -> track.UserID
-	21, // 10: track.UserIDWithFilters.filters:type_name -> track.Filters
-	7,  // 11: track.TrackStreamCreateData.track_id:type_name -> track.TrackID
-	11, // 12: track.TrackStreamCreateData.user_id:type_name -> track.UserID
-	13, // 13: track.TrackStreamUpdateData.stream_id:type_name -> track.StreamID
-	11, // 14: track.TrackStreamUpdateData.user_id:type_name -> track.UserID
-	7,  // 15: track.TrackStream.track_id:type_name -> track.TrackID
-	16, // 16: track.TrackStreamList.streams:type_name -> track.TrackStream
-	17, // 17: track.TrackStreamListWithFilters.streams:type_name -> track.TrackStreamList
-	21, // 18: track.TrackStreamListWithFilters.filters:type_name -> track.Filters
-	5,  // 19: track.TrackDetailed.track:type_name -> track.Track
-	20, // 20: track.Filters.pagination:type_name -> track.Pagination
-	7,  // 21: track.LikeRequest.track_id:type_name -> track.TrackID
-	11, // 22: track.LikeRequest.user_id:type_name -> track.UserID
-	11, // 23: track.FavoriteRequest.profile_user_id:type_name -> track.UserID
-	11, // 24: track.FavoriteRequest.request_user_id:type_name -> track.UserID
-	21, // 25: track.FavoriteRequest.filters:type_name -> track.Filters
-	12, // 26: track.TrackService.GetAllTracks:input_type -> track.UserIDWithFilters
-	8,  // 27: track.TrackService.GetTrackByID:input_type -> track.TrackIDWithUserID
-	14, // 28: track.TrackService.CreateStream:input_type -> track.TrackStreamCreateData
-	15, // 29: track.TrackService.UpdateStreamDuration:input_type -> track.TrackStreamUpdateData
-	12, // 30: track.TrackService.GetLastListenedTracks:input_type -> track.UserIDWithFilters
-	9,  // 31: track.TrackService.GetTracksByIDs:input_type -> track.TrackIDList
-	10, // 32: track.TrackService.GetTracksByIDsFiltered:input_type -> track.TrackIDListWithFilters
-	7,  // 33: track.TrackService.GetAlbumIDByTrackID:input_type -> track.TrackID
-	2,  // 34: track.TrackService.GetTracksByAlbumID:input_type -> track.AlbumIDWithUserID
-	11, // 35: track.TrackService.GetMinutesListenedByUserID:input_type -> track.UserID
-	11, // 36: track.TrackService.GetTracksListenedByUserID:input_type -> track.UserID
-	22, // 37: track.TrackService.LikeTrack:input_type -> track.LikeRequest
-	0,  // 38: track.TrackService.SearchTracks:input_type -> track.Query
-	23, // 39: track.TrackService.GetFavoriteTracks:input_type -> track.FavoriteRequest
-	6,  // 40: track.TrackService.GetAllTracks:output_type -> track.TrackList
-	19, // 41: track.TrackService.GetTrackByID:output_type -> track.TrackDetailed
-	13, // 42: track.TrackService.CreateStream:output_type -> track.StreamID
-	24, // 43: track.TrackService.UpdateStreamDuration:output_type -> google.protobuf.Empty
-	6,  // 44: track.TrackService.GetLastListenedTracks:output_type -> track.TrackList
-	6,  // 45: track.TrackService.GetTracksByIDs:output_type -> track.TrackList
-	6,  // 46: track.TrackService.GetTracksByIDsFiltered:output_type -> track.TrackList
-	1,  // 47: track.TrackService.GetAlbumIDByTrackID:output_type -> track.AlbumID
-	6,  // 48: track.TrackService.GetTracksByAlbumID:output_type -> track.TrackList
-	3,  // 49: track.TrackService.GetMinutesListenedByUserID:output_type -> track.MinutesListened
-	4,  // 50: track.TrackService.GetTracksListenedByUserID:output_type -> track.TracksListened
-	24, // 51: track.TrackService.LikeTrack:output_type -> google.protobuf.Empty
-	6,  // 52: track.TrackService.SearchTracks:output_type -> track.TrackList
-	6,  // 53: track.TrackService.GetFavoriteTracks:output_type -> track.TrackList
-	40, // [40:54] is the sub-list for method output_type
-	26, // [26:40] is the sub-list for method input_type
-	26, // [26:26] is the sub-list for extension type_name
-	26, // [26:26] is the sub-list for extension extendee
-	0,  // [0:26] is the sub-list for field type_name
+	11, // 0: track.Query.user_id:type_name -> track.UserID
+	1,  // 1: track.AlbumIDWithUserID.album_id:type_name -> track.AlbumID
+	11, // 2: track.AlbumIDWithUserID.user_id:type_name -> track.UserID
+	5,  // 3: track.TrackList.tracks:type_name -> track.Track
+	7,  // 4: track.TrackIDWithUserID.track_id:type_name -> track.TrackID
+	11, // 5: track.TrackIDWithUserID.user_id:type_name -> track.UserID
+	11, // 6: track.TrackIDList.user_id:type_name -> track.UserID
+	7,  // 7: track.TrackIDList.ids:type_name -> track.TrackID
+	9,  // 8: track.TrackIDListWithFilters.ids:type_name -> track.TrackIDList
+	21, // 9: track.TrackIDListWithFilters.filters:type_name -> track.Filters
+	11, // 10: track.UserIDWithFilters.user_id:type_name -> track.UserID
+	21, // 11: track.UserIDWithFilters.filters:type_name -> track.Filters
+	7,  // 12: track.TrackStreamCreateData.track_id:type_name -> track.TrackID
+	11, // 13: track.TrackStreamCreateData.user_id:type_name -> track.UserID
+	13, // 14: track.TrackStreamUpdateData.stream_id:type_name -> track.StreamID
+	11, // 15: track.TrackStreamUpdateData.user_id:type_name -> track.UserID
+	7,  // 16: track.TrackStream.track_id:type_name -> track.TrackID
+	16, // 17: track.TrackStreamList.streams:type_name -> track.TrackStream
+	17, // 18: track.TrackStreamListWithFilters.streams:type_name -> track.TrackStreamList
+	21, // 19: track.TrackStreamListWithFilters.filters:type_name -> track.Filters
+	5,  // 20: track.TrackDetailed.track:type_name -> track.Track
+	20, // 21: track.Filters.pagination:type_name -> track.Pagination
+	7,  // 22: track.LikeRequest.track_id:type_name -> track.TrackID
+	11, // 23: track.LikeRequest.user_id:type_name -> track.UserID
+	11, // 24: track.FavoriteRequest.profile_user_id:type_name -> track.UserID
+	11, // 25: track.FavoriteRequest.request_user_id:type_name -> track.UserID
+	21, // 26: track.FavoriteRequest.filters:type_name -> track.Filters
+	12, // 27: track.TrackService.GetAllTracks:input_type -> track.UserIDWithFilters
+	8,  // 28: track.TrackService.GetTrackByID:input_type -> track.TrackIDWithUserID
+	14, // 29: track.TrackService.CreateStream:input_type -> track.TrackStreamCreateData
+	15, // 30: track.TrackService.UpdateStreamDuration:input_type -> track.TrackStreamUpdateData
+	12, // 31: track.TrackService.GetLastListenedTracks:input_type -> track.UserIDWithFilters
+	9,  // 32: track.TrackService.GetTracksByIDs:input_type -> track.TrackIDList
+	10, // 33: track.TrackService.GetTracksByIDsFiltered:input_type -> track.TrackIDListWithFilters
+	7,  // 34: track.TrackService.GetAlbumIDByTrackID:input_type -> track.TrackID
+	2,  // 35: track.TrackService.GetTracksByAlbumID:input_type -> track.AlbumIDWithUserID
+	11, // 36: track.TrackService.GetMinutesListenedByUserID:input_type -> track.UserID
+	11, // 37: track.TrackService.GetTracksListenedByUserID:input_type -> track.UserID
+	22, // 38: track.TrackService.LikeTrack:input_type -> track.LikeRequest
+	0,  // 39: track.TrackService.SearchTracks:input_type -> track.Query
+	23, // 40: track.TrackService.GetFavoriteTracks:input_type -> track.FavoriteRequest
+	6,  // 41: track.TrackService.GetAllTracks:output_type -> track.TrackList
+	19, // 42: track.TrackService.GetTrackByID:output_type -> track.TrackDetailed
+	13, // 43: track.TrackService.CreateStream:output_type -> track.StreamID
+	24, // 44: track.TrackService.UpdateStreamDuration:output_type -> google.protobuf.Empty
+	6,  // 45: track.TrackService.GetLastListenedTracks:output_type -> track.TrackList
+	6,  // 46: track.TrackService.GetTracksByIDs:output_type -> track.TrackList
+	6,  // 47: track.TrackService.GetTracksByIDsFiltered:output_type -> track.TrackList
+	1,  // 48: track.TrackService.GetAlbumIDByTrackID:output_type -> track.AlbumID
+	6,  // 49: track.TrackService.GetTracksByAlbumID:output_type -> track.TrackList
+	3,  // 50: track.TrackService.GetMinutesListenedByUserID:output_type -> track.MinutesListened
+	4,  // 51: track.TrackService.GetTracksListenedByUserID:output_type -> track.TracksListened
+	24, // 52: track.TrackService.LikeTrack:output_type -> google.protobuf.Empty
+	6,  // 53: track.TrackService.SearchTracks:output_type -> track.TrackList
+	6,  // 54: track.TrackService.GetFavoriteTracks:output_type -> track.TrackList
+	41, // [41:55] is the sub-list for method output_type
+	27, // [27:41] is the sub-list for method input_type
+	27, // [27:27] is the sub-list for extension type_name
+	27, // [27:27] is the sub-list for extension extendee
+	0,  // [0:27] is the sub-list for field type_name
 }
 
 func init() { file_track_track_proto_init() }

@@ -105,3 +105,22 @@ func (u *artistUsecase) GetFavoriteArtists(ctx context.Context, filters *usecase
 
 	return model.ArtistsFromProtoToUsecase(protoArtists.Artists), nil
 }
+
+func (u *artistUsecase) SearchArtists(ctx context.Context, query string) ([]*usecaseModel.Artist, error) {
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
+	}
+
+	protoRequest := &artistProto.Query{
+		Query:  query,
+		UserId: &artistProto.UserID{Id: userID},
+	}
+
+	protoArtists, err := (*u.artistClient).SearchArtists(ctx, protoRequest)
+	if err != nil {
+		return nil, customErrors.HandleArtistGRPCError(err)
+	}
+
+	return model.ArtistsFromProtoToUsecase(protoArtists.Artists), nil
+}

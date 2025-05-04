@@ -106,8 +106,6 @@ TRUNCATE TABLE genre_album CASCADE;
 TRUNCATE TABLE genre_track CASCADE;
 TRUNCATE TABLE track_artist CASCADE;
 TRUNCATE TABLE album_artist CASCADE;
-TRUNCATE TABLE album_genre CASCADE;
-TRUNCATE TABLE track_genre CASCADE;
 
 -- Write your migrate down statements here. If this migration is irreversible
 -- Then delete the separator line above.

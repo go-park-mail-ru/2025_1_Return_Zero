@@ -22,6 +22,58 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Query struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Query         string                 `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
+	UserId        *UserID                `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Query) Reset() {
+	*x = Query{}
+	mi := &file_artist_artist_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Query) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Query) ProtoMessage() {}
+
+func (x *Query) ProtoReflect() protoreflect.Message {
+	mi := &file_artist_artist_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Query.ProtoReflect.Descriptor instead.
+func (*Query) Descriptor() ([]byte, []int) {
+	return file_artist_artist_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *Query) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+func (x *Query) GetUserId() *UserID {
+	if x != nil {
+		return x.UserId
+	}
+	return nil
+}
+
 type ArtistListened struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	ArtistsListened int64                  `protobuf:"varint,1,opt,name=artists_listened,json=artistsListened,proto3" json:"artists_listened,omitempty"`
@@ -31,7 +83,7 @@ type ArtistListened struct {
 
 func (x *ArtistListened) Reset() {
 	*x = ArtistListened{}
-	mi := &file_artist_artist_proto_msgTypes[0]
+	mi := &file_artist_artist_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -43,7 +95,7 @@ func (x *ArtistListened) String() string {
 func (*ArtistListened) ProtoMessage() {}
 
 func (x *ArtistListened) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[0]
+	mi := &file_artist_artist_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56,7 +108,7 @@ func (x *ArtistListened) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtistListened.ProtoReflect.Descriptor instead.
 func (*ArtistListened) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{0}
+	return file_artist_artist_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ArtistListened) GetArtistsListened() int64 {
@@ -75,7 +127,7 @@ type UserID struct {
 
 func (x *UserID) Reset() {
 	*x = UserID{}
-	mi := &file_artist_artist_proto_msgTypes[1]
+	mi := &file_artist_artist_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -87,7 +139,7 @@ func (x *UserID) String() string {
 func (*UserID) ProtoMessage() {}
 
 func (x *UserID) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[1]
+	mi := &file_artist_artist_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -100,7 +152,7 @@ func (x *UserID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserID.ProtoReflect.Descriptor instead.
 func (*UserID) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{1}
+	return file_artist_artist_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *UserID) GetId() int64 {
@@ -119,7 +171,7 @@ type ArtistID struct {
 
 func (x *ArtistID) Reset() {
 	*x = ArtistID{}
-	mi := &file_artist_artist_proto_msgTypes[2]
+	mi := &file_artist_artist_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -131,7 +183,7 @@ func (x *ArtistID) String() string {
 func (*ArtistID) ProtoMessage() {}
 
 func (x *ArtistID) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[2]
+	mi := &file_artist_artist_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -144,7 +196,7 @@ func (x *ArtistID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtistID.ProtoReflect.Descriptor instead.
 func (*ArtistID) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{2}
+	return file_artist_artist_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ArtistID) GetId() int64 {
@@ -164,7 +216,7 @@ type ArtistIDWithUserID struct {
 
 func (x *ArtistIDWithUserID) Reset() {
 	*x = ArtistIDWithUserID{}
-	mi := &file_artist_artist_proto_msgTypes[3]
+	mi := &file_artist_artist_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -176,7 +228,7 @@ func (x *ArtistIDWithUserID) String() string {
 func (*ArtistIDWithUserID) ProtoMessage() {}
 
 func (x *ArtistIDWithUserID) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[3]
+	mi := &file_artist_artist_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -189,7 +241,7 @@ func (x *ArtistIDWithUserID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtistIDWithUserID.ProtoReflect.Descriptor instead.
 func (*ArtistIDWithUserID) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{3}
+	return file_artist_artist_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ArtistIDWithUserID) GetArtistId() *ArtistID {
@@ -215,7 +267,7 @@ type ArtistIDList struct {
 
 func (x *ArtistIDList) Reset() {
 	*x = ArtistIDList{}
-	mi := &file_artist_artist_proto_msgTypes[4]
+	mi := &file_artist_artist_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -227,7 +279,7 @@ func (x *ArtistIDList) String() string {
 func (*ArtistIDList) ProtoMessage() {}
 
 func (x *ArtistIDList) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[4]
+	mi := &file_artist_artist_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -240,7 +292,7 @@ func (x *ArtistIDList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtistIDList.ProtoReflect.Descriptor instead.
 func (*ArtistIDList) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{4}
+	return file_artist_artist_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ArtistIDList) GetIds() []*ArtistID {
@@ -259,7 +311,7 @@ type TrackID struct {
 
 func (x *TrackID) Reset() {
 	*x = TrackID{}
-	mi := &file_artist_artist_proto_msgTypes[5]
+	mi := &file_artist_artist_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -271,7 +323,7 @@ func (x *TrackID) String() string {
 func (*TrackID) ProtoMessage() {}
 
 func (x *TrackID) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[5]
+	mi := &file_artist_artist_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -284,7 +336,7 @@ func (x *TrackID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackID.ProtoReflect.Descriptor instead.
 func (*TrackID) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{5}
+	return file_artist_artist_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *TrackID) GetId() int64 {
@@ -303,7 +355,7 @@ type AlbumID struct {
 
 func (x *AlbumID) Reset() {
 	*x = AlbumID{}
-	mi := &file_artist_artist_proto_msgTypes[6]
+	mi := &file_artist_artist_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -315,7 +367,7 @@ func (x *AlbumID) String() string {
 func (*AlbumID) ProtoMessage() {}
 
 func (x *AlbumID) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[6]
+	mi := &file_artist_artist_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -328,7 +380,7 @@ func (x *AlbumID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AlbumID.ProtoReflect.Descriptor instead.
 func (*AlbumID) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{6}
+	return file_artist_artist_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *AlbumID) GetId() int64 {
@@ -347,7 +399,7 @@ type TrackIDList struct {
 
 func (x *TrackIDList) Reset() {
 	*x = TrackIDList{}
-	mi := &file_artist_artist_proto_msgTypes[7]
+	mi := &file_artist_artist_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -359,7 +411,7 @@ func (x *TrackIDList) String() string {
 func (*TrackIDList) ProtoMessage() {}
 
 func (x *TrackIDList) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[7]
+	mi := &file_artist_artist_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -372,7 +424,7 @@ func (x *TrackIDList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackIDList.ProtoReflect.Descriptor instead.
 func (*TrackIDList) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{7}
+	return file_artist_artist_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *TrackIDList) GetIds() []*TrackID {
@@ -391,7 +443,7 @@ type AlbumIDList struct {
 
 func (x *AlbumIDList) Reset() {
 	*x = AlbumIDList{}
-	mi := &file_artist_artist_proto_msgTypes[8]
+	mi := &file_artist_artist_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -403,7 +455,7 @@ func (x *AlbumIDList) String() string {
 func (*AlbumIDList) ProtoMessage() {}
 
 func (x *AlbumIDList) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[8]
+	mi := &file_artist_artist_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -416,7 +468,7 @@ func (x *AlbumIDList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AlbumIDList.ProtoReflect.Descriptor instead.
 func (*AlbumIDList) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{8}
+	return file_artist_artist_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *AlbumIDList) GetIds() []*AlbumID {
@@ -439,7 +491,7 @@ type Artist struct {
 
 func (x *Artist) Reset() {
 	*x = Artist{}
-	mi := &file_artist_artist_proto_msgTypes[9]
+	mi := &file_artist_artist_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -451,7 +503,7 @@ func (x *Artist) String() string {
 func (*Artist) ProtoMessage() {}
 
 func (x *Artist) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[9]
+	mi := &file_artist_artist_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -464,7 +516,7 @@ func (x *Artist) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Artist.ProtoReflect.Descriptor instead.
 func (*Artist) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{9}
+	return file_artist_artist_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *Artist) GetId() int64 {
@@ -513,7 +565,7 @@ type ArtistDetailed struct {
 
 func (x *ArtistDetailed) Reset() {
 	*x = ArtistDetailed{}
-	mi := &file_artist_artist_proto_msgTypes[10]
+	mi := &file_artist_artist_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -525,7 +577,7 @@ func (x *ArtistDetailed) String() string {
 func (*ArtistDetailed) ProtoMessage() {}
 
 func (x *ArtistDetailed) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[10]
+	mi := &file_artist_artist_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -538,7 +590,7 @@ func (x *ArtistDetailed) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtistDetailed.ProtoReflect.Descriptor instead.
 func (*ArtistDetailed) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{10}
+	return file_artist_artist_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ArtistDetailed) GetArtist() *Artist {
@@ -571,7 +623,7 @@ type ArtistTitle struct {
 
 func (x *ArtistTitle) Reset() {
 	*x = ArtistTitle{}
-	mi := &file_artist_artist_proto_msgTypes[11]
+	mi := &file_artist_artist_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -583,7 +635,7 @@ func (x *ArtistTitle) String() string {
 func (*ArtistTitle) ProtoMessage() {}
 
 func (x *ArtistTitle) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[11]
+	mi := &file_artist_artist_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -596,7 +648,7 @@ func (x *ArtistTitle) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtistTitle.ProtoReflect.Descriptor instead.
 func (*ArtistTitle) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{11}
+	return file_artist_artist_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ArtistTitle) GetTitle() string {
@@ -615,7 +667,7 @@ type ArtistList struct {
 
 func (x *ArtistList) Reset() {
 	*x = ArtistList{}
-	mi := &file_artist_artist_proto_msgTypes[12]
+	mi := &file_artist_artist_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -627,7 +679,7 @@ func (x *ArtistList) String() string {
 func (*ArtistList) ProtoMessage() {}
 
 func (x *ArtistList) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[12]
+	mi := &file_artist_artist_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -640,7 +692,7 @@ func (x *ArtistList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtistList.ProtoReflect.Descriptor instead.
 func (*ArtistList) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{12}
+	return file_artist_artist_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ArtistList) GetArtists() []*Artist {
@@ -660,7 +712,7 @@ type ArtistWithTitle struct {
 
 func (x *ArtistWithTitle) Reset() {
 	*x = ArtistWithTitle{}
-	mi := &file_artist_artist_proto_msgTypes[13]
+	mi := &file_artist_artist_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -672,7 +724,7 @@ func (x *ArtistWithTitle) String() string {
 func (*ArtistWithTitle) ProtoMessage() {}
 
 func (x *ArtistWithTitle) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[13]
+	mi := &file_artist_artist_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -685,7 +737,7 @@ func (x *ArtistWithTitle) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtistWithTitle.ProtoReflect.Descriptor instead.
 func (*ArtistWithTitle) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{13}
+	return file_artist_artist_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ArtistWithTitle) GetId() int64 {
@@ -711,7 +763,7 @@ type ArtistWithTitleList struct {
 
 func (x *ArtistWithTitleList) Reset() {
 	*x = ArtistWithTitleList{}
-	mi := &file_artist_artist_proto_msgTypes[14]
+	mi := &file_artist_artist_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -723,7 +775,7 @@ func (x *ArtistWithTitleList) String() string {
 func (*ArtistWithTitleList) ProtoMessage() {}
 
 func (x *ArtistWithTitleList) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[14]
+	mi := &file_artist_artist_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -736,7 +788,7 @@ func (x *ArtistWithTitleList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtistWithTitleList.ProtoReflect.Descriptor instead.
 func (*ArtistWithTitleList) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{14}
+	return file_artist_artist_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ArtistWithTitleList) GetArtists() []*ArtistWithTitle {
@@ -755,7 +807,7 @@ type ArtistWithTitleMap struct {
 
 func (x *ArtistWithTitleMap) Reset() {
 	*x = ArtistWithTitleMap{}
-	mi := &file_artist_artist_proto_msgTypes[15]
+	mi := &file_artist_artist_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -767,7 +819,7 @@ func (x *ArtistWithTitleMap) String() string {
 func (*ArtistWithTitleMap) ProtoMessage() {}
 
 func (x *ArtistWithTitleMap) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[15]
+	mi := &file_artist_artist_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -780,7 +832,7 @@ func (x *ArtistWithTitleMap) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtistWithTitleMap.ProtoReflect.Descriptor instead.
 func (*ArtistWithTitleMap) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{15}
+	return file_artist_artist_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ArtistWithTitleMap) GetArtists() map[int64]*ArtistWithTitleList {
@@ -801,7 +853,7 @@ type ArtistWithRole struct {
 
 func (x *ArtistWithRole) Reset() {
 	*x = ArtistWithRole{}
-	mi := &file_artist_artist_proto_msgTypes[16]
+	mi := &file_artist_artist_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -813,7 +865,7 @@ func (x *ArtistWithRole) String() string {
 func (*ArtistWithRole) ProtoMessage() {}
 
 func (x *ArtistWithRole) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[16]
+	mi := &file_artist_artist_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -826,7 +878,7 @@ func (x *ArtistWithRole) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtistWithRole.ProtoReflect.Descriptor instead.
 func (*ArtistWithRole) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{16}
+	return file_artist_artist_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ArtistWithRole) GetId() int64 {
@@ -859,7 +911,7 @@ type ArtistWithRoleList struct {
 
 func (x *ArtistWithRoleList) Reset() {
 	*x = ArtistWithRoleList{}
-	mi := &file_artist_artist_proto_msgTypes[17]
+	mi := &file_artist_artist_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -871,7 +923,7 @@ func (x *ArtistWithRoleList) String() string {
 func (*ArtistWithRoleList) ProtoMessage() {}
 
 func (x *ArtistWithRoleList) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[17]
+	mi := &file_artist_artist_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -884,7 +936,7 @@ func (x *ArtistWithRoleList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtistWithRoleList.ProtoReflect.Descriptor instead.
 func (*ArtistWithRoleList) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{17}
+	return file_artist_artist_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ArtistWithRoleList) GetArtists() []*ArtistWithRole {
@@ -903,7 +955,7 @@ type ArtistWithRoleMap struct {
 
 func (x *ArtistWithRoleMap) Reset() {
 	*x = ArtistWithRoleMap{}
-	mi := &file_artist_artist_proto_msgTypes[18]
+	mi := &file_artist_artist_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -915,7 +967,7 @@ func (x *ArtistWithRoleMap) String() string {
 func (*ArtistWithRoleMap) ProtoMessage() {}
 
 func (x *ArtistWithRoleMap) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[18]
+	mi := &file_artist_artist_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -928,7 +980,7 @@ func (x *ArtistWithRoleMap) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtistWithRoleMap.ProtoReflect.Descriptor instead.
 func (*ArtistWithRoleMap) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{18}
+	return file_artist_artist_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ArtistWithRoleMap) GetArtists() map[int64]*ArtistWithRoleList {
@@ -948,7 +1000,7 @@ type Pagination struct {
 
 func (x *Pagination) Reset() {
 	*x = Pagination{}
-	mi := &file_artist_artist_proto_msgTypes[19]
+	mi := &file_artist_artist_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -960,7 +1012,7 @@ func (x *Pagination) String() string {
 func (*Pagination) ProtoMessage() {}
 
 func (x *Pagination) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[19]
+	mi := &file_artist_artist_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -973,7 +1025,7 @@ func (x *Pagination) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Pagination.ProtoReflect.Descriptor instead.
 func (*Pagination) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{19}
+	return file_artist_artist_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *Pagination) GetOffset() int64 {
@@ -999,7 +1051,7 @@ type Filters struct {
 
 func (x *Filters) Reset() {
 	*x = Filters{}
-	mi := &file_artist_artist_proto_msgTypes[20]
+	mi := &file_artist_artist_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1011,7 +1063,7 @@ func (x *Filters) String() string {
 func (*Filters) ProtoMessage() {}
 
 func (x *Filters) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[20]
+	mi := &file_artist_artist_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1024,7 +1076,7 @@ func (x *Filters) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Filters.ProtoReflect.Descriptor instead.
 func (*Filters) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{20}
+	return file_artist_artist_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *Filters) GetPagination() *Pagination {
@@ -1044,7 +1096,7 @@ type FiltersWithUserID struct {
 
 func (x *FiltersWithUserID) Reset() {
 	*x = FiltersWithUserID{}
-	mi := &file_artist_artist_proto_msgTypes[21]
+	mi := &file_artist_artist_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1056,7 +1108,7 @@ func (x *FiltersWithUserID) String() string {
 func (*FiltersWithUserID) ProtoMessage() {}
 
 func (x *FiltersWithUserID) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[21]
+	mi := &file_artist_artist_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1069,7 +1121,7 @@ func (x *FiltersWithUserID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FiltersWithUserID.ProtoReflect.Descriptor instead.
 func (*FiltersWithUserID) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{21}
+	return file_artist_artist_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *FiltersWithUserID) GetFilters() *Filters {
@@ -1096,7 +1148,7 @@ type ArtistStreamCreateDataList struct {
 
 func (x *ArtistStreamCreateDataList) Reset() {
 	*x = ArtistStreamCreateDataList{}
-	mi := &file_artist_artist_proto_msgTypes[22]
+	mi := &file_artist_artist_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1108,7 +1160,7 @@ func (x *ArtistStreamCreateDataList) String() string {
 func (*ArtistStreamCreateDataList) ProtoMessage() {}
 
 func (x *ArtistStreamCreateDataList) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[22]
+	mi := &file_artist_artist_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1121,7 +1173,7 @@ func (x *ArtistStreamCreateDataList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtistStreamCreateDataList.ProtoReflect.Descriptor instead.
 func (*ArtistStreamCreateDataList) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{22}
+	return file_artist_artist_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *ArtistStreamCreateDataList) GetArtistIds() *ArtistIDList {
@@ -1149,7 +1201,7 @@ type LikeRequest struct {
 
 func (x *LikeRequest) Reset() {
 	*x = LikeRequest{}
-	mi := &file_artist_artist_proto_msgTypes[23]
+	mi := &file_artist_artist_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1161,7 +1213,7 @@ func (x *LikeRequest) String() string {
 func (*LikeRequest) ProtoMessage() {}
 
 func (x *LikeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_artist_artist_proto_msgTypes[23]
+	mi := &file_artist_artist_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1174,7 +1226,7 @@ func (x *LikeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LikeRequest.ProtoReflect.Descriptor instead.
 func (*LikeRequest) Descriptor() ([]byte, []int) {
-	return file_artist_artist_proto_rawDescGZIP(), []int{23}
+	return file_artist_artist_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *LikeRequest) GetArtistId() *ArtistID {
@@ -1202,7 +1254,10 @@ var File_artist_artist_proto protoreflect.FileDescriptor
 
 const file_artist_artist_proto_rawDesc = "" +
 	"\n" +
-	"\x13artist/artist.proto\x12\x06artist\x1a\x1bgoogle/protobuf/empty.proto\";\n" +
+	"\x13artist/artist.proto\x12\x06artist\x1a\x1bgoogle/protobuf/empty.proto\"F\n" +
+	"\x05Query\x12\x14\n" +
+	"\x05query\x18\x01 \x01(\tR\x05query\x12'\n" +
+	"\auser_id\x18\x02 \x01(\v2\x0e.artist.UserIDR\x06userId\";\n" +
 	"\x0eArtistListened\x12)\n" +
 	"\x10artists_listened\x18\x01 \x01(\x03R\x0fartistsListened\"\x18\n" +
 	"\x06UserID\x12\x0e\n" +
@@ -1277,7 +1332,7 @@ const file_artist_artist_proto_rawDesc = "" +
 	"\vLikeRequest\x12-\n" +
 	"\tartist_id\x18\x01 \x01(\v2\x10.artist.ArtistIDR\bartistId\x12'\n" +
 	"\auser_id\x18\x02 \x01(\v2\x0e.artist.UserIDR\x06userId\x12\x17\n" +
-	"\ais_like\x18\x03 \x01(\bR\x06isLike2\x89\a\n" +
+	"\ais_like\x18\x03 \x01(\bR\x06isLike2\xbd\a\n" +
 	"\rArtistService\x12>\n" +
 	"\rGetAllArtists\x12\x19.artist.FiltersWithUserID\x1a\x12.artist.ArtistList\x12C\n" +
 	"\rGetArtistByID\x12\x1a.artist.ArtistIDWithUserID\x1a\x16.artist.ArtistDetailed\x12;\n" +
@@ -1292,7 +1347,8 @@ const file_artist_artist_proto_rawDesc = "" +
 	"\x1aGetArtistsListenedByUserID\x12\x0e.artist.UserID\x1a\x16.artist.ArtistListened\x129\n" +
 	"\n" +
 	"LikeArtist\x12\x13.artist.LikeRequest\x1a\x16.google.protobuf.Empty\x12C\n" +
-	"\x12GetFavoriteArtists\x12\x19.artist.FiltersWithUserID\x1a\x12.artist.ArtistListB\n" +
+	"\x12GetFavoriteArtists\x12\x19.artist.FiltersWithUserID\x1a\x12.artist.ArtistList\x122\n" +
+	"\rSearchArtists\x12\r.artist.Query\x1a\x12.artist.ArtistListB\n" +
 	"Z\b./artistb\x06proto3"
 
 var (
@@ -1307,88 +1363,92 @@ func file_artist_artist_proto_rawDescGZIP() []byte {
 	return file_artist_artist_proto_rawDescData
 }
 
-var file_artist_artist_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
+var file_artist_artist_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
 var file_artist_artist_proto_goTypes = []any{
-	(*ArtistListened)(nil),             // 0: artist.ArtistListened
-	(*UserID)(nil),                     // 1: artist.UserID
-	(*ArtistID)(nil),                   // 2: artist.ArtistID
-	(*ArtistIDWithUserID)(nil),         // 3: artist.ArtistIDWithUserID
-	(*ArtistIDList)(nil),               // 4: artist.ArtistIDList
-	(*TrackID)(nil),                    // 5: artist.TrackID
-	(*AlbumID)(nil),                    // 6: artist.AlbumID
-	(*TrackIDList)(nil),                // 7: artist.TrackIDList
-	(*AlbumIDList)(nil),                // 8: artist.AlbumIDList
-	(*Artist)(nil),                     // 9: artist.Artist
-	(*ArtistDetailed)(nil),             // 10: artist.ArtistDetailed
-	(*ArtistTitle)(nil),                // 11: artist.ArtistTitle
-	(*ArtistList)(nil),                 // 12: artist.ArtistList
-	(*ArtistWithTitle)(nil),            // 13: artist.ArtistWithTitle
-	(*ArtistWithTitleList)(nil),        // 14: artist.ArtistWithTitleList
-	(*ArtistWithTitleMap)(nil),         // 15: artist.ArtistWithTitleMap
-	(*ArtistWithRole)(nil),             // 16: artist.ArtistWithRole
-	(*ArtistWithRoleList)(nil),         // 17: artist.ArtistWithRoleList
-	(*ArtistWithRoleMap)(nil),          // 18: artist.ArtistWithRoleMap
-	(*Pagination)(nil),                 // 19: artist.Pagination
-	(*Filters)(nil),                    // 20: artist.Filters
-	(*FiltersWithUserID)(nil),          // 21: artist.FiltersWithUserID
-	(*ArtistStreamCreateDataList)(nil), // 22: artist.ArtistStreamCreateDataList
-	(*LikeRequest)(nil),                // 23: artist.LikeRequest
-	nil,                                // 24: artist.ArtistWithTitleMap.ArtistsEntry
-	nil,                                // 25: artist.ArtistWithRoleMap.ArtistsEntry
-	(*emptypb.Empty)(nil),              // 26: google.protobuf.Empty
+	(*Query)(nil),                      // 0: artist.Query
+	(*ArtistListened)(nil),             // 1: artist.ArtistListened
+	(*UserID)(nil),                     // 2: artist.UserID
+	(*ArtistID)(nil),                   // 3: artist.ArtistID
+	(*ArtistIDWithUserID)(nil),         // 4: artist.ArtistIDWithUserID
+	(*ArtistIDList)(nil),               // 5: artist.ArtistIDList
+	(*TrackID)(nil),                    // 6: artist.TrackID
+	(*AlbumID)(nil),                    // 7: artist.AlbumID
+	(*TrackIDList)(nil),                // 8: artist.TrackIDList
+	(*AlbumIDList)(nil),                // 9: artist.AlbumIDList
+	(*Artist)(nil),                     // 10: artist.Artist
+	(*ArtistDetailed)(nil),             // 11: artist.ArtistDetailed
+	(*ArtistTitle)(nil),                // 12: artist.ArtistTitle
+	(*ArtistList)(nil),                 // 13: artist.ArtistList
+	(*ArtistWithTitle)(nil),            // 14: artist.ArtistWithTitle
+	(*ArtistWithTitleList)(nil),        // 15: artist.ArtistWithTitleList
+	(*ArtistWithTitleMap)(nil),         // 16: artist.ArtistWithTitleMap
+	(*ArtistWithRole)(nil),             // 17: artist.ArtistWithRole
+	(*ArtistWithRoleList)(nil),         // 18: artist.ArtistWithRoleList
+	(*ArtistWithRoleMap)(nil),          // 19: artist.ArtistWithRoleMap
+	(*Pagination)(nil),                 // 20: artist.Pagination
+	(*Filters)(nil),                    // 21: artist.Filters
+	(*FiltersWithUserID)(nil),          // 22: artist.FiltersWithUserID
+	(*ArtistStreamCreateDataList)(nil), // 23: artist.ArtistStreamCreateDataList
+	(*LikeRequest)(nil),                // 24: artist.LikeRequest
+	nil,                                // 25: artist.ArtistWithTitleMap.ArtistsEntry
+	nil,                                // 26: artist.ArtistWithRoleMap.ArtistsEntry
+	(*emptypb.Empty)(nil),              // 27: google.protobuf.Empty
 }
 var file_artist_artist_proto_depIdxs = []int32{
-	2,  // 0: artist.ArtistIDWithUserID.artist_id:type_name -> artist.ArtistID
-	1,  // 1: artist.ArtistIDWithUserID.user_id:type_name -> artist.UserID
-	2,  // 2: artist.ArtistIDList.ids:type_name -> artist.ArtistID
-	5,  // 3: artist.TrackIDList.ids:type_name -> artist.TrackID
-	6,  // 4: artist.AlbumIDList.ids:type_name -> artist.AlbumID
-	9,  // 5: artist.ArtistDetailed.artist:type_name -> artist.Artist
-	9,  // 6: artist.ArtistList.artists:type_name -> artist.Artist
-	13, // 7: artist.ArtistWithTitleList.artists:type_name -> artist.ArtistWithTitle
-	24, // 8: artist.ArtistWithTitleMap.artists:type_name -> artist.ArtistWithTitleMap.ArtistsEntry
-	16, // 9: artist.ArtistWithRoleList.artists:type_name -> artist.ArtistWithRole
-	25, // 10: artist.ArtistWithRoleMap.artists:type_name -> artist.ArtistWithRoleMap.ArtistsEntry
-	19, // 11: artist.Filters.pagination:type_name -> artist.Pagination
-	20, // 12: artist.FiltersWithUserID.filters:type_name -> artist.Filters
-	1,  // 13: artist.FiltersWithUserID.user_id:type_name -> artist.UserID
-	4,  // 14: artist.ArtistStreamCreateDataList.artist_ids:type_name -> artist.ArtistIDList
-	1,  // 15: artist.ArtistStreamCreateDataList.user_id:type_name -> artist.UserID
-	2,  // 16: artist.LikeRequest.artist_id:type_name -> artist.ArtistID
-	1,  // 17: artist.LikeRequest.user_id:type_name -> artist.UserID
-	14, // 18: artist.ArtistWithTitleMap.ArtistsEntry.value:type_name -> artist.ArtistWithTitleList
-	17, // 19: artist.ArtistWithRoleMap.ArtistsEntry.value:type_name -> artist.ArtistWithRoleList
-	21, // 20: artist.ArtistService.GetAllArtists:input_type -> artist.FiltersWithUserID
-	3,  // 21: artist.ArtistService.GetArtistByID:input_type -> artist.ArtistIDWithUserID
-	2,  // 22: artist.ArtistService.GetArtistTitleByID:input_type -> artist.ArtistID
-	5,  // 23: artist.ArtistService.GetArtistsByTrackID:input_type -> artist.TrackID
-	7,  // 24: artist.ArtistService.GetArtistsByTrackIDs:input_type -> artist.TrackIDList
-	6,  // 25: artist.ArtistService.GetArtistsByAlbumID:input_type -> artist.AlbumID
-	8,  // 26: artist.ArtistService.GetArtistsByAlbumIDs:input_type -> artist.AlbumIDList
-	2,  // 27: artist.ArtistService.GetAlbumIDsByArtistID:input_type -> artist.ArtistID
-	2,  // 28: artist.ArtistService.GetTrackIDsByArtistID:input_type -> artist.ArtistID
-	22, // 29: artist.ArtistService.CreateStreamsByArtistIDs:input_type -> artist.ArtistStreamCreateDataList
-	1,  // 30: artist.ArtistService.GetArtistsListenedByUserID:input_type -> artist.UserID
-	23, // 31: artist.ArtistService.LikeArtist:input_type -> artist.LikeRequest
-	21, // 32: artist.ArtistService.GetFavoriteArtists:input_type -> artist.FiltersWithUserID
-	12, // 33: artist.ArtistService.GetAllArtists:output_type -> artist.ArtistList
-	10, // 34: artist.ArtistService.GetArtistByID:output_type -> artist.ArtistDetailed
-	11, // 35: artist.ArtistService.GetArtistTitleByID:output_type -> artist.ArtistTitle
-	17, // 36: artist.ArtistService.GetArtistsByTrackID:output_type -> artist.ArtistWithRoleList
-	18, // 37: artist.ArtistService.GetArtistsByTrackIDs:output_type -> artist.ArtistWithRoleMap
-	14, // 38: artist.ArtistService.GetArtistsByAlbumID:output_type -> artist.ArtistWithTitleList
-	15, // 39: artist.ArtistService.GetArtistsByAlbumIDs:output_type -> artist.ArtistWithTitleMap
-	8,  // 40: artist.ArtistService.GetAlbumIDsByArtistID:output_type -> artist.AlbumIDList
-	7,  // 41: artist.ArtistService.GetTrackIDsByArtistID:output_type -> artist.TrackIDList
-	26, // 42: artist.ArtistService.CreateStreamsByArtistIDs:output_type -> google.protobuf.Empty
-	0,  // 43: artist.ArtistService.GetArtistsListenedByUserID:output_type -> artist.ArtistListened
-	26, // 44: artist.ArtistService.LikeArtist:output_type -> google.protobuf.Empty
-	12, // 45: artist.ArtistService.GetFavoriteArtists:output_type -> artist.ArtistList
-	33, // [33:46] is the sub-list for method output_type
-	20, // [20:33] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	2,  // 0: artist.Query.user_id:type_name -> artist.UserID
+	3,  // 1: artist.ArtistIDWithUserID.artist_id:type_name -> artist.ArtistID
+	2,  // 2: artist.ArtistIDWithUserID.user_id:type_name -> artist.UserID
+	3,  // 3: artist.ArtistIDList.ids:type_name -> artist.ArtistID
+	6,  // 4: artist.TrackIDList.ids:type_name -> artist.TrackID
+	7,  // 5: artist.AlbumIDList.ids:type_name -> artist.AlbumID
+	10, // 6: artist.ArtistDetailed.artist:type_name -> artist.Artist
+	10, // 7: artist.ArtistList.artists:type_name -> artist.Artist
+	14, // 8: artist.ArtistWithTitleList.artists:type_name -> artist.ArtistWithTitle
+	25, // 9: artist.ArtistWithTitleMap.artists:type_name -> artist.ArtistWithTitleMap.ArtistsEntry
+	17, // 10: artist.ArtistWithRoleList.artists:type_name -> artist.ArtistWithRole
+	26, // 11: artist.ArtistWithRoleMap.artists:type_name -> artist.ArtistWithRoleMap.ArtistsEntry
+	20, // 12: artist.Filters.pagination:type_name -> artist.Pagination
+	21, // 13: artist.FiltersWithUserID.filters:type_name -> artist.Filters
+	2,  // 14: artist.FiltersWithUserID.user_id:type_name -> artist.UserID
+	5,  // 15: artist.ArtistStreamCreateDataList.artist_ids:type_name -> artist.ArtistIDList
+	2,  // 16: artist.ArtistStreamCreateDataList.user_id:type_name -> artist.UserID
+	3,  // 17: artist.LikeRequest.artist_id:type_name -> artist.ArtistID
+	2,  // 18: artist.LikeRequest.user_id:type_name -> artist.UserID
+	15, // 19: artist.ArtistWithTitleMap.ArtistsEntry.value:type_name -> artist.ArtistWithTitleList
+	18, // 20: artist.ArtistWithRoleMap.ArtistsEntry.value:type_name -> artist.ArtistWithRoleList
+	22, // 21: artist.ArtistService.GetAllArtists:input_type -> artist.FiltersWithUserID
+	4,  // 22: artist.ArtistService.GetArtistByID:input_type -> artist.ArtistIDWithUserID
+	3,  // 23: artist.ArtistService.GetArtistTitleByID:input_type -> artist.ArtistID
+	6,  // 24: artist.ArtistService.GetArtistsByTrackID:input_type -> artist.TrackID
+	8,  // 25: artist.ArtistService.GetArtistsByTrackIDs:input_type -> artist.TrackIDList
+	7,  // 26: artist.ArtistService.GetArtistsByAlbumID:input_type -> artist.AlbumID
+	9,  // 27: artist.ArtistService.GetArtistsByAlbumIDs:input_type -> artist.AlbumIDList
+	3,  // 28: artist.ArtistService.GetAlbumIDsByArtistID:input_type -> artist.ArtistID
+	3,  // 29: artist.ArtistService.GetTrackIDsByArtistID:input_type -> artist.ArtistID
+	23, // 30: artist.ArtistService.CreateStreamsByArtistIDs:input_type -> artist.ArtistStreamCreateDataList
+	2,  // 31: artist.ArtistService.GetArtistsListenedByUserID:input_type -> artist.UserID
+	24, // 32: artist.ArtistService.LikeArtist:input_type -> artist.LikeRequest
+	22, // 33: artist.ArtistService.GetFavoriteArtists:input_type -> artist.FiltersWithUserID
+	0,  // 34: artist.ArtistService.SearchArtists:input_type -> artist.Query
+	13, // 35: artist.ArtistService.GetAllArtists:output_type -> artist.ArtistList
+	11, // 36: artist.ArtistService.GetArtistByID:output_type -> artist.ArtistDetailed
+	12, // 37: artist.ArtistService.GetArtistTitleByID:output_type -> artist.ArtistTitle
+	18, // 38: artist.ArtistService.GetArtistsByTrackID:output_type -> artist.ArtistWithRoleList
+	19, // 39: artist.ArtistService.GetArtistsByTrackIDs:output_type -> artist.ArtistWithRoleMap
+	15, // 40: artist.ArtistService.GetArtistsByAlbumID:output_type -> artist.ArtistWithTitleList
+	16, // 41: artist.ArtistService.GetArtistsByAlbumIDs:output_type -> artist.ArtistWithTitleMap
+	9,  // 42: artist.ArtistService.GetAlbumIDsByArtistID:output_type -> artist.AlbumIDList
+	8,  // 43: artist.ArtistService.GetTrackIDsByArtistID:output_type -> artist.TrackIDList
+	27, // 44: artist.ArtistService.CreateStreamsByArtistIDs:output_type -> google.protobuf.Empty
+	1,  // 45: artist.ArtistService.GetArtistsListenedByUserID:output_type -> artist.ArtistListened
+	27, // 46: artist.ArtistService.LikeArtist:output_type -> google.protobuf.Empty
+	13, // 47: artist.ArtistService.GetFavoriteArtists:output_type -> artist.ArtistList
+	13, // 48: artist.ArtistService.SearchArtists:output_type -> artist.ArtistList
+	35, // [35:49] is the sub-list for method output_type
+	21, // [21:35] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_artist_artist_proto_init() }
@@ -1402,7 +1462,7 @@ func file_artist_artist_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_artist_artist_proto_rawDesc), len(file_artist_artist_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   26,
+			NumMessages:   27,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

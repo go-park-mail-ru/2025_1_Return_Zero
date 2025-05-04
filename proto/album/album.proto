@@ -16,6 +16,12 @@ service AlbumService {
 	rpc CreateStream(AlbumStreamCreateData) returns (google.protobuf.Empty);
 	rpc LikeAlbum(LikeRequest) returns (google.protobuf.Empty);
 	rpc GetFavoriteAlbums(FiltersWithUserID) returns (AlbumList);
+	rpc SearchAlbums(Query) returns (AlbumList);
+}
+
+message Query {
+    string query = 1;
+    UserID user_id = 2;
 }
 
 message UserID {

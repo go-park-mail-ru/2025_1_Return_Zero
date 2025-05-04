@@ -149,3 +149,11 @@ func (u *artistUsecase) GetFavoriteArtists(ctx context.Context, filters *usecase
 	}
 	return model.ArtistListFromRepositoryToUsecase(repoArtists), nil
 }
+
+func (u *artistUsecase) SearchArtists(ctx context.Context, query string, userID int64) (*usecaseModel.ArtistList, error) {
+	repoArtists, err := u.artistRepo.SearchArtists(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	return model.ArtistListFromRepositoryToUsecase(repoArtists), nil
+}

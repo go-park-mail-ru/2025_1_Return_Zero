@@ -202,3 +202,36 @@ func (h *ArtistHandler) GetFavoriteArtists(w http.ResponseWriter, r *http.Reques
 	artists := model.ArtistsFromUsecaseToDelivery(usecaseArtists)
 	json.WriteSuccessResponse(w, http.StatusOK, artists, nil)
 }
+
+// SearchArtists godoc
+// @Summary Search artists
+// @Description Search artists by query
+// @Tags artists
+// @Accept json
+// @Produce json
+// @Param query query string true "Query"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Artist} "List of artists"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid query"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /artists/search [get]
+func (h *ArtistHandler) SearchArtists(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		logger.Error("query is empty")
+		json.WriteErrorResponse(w, http.StatusBadRequest, "query is empty", nil)
+		return
+	}
+
+	usecaseArtists, err := h.usecase.SearchArtists(ctx, query)
+	if err != nil {
+		logger.Error("failed to search artists", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	artists := model.ArtistsFromUsecaseToDelivery(usecaseArtists)
+	json.WriteSuccessResponse(w, http.StatusOK, artists, nil)
+}

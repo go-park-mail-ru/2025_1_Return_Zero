@@ -351,6 +351,7 @@ func (h *TrackHandler) GetTracksByAlbumID(w http.ResponseWriter, r *http.Request
 // @Accept json
 // @Produce json
 // @Param id path integer true "Track ID"
+// @Param likeRequest body delivery.TrackLikeRequest true "Is like"
 // @Success 200 {object} delivery.APIResponse{body=delivery.Message} "Track liked/unliked"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid track ID"
 // @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
@@ -476,6 +477,39 @@ func (h *TrackHandler) GetFavoriteTracks(w http.ResponseWriter, r *http.Request)
 	}, username)
 	if err != nil {
 		logger.Error("failed to get favorite tracks", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
+	json.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
+}
+
+// SearchTracks godoc
+// @Summary Search tracks
+// @Description Search tracks by query
+// @Tags tracks
+// @Accept json
+// @Produce json
+// @Param query path string true "Query"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Track} "List of tracks"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid query"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /tracks/search [get]
+func (h *TrackHandler) SearchTracks(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		logger.Warn("attempt to search tracks for empty query")
+		json.WriteErrorResponse(w, http.StatusBadRequest, "query is empty", nil)
+		return
+	}
+
+	usecaseTracks, err := h.usecase.SearchTracks(ctx, query)
+	if err != nil {
+		logger.Error("failed to search tracks", zap.Error(err))
 		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}

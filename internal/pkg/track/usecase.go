@@ -17,4 +17,5 @@ type Usecase interface {
 	LikeTrack(ctx context.Context, request *usecaseModel.TrackLikeRequest) error
 	GetPlaylistTracks(ctx context.Context, id int64) ([]*usecaseModel.Track, error)
 	GetFavoriteTracks(ctx context.Context, filters *usecaseModel.TrackFilters, username string) ([]*usecaseModel.Track, error)
+	SearchTracks(ctx context.Context, query string) ([]*usecaseModel.Track, error)
 }

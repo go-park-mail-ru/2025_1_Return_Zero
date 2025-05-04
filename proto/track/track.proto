@@ -25,6 +25,7 @@ service TrackService {
 
 message Query {
     string query = 1;
+    UserID user_id = 2;
 }
 
 message AlbumID {

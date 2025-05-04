@@ -246,3 +246,36 @@ func (h *AlbumHandler) GetFavoriteAlbums(w http.ResponseWriter, r *http.Request)
 	albums := model.AlbumsFromUsecaseToDelivery(usecaseAlbums)
 	json.WriteSuccessResponse(w, http.StatusOK, albums, nil)
 }
+
+// SearchAlbums godoc
+// @Summary Search albums
+// @Description Search albums by query
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Param query query string true "Query"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Album} "List of albums"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid query"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /albums/search [get]
+func (h *AlbumHandler) SearchAlbums(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		logger.Error("query is empty")
+		json.WriteErrorResponse(w, http.StatusBadRequest, "query is empty", nil)
+		return
+	}
+
+	usecaseAlbums, err := h.usecase.SearchAlbums(ctx, query)
+	if err != nil {
+		logger.Error("failed to search albums", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	albums := model.AlbumsFromUsecaseToDelivery(usecaseAlbums)
+	json.WriteSuccessResponse(w, http.StatusOK, albums, nil)
+}

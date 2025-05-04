@@ -27,6 +27,7 @@ type AlbumServiceClient interface {
 	CreateStream(ctx context.Context, in *AlbumStreamCreateData, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	LikeAlbum(ctx context.Context, in *LikeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetFavoriteAlbums(ctx context.Context, in *FiltersWithUserID, opts ...grpc.CallOption) (*AlbumList, error)
+	SearchAlbums(ctx context.Context, in *Query, opts ...grpc.CallOption) (*AlbumList, error)
 }
 
 type albumServiceClient struct {
@@ -109,6 +110,15 @@ func (c *albumServiceClient) GetFavoriteAlbums(ctx context.Context, in *FiltersW
 	return out, nil
 }
 
+func (c *albumServiceClient) SearchAlbums(ctx context.Context, in *Query, opts ...grpc.CallOption) (*AlbumList, error) {
+	out := new(AlbumList)
+	err := c.cc.Invoke(ctx, "/album.AlbumService/SearchAlbums", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AlbumServiceServer is the server API for AlbumService service.
 // All implementations must embed UnimplementedAlbumServiceServer
 // for forward compatibility
@@ -121,6 +131,7 @@ type AlbumServiceServer interface {
 	CreateStream(context.Context, *AlbumStreamCreateData) (*emptypb.Empty, error)
 	LikeAlbum(context.Context, *LikeRequest) (*emptypb.Empty, error)
 	GetFavoriteAlbums(context.Context, *FiltersWithUserID) (*AlbumList, error)
+	SearchAlbums(context.Context, *Query) (*AlbumList, error)
 	mustEmbedUnimplementedAlbumServiceServer()
 }
 
@@ -151,6 +162,9 @@ func (UnimplementedAlbumServiceServer) LikeAlbum(context.Context, *LikeRequest) 
 }
 func (UnimplementedAlbumServiceServer) GetFavoriteAlbums(context.Context, *FiltersWithUserID) (*AlbumList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFavoriteAlbums not implemented")
+}
+func (UnimplementedAlbumServiceServer) SearchAlbums(context.Context, *Query) (*AlbumList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchAlbums not implemented")
 }
 func (UnimplementedAlbumServiceServer) mustEmbedUnimplementedAlbumServiceServer() {}
 
@@ -309,6 +323,24 @@ func _AlbumService_GetFavoriteAlbums_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AlbumService_SearchAlbums_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Query)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AlbumServiceServer).SearchAlbums(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/album.AlbumService/SearchAlbums",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AlbumServiceServer).SearchAlbums(ctx, req.(*Query))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AlbumService_ServiceDesc is the grpc.ServiceDesc for AlbumService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -347,6 +379,10 @@ var AlbumService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetFavoriteAlbums",
 			Handler:    _AlbumService_GetFavoriteAlbums_Handler,
+		},
+		{
+			MethodName: "SearchAlbums",
+			Handler:    _AlbumService_SearchAlbums_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

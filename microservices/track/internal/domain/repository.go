@@ -23,6 +23,7 @@ type Repository interface {
 	CheckTrackExists(ctx context.Context, trackID int64) (bool, error)
 	UnlikeTrack(ctx context.Context, likeRequest *repoModel.LikeRequest) error
 	GetFavoriteTracks(ctx context.Context, favoriteRequest *repoModel.FavoriteRequest) ([]*repoModel.Track, error)
+	SearchTracks(ctx context.Context, query string, userID int64) ([]*repoModel.Track, error)
 }
 
 type S3Repository interface {

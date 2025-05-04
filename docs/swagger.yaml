@@ -342,6 +342,13 @@ definitions:
         example: Lagtrain
         type: string
     type: object
+  delivery.TrackLikeRequest:
+    description: A request to like or unlike an track. Should be authenticated
+    properties:
+      value:
+        example: true
+        type: boolean
+    type: object
   delivery.UserChangeSettings:
     properties:
       new_email:
@@ -595,6 +602,42 @@ paths:
       summary: Get favorite albums
       tags:
       - albums
+  /albums/search:
+    get:
+      consumes:
+      - application/json
+      description: Search albums by query
+      parameters:
+      - description: Query
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of albums
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Album'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid query
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Search albums
+      tags:
+      - albums
   /artists:
     get:
       consumes:
@@ -809,6 +852,42 @@ paths:
       summary: Get tracks by artist ID
       tags:
       - tracks
+  /artists/search:
+    get:
+      consumes:
+      - application/json
+      description: Search artists by query
+      parameters:
+      - description: Query
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of artists
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Artist'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid query
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Search artists
+      tags:
+      - artists
   /auth/check:
     get:
       consumes:
@@ -1434,6 +1513,12 @@ paths:
         name: id
         required: true
         type: integer
+      - description: Is like
+        in: body
+        name: likeRequest
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.TrackLikeRequest'
       produces:
       - application/json
       responses:
@@ -1498,6 +1583,42 @@ paths:
           schema:
             $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
       summary: Create stream for track by id
+      tags:
+      - tracks
+  /tracks/search:
+    get:
+      consumes:
+      - application/json
+      description: Search tracks by query
+      parameters:
+      - description: Query
+        in: path
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of tracks
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Track'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid query
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Search tracks
       tags:
       - tracks
   /user/{username}:

@@ -95,3 +95,11 @@ func (s *AlbumService) GetFavoriteAlbums(ctx context.Context, req *albumProto.Fi
 	}
 	return model.AlbumListFromUsecaseToProto(albums), nil
 }
+
+func (s *AlbumService) SearchAlbums(ctx context.Context, req *albumProto.Query) (*albumProto.AlbumList, error) {
+	albums, err := s.albumUsecase.SearchAlbums(ctx, req.Query, req.UserId.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.AlbumListFromUsecaseToProto(albums), nil
+}
