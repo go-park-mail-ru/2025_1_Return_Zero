@@ -111,7 +111,6 @@ func main() {
 	r.HandleFunc("/api/v1/albums/search", albumHandler.SearchAlbums).Methods("GET")
 	r.HandleFunc("/api/v1/albums/{id:[0-9]+}/tracks", trackHandler.GetTracksByAlbumID).Methods("GET")
 	r.HandleFunc("/api/v1/albums/{id:[0-9]+}/like", albumHandler.LikeAlbum).Methods("POST")
-	r.HandleFunc("/api/v1/albums/me/favorite", albumHandler.GetFavoriteAlbums).Methods("GET")
 
 	r.HandleFunc("/api/v1/artists", artistHandler.GetAllArtists).Methods("GET")
 	r.HandleFunc("/api/v1/artists/{id:[0-9]+}", artistHandler.GetArtistByID).Methods("GET")
@@ -145,6 +144,7 @@ func main() {
 	r.HandleFunc("/api/v1/user/{username}/artists", artistHandler.GetFavoriteArtists).Methods("GET")
 	r.HandleFunc("/api/v1/user/{username}/tracks", trackHandler.GetFavoriteTracks).Methods("GET")
 	r.HandleFunc("/api/v1/user/{username}/playlists", playlistHandler.GetProfilePlaylists).Methods("GET")
+	r.HandleFunc("/api/v1/user/me/albums", albumHandler.GetFavoriteAlbums).Methods("GET")
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),

@@ -214,7 +214,7 @@ func (h *AlbumHandler) LikeAlbum(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} delivery.APIResponse{body=[]delivery.Album} "List of favorite albums"
 // @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
-// @Router /albums/me/favorite [get]
+// @Router /user/me/albums [get]
 func (h *AlbumHandler) GetFavoriteAlbums(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
