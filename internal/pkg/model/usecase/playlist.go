@@ -1,10 +1,10 @@
 package usecase
 
 type Playlist struct {
-	ID        int64
-	Title     string
-	Username  string
-	Thumbnail string
+	ID        int64  `json:"id"`
+	Title     string `json:"title"`
+	Username  string `json:"username"`
+	Thumbnail string `json:"thumbnail_url"`
 }
 
 type PlaylistWithIsIncludedTrack struct {
