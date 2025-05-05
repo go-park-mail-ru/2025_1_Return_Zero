@@ -8,7 +8,6 @@ import (
 type Metrics struct {
 	HTTPTotalNumberOfRequests *prometheus.CounterVec
 	HTTPRequestDuration       *prometheus.HistogramVec
-	ActiveGoroutines          prometheus.Gauge
 	// MicroserviceRequests        *prometheus.CounterVec
 	// MicroserviceRequestDuration *prometheus.HistogramVec
 	// MicroserviceErrors          *prometheus.CounterVec
@@ -33,18 +32,10 @@ func NewMetrics(reg prometheus.Registerer, namespace string) *Metrics {
 			},
 			[]string{"method", "path"},
 		),
-		ActiveGoroutines: prometheus.NewGauge(
-            prometheus.GaugeOpts{
-                Namespace: namespace,
-                Name:      "active_goroutines",
-                Help:      "Current number of active goroutines",
-            },
-        ),
 	}
 	reg.MustRegister(collectors.NewGoCollector())
 	reg.MustRegister(metrics.HTTPTotalNumberOfRequests)
 	reg.MustRegister(metrics.HTTPRequestDuration)
-	reg.MustRegister(metrics.ActiveGoroutines)
 
 	return metrics
 }

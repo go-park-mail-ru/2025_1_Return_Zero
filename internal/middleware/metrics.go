@@ -73,13 +73,13 @@ var pathReplacements = []string{
 }
 
 func ExtractPath(path string) string {
-    for i, pattern := range pathPatterns {
-        if pattern.MatchString(path) {
-            return pathReplacements[i]
-        }
-    }
-    
-    return path
+	for i, pattern := range pathPatterns {
+		if pattern.MatchString(path) {
+			return pathReplacements[i]
+		}
+	}
+
+	return path
 }
 
 func MetricsMiddleware(m *metrics.Metrics) func(http.Handler) http.Handler {
