@@ -13,15 +13,15 @@ var mapErrorStatus = map[error]int{
 	customErrors.ErrFailedToUpdateStreamDuration: http.StatusInternalServerError,
 	customErrors.ErrStreamPermissionDenied:       http.StatusForbidden,
 
-	customErrors.ErrUserExist:     http.StatusConflict,
-	customErrors.ErrUserNotFound:  http.StatusNotFound,
-	customErrors.ErrCreateSalt:    http.StatusInternalServerError,
-	customErrors.ErrWrongPassword: http.StatusUnauthorized,
+	customErrors.ErrUserExist:        http.StatusConflict,
+	customErrors.ErrUserNotFound:     http.StatusNotFound,
+	customErrors.ErrCreateSalt:       http.StatusInternalServerError,
+	customErrors.ErrWrongPassword:    http.StatusUnauthorized,
 	customErrors.ErrPasswordRequired: http.StatusBadRequest,
 
-	customErrors.ErrCreateSession:           http.StatusInternalServerError,
-	customErrors.ErrGetSession:              http.StatusInternalServerError,
-	customErrors.ErrDeleteSession:           http.StatusInternalServerError,
+	customErrors.ErrCreateSession: http.StatusInternalServerError,
+	customErrors.ErrGetSession:    http.StatusInternalServerError,
+	customErrors.ErrDeleteSession: http.StatusInternalServerError,
 
 	customErrors.ErrInvalidOffset:            http.StatusBadRequest,
 	customErrors.ErrInvalidLimit:             http.StatusBadRequest,

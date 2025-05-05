@@ -87,6 +87,16 @@ type PaginationConfig struct {
 	DefaultLimit  int `mapstructure:"default_limit"`
 }
 
+type Prometheus struct {
+	ArtistPort     int `mapstructure:"artist_port"`
+	AlbumPort      int `mapstructure:"album_port"`
+	TrackPort      int `mapstructure:"track_port"`
+	AuthPort       int `mapstructure:"auth_port"`
+	UserPort       int `mapstructure:"user_port"`
+	PrometheusPort int `mapstructure:"prometheus_port"`
+	ApiPort        int `mapstructure:"api_port"`
+}
+
 type Config struct {
 	Cors       Cors
 	Port       int `mapstructure:"port"`
@@ -96,6 +106,7 @@ type Config struct {
 	Redis      RedisConfig
 	CSRF       CSRFConfig
 	Services   Services
+	Prometheus Prometheus
 }
 
 func LoadConfig() (*Config, error) {

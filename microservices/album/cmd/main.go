@@ -3,20 +3,23 @@ package main
 import (
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
+	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/postgres"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/album/internal/delivery"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/album/internal/repository"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/album/internal/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/interceptors"
+	metrics "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-
-	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 )
 
 func main() {
@@ -40,7 +43,10 @@ func main() {
 	}
 	defer conn.Close()
 
-	accessInterceptor := interceptors.NewAccessInterceptor(logger)
+	reg := prometheus.NewRegistry()
+	metrics := metrics.NewMetrics(reg, "album_service")
+
+	accessInterceptor := interceptors.NewAccessInterceptor(logger, metrics)
 
 	server := grpc.NewServer(
 		grpc.UnaryInterceptor(accessInterceptor.UnaryServerInterceptor()),
@@ -53,7 +59,16 @@ func main() {
 	}
 	defer postgresPool.Close()
 
-	albumRepository := repository.NewAlbumPostgresRepository(postgresPool)
+	go func() {
+		http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+		address := fmt.Sprintf(":%d", cfg.Prometheus.AlbumPort)
+		logger.Info(fmt.Sprintf("Serving metrics responds on port %d", cfg.Prometheus.AlbumPort))
+		if err := http.ListenAndServe(address, nil); err != nil {
+			logger.Fatal("Error starting metrics server", zap.String("error", err.Error()))
+		}
+	}()
+
+	albumRepository := repository.NewAlbumPostgresRepository(postgresPool, metrics)
 	albumUsecase := usecase.NewAlbumUsecase(albumRepository)
 	albumService := delivery.NewAlbumService(albumUsecase)
 	albumProto.RegisterAlbumServiceServer(server, albumService)

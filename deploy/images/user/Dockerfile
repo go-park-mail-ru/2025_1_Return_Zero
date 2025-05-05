@@ -21,6 +21,8 @@ COPY ./microservices/user ./microservices/user
 
 COPY ./microservices/interceptors ./microservices/interceptors
 
+COPY ./microservices/metrics ./microservices/metrics
+
 COPY ./config.yaml ./config.yaml
 
 COPY ./.env ./.env

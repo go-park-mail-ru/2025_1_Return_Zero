@@ -182,6 +182,48 @@ services:
       - go-api
     tty: true
 
+  prometheus:
+    build:
+      context: ./images/prometheus
+      dockerfile: Dockerfile
+    container_name: prometheus
+    restart: always
+    ports:
+      - '9090:9090'
+
+  grafana:
+    build:
+      context: ./images/grafana
+      dockerfile: Dockerfile
+    container_name: grafana
+    restart: always
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USERNAME}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: false
+    # volumes:
+    #   - ./images/grafana/grafana.ini:/etc/grafana/grafana.ini
+    ports:
+      - '3000:3000'
+    depends_on:
+      - prometheus
+
+  node-exporter:
+    restart: always
+    image: mirror.gcr.io/prom/node-exporter:latest
+    container_name: node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+#      - --collector.filesystem.ignored-mount-points
+    ports:
+      - "9100:9100"
+    tty: true
+
 volumes:
   pgdata:
     driver: local

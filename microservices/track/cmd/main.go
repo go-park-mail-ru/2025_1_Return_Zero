@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 
@@ -11,9 +12,12 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/s3"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/interceptors"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/internal/delivery"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/internal/repository"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/internal/usecase"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
@@ -41,11 +45,23 @@ func main() {
 	}
 	defer conn.Close()
 
-	accessInterceptor := interceptors.NewAccessInterceptor(logger)
+	reg := prometheus.NewRegistry()
+	metrics := metrics.NewMetrics(reg, "album_service")
+
+	accessInterceptor := interceptors.NewAccessInterceptor(logger, metrics)
 
 	server := grpc.NewServer(
 		grpc.UnaryInterceptor(accessInterceptor.UnaryServerInterceptor()),
 	)
+
+	go func() {
+		http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+		address := fmt.Sprintf(":%d", cfg.Prometheus.TrackPort)
+		logger.Info(fmt.Sprintf("Serving metrics responds on port %d", cfg.Prometheus.TrackPort))
+		if err := http.ListenAndServe(address, nil); err != nil {
+			logger.Fatal("Error starting metrics server", zap.String("error", err.Error()))
+		}
+	}()
 
 	postgresPool, err := postgres.ConnectPostgres(cfg.Postgres)
 	if err != nil {
@@ -60,8 +76,8 @@ func main() {
 		return
 	}
 
-	trackRepository := repository.NewTrackPostgresRepository(postgresPool)
-	trackS3Repository := repository.NewTrackS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration)
+	trackRepository := repository.NewTrackPostgresRepository(postgresPool, metrics)
+	trackS3Repository := repository.NewTrackS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration, metrics)
 	trackUsecase := usecase.NewTrackUsecase(trackRepository, trackS3Repository)
 	trackService := delivery.NewTrackService(trackUsecase)
 	trackProto.RegisterTrackServiceServer(server, trackService)
