@@ -302,12 +302,15 @@ func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int6
 		return nil, trackErrors.NewInternalError("failed to get tracks by ids: %v", err)
 	}
 
-	if len(tracks) > 0 {
+	if len(tracks) > 0 && len(tracks) < len(ids) {
+		missingIDs := make([]int64, 0)
 		for _, id := range ids {
 			if _, ok := tracks[id]; !ok {
-				logger.Error("track not found", zap.Int64("id", id))
-				return nil, trackErrors.ErrTrackNotFound
+				missingIDs = append(missingIDs, id)
 			}
+		}
+		if len(missingIDs) > 0 {
+			logger.Warn("some tracks were not found", zap.Int64s("missing_ids", missingIDs))
 		}
 	}
 
