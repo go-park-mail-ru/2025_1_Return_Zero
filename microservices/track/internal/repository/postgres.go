@@ -250,6 +250,7 @@ func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting streams by user id from db", zap.Int64("userID", userID), zap.String("query", GetStreamsByUserIDQuery))
 	rows, err := r.db.QueryContext(ctx, GetStreamsByUserIDQuery, userID, filters.Pagination.Limit, filters.Pagination.Offset)
+
 	if err != nil {
 		logger.Error("failed to get streams by user id", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to get streams by user id: %v", err)

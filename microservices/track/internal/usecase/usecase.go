@@ -86,6 +86,7 @@ func (u *TrackUsecase) GetLastListenedTracks(ctx context.Context, userID int64, 
 	for i, stream := range repoStreams {
 		repoTrackIDs[i] = stream.TrackID
 	}
+
 	repoTracks, err := u.trackRepo.GetTracksByIDs(ctx, repoTrackIDs, userID)
 	if err != nil {
 		return nil, err
