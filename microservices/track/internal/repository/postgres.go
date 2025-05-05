@@ -31,19 +31,19 @@ const (
 	`
 
 	CreateStreamQuery = `
-		INSERT INTO track_stream (track_id, user_id) 
+		INSERT INTO stream (track_id, user_id) 
 		VALUES ($1, $2)
 		RETURNING id
 	`
 
 	GetStreamByIDQuery = `
  		SELECT id, user_id, track_id, duration
-		FROM track_stream
+		FROM stream
  		WHERE id = $1
 	`
 
 	UpdateStreamDurationQuery = `
-		UPDATE track_stream
+		UPDATE stream
 		SET duration = $1
 		WHERE id = $2
 	`
@@ -51,7 +51,7 @@ const (
 	GetStreamsByUserIDQuery = `
 		WITH latest_streams AS (
 			SELECT DISTINCT ON (track_id) id, user_id, track_id, duration, created_at
-			FROM track_stream
+			FROM stream
 			WHERE user_id = $1
 			ORDER BY track_id, created_at DESC, id DESC
 		)
