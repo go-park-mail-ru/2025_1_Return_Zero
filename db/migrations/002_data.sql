@@ -44,6 +44,16 @@ INSERT INTO genre_album (genre_id, album_id) VALUES
     ((SELECT id FROM genre WHERE name = 'OST'), (SELECT id FROM album WHERE title = 'Everlasting Summer'));
 
 INSERT INTO track (title, album_id, duration, thumbnail_url, file_url, position) VALUES
+    ('Gialo', (SELECT id FROM album WHERE title = 'Music Brings Injures'), 212, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/musicbringsinjures.webp', 'gialo.mp3', 1),
+    ('Sluggish Cranial Grinding', (SELECT id FROM album WHERE title = 'Music Brings Injures'), 224, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/musicbringsinjures.webp', 'sluggishcranialgrinding.mp3', 2),
+    ('Rabid', (SELECT id FROM album WHERE title = 'Music Brings Injures'), 137, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/musicbringsinjures.webp', 'rabid.mp3', 3),
+    ('Necroviolated To Liquid', (SELECT id FROM album WHERE title = 'Music Brings Injures'), 226, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/musicbringsinjures.webp', 'necroviolatedtoliquid.mp3', 4),
+    ('ConsumingTheAbyss', (SELECT id FROM album WHERE title = 'Music Brings Injures'), 223, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/musicbringsinjures.webp', 'consumingtheabyss.mp3', 5),
+    ('S.O.D.', (SELECT id FROM album WHERE title = 'Music Brings Injures'), 265, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/musicbringsinjures.webp', 'sod.mp3', 6),
+    ('Post-Apocalyptic Segregation', (SELECT id FROM album WHERE title = 'Triumph Of Evilution'), 251, 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/triumphofevilution.webp', 'postapocalypticsegregation.mp3', 1),
+    ('Carpet Wounding', (SELECT id FROM album WHERE title = 'Triumph Of Evilution'), 255, 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/triumphofevilution.webp', 'carpetwounding.mp3', 2),
+    ('H. Tearing Sinew', (SELECT id FROM album WHERE title = 'Triumph Of Evilution'), 285, 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/triumphofevilution.webp', 'htearingsinew.mp3', 3),
+    ('Number Of Death', (SELECT id FROM album WHERE title = 'Triumph Of Evilution'), 244, 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/triumphofevilution.webp', 'numberofdeath.mp3', 4),
     ('Lagtrain', (SELECT id FROM album WHERE title = 'Anticyclone'), 252, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/lagtrain.jpg', 'lagtrain.mp3', 1),
     ('Lost Umbrella', (SELECT id FROM album WHERE title = 'Anticyclone'), 255, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/lostumbrella.jpg', 'lostumbrella.mp3', 2),
     ('Racing Into The Night', (SELECT id FROM album WHERE title = 'THE BOOK'), 275, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/racingintotheright.jpg', 'racingintotheright.mp3', 1),
@@ -68,17 +78,8 @@ INSERT INTO track (title, album_id, duration, thumbnail_url, file_url, position)
     ('Sing For The Moment', (SELECT id FROM album WHERE title = 'The Eminem Show'), 340, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/theeminemshow.jpg', 'singforthemoment.mp3', 2),
     ('Angel With A Shotgun', (SELECT id FROM album WHERE title = 'Symphony Soldier'), 201, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/symphonysoldier.jpg', 'angelwithashotgun.mp3', 1),
     ('Timid Girl', (SELECT id FROM album WHERE title = 'Everlasting Summer'), 82, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/everlastingsummer.jpg', 'timidgirl.mp3', 1),
-    ('Let`s be friends', (SELECT id FROM album WHERE title = 'Everlasting Summer'), 123, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/everlastingsummer.jpg', 'letbefriends.mp3', 2),
-    ('Gialo', (SELECT id FROM album WHERE title = 'Music Brings Injures'), 212, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/musicbringsinjures.webp', 'gialo.mp3', 1),
-    ('Sluggish Cranial Grinding', (SELECT id FROM album WHERE title = 'Music Brings Injures'), 224, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/musicbringsinjures.webp', 'sluggishcranialgrinding.mp3', 2),
-    ('Rabid', (SELECT id FROM album WHERE title = 'Music Brings Injures'), 137, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/musicbringsinjures.webp', 'rabid.mp3', 3),
-    ('Necroviolated To Liquid', (SELECT id FROM album WHERE title = 'Music Brings Injures'), 226, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/musicbringsinjures.webp', 'necroviolatedtoliquid.mp3', 4),
-    ('ConsumingTheAbyss', (SELECT id FROM album WHERE title = 'Music Brings Injures'), 223, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/musicbringsinjures.webp', 'consumingtheabyss.mp3', 5),
-    ('S.O.D.', (SELECT id FROM album WHERE title = 'Music Brings Injures'), 265, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/musicbringsinjures.webp', 'sod.mp3', 6),
-    ('Post-Apocalyptic Segregation', (SELECT id FROM album WHERE title = 'Triumph Of Evilution'), 251, 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/triumphofevilution.webp', 'postapocalypticsegregation.mp3', 1),
-    ('Carpet Wounding', (SELECT id FROM album WHERE title = 'Triumph Of Evilution'), 255, 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/triumphofevilution.webp', 'carpetwounding.mp3', 2),
-    ('H. Tearing Sinew', (SELECT id FROM album WHERE title = 'Triumph Of Evilution'), 285, 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/triumphofevilution.webp', 'htearingsinew.mp3', 3),
-    ('Number Of Death', (SELECT id FROM album WHERE title = 'Triumph Of Evilution'), 244, 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/triumphofevilution.webp', 'numberofdeath.mp3', 4);
+    ('Let`s be friends', (SELECT id FROM album WHERE title = 'Everlasting Summer'), 123, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/everlastingsummer.jpg', 'letbefriends.mp3', 2);
+    
 
 
 INSERT INTO genre_track (genre_id, track_id) VALUES
