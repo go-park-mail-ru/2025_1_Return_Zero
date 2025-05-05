@@ -583,7 +583,9 @@ func (h *PlaylistHandler) GetProfilePlaylists(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	json.WriteSuccessResponse(w, http.StatusOK, playlists, nil)
+	deliveryPlaylists := model.PlaylistsFromUsecaseToDelivery(playlists)
+
+	json.WriteSuccessResponse(w, http.StatusOK, deliveryPlaylists, nil)
 }
 
 // SearchPlaylists godoc
@@ -616,5 +618,7 @@ func (h *PlaylistHandler) SearchPlaylists(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	json.WriteSuccessResponse(w, http.StatusOK, playlists, nil)
+	deliveryPlaylists := model.PlaylistsFromUsecaseToDelivery(playlists)
+
+	json.WriteSuccessResponse(w, http.StatusOK, deliveryPlaylists, nil)
 }
