@@ -28,13 +28,12 @@ const (
 
 	// Owned and favorite playlists
 	GetPlaylistsByUserIDQuery = `
-		SELECT DISTINCT p.id, p.title, p.user_id, p.thumbnail_url,
-			CASE WHEN p.user_id = $1 THEN p.created_at ELSE fp.created_at END as effective_created_at
+		SELECT p.id, p.title, p.user_id, p.thumbnail_url
 		FROM playlist p
-		LEFT JOIN favorite_playlist fp ON p.id = fp.playlist_id AND fp.user_id = $1
+		LEFT JOIN favorite_playlist fp ON p.id = fp.playlist_id
 		WHERE p.user_id = $1 OR (fp.user_id = $1 AND p.is_public = true)
-		ORDER BY
-			effective_created_at DESC
+		ORDER BY 
+			CASE WHEN p.user_id = $1 THEN p.created_at ELSE fp.created_at END DESC
 	`
 
 	AddTrackToPlaylistQuery = `
