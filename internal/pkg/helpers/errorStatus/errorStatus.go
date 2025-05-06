@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
-	userAvatarFile "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/userAvatarFile"
 )
 
 var mapErrorStatus = map[error]int{
@@ -26,10 +25,8 @@ var mapErrorStatus = map[error]int{
 	customErrors.ErrInvalidOffset:            http.StatusBadRequest,
 	customErrors.ErrInvalidLimit:             http.StatusBadRequest,
 	customErrors.ErrPasswordRequired:         http.StatusBadRequest,
-	userAvatarFile.ErrFailedToUploadAvatar:   http.StatusBadRequest,
-	userAvatarFile.ErrUnsupportedImageFormat: http.StatusBadRequest,
-	userAvatarFile.ErrFailedToEncodeWebp:     http.StatusBadRequest,
-	userAvatarFile.ErrFailedToParseImage:     http.StatusBadRequest,
+	customErrors.ErrUnsupportedImageFormat:   http.StatusBadRequest,
+	customErrors.ErrFailedToParseImage:       http.StatusBadRequest,
 	customErrors.ErrArtistNotFound:           http.StatusNotFound,
 	customErrors.ErrAlbumNotFound:            http.StatusNotFound,
 	customErrors.ErrUnauthorized:             http.StatusForbidden,

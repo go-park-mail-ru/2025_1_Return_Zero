@@ -93,9 +93,9 @@ func main() {
 	r.Use(middleware.CorsMiddleware(cfg.Cors))
 	// r.Use(middleware.CSRFMiddleware(cfg.CSRF))
 
-	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(&trackClient, &artistClient, &albumClient, &playlistClient, &userClient), cfg)
-	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(&albumClient, &artistClient), cfg)
-	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(&artistClient, &userClient), cfg)
+	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackClient, artistClient, albumClient, playlistClient, userClient), cfg)
+	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumClient, artistClient), cfg)
+	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistClient, userClient), cfg)
 	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(&userClient, &authClient, &artistClient, &trackClient, &playlistClient))
 	playlistHandler := playlistHttp.NewPlaylistHandler(playlistUsecase.NewUsecase(&playlistClient, &userClient), cfg)
 

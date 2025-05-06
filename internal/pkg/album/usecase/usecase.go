@@ -13,13 +13,13 @@ import (
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
 )
 
-func NewUsecase(albumClient *albumProto.AlbumServiceClient, artistClient *artistProto.ArtistServiceClient) album.Usecase {
+func NewUsecase(albumClient albumProto.AlbumServiceClient, artistClient artistProto.ArtistServiceClient) album.Usecase {
 	return &albumUsecase{albumClient: albumClient, artistClient: artistClient}
 }
 
 type albumUsecase struct {
-	albumClient  *albumProto.AlbumServiceClient
-	artistClient *artistProto.ArtistServiceClient
+	albumClient  albumProto.AlbumServiceClient
+	artistClient artistProto.ArtistServiceClient
 }
 
 func (u *albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error) {
@@ -35,7 +35,7 @@ func (u *albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.A
 		UserId: &albumProto.UserID{Id: userID},
 	}
 
-	protoAlbums, err := (*u.albumClient).GetAllAlbums(ctx, protoFilters)
+	protoAlbums, err := u.albumClient.GetAllAlbums(ctx, protoFilters)
 	if err != nil {
 		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
@@ -45,7 +45,7 @@ func (u *albumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.A
 		albumIDs = append(albumIDs, &artistProto.AlbumID{Id: protoAlbum.Id})
 	}
 
-	protoArtists, err := (*u.artistClient).GetArtistsByAlbumIDs(ctx, &artistProto.AlbumIDList{Ids: albumIDs})
+	protoArtists, err := u.artistClient.GetArtistsByAlbumIDs(ctx, &artistProto.AlbumIDList{Ids: albumIDs})
 	if err != nil {
 		return nil, customErrors.HandleArtistGRPCError(err)
 	}
@@ -67,7 +67,7 @@ func (u *albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, 
 		userID = -1
 	}
 
-	protoAlbumIDs, err := (*u.artistClient).GetAlbumIDsByArtistID(ctx, &artistProto.ArtistID{Id: artistID})
+	protoAlbumIDs, err := u.artistClient.GetAlbumIDsByArtistID(ctx, &artistProto.ArtistID{Id: artistID})
 	if err != nil {
 		return nil, customErrors.HandleArtistGRPCError(err)
 	}
@@ -78,7 +78,7 @@ func (u *albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, 
 		albumIDs = append(albumIDs, newAlbumID)
 	}
 
-	protoAlbums, err := (*u.albumClient).GetAlbumsByIDs(ctx, &albumProto.AlbumIDListWithUserID{
+	protoAlbums, err := u.albumClient.GetAlbumsByIDs(ctx, &albumProto.AlbumIDListWithUserID{
 		Ids:    &albumProto.AlbumIDList{Ids: albumIDs},
 		UserId: &albumProto.UserID{Id: userID},
 	})
@@ -92,7 +92,7 @@ func (u *albumUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, 
 		artistAlbumIDs = append(artistAlbumIDs, &artistProto.AlbumID{Id: protoAlbumID.Id})
 	}
 
-	protoArtists, err := (*u.artistClient).GetArtistsByAlbumIDs(ctx, &artistProto.AlbumIDList{Ids: artistAlbumIDs})
+	protoArtists, err := u.artistClient.GetArtistsByAlbumIDs(ctx, &artistProto.AlbumIDList{Ids: artistAlbumIDs})
 	if err != nil {
 		return nil, customErrors.HandleArtistGRPCError(err)
 	}
@@ -114,7 +114,7 @@ func (u *albumUsecase) GetAlbumByID(ctx context.Context, id int64) (*usecaseMode
 		userID = -1
 	}
 
-	protoAlbum, err := (*u.albumClient).GetAlbumByID(ctx, &albumProto.AlbumIDWithUserID{
+	protoAlbum, err := u.albumClient.GetAlbumByID(ctx, &albumProto.AlbumIDWithUserID{
 		AlbumId: &albumProto.AlbumID{Id: id},
 		UserId:  &albumProto.UserID{Id: userID},
 	})
@@ -122,7 +122,7 @@ func (u *albumUsecase) GetAlbumByID(ctx context.Context, id int64) (*usecaseMode
 		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
 
-	protoArtists, err := (*u.artistClient).GetArtistsByAlbumID(ctx, &artistProto.AlbumID{Id: id})
+	protoArtists, err := u.artistClient.GetArtistsByAlbumID(ctx, &artistProto.AlbumID{Id: id})
 	if err != nil {
 		return nil, customErrors.HandleArtistGRPCError(err)
 	}
@@ -136,7 +136,7 @@ func (u *albumUsecase) GetAlbumByID(ctx context.Context, id int64) (*usecaseMode
 
 func (u *albumUsecase) LikeAlbum(ctx context.Context, request *usecaseModel.AlbumLikeRequest) error {
 	protoRequest := model.AlbumLikeRequestFromUsecaseToProto(request)
-	_, err := (*u.albumClient).LikeAlbum(ctx, protoRequest)
+	_, err := u.albumClient.LikeAlbum(ctx, protoRequest)
 	if err != nil {
 		return customErrors.HandleAlbumGRPCError(err)
 	}
@@ -151,7 +151,7 @@ func (u *albumUsecase) GetFavoriteAlbums(ctx context.Context, filters *usecaseMo
 		UserId: &albumProto.UserID{Id: userID},
 	}
 
-	protoAlbums, err := (*u.albumClient).GetFavoriteAlbums(ctx, protoFilters)
+	protoAlbums, err := u.albumClient.GetFavoriteAlbums(ctx, protoFilters)
 	if err != nil {
 		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
@@ -161,7 +161,7 @@ func (u *albumUsecase) GetFavoriteAlbums(ctx context.Context, filters *usecaseMo
 		albumIDs = append(albumIDs, &artistProto.AlbumID{Id: protoAlbum.Id})
 	}
 
-	protoArtists, err := (*u.artistClient).GetArtistsByAlbumIDs(ctx, &artistProto.AlbumIDList{Ids: albumIDs})
+	protoArtists, err := u.artistClient.GetArtistsByAlbumIDs(ctx, &artistProto.AlbumIDList{Ids: albumIDs})
 	if err != nil {
 		return nil, customErrors.HandleArtistGRPCError(err)
 	}
@@ -188,7 +188,7 @@ func (u *albumUsecase) SearchAlbums(ctx context.Context, query string) ([]*useca
 		UserId: &albumProto.UserID{Id: userID},
 	}
 
-	protoAlbums, err := (*u.albumClient).SearchAlbums(ctx, protoRequest)
+	protoAlbums, err := u.albumClient.SearchAlbums(ctx, protoRequest)
 	if err != nil {
 		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
@@ -198,7 +198,7 @@ func (u *albumUsecase) SearchAlbums(ctx context.Context, query string) ([]*useca
 		albumIDs = append(albumIDs, &artistProto.AlbumID{Id: protoAlbum.Id})
 	}
 
-	protoArtists, err := (*u.artistClient).GetArtistsByAlbumIDs(ctx, &artistProto.AlbumIDList{Ids: albumIDs})
+	protoArtists, err := u.artistClient.GetArtistsByAlbumIDs(ctx, &artistProto.AlbumIDList{Ids: albumIDs})
 	if err != nil {
 		return nil, customErrors.HandleArtistGRPCError(err)
 	}

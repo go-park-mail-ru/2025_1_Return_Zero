@@ -24,6 +24,7 @@ type Repository interface {
 	UnlikePlaylist(ctx context.Context, request *repository.LikePlaylistRequest) error
 	GetProfilePlaylists(ctx context.Context, request *repository.GetProfilePlaylistsRequest) (*repository.GetProfilePlaylistsResponse, error)
 	SearchPlaylists(ctx context.Context, request *repository.SearchPlaylistsRequest) (*repository.PlaylistList, error)
+	CheckExistsPlaylistAndNotDifferentUser(ctx context.Context, playlistID int64, userID int64) (bool, error)
 }
 
 type S3Repository interface {

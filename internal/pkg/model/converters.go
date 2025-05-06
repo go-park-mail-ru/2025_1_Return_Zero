@@ -14,13 +14,6 @@ import (
 
 ///////////////////////////////////// PAGINATION ////////////////////////////////////
 
-func PaginationFromUsecaseToRepository(usecasePagination *usecase.Pagination) *repository.Pagination {
-	return &repository.Pagination{
-		Offset: usecasePagination.Offset,
-		Limit:  usecasePagination.Limit,
-	}
-}
-
 func PaginationFromDeliveryToUsecase(deliveryPagination *delivery.Pagination) *usecase.Pagination {
 	return &usecase.Pagination{
 		Offset: deliveryPagination.Offset,
@@ -77,28 +70,6 @@ func AlbumArtistsFromUsecaseToDelivery(usecaseAlbumArtists []*usecase.AlbumArtis
 		albumArtists = append(albumArtists, &delivery.AlbumArtist{
 			ID:    usecaseAlbumArtist.ID,
 			Title: usecaseAlbumArtist.Title,
-		})
-	}
-	return albumArtists
-}
-
-func AlbumFromRepositoryToUsecase(repositoryAlbum *repository.Album, repositoryAlbumArtists []*repository.ArtistWithTitle) *usecase.Album {
-	return &usecase.Album{
-		ID:          repositoryAlbum.ID,
-		Title:       repositoryAlbum.Title,
-		Type:        usecase.AlbumType(repositoryAlbum.Type),
-		Thumbnail:   repositoryAlbum.Thumbnail,
-		Artists:     AlbumArtistsFromRepositoryToUsecase(repositoryAlbumArtists),
-		ReleaseDate: repositoryAlbum.ReleaseDate,
-	}
-}
-
-func AlbumArtistsFromRepositoryToUsecase(repositoryAlbumArtists []*repository.ArtistWithTitle) []*usecase.AlbumArtist {
-	albumArtists := make([]*usecase.AlbumArtist, 0, len(repositoryAlbumArtists))
-	for _, repoAlbumArtist := range repositoryAlbumArtists {
-		albumArtists = append(albumArtists, &usecase.AlbumArtist{
-			ID:    repoAlbumArtist.ID,
-			Title: repoAlbumArtist.Title,
 		})
 	}
 	return albumArtists
@@ -323,49 +294,6 @@ func TrackArtistsFromUsecaseToDelivery(usecaseTrackArtists []*usecase.TrackArtis
 	return trackArtists
 }
 
-func TrackFromRepositoryToUsecase(repositoryTrack *repository.Track, repositoryTrackArtists []*repository.ArtistWithRole, albumTitle string) *usecase.Track {
-	return &usecase.Track{
-		ID:        repositoryTrack.ID,
-		Title:     repositoryTrack.Title,
-		Thumbnail: repositoryTrack.Thumbnail,
-		Duration:  repositoryTrack.Duration,
-		AlbumID:   repositoryTrack.AlbumID,
-		Album:     albumTitle,
-		Artists:   TrackArtistsFromRepositoryToUsecase(repositoryTrackArtists),
-	}
-}
-
-func TrackArtistsFromRepositoryToUsecase(repositoryTrackArtists []*repository.ArtistWithRole) []*usecase.TrackArtist {
-	trackArtists := make([]*usecase.TrackArtist, 0, len(repositoryTrackArtists))
-	for _, repositoryTrackArtist := range repositoryTrackArtists {
-		trackArtists = append(trackArtists, &usecase.TrackArtist{
-			ID:    repositoryTrackArtist.ID,
-			Title: repositoryTrackArtist.Title,
-			Role:  repositoryTrackArtist.Role,
-		})
-	}
-	return trackArtists
-}
-
-func TrackWithFileKeyFromRepositoryToUsecase(repositoryTrack *repository.TrackWithFileKey, repositoryTrackArtists []*repository.ArtistWithRole, albumTitle string) *usecase.Track {
-	return &usecase.Track{
-		ID:        repositoryTrack.ID,
-		Title:     repositoryTrack.Title,
-		Thumbnail: repositoryTrack.Thumbnail,
-		Duration:  repositoryTrack.Duration,
-		AlbumID:   repositoryTrack.AlbumID,
-		Album:     albumTitle,
-		Artists:   TrackArtistsFromRepositoryToUsecase(repositoryTrackArtists),
-	}
-}
-
-func TrackDetailedFromRepositoryToUsecase(repositoryTrack *repository.TrackWithFileKey, repositoryTrackArtists []*repository.ArtistWithRole, albumTitle string, fileUrl string) *usecase.TrackDetailed {
-	return &usecase.TrackDetailed{
-		Track:   *TrackWithFileKeyFromRepositoryToUsecase(repositoryTrack, repositoryTrackArtists, albumTitle),
-		FileUrl: fileUrl,
-	}
-}
-
 func TrackIdsFromUsecaseToTrackProto(usecaseTrackIds []*usecase.Track) []*trackProto.TrackID {
 	trackIds := make([]*trackProto.TrackID, 0, len(usecaseTrackIds))
 	for _, usecaseTrack := range usecaseTrackIds {
@@ -441,24 +369,10 @@ func TrackStreamCreateDataFromDeliveryToUsecase(deliveryTrackStream *delivery.Tr
 	}
 }
 
-func TrackStreamCreateDataFromUsecaseToRepository(usecaseTrackStream *usecase.TrackStreamCreateData) *repository.TrackStreamCreateData {
-	return &repository.TrackStreamCreateData{
-		TrackID: usecaseTrackStream.TrackID,
-		UserID:  usecaseTrackStream.UserID,
-	}
-}
-
-func TrackStreamUpdateDataFromUsecaseToRepository(usecaseTrackStream *usecase.TrackStreamUpdateData) *repository.TrackStreamUpdateData {
-	return &repository.TrackStreamUpdateData{
-		StreamID: usecaseTrackStream.StreamID,
-		Duration: usecaseTrackStream.Duration,
-	}
-}
-
-func TrackStreamUpdateDataFromDeliveryToUsecase(repositoryTrackStream *delivery.TrackStreamUpdateData, userID int64, streamID int64) *usecase.TrackStreamUpdateData {
+func TrackStreamUpdateDataFromDeliveryToUsecase(deliveryTrackStream *delivery.TrackStreamUpdateData, userID int64, streamID int64) *usecase.TrackStreamUpdateData {
 	return &usecase.TrackStreamUpdateData{
 		StreamID: streamID,
-		Duration: repositoryTrackStream.Duration,
+		Duration: deliveryTrackStream.Duration,
 		UserID:   userID,
 	}
 }
@@ -494,36 +408,6 @@ func ArtistStreamCreateDataListFromUsecaseToProto(userID int64, artistIDs []int6
 }
 
 // /////////////////////////////////// USER ////////////////////////////////////
-func PrivacyRepositoryToUsecase(repositoryPrivacy *repository.UserPrivacySettings) *usecase.UserPrivacy {
-	return &usecase.UserPrivacy{
-		IsPublicPlaylists:       repositoryPrivacy.IsPublicPlaylists,
-		IsPublicMinutesListened: repositoryPrivacy.IsPublicMinutesListened,
-		IsPublicFavoriteArtists: repositoryPrivacy.IsPublicFavoriteArtists,
-		IsPublicTracksListened:  repositoryPrivacy.IsPublicTracksListened,
-		IsPublicFavoriteTracks:  repositoryPrivacy.IsPublicFavoriteTracks,
-		IsPublicArtistsListened: repositoryPrivacy.IsPublicArtistsListened,
-	}
-}
-
-func StatisticsRepositoryToUsecase(repositoryStatistics *repository.UserStats) *usecase.UserStatistics {
-	return &usecase.UserStatistics{
-		MinutesListened: repositoryStatistics.MinutesListened,
-		TracksListened:  repositoryStatistics.TracksListened,
-		ArtistsListened: repositoryStatistics.ArtistsListened,
-	}
-}
-
-func UserFullDataRepositoryToUsecase(repositoryUser *repository.UserFullData) *usecase.UserFullData {
-	usecasePrivacy := PrivacyRepositoryToUsecase(repositoryUser.Privacy)
-	usecaseStatistics := StatisticsRepositoryToUsecase(repositoryUser.Statistics)
-	return &usecase.UserFullData{
-		Username:   repositoryUser.Username,
-		Email:      repositoryUser.Email,
-		Privacy:    usecasePrivacy,
-		Statistics: usecaseStatistics,
-	}
-}
-
 func UserFullDataUsecaseToDelivery(usecaseUser *usecase.UserFullData) *delivery.UserFullData {
 	return &delivery.UserFullData{
 		Username:   usecaseUser.Username,
