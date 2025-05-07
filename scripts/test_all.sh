@@ -11,7 +11,7 @@ rm -f coverage.out coverage.html
 
 touch coverage.tmp
 
-PACKAGES=$(go list ./... | grep -v "mock" | grep -v "/gen/" | grep -v "/pb$")
+PACKAGES=$(go list ./... | grep -v "mock" | grep -v "/gen/" | grep -v "/pb$" | grep -v "docs" | grep -v "populate")
 
 for pkg in $PACKAGES; do
     echo -e "${GREEN}Testing: ${NC}$pkg"

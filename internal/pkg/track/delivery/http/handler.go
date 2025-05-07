@@ -201,7 +201,7 @@ func (h *TrackHandler) CreateStream(w http.ResponseWriter, r *http.Request) {
 	json.WriteSuccessResponse(w, http.StatusOK, createResponse, nil)
 }
 
-// CreateStream godoc
+// UpdateStreamDuration godoc
 // @Summary Update stream duration by id
 // @Description updates listening duration at the end of stream
 // @Tags tracks
@@ -219,10 +219,9 @@ func (h *TrackHandler) UpdateStreamDuration(w http.ResponseWriter, r *http.Reque
 	logger := loggerPkg.LoggerFromContext(ctx)
 	vars := mux.Vars(r)
 	idStr := vars["id"]
-
 	streamID, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		logger.Error("failed to parse track ID", zap.Error(err))
+		logger.Error("failed to parse stream ID", zap.Error(err))
 		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
 		return
 	}

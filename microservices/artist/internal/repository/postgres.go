@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 	"strings"
+	"time"
 
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	domain "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/internal/domain"
@@ -150,7 +150,7 @@ func NewArtistPostgresRepository(db *sql.DB, metrics *metrics.Metrics) domain.Re
 }
 
 func (r *artistPostgresRepository) GetAllArtists(ctx context.Context, filters *repoModel.Filters, userID int64) ([]*repoModel.Artist, error) {
-  start := time.Now()
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting all artists with filters from db", zap.Any("filters", filters), zap.String("query", GetAllArtistsQuery))
 	rows, err := r.db.QueryContext(ctx, GetAllArtistsQuery, filters.Pagination.Limit, filters.Pagination.Offset, userID)
@@ -180,7 +180,7 @@ func (r *artistPostgresRepository) GetAllArtists(ctx context.Context, filters *r
 }
 
 func (r *artistPostgresRepository) GetArtistByID(ctx context.Context, id int64, userID int64) (*repoModel.Artist, error) {
-  start := time.Now()
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artist by id from db", zap.Int64("id", id), zap.String("query", GetArtistByIDQuery))
 	row := r.db.QueryRowContext(ctx, GetArtistByIDQuery, id, userID)
