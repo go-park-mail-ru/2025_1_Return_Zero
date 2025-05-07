@@ -9,6 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 )
 
@@ -24,6 +25,13 @@ func NewAccessInterceptor(logger *zap.SugaredLogger, metrics *metrics.Metrics) *
 func (i *AccessInterceptor) UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		ctxLogger := i.logger.With(zap.String("method", info.FullMethod))
+		md, ok := metadata.FromIncomingContext(ctx)
+		if ok {
+			requestId := md.Get("request_id")
+			if len(requestId) > 0 {
+				ctxLogger = ctxLogger.With(zap.String("request_id", requestId[0]))
+			}
+		}
 		newCtx := logger.LoggerToContext(ctx, ctxLogger)
 
 		startTime := time.Now()

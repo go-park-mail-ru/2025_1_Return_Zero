@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"strings"
+	"time"
 
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
@@ -155,9 +156,12 @@ func (r *PlaylistPostgresRepository) GetPlaylistByID(ctx context.Context, id int
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Getting playlist by id", zap.Int64("id", id))
 
+	start := time.Now()
+
 	var playlist repoModel.Playlist
 	err := r.db.QueryRowContext(ctx, GetPlaylistByIDQuery, id).Scan(&playlist.ID, &playlist.Title, &playlist.UserID, &playlist.Thumbnail, &playlist.IsPublic)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistByID").Inc()
 		if err == sql.ErrNoRows {
 			logger.Warn("Playlist not found", zap.Int64("id", id))
 			return nil, playlistErrors.ErrPlaylistNotFound
@@ -166,6 +170,9 @@ func (r *PlaylistPostgresRepository) GetPlaylistByID(ctx context.Context, id int
 		return nil, playlistErrors.NewInternalError("failed to get playlist by id: %v", err)
 	}
 
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetPlaylistByID").Observe(duration)
+
 	return &playlist, nil
 }
 
@@ -173,9 +180,12 @@ func (r *PlaylistPostgresRepository) CreatePlaylist(ctx context.Context, playlis
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Creating playlist", zap.Any("playlist", playlistCreateRequest))
 
+	start := time.Now()
+
 	var id int64
 	err := r.db.QueryRowContext(ctx, CreatePlaylistQuery, playlistCreateRequest.Title, playlistCreateRequest.UserID, playlistCreateRequest.Thumbnail, playlistCreateRequest.IsPublic).Scan(&id)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CreatePlaylist").Inc()
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
 			logger.Warn("Failed to create playlist: duplicate title for user", zap.Error(err))
 			return nil, playlistErrors.ErrPlaylistDuplicate
@@ -190,6 +200,9 @@ func (r *PlaylistPostgresRepository) CreatePlaylist(ctx context.Context, playlis
 		return nil, playlistErrors.NewInternalError("failed to get playlist by id: %v", err)
 	}
 
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("CreatePlaylist").Observe(duration)
+
 	return playlist, nil
 }
 
@@ -197,9 +210,12 @@ func (r *PlaylistPostgresRepository) GetCombinedPlaylistsByUserID(ctx context.Co
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Getting playlists by user id", zap.Int64("user_id", userID))
 
+	start := time.Now()
+
 	var playlists repoModel.PlaylistList
 	rows, err := r.db.QueryContext(ctx, GetPlaylistsByUserIDQuery, userID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetCombinedPlaylistsByUserID").Inc()
 		logger.Error("Failed to get playlists by user id", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to get playlists by user id: %v", err)
 	}
@@ -215,6 +231,9 @@ func (r *PlaylistPostgresRepository) GetCombinedPlaylistsByUserID(ctx context.Co
 		playlists.Playlists = append(playlists.Playlists, &playlist)
 	}
 
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetCombinedPlaylistsByUserID").Observe(duration)
+
 	return &playlists, nil
 }
 
@@ -222,12 +241,18 @@ func (r *PlaylistPostgresRepository) TrackExistsInPlaylist(ctx context.Context, 
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Checking if track exists in playlist", "playlist_id", playlistID, "track_id", trackID)
 
+	start := time.Now()
+
 	var exists bool
 	err := r.db.QueryRowContext(ctx, TrackExistsInPlaylistQuery, playlistID, trackID).Scan(&exists)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("TrackExistsInPlaylist").Inc()
 		logger.Error("Failed to check if track exists in playlist", zap.Error(err))
 		return false, playlistErrors.NewInternalError("failed to check if track exists in playlist: %v", err)
 	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("TrackExistsInPlaylist").Observe(duration)
 
 	return exists, nil
 }
@@ -236,8 +261,11 @@ func (r *PlaylistPostgresRepository) AddTrackToPlaylist(ctx context.Context, req
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Adding track to playlist", zap.Int64("playlist_id", request.PlaylistID), zap.Int64("track_id", request.TrackID))
 
+	start := time.Now()
+
 	playlist, err := r.GetPlaylistByID(ctx, request.PlaylistID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("AddTrackToPlaylist").Inc()
 		logger.Error("Failed to get playlist by id", zap.Error(err))
 		return err
 	}
@@ -264,6 +292,9 @@ func (r *PlaylistPostgresRepository) AddTrackToPlaylist(ctx context.Context, req
 		return playlistErrors.NewInternalError("failed to add track to playlist: %v", err)
 	}
 
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("AddTrackToPlaylist").Observe(duration)
+
 	return nil
 }
 
@@ -271,8 +302,11 @@ func (r *PlaylistPostgresRepository) RemoveTrackFromPlaylist(ctx context.Context
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Removing track from playlist", zap.Int64("playlist_id", request.PlaylistID), zap.Int64("track_id", request.TrackID))
 
+	start := time.Now()
+
 	playlist, err := r.GetPlaylistByID(ctx, request.PlaylistID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("RemoveTrackFromPlaylist").Inc()
 		logger.Error("Failed to get playlist by id", zap.Error(err))
 		return err
 	}
@@ -295,9 +329,13 @@ func (r *PlaylistPostgresRepository) RemoveTrackFromPlaylist(ctx context.Context
 
 	_, err = r.db.ExecContext(ctx, RemoveTrackFromPlaylistQuery, request.PlaylistID, request.TrackID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("RemoveTrackFromPlaylist").Inc()
 		logger.Error("Failed to remove track from playlist", zap.Error(err))
 		return playlistErrors.NewInternalError("failed to remove track from playlist: %v", err)
 	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("RemoveTrackFromPlaylist").Observe(duration)
 
 	return nil
 }
@@ -306,9 +344,12 @@ func (r *PlaylistPostgresRepository) GetPlaylistTrackIds(ctx context.Context, re
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Getting playlist track ids", "playlist_id", request.PlaylistID)
 
+	start := time.Now()
+
 	var trackIds []int64
 	rows, err := r.db.QueryContext(ctx, GetPlaylistTrackIdsQuery, request.PlaylistID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistTrackIds").Inc()
 		logger.Error("Failed to get playlist track ids", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to get playlist track ids: %v", err)
 	}
@@ -318,6 +359,7 @@ func (r *PlaylistPostgresRepository) GetPlaylistTrackIds(ctx context.Context, re
 		var trackId int64
 		err := rows.Scan(&trackId)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistTrackIds").Inc()
 			logger.Error("Failed to scan playlist track id", zap.Error(err))
 			return nil, playlistErrors.NewInternalError("failed to scan playlist track id: %v", err)
 		}
@@ -325,9 +367,13 @@ func (r *PlaylistPostgresRepository) GetPlaylistTrackIds(ctx context.Context, re
 	}
 
 	if err := rows.Err(); err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistTrackIds").Inc()
 		logger.Error("Failed to iterate over playlist track ids", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to iterate over playlist track ids: %v", err)
 	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetPlaylistTrackIds").Observe(duration)
 
 	logger.Info("Playlist track ids", zap.Any("track_ids", trackIds))
 
@@ -338,16 +384,20 @@ func (r *PlaylistPostgresRepository) UpdatePlaylist(ctx context.Context, request
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Updating playlist", zap.Any("playlist", request))
 
+	start := time.Now()
+
 	var id int64
 	if request.Thumbnail != "" {
 		err := r.db.QueryRowContext(ctx, UpdatePlaylistWithThumbnailQuery, request.PlaylistID, request.Title, request.Thumbnail, request.UserID).Scan(&id)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylist").Inc()
 			logger.Error("Failed to update playlist", zap.Error(err))
 			return nil, playlistErrors.NewInternalError("failed to update playlist: %v", err)
 		}
 	} else {
 		err := r.db.QueryRowContext(ctx, UpdatePlaylistWithoutThumbnailQuery, request.PlaylistID, request.Title, request.UserID).Scan(&id)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylist").Inc()
 			logger.Error("Failed to update playlist", zap.Error(err))
 			return nil, playlistErrors.NewInternalError("failed to update playlist: %v", err)
 		}
@@ -355,9 +405,13 @@ func (r *PlaylistPostgresRepository) UpdatePlaylist(ctx context.Context, request
 
 	playlist, err := r.GetPlaylistByID(ctx, id)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylist").Inc()
 		logger.Error("Failed to get playlist by id", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to get playlist by id: %v", err)
 	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("UpdatePlaylist").Observe(duration)
 
 	return playlist, nil
 }
@@ -366,11 +420,17 @@ func (r *PlaylistPostgresRepository) RemovePlaylist(ctx context.Context, request
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Removing playlist", zap.Int64("playlist_id", request.PlaylistID))
 
+	start := time.Now()
+
 	_, err := r.db.ExecContext(ctx, RemovePlaylistQuery, request.PlaylistID, request.UserID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("RemovePlaylist").Inc()
 		logger.Error("Failed to remove playlist", zap.Error(err))
 		return playlistErrors.NewInternalError("failed to remove playlist: %v", err)
 	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("RemovePlaylist").Observe(duration)
 
 	return nil
 }
@@ -379,9 +439,12 @@ func (r *PlaylistPostgresRepository) GetPlaylistsToAdd(ctx context.Context, requ
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Getting playlists to add track to", zap.Int64("track_id", request.TrackID), zap.Int64("user_id", request.UserID))
 
+	start := time.Now()
+
 	var response repoModel.GetPlaylistsToAddResponse
 	rows, err := r.db.QueryContext(ctx, GetPlaylistsToAddQuery, request.TrackID, request.UserID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistsToAdd").Inc()
 		logger.Error("Failed to get playlists to add track to", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to get playlists to add track to: %v", err)
 	}
@@ -392,6 +455,7 @@ func (r *PlaylistPostgresRepository) GetPlaylistsToAdd(ctx context.Context, requ
 		var isIncluded sql.NullBool
 		err := rows.Scan(&playlist.ID, &playlist.Title, &playlist.UserID, &playlist.Thumbnail, &isIncluded)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistsToAdd").Inc()
 			logger.Error("Failed to scan playlist", zap.Error(err))
 			return nil, playlistErrors.NewInternalError("failed to scan playlist: %v", err)
 		}
@@ -405,9 +469,13 @@ func (r *PlaylistPostgresRepository) GetPlaylistsToAdd(ctx context.Context, requ
 	}
 
 	if err := rows.Err(); err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistsToAdd").Inc()
 		logger.Error("Failed to iterate over playlists", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to iterate over playlists: %v", err)
 	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetPlaylistsToAdd").Observe(duration)
 
 	return &response, nil
 }
@@ -416,11 +484,17 @@ func (r *PlaylistPostgresRepository) UpdatePlaylistsPublisityByUserID(ctx contex
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Updating playlists publisity by user id", zap.Int64("user_id", request.UserID), zap.Bool("is_public", request.IsPublic))
 
+	start := time.Now()
+
 	_, err := r.db.ExecContext(ctx, UpdatePlaylistsPublisityByUserIDQuery, request.UserID, request.IsPublic)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylistsPublisityByUserID").Inc()
 		logger.Error("Failed to update playlists publisity by user id", zap.Error(err))
 		return playlistErrors.NewInternalError("failed to update playlists publisity by user id: %v", err)
 	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("UpdatePlaylistsPublisityByUserID").Observe(duration)
 
 	return nil
 }
@@ -429,12 +503,18 @@ func (r *PlaylistPostgresRepository) CheckExistsPlaylistAndNotDifferentUser(ctx 
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Checking if playlist exists and is not different user", zap.Int64("playlist_id", playlistID), zap.Int64("user_id", userID))
 
+	start := time.Now()
+
 	var exists bool
 	err := r.db.QueryRowContext(ctx, CheckExistsPlaylistAndNotDifferentUserQuery, playlistID, userID).Scan(&exists)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CheckExistsPlaylistAndNotDifferentUser").Inc()
 		logger.Error("Failed to check if playlist exists and is not different user", zap.Error(err))
 		return false, playlistErrors.NewInternalError("failed to check if playlist exists and is not different user: %v", err)
 	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("CheckExistsPlaylistAndNotDifferentUser").Observe(duration)
 
 	return exists, nil
 }
@@ -443,8 +523,11 @@ func (r *PlaylistPostgresRepository) LikePlaylist(ctx context.Context, request *
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Liking playlist", zap.Int64("playlist_id", request.PlaylistID), zap.Int64("user_id", request.UserID))
 
+	start := time.Now()
+
 	exists, err := r.CheckExistsPlaylistAndNotDifferentUser(ctx, request.PlaylistID, request.UserID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("LikePlaylist").Inc()
 		logger.Error("Failed to check if playlist exists and is not different user", zap.Error(err))
 		return playlistErrors.NewInternalError("failed to check if playlist exists and is not different user: %v", err)
 	}
@@ -456,9 +539,13 @@ func (r *PlaylistPostgresRepository) LikePlaylist(ctx context.Context, request *
 
 	_, err = r.db.ExecContext(ctx, LikePlaylistQuery, request.UserID, request.PlaylistID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("LikePlaylist").Inc()
 		logger.Error("Failed to like playlist", zap.Error(err))
 		return playlistErrors.NewInternalError("failed to like playlist: %v", err)
 	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("LikePlaylist").Observe(duration)
 
 	return nil
 }
@@ -467,11 +554,17 @@ func (r *PlaylistPostgresRepository) UnlikePlaylist(ctx context.Context, request
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Unliking playlist", zap.Int64("playlist_id", request.PlaylistID), zap.Int64("user_id", request.UserID))
 
+	start := time.Now()
+
 	_, err := r.db.ExecContext(ctx, UnlikePlaylistQuery, request.UserID, request.PlaylistID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("UnlikePlaylist").Inc()
 		logger.Error("Failed to unlike playlist", zap.Error(err))
 		return playlistErrors.NewInternalError("failed to unlike playlist: %v", err)
 	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("UnlikePlaylist").Observe(duration)
 
 	return nil
 }
@@ -480,13 +573,19 @@ func (r *PlaylistPostgresRepository) GetPlaylistWithIsLikedByID(ctx context.Cont
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Getting playlist with is liked by id", zap.Int64("playlist_id", id), zap.Int64("user_id", userID))
 
+	start := time.Now()
+
 	var playlist repoModel.Playlist
 	var isLiked sql.NullBool
 	err := r.db.QueryRowContext(ctx, GetPlaylistWithIsLikedByIDQuery, id, userID).Scan(&playlist.ID, &playlist.Title, &playlist.UserID, &playlist.Thumbnail, &isLiked)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistWithIsLikedByID").Inc()
 		logger.Error("Failed to get playlist with is liked by id", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to get playlist with is liked by id: %v", err)
 	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetPlaylistWithIsLikedByID").Observe(duration)
 
 	return &repoModel.PlaylistWithIsLiked{
 		Playlist: &playlist,
@@ -498,9 +597,12 @@ func (r *PlaylistPostgresRepository) GetProfilePlaylists(ctx context.Context, re
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Getting profile playlists", zap.Int64("user_id", request.UserID))
 
+	start := time.Now()
+
 	var playlists repoModel.GetProfilePlaylistsResponse
 	rows, err := r.db.QueryContext(ctx, GetProfilePlaylistsQuery, request.UserID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetProfilePlaylists").Inc()
 		logger.Error("Failed to get profile playlists", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to get profile playlists: %v", err)
 	}
@@ -510,6 +612,7 @@ func (r *PlaylistPostgresRepository) GetProfilePlaylists(ctx context.Context, re
 		var playlist repoModel.Playlist
 		err := rows.Scan(&playlist.ID, &playlist.Title, &playlist.UserID, &playlist.Thumbnail)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetProfilePlaylists").Inc()
 			logger.Error("Failed to scan playlist", zap.Error(err))
 			return nil, playlistErrors.NewInternalError("failed to scan playlist: %v", err)
 		}
@@ -518,9 +621,13 @@ func (r *PlaylistPostgresRepository) GetProfilePlaylists(ctx context.Context, re
 	}
 
 	if err := rows.Err(); err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetProfilePlaylists").Inc()
 		logger.Error("Failed to iterate over playlists", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to iterate over playlists: %v", err)
 	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetProfilePlaylists").Observe(duration)
 
 	return &playlists, nil
 }
@@ -528,6 +635,8 @@ func (r *PlaylistPostgresRepository) GetProfilePlaylists(ctx context.Context, re
 func (r *PlaylistPostgresRepository) SearchPlaylists(ctx context.Context, request *repoModel.SearchPlaylistsRequest) (*repoModel.PlaylistList, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Searching playlists", zap.String("query", request.Query))
+
+	start := time.Now()
 
 	words := strings.Fields(request.Query)
 	for i, word := range words {
@@ -538,6 +647,7 @@ func (r *PlaylistPostgresRepository) SearchPlaylists(ctx context.Context, reques
 	var playlists repoModel.PlaylistList
 	rows, err := r.db.QueryContext(ctx, SearchPlaylistsQuery, tsQueryString, request.UserID, request.Query)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("SearchPlaylists").Inc()
 		logger.Error("Failed to search playlists", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to search playlists: %v", err)
 	}
@@ -547,6 +657,7 @@ func (r *PlaylistPostgresRepository) SearchPlaylists(ctx context.Context, reques
 		var playlist repoModel.Playlist
 		err := rows.Scan(&playlist.ID, &playlist.Title, &playlist.UserID, &playlist.Thumbnail)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("SearchPlaylists").Inc()
 			logger.Error("Failed to scan playlist", zap.Error(err))
 			return nil, playlistErrors.NewInternalError("failed to scan playlist: %v", err)
 		}
@@ -555,9 +666,13 @@ func (r *PlaylistPostgresRepository) SearchPlaylists(ctx context.Context, reques
 	}
 
 	if err := rows.Err(); err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("SearchPlaylists").Inc()
 		logger.Error("Failed to iterate over playlists", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to iterate over playlists: %v", err)
 	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("SearchPlaylists").Observe(duration)
 
 	return &playlists, nil
 }

@@ -14,7 +14,10 @@ type RequestIDKey struct{}
 
 func RequestId(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestId := uuid.New().String()
+		requestId := r.Header.Get("X-Request-Id")
+		if requestId == "" {
+			requestId = uuid.New().String()
+		}
 		ctx := context.WithValue(r.Context(), RequestIDKey{}, requestId)
 		logger := loggerPkg.LoggerFromContext(ctx).With(zap.String("request_id", requestId))
 		ctx = loggerPkg.LoggerToContext(ctx, logger)

@@ -465,45 +465,60 @@ func (r *TrackPostgresRepository) GetTracksListenedByUserID(ctx context.Context,
 func (r *TrackPostgresRepository) CheckTrackExists(ctx context.Context, trackID int64) (bool, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting to check if track exists in db", zap.Int64("trackID", trackID), zap.String("query", CheckTrackExistsQuery))
+
+	start := time.Now()
 	var exists bool
 	err := r.db.QueryRowContext(ctx, CheckTrackExistsQuery, trackID).Scan(&exists)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CheckTrackExists").Inc()
 		logger.Error("failed to check if track exists", zap.Error(err))
 		return false, trackErrors.NewInternalError("failed to check if track exists: %v", err)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("CheckTrackExists").Observe(duration)
 	return exists, nil
 }
 
 func (r *TrackPostgresRepository) LikeTrack(ctx context.Context, likeRequest *repoModel.LikeRequest) error {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting to like track in db", zap.Any("likeRequest", likeRequest), zap.String("query", LikeTrackQuery))
+
+	start := time.Now()
 	_, err := r.db.ExecContext(ctx, LikeTrackQuery, likeRequest.TrackID, likeRequest.UserID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("LikeTrack").Inc()
 		logger.Error("failed to like track", zap.Error(err))
 		return trackErrors.NewInternalError("failed to like track: %v", err)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("LikeTrack").Observe(duration)
 	return nil
 }
 
 func (r *TrackPostgresRepository) UnlikeTrack(ctx context.Context, likeRequest *repoModel.LikeRequest) error {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting to unlike track in db", zap.Any("likeRequest", likeRequest), zap.String("query", UnlikeTrackQuery))
+
+	start := time.Now()
 	_, err := r.db.ExecContext(ctx, UnlikeTrackQuery, likeRequest.TrackID, likeRequest.UserID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("UnlikeTrack").Inc()
 		logger.Error("failed to unlike track", zap.Error(err))
 		return trackErrors.NewInternalError("failed to unlike track: %v", err)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("UnlikeTrack").Observe(duration)
 	return nil
 }
 
 func (r *TrackPostgresRepository) GetFavoriteTracks(ctx context.Context, favoriteRequest *repoModel.FavoriteRequest) ([]*repoModel.Track, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting favorite tracks from db", zap.Any("favoriteRequest", favoriteRequest), zap.String("query", GetFavoriteTracksQuery))
+
+	start := time.Now()
 	rows, err := r.db.QueryContext(ctx, GetFavoriteTracksQuery, favoriteRequest.RequestUserID, favoriteRequest.ProfileUserID, favoriteRequest.Filters.Pagination.Limit, favoriteRequest.Filters.Pagination.Offset)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetFavoriteTracks").Inc()
 		logger.Error("failed to get favorite tracks", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to get favorite tracks: %v", err)
 	}
@@ -514,6 +529,7 @@ func (r *TrackPostgresRepository) GetFavoriteTracks(ctx context.Context, favorit
 		var track repoModel.Track
 		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID, &track.IsFavorite)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetFavoriteTracks").Inc()
 			logger.Error("failed to scan track", zap.Error(err))
 			return nil, trackErrors.NewInternalError("failed to scan track: %v", err)
 		}
@@ -521,16 +537,20 @@ func (r *TrackPostgresRepository) GetFavoriteTracks(ctx context.Context, favorit
 	}
 
 	if err := rows.Err(); err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetFavoriteTracks").Inc()
 		logger.Error("failed to get favorite tracks", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to get favorite tracks: %v", err)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetFavoriteTracks").Observe(duration)
 	return tracks, nil
 }
 
 func (r *TrackPostgresRepository) SearchTracks(ctx context.Context, query string, userID int64) ([]*repoModel.Track, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Searching tracks in db", zap.String("search query", query), zap.String("query", SearchTracksQuery))
+
+	start := time.Now()
 
 	words := strings.Fields(query)
 	for i, word := range words {
@@ -540,6 +560,7 @@ func (r *TrackPostgresRepository) SearchTracks(ctx context.Context, query string
 
 	rows, err := r.db.QueryContext(ctx, SearchTracksQuery, tsQueryString, userID, query)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("SearchTracks").Inc()
 		logger.Error("failed to search tracks", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to search tracks: %v", err)
 	}
@@ -550,6 +571,7 @@ func (r *TrackPostgresRepository) SearchTracks(ctx context.Context, query string
 		var track repoModel.Track
 		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID, &track.IsFavorite)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("SearchTracks").Inc()
 			logger.Error("failed to scan track", zap.Error(err))
 			return nil, trackErrors.NewInternalError("failed to scan track: %v", err)
 		}
@@ -557,9 +579,12 @@ func (r *TrackPostgresRepository) SearchTracks(ctx context.Context, query string
 	}
 
 	if err := rows.Err(); err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("SearchTracks").Inc()
 		logger.Error("failed to search tracks", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to search tracks: %v", err)
 	}
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("SearchTracks").Observe(duration)
 
 	return tracks, nil
 }
