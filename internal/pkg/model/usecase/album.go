@@ -23,8 +23,15 @@ type Album struct {
 	Type        AlbumType
 	ReleaseDate time.Time
 	Artists     []*AlbumArtist
+	IsLiked     bool
 }
 
 type AlbumFilters struct {
 	Pagination *Pagination
+}
+
+type AlbumLikeRequest struct {
+	AlbumID int64
+	UserID  int64
+	IsLike  bool
 }

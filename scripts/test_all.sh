@@ -2,26 +2,44 @@
 
 set -e
 
-COVERAGE_DIR=$(mktemp -d)
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
 
-COVERAGE_FILE="coverage.out"
-echo "mode: atomic" > "$COVERAGE_FILE"
+rm -f coverage.out coverage.html
 
-ALL_PACKAGES=$(go list ./... | grep -v mock | grep -v docs | grep -v populate)
+touch coverage.tmp
 
-for pkg in $ALL_PACKAGES; do
-    echo "PKG: $pkg"
-    pkg_coverage="$COVERAGE_DIR/$(echo $pkg | tr / -).cover"
+PACKAGES=$(go list ./... | grep -v "mock" | grep -v "/gen/" | grep -v "/pb$" | grep -v "docs" | grep -v "populate")
+
+for pkg in $PACKAGES; do
+    echo -e "${GREEN}Testing: ${NC}$pkg"
     
-    if ! go test -coverprofile="$pkg_coverage" -covermode=atomic "$pkg" > /dev/null 2>&1; then
-        go test -coverprofile="$pkg_coverage" -covermode=atomic -run=^$ "$pkg" > /dev/null 2>&1 || true
+    go test -coverprofile=profile.out -covermode=atomic $pkg
+    
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Tests failed for package: ${NC}$pkg"
+        exit 1
     fi
     
-    if [ -f "$pkg_coverage" ]; then
-        tail -n +2 "$pkg_coverage" >> "$COVERAGE_FILE"
+    if [ -f profile.out ]; then
+        if [ ! -s coverage.tmp ]; then
+            cat profile.out > coverage.tmp
+        else
+            tail -n +2 profile.out >> coverage.tmp
+        fi
+        rm profile.out
     fi
 done
 
-rm -rf "$COVERAGE_DIR"
+mv coverage.tmp coverage.out
 
-go tool cover -func="$COVERAGE_FILE"
+go tool cover -html=coverage.out -o coverage.html
+
+total_coverage=$(go tool cover -func=coverage.out | grep "total:" | awk '{print $3}')
+echo -e "${GREEN}Total test coverage: ${NC}$total_coverage"
+
+echo -e "${GREEN}Testing completed successfully!${NC}"
+echo -e "Coverage report available at: ${YELLOW}coverage.html${NC}"
+

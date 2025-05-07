@@ -22,6 +22,7 @@ type Track struct {
 	AlbumID   int64          `json:"album_id" example:"1" description:"Unique identifier of the associated album"`
 	Album     string         `json:"album" description:"Associated album"`
 	Artists   []*TrackArtist `json:"artists" description:"Associated artists"`
+	IsLiked   bool           `json:"is_liked" example:"false" description:"Whether the track is liked by the user"`
 }
 
 type TrackStreamCreateData struct {
@@ -54,4 +55,10 @@ type StreamID struct {
 type TrackDetailed struct {
 	Track
 	FileUrl string `json:"file_url" example:"https://example.com/track.mp3" description:"URL to the track file"`
+}
+
+// TrackLikeRequest represents a request to like or unlike an track
+// @Description A request to like or unlike an track. Should be authenticated
+type TrackLikeRequest struct {
+	IsLike bool `json:"value" example:"true" description:"Whether the track is liked"`
 }

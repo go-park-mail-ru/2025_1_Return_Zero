@@ -71,19 +71,49 @@ func (mr *MockUsecaseMockRecorder) GetAllTracks(ctx, filters any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllTracks", reflect.TypeOf((*MockUsecase)(nil).GetAllTracks), ctx, filters)
 }
 
-// GetLastListenedTracks mocks base method.
-func (m *MockUsecase) GetLastListenedTracks(ctx context.Context, username string, filters *usecase.TrackFilters) ([]*usecase.Track, error) {
+// GetFavoriteTracks mocks base method.
+func (m *MockUsecase) GetFavoriteTracks(ctx context.Context, filters *usecase.TrackFilters, username string) ([]*usecase.Track, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLastListenedTracks", ctx, username, filters)
+	ret := m.ctrl.Call(m, "GetFavoriteTracks", ctx, filters, username)
+	ret0, _ := ret[0].([]*usecase.Track)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFavoriteTracks indicates an expected call of GetFavoriteTracks.
+func (mr *MockUsecaseMockRecorder) GetFavoriteTracks(ctx, filters, username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFavoriteTracks", reflect.TypeOf((*MockUsecase)(nil).GetFavoriteTracks), ctx, filters, username)
+}
+
+// GetLastListenedTracks mocks base method.
+func (m *MockUsecase) GetLastListenedTracks(ctx context.Context, userID int64, filters *usecase.TrackFilters) ([]*usecase.Track, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLastListenedTracks", ctx, userID, filters)
 	ret0, _ := ret[0].([]*usecase.Track)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetLastListenedTracks indicates an expected call of GetLastListenedTracks.
-func (mr *MockUsecaseMockRecorder) GetLastListenedTracks(ctx, username, filters any) *gomock.Call {
+func (mr *MockUsecaseMockRecorder) GetLastListenedTracks(ctx, userID, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastListenedTracks", reflect.TypeOf((*MockUsecase)(nil).GetLastListenedTracks), ctx, username, filters)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastListenedTracks", reflect.TypeOf((*MockUsecase)(nil).GetLastListenedTracks), ctx, userID, filters)
+}
+
+// GetPlaylistTracks mocks base method.
+func (m *MockUsecase) GetPlaylistTracks(ctx context.Context, id int64) ([]*usecase.Track, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPlaylistTracks", ctx, id)
+	ret0, _ := ret[0].([]*usecase.Track)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPlaylistTracks indicates an expected call of GetPlaylistTracks.
+func (mr *MockUsecaseMockRecorder) GetPlaylistTracks(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPlaylistTracks", reflect.TypeOf((*MockUsecase)(nil).GetPlaylistTracks), ctx, id)
 }
 
 // GetTrackByID mocks base method.
@@ -101,6 +131,21 @@ func (mr *MockUsecaseMockRecorder) GetTrackByID(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTrackByID", reflect.TypeOf((*MockUsecase)(nil).GetTrackByID), ctx, id)
 }
 
+// GetTracksByAlbumID mocks base method.
+func (m *MockUsecase) GetTracksByAlbumID(ctx context.Context, id int64) ([]*usecase.Track, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTracksByAlbumID", ctx, id)
+	ret0, _ := ret[0].([]*usecase.Track)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTracksByAlbumID indicates an expected call of GetTracksByAlbumID.
+func (mr *MockUsecaseMockRecorder) GetTracksByAlbumID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTracksByAlbumID", reflect.TypeOf((*MockUsecase)(nil).GetTracksByAlbumID), ctx, id)
+}
+
 // GetTracksByArtistID mocks base method.
 func (m *MockUsecase) GetTracksByArtistID(ctx context.Context, id int64, filters *usecase.TrackFilters) ([]*usecase.Track, error) {
 	m.ctrl.T.Helper()
@@ -114,6 +159,35 @@ func (m *MockUsecase) GetTracksByArtistID(ctx context.Context, id int64, filters
 func (mr *MockUsecaseMockRecorder) GetTracksByArtistID(ctx, id, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTracksByArtistID", reflect.TypeOf((*MockUsecase)(nil).GetTracksByArtistID), ctx, id, filters)
+}
+
+// LikeTrack mocks base method.
+func (m *MockUsecase) LikeTrack(ctx context.Context, request *usecase.TrackLikeRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LikeTrack", ctx, request)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LikeTrack indicates an expected call of LikeTrack.
+func (mr *MockUsecaseMockRecorder) LikeTrack(ctx, request any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LikeTrack", reflect.TypeOf((*MockUsecase)(nil).LikeTrack), ctx, request)
+}
+
+// SearchTracks mocks base method.
+func (m *MockUsecase) SearchTracks(ctx context.Context, query string) ([]*usecase.Track, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchTracks", ctx, query)
+	ret0, _ := ret[0].([]*usecase.Track)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchTracks indicates an expected call of SearchTracks.
+func (mr *MockUsecaseMockRecorder) SearchTracks(ctx, query any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchTracks", reflect.TypeOf((*MockUsecase)(nil).SearchTracks), ctx, query)
 }
 
 // UpdateStreamDuration mocks base method.

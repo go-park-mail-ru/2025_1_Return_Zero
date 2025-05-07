@@ -12,6 +12,7 @@ func ArtistFromRepositoryToUsecase(artist *repoModel.Artist) *usecaseModel.Artis
 		Title:       artist.Title,
 		Description: artist.Description,
 		Thumbnail:   artist.Thumbnail,
+		IsFavorite:  artist.IsFavorite,
 	}
 }
 
@@ -21,8 +22,10 @@ func ArtistFromUsecaseToProto(artist *usecaseModel.Artist) *protoModel.Artist {
 		Title:       artist.Title,
 		Description: artist.Description,
 		Thumbnail:   artist.Thumbnail,
+		IsFavorite:  artist.IsFavorite,
 	}
 }
+
 func ArtistDetailedFromRepositoryToUsecase(artist *repoModel.Artist, stats *repoModel.ArtistStats) *usecaseModel.ArtistDetailed {
 	return &usecaseModel.ArtistDetailed{
 		Artist:         ArtistFromRepositoryToUsecase(artist),
@@ -225,5 +228,20 @@ func ArtistStreamCreateDataFromUsecaseToRepository(data *usecaseModel.ArtistStre
 	return &repoModel.ArtistStreamCreateDataList{
 		ArtistIDs: data.ArtistIDs,
 		UserID:    data.UserID,
+	}
+}
+
+func LikeRequestFromProtoToUsecase(request *protoModel.LikeRequest) *usecaseModel.LikeRequest {
+	return &usecaseModel.LikeRequest{
+		ArtistID: request.ArtistId.Id,
+		UserID:   request.UserId.Id,
+		IsLike:   request.IsLike,
+	}
+}
+
+func LikeRequestFromUsecaseToRepository(request *usecaseModel.LikeRequest) *repoModel.LikeRequest {
+	return &repoModel.LikeRequest{
+		ArtistID: request.ArtistID,
+		UserID:   request.UserID,
 	}
 }

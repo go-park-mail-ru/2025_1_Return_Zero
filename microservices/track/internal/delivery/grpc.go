@@ -20,16 +20,16 @@ func NewTrackService(trackUsecase domain.Usecase) trackProto.TrackServiceServer 
 	}
 }
 
-func (s *TrackService) GetAllTracks(ctx context.Context, req *trackProto.Filters) (*trackProto.TrackList, error) {
-	tracks, err := s.trackUsecase.GetAllTracks(ctx, model.FiltersFromProtoToUsecase(req))
+func (s *TrackService) GetAllTracks(ctx context.Context, req *trackProto.UserIDWithFilters) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.GetAllTracks(ctx, model.FiltersFromProtoToUsecase(req.Filters), req.UserId.Id)
 	if err != nil {
 		return nil, err
 	}
 	return model.TrackListFromUsecaseToProto(tracks), nil
 }
 
-func (s *TrackService) GetTrackByID(ctx context.Context, req *trackProto.TrackID) (*trackProto.TrackDetailed, error) {
-	track, err := s.trackUsecase.GetTrackByID(ctx, req.Id)
+func (s *TrackService) GetTrackByID(ctx context.Context, req *trackProto.TrackIDWithUserID) (*trackProto.TrackDetailed, error) {
+	track, err := s.trackUsecase.GetTrackByID(ctx, req.TrackId.Id, req.UserId.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -61,11 +61,8 @@ func (s *TrackService) GetLastListenedTracks(ctx context.Context, req *trackProt
 }
 
 func (s *TrackService) GetTracksByIDs(ctx context.Context, req *trackProto.TrackIDList) (*trackProto.TrackList, error) {
-	ids := make([]int64, len(req.Ids))
-	for i, id := range req.Ids {
-		ids[i] = id.Id
-	}
-	tracks, err := s.trackUsecase.GetTracksByIDs(ctx, ids)
+	ids, userID := model.TrackIDListFromProtoToUsecase(req)
+	tracks, err := s.trackUsecase.GetTracksByIDs(ctx, ids, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +70,8 @@ func (s *TrackService) GetTracksByIDs(ctx context.Context, req *trackProto.Track
 }
 
 func (s *TrackService) GetTracksByIDsFiltered(ctx context.Context, req *trackProto.TrackIDListWithFilters) (*trackProto.TrackList, error) {
-	ids, filters := model.TrackIDListWithFiltersFromProtoToUsecase(req)
-	tracks, err := s.trackUsecase.GetTracksByIDsFiltered(ctx, ids, filters)
+	ids, filters, userID := model.TrackIDListWithFiltersFromProtoToUsecase(req)
+	tracks, err := s.trackUsecase.GetTracksByIDsFiltered(ctx, ids, filters, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -89,8 +86,8 @@ func (s *TrackService) GetAlbumIDByTrackID(ctx context.Context, req *trackProto.
 	return &trackProto.AlbumID{Id: albumID}, nil
 }
 
-func (s *TrackService) GetTracksByAlbumID(ctx context.Context, req *trackProto.AlbumID) (*trackProto.TrackList, error) {
-	tracks, err := s.trackUsecase.GetTracksByAlbumID(ctx, req.Id)
+func (s *TrackService) GetTracksByAlbumID(ctx context.Context, req *trackProto.AlbumIDWithUserID) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.GetTracksByAlbumID(ctx, req.AlbumId.Id, req.UserId.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -111,4 +108,28 @@ func (s *TrackService) GetTracksListenedByUserID(ctx context.Context, req *track
 		return nil, err
 	}
 	return &trackProto.TracksListened{Tracks: tracks}, nil
+}
+
+func (s *TrackService) LikeTrack(ctx context.Context, req *trackProto.LikeRequest) (*emptypb.Empty, error) {
+	err := s.trackUsecase.LikeTrack(ctx, model.LikeRequestFromProtoToUsecase(req))
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *TrackService) GetFavoriteTracks(ctx context.Context, req *trackProto.FavoriteRequest) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.GetFavoriteTracks(ctx, model.FavoriteRequestFromProtoToUsecase(req))
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromUsecaseToProto(tracks), nil
+}
+
+func (s *TrackService) SearchTracks(ctx context.Context, req *trackProto.Query) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.SearchTracks(ctx, req.Query, req.UserId.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromUsecaseToProto(tracks), nil
 }

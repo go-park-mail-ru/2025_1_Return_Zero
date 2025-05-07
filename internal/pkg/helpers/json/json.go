@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	MaxBytes = 1024 * 1024
+	MaxBytes      = 1024 * 1024
+	DefaultStatus = http.StatusOK
 )
 
 var (

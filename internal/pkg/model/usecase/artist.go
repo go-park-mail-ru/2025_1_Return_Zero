@@ -5,6 +5,7 @@ type Artist struct {
 	Title       string
 	Description string
 	Thumbnail   string
+	IsLiked     bool
 }
 
 type ArtistDetailed struct {
@@ -15,4 +16,10 @@ type ArtistDetailed struct {
 
 type ArtistFilters struct {
 	Pagination *Pagination
+}
+
+type ArtistLikeRequest struct {
+	ArtistID int64
+	UserID   int64
+	IsLike   bool
 }

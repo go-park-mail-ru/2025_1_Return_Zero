@@ -70,3 +70,47 @@ func (mr *MockUsecaseMockRecorder) GetArtistByID(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtistByID", reflect.TypeOf((*MockUsecase)(nil).GetArtistByID), ctx, id)
 }
+
+// GetFavoriteArtists mocks base method.
+func (m *MockUsecase) GetFavoriteArtists(ctx context.Context, filters *usecase.ArtistFilters, username string) ([]*usecase.Artist, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFavoriteArtists", ctx, filters, username)
+	ret0, _ := ret[0].([]*usecase.Artist)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFavoriteArtists indicates an expected call of GetFavoriteArtists.
+func (mr *MockUsecaseMockRecorder) GetFavoriteArtists(ctx, filters, username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFavoriteArtists", reflect.TypeOf((*MockUsecase)(nil).GetFavoriteArtists), ctx, filters, username)
+}
+
+// LikeArtist mocks base method.
+func (m *MockUsecase) LikeArtist(ctx context.Context, request *usecase.ArtistLikeRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LikeArtist", ctx, request)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LikeArtist indicates an expected call of LikeArtist.
+func (mr *MockUsecaseMockRecorder) LikeArtist(ctx, request any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LikeArtist", reflect.TypeOf((*MockUsecase)(nil).LikeArtist), ctx, request)
+}
+
+// SearchArtists mocks base method.
+func (m *MockUsecase) SearchArtists(ctx context.Context, query string) ([]*usecase.Artist, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchArtists", ctx, query)
+	ret0, _ := ret[0].([]*usecase.Artist)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchArtists indicates an expected call of SearchArtists.
+func (mr *MockUsecaseMockRecorder) SearchArtists(ctx, query any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchArtists", reflect.TypeOf((*MockUsecase)(nil).SearchArtists), ctx, query)
+}

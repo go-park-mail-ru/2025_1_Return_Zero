@@ -7,21 +7,34 @@ package track;
 import "google/protobuf/empty.proto";
 
 service TrackService {
-	rpc GetAllTracks(Filters) returns (TrackList);
-	rpc GetTrackByID(TrackID) returns (TrackDetailed);
+	rpc GetAllTracks(UserIDWithFilters) returns (TrackList);
+	rpc GetTrackByID(TrackIDWithUserID) returns (TrackDetailed);
 	rpc CreateStream(TrackStreamCreateData) returns (StreamID);
 	rpc UpdateStreamDuration(TrackStreamUpdateData) returns (google.protobuf.Empty);
     rpc GetLastListenedTracks(UserIDWithFilters) returns (TrackList);
 	rpc GetTracksByIDs(TrackIDList) returns (TrackList);
     rpc GetTracksByIDsFiltered(TrackIDListWithFilters) returns (TrackList);
     rpc GetAlbumIDByTrackID(TrackID) returns (AlbumID);
-    rpc GetTracksByAlbumID(AlbumID) returns (TrackList);
+    rpc GetTracksByAlbumID(AlbumIDWithUserID) returns (TrackList);
     rpc GetMinutesListenedByUserID(UserID) returns (MinutesListened);
     rpc GetTracksListenedByUserID(UserID) returns (TracksListened);
+    rpc LikeTrack(LikeRequest) returns (google.protobuf.Empty);
+    rpc SearchTracks(Query) returns (TrackList);
+    rpc GetFavoriteTracks(FavoriteRequest) returns (TrackList);
+}
+
+message Query {
+    string query = 1;
+    UserID user_id = 2;
 }
 
 message AlbumID {
     int64 id = 1;
+}
+
+message AlbumIDWithUserID {
+    AlbumID album_id = 1;
+    UserID user_id = 2;
 }
 
 message MinutesListened {
@@ -38,6 +51,7 @@ message Track {
     string thumbnail = 3;
     int64 duration = 4;
     int64 album_id = 5;
+    bool is_favorite = 6;
 }
 
 message TrackList {
@@ -48,8 +62,14 @@ message TrackID {
     int64 id = 1;
 }
 
+message TrackIDWithUserID {
+    TrackID track_id = 1;
+    UserID user_id = 2;
+}
+
 message TrackIDList {
-    repeated TrackID ids = 1;
+    UserID user_id = 1;
+    repeated TrackID ids = 2;
 }
 
 message TrackIDListWithFilters {
@@ -110,4 +130,14 @@ message Filters {
     Pagination pagination = 1;
 }
 
+message LikeRequest {
+    TrackID track_id = 1;
+    UserID user_id = 2;
+    bool is_like = 3;
+}
 
+message FavoriteRequest {
+    UserID profile_user_id = 1;
+    UserID request_user_id = 2;
+    Filters filters = 3;
+}
