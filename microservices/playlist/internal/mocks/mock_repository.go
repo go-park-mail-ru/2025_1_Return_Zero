@@ -56,6 +56,21 @@ func (mr *MockRepositoryMockRecorder) AddTrackToPlaylist(ctx, request any) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTrackToPlaylist", reflect.TypeOf((*MockRepository)(nil).AddTrackToPlaylist), ctx, request)
 }
 
+// CheckExistsPlaylistAndNotDifferentUser mocks base method.
+func (m *MockRepository) CheckExistsPlaylistAndNotDifferentUser(ctx context.Context, playlistID, userID int64) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckExistsPlaylistAndNotDifferentUser", ctx, playlistID, userID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckExistsPlaylistAndNotDifferentUser indicates an expected call of CheckExistsPlaylistAndNotDifferentUser.
+func (mr *MockRepositoryMockRecorder) CheckExistsPlaylistAndNotDifferentUser(ctx, playlistID, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckExistsPlaylistAndNotDifferentUser", reflect.TypeOf((*MockRepository)(nil).CheckExistsPlaylistAndNotDifferentUser), ctx, playlistID, userID)
+}
+
 // CreatePlaylist mocks base method.
 func (m *MockRepository) CreatePlaylist(ctx context.Context, playlistCreateRequest *repository.CreatePlaylistRequest) (*repository.Playlist, error) {
 	m.ctrl.T.Helper()
