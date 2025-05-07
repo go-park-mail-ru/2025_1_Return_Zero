@@ -143,7 +143,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "rate(artist_service_grpc_number_of_requests_total{method=\"/artist.ArtistService/${GRPCHandlers}\"}[$__rate_interval])\n",
+          "expr": "rate(auth_service_grpc_number_of_requests_total{method=\"/auth.AuthService/${GRPCHandlers}\"}[$__rate_interval])\n",
           "legendFormat": "$GRPCHandlers",
           "range": true,
           "refId": "A"
@@ -235,7 +235,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum by (le, method) (rate(artist_service_grpc_request_duration_seconds_bucket{method=~\"/artist.ArtistService/$GRPCHandlers\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.9, sum by (le, method) (rate(auth_service_grpc_request_duration_seconds_bucket{method=~\"/auth.AuthService/$GRPCHandlers\"}[$__rate_interval])))",
           "legendFormat": "{{method}}, {{le}}",
           "range": true,
           "refId": "A"
@@ -341,7 +341,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum by (le, operation) (rate(artist_service_database_duration_seconds_bucket{operation=~\"$DBHandlers\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.9, sum by (le, operation) (rate(auth_service_database_duration_seconds_bucket{operation=~\"$DBHandlers\"}[$__rate_interval])))",
           "legendFormat": "{{operation}}",
           "range": true,
           "refId": "A"
@@ -433,7 +433,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "rate(artist_service_database_errors_total{operation=\"$DBHandlers\"}[$__rate_interval])",
+          "expr": "rate(auth_service_database_errors_total{operation=\"$DBHandlers\"}[$__rate_interval])",
           "legendFormat": "{{operation}}",
           "range": true,
           "refId": "A"
@@ -465,14 +465,14 @@
             "GetUserFullData"
           ]
         },
-        "definition": "label_values(artist_service_grpc_number_of_requests_total,method)",
-        "description": "Artists GRPC Handlers",
+        "definition": "label_values(auth_service_grpc_number_of_requests_total,method)",
+        "description": "Auth GRPC Handlers",
         "multi": true,
         "name": "GRPCHandlers",
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(artist_service_grpc_number_of_requests_total,method)",
+          "query": "label_values(auth_service_grpc_number_of_requests_total,method)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -498,14 +498,14 @@
             "getUserPrivacy"
           ]
         },
-        "definition": "label_values(artist_service_database_duration_seconds_bucket,operation)",
+        "definition": "label_values(auth_service_database_duration_seconds_bucket,operation)",
         "description": "Database handlers in User Service",
         "multi": true,
         "name": "DBHandlers",
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(artist_service_database_duration_seconds_bucket,operation)",
+          "query": "label_values(auth_service_database_duration_seconds_bucket,operation)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
@@ -520,7 +520,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Artist service",
-  "uid": "3443beb2-0a91-46b3-89a0-artist-service",
+  "title": "Auth service",
+  "uid": "3443beb2-0a91-46b3-89a0-auth-service",
   "version": 6
 }

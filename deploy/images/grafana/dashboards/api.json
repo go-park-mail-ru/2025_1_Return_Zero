@@ -249,7 +249,7 @@
             "h": 8,
             "w": 11,
             "x": 0,
-            "y": 655
+            "y": 1279
           },
           "id": 10,
           "options": {
@@ -310,7 +310,7 @@
             "h": 8,
             "w": 12,
             "x": 11,
-            "y": 655
+            "y": 1279
           },
           "id": 11,
           "options": {
@@ -405,7 +405,7 @@
             "h": 8,
             "w": 12,
             "x": 5,
-            "y": 663
+            "y": 1287
           },
           "id": 1,
           "options": {
@@ -529,7 +529,6 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
@@ -606,7 +605,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 240
+            "y": 12
           },
           "id": 44,
           "maxPerRow": 2,
@@ -624,11 +623,10 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "histogram_quantile(0.95, sum by (le, path) (rate(api_http_request_duration_seconds_bucket{path=~\"$AuthHandlers\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(0.9, sum by (le, path) (rate(api_http_request_duration_seconds_bucket{path=~\"$AuthHandlers\"}[$__rate_interval])))",
               "legendFormat": "{{path}}",
               "range": true,
               "refId": "A"
@@ -700,7 +698,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 250
+            "y": 22
           },
           "id": 45,
           "maxPerRow": 2,
@@ -718,7 +716,6 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
@@ -794,7 +791,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 260
+            "y": 32
           },
           "id": 46,
           "options": {
@@ -900,7 +897,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 3
+            "y": 171
           },
           "id": 48,
           "maxPerRow": 2,
@@ -918,7 +915,6 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
@@ -994,7 +990,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 13
+            "y": 181
           },
           "id": 52,
           "maxPerRow": 2,
@@ -1012,11 +1008,10 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "histogram_quantile(0.95, sum by (le, path, method) (rate(api_http_request_duration_seconds_bucket{path=~\"$UserHandlers\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(0.9, sum by (le, path, method) (rate(api_http_request_duration_seconds_bucket{path=~\"$UserHandlers\"}[$__rate_interval])))",
               "legendFormat": "{{path}}, {{method}}",
               "range": true,
               "refId": "A"
@@ -1088,7 +1083,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 23
+            "y": 191
           },
           "id": 50,
           "maxPerRow": 2,
@@ -1106,7 +1101,6 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
@@ -1182,7 +1176,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 33
+            "y": 201
           },
           "id": 51,
           "options": {
@@ -1288,7 +1282,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 42
+            "y": 172
           },
           "id": 54,
           "maxPerRow": 2,
@@ -1306,7 +1300,6 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
@@ -1382,7 +1375,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 52
+            "y": 182
           },
           "id": 55,
           "maxPerRow": 2,
@@ -1400,11 +1393,10 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "histogram_quantile(0.95, sum by (le, path, method) (rate(api_http_request_duration_seconds_bucket{path=~\"$ArtistsHandlers\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(0.9, sum by (le, path, method) (rate(api_http_request_duration_seconds_bucket{path=~\"$ArtistsHandlers\"}[$__rate_interval])))",
               "legendFormat": "{{path}}, {{method}}",
               "range": true,
               "refId": "A"
@@ -1476,7 +1468,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 62
+            "y": 192
           },
           "id": 56,
           "maxPerRow": 2,
@@ -1494,7 +1486,6 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
@@ -1570,7 +1561,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 72
+            "y": 202
           },
           "id": 57,
           "options": {
@@ -1676,7 +1667,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 81
+            "y": 173
           },
           "id": 59,
           "maxPerRow": 2,
@@ -1694,7 +1685,6 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
@@ -1704,7 +1694,7 @@
               "refId": "A"
             }
           ],
-          "title": "RPS $AlbumsHandlers ",
+          "title": "RPS AlbumsHandlers ",
           "type": "timeseries"
         },
         {
@@ -1770,7 +1760,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 91
+            "y": 183
           },
           "id": 60,
           "maxPerRow": 2,
@@ -1788,11 +1778,10 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "histogram_quantile(0.95, sum by (le, path, method) (rate(api_http_request_duration_seconds_bucket{path=~\"$AlbumsHandlers\"}[$__rate_interval])))",
+              "expr": "histogram_quantile(0.9, sum by (le, path, method) (rate(api_http_request_duration_seconds_bucket{path=~\"$AlbumsHandlers\"}[$__rate_interval])))",
               "legendFormat": "{{path}}, {{method}}",
               "range": true,
               "refId": "A"
@@ -1864,7 +1853,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 101
+            "y": 193
           },
           "id": 61,
           "maxPerRow": 2,
@@ -1882,7 +1871,6 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
@@ -1958,7 +1946,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 111
+            "y": 203
           },
           "id": 62,
           "options": {
@@ -2064,7 +2052,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 82
+            "y": 174
           },
           "id": 64,
           "maxPerRow": 2,
@@ -2082,7 +2070,6 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
@@ -2092,7 +2079,7 @@
               "refId": "A"
             }
           ],
-          "title": "RPS $TracksHandlers ",
+          "title": "RPS TracksHandlers ",
           "type": "timeseries"
         },
         {
@@ -2158,7 +2145,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 92
+            "y": 184
           },
           "id": 65,
           "maxPerRow": 2,
@@ -2176,17 +2163,16 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "histogram_quantile(0.95, sum by (le, path, method) (rate(api_http_request_duration_seconds_bucket{path=~\"$TracksHandlers\"}[$__rate_interval])))",
-              "legendFormat": "__auto",
+              "expr": "histogram_quantile(0.9, sum by (le, path, method) (rate(api_http_request_duration_seconds_bucket{path=~\"$TracksHandlers\"}[$__rate_interval])))",
+              "legendFormat": "{{path}}, {{method}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "$TracksHandlers - timings",
+          "title": "TracksHandlers - timings",
           "type": "timeseries"
         },
         {
@@ -2252,7 +2238,7 @@
             "h": 10,
             "w": 24,
             "x": 0,
-            "y": 102
+            "y": 194
           },
           "id": 66,
           "maxPerRow": 2,
@@ -2270,7 +2256,6 @@
             }
           },
           "pluginVersion": "12.0.0",
-          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
@@ -2280,7 +2265,7 @@
               "refId": "A"
             }
           ],
-          "title": "ART $TracksHandlers",
+          "title": "ART TracksHandlers",
           "type": "timeseries"
         },
         {
@@ -2346,7 +2331,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 112
+            "y": 204
           },
           "id": 67,
           "options": {
@@ -2378,6 +2363,388 @@
       ],
       "title": "Tracks handler",
       "type": "row"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 68,
+      "panels": [],
+      "title": "Playlists handler",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 69,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "sum without(status)(\n  rate(\n    api_http_requests_total{\n      path=~\"$PlaylistsHandlers\"\n    }[$__rate_interval]\n  )\n)\n",
+          "legendFormat": "$AuthHandlers",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "RPS PlaylistsHandlers",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 70,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "histogram_quantile(0.9, sum by (le, path) (rate(api_http_request_duration_seconds_bucket{path=~\"$PlaylistsHandlers\"}[$__rate_interval])))",
+          "legendFormat": "{{path}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "PlaylistsHandlers - timings",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "id": 71,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "(rate(api_http_request_duration_seconds_sum{path=~\"$PlaylistsHandlers\"}[$__rate_interval]) / rate(api_http_request_duration_seconds_count{path=~\"$PlaylistsHandlers\"}[$__rate_interval])) * 1000",
+          "legendFormat": "{{path}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "ART PlaylistsHandlers",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 32
+      },
+      "id": 72,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "rate(api_http_requests_total{path=~\"$PlaylistsHandlers\", status!=\"200\"}[$__rate_interval])",
+          "legendFormat": "{{path}}, {{status}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "RPS Errors",
+      "type": "timeseries"
     }
   ],
   "preload": false,
