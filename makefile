@@ -19,9 +19,7 @@ migrate_down:
 	tern migrate -c db/migrations/tern.conf --migrations db/migrations -d 0
 
 populate:
-	make migrate_down
 	make migrate_up
-	go run db/populate/main.go -file db/populate/data.sql
 
 docker-up:
 	cd deploy/ && make deploy

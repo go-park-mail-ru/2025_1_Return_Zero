@@ -7,6 +7,7 @@ import (
 
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
 	authProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/auth"
+	playlistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/playlist"
 	trackProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
 	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
 	cusstomErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
@@ -19,20 +20,22 @@ var (
 	ErrWrongUsername = errors.New("wrong username")
 )
 
-func NewUserUsecase(userClient *userProto.UserServiceClient, authClient *authProto.AuthServiceClient, artistClient *artistProto.ArtistServiceClient, trackClient *trackProto.TrackServiceClient) user.Usecase {
+func NewUserUsecase(userClient *userProto.UserServiceClient, authClient *authProto.AuthServiceClient, artistClient *artistProto.ArtistServiceClient, trackClient *trackProto.TrackServiceClient, playlistClient *playlistProto.PlaylistServiceClient) user.Usecase {
 	return &userUsecase{
-		userClient:   userClient,
-		authClient:   authClient,
-		trackClient:  trackClient,
-		artistClient: artistClient,
+		userClient:     userClient,
+		authClient:     authClient,
+		trackClient:    trackClient,
+		artistClient:   artistClient,
+		playlistClient: playlistClient,
 	}
 }
 
 type userUsecase struct {
-	userClient   *userProto.UserServiceClient
-	authClient   *authProto.AuthServiceClient
-	artistClient *artistProto.ArtistServiceClient
-	trackClient  *trackProto.TrackServiceClient
+	userClient     *userProto.UserServiceClient
+	authClient     *authProto.AuthServiceClient
+	artistClient   *artistProto.ArtistServiceClient
+	trackClient    *trackProto.TrackServiceClient
+	playlistClient *playlistProto.PlaylistServiceClient
 }
 
 func (u *userUsecase) CreateUser(ctx context.Context, user *usecaseModel.User) (*usecaseModel.User, string, error) {
@@ -208,11 +211,16 @@ func (u *userUsecase) GetUserData(ctx context.Context, username string) (*usecas
 	return userFullDataUsecase, nil
 }
 
-func (u *userUsecase) ChangeUserData(ctx context.Context, username string, userChangeData *usecaseModel.UserChangeSettings) (*usecaseModel.UserFullData, error) {
+func (u *userUsecase) ChangeUserData(ctx context.Context, username string, userChangeData *usecaseModel.UserChangeSettings, userID int64) (*usecaseModel.UserFullData, error) {
 	if userChangeData.Privacy != nil {
 		_, err := (*u.userClient).ChangeUserPrivacySettings(ctx, model.PrivacyFromUsecaseToProto(username, userChangeData.Privacy))
 		if err != nil {
 			return nil, cusstomErrors.HandleUserGRPCError(err)
+		}
+
+		_, err = (*u.playlistClient).UpdatePlaylistsPublisityByUserID(ctx, model.UpdatePlaylistsPublisityByUserIDRequestFromUsecaseToProto(userChangeData.Privacy.IsPublicPlaylists, userID))
+		if err != nil {
+			return nil, err
 		}
 	}
 	_, err := (*u.userClient).ChangeUserData(ctx, model.ChangeUserDataFromUsecaseToProto(username, userChangeData))

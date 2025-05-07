@@ -20,17 +20,17 @@ func NewTrackUsecase(trackRepo domain.Repository, s3Repo domain.S3Repository) do
 	return &TrackUsecase{trackRepo: trackRepo, s3Repo: s3Repo}
 }
 
-func (u *TrackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
+func (u *TrackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.TrackFilters, userID int64) ([]*usecaseModel.Track, error) {
 	repoFilters := model.FiltersFromUsecaseToRepository(filters)
-	repoTracks, err := u.trackRepo.GetAllTracks(ctx, repoFilters)
+	repoTracks, err := u.trackRepo.GetAllTracks(ctx, repoFilters, userID)
 	if err != nil {
 		return nil, err
 	}
 	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
 }
 
-func (u *TrackUsecase) GetTrackByID(ctx context.Context, id int64) (*usecaseModel.TrackDetailed, error) {
-	repoTrack, err := u.trackRepo.GetTrackByID(ctx, id)
+func (u *TrackUsecase) GetTrackByID(ctx context.Context, id int64, userID int64) (*usecaseModel.TrackDetailed, error) {
+	repoTrack, err := u.trackRepo.GetTrackByID(ctx, id, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -78,6 +78,11 @@ func (u *TrackUsecase) GetLastListenedTracks(ctx context.Context, userID int64, 
 	if err != nil {
 		return nil, err
 	}
+
+	if len(repoStreams) == 0 {
+		return []*usecaseModel.Track{}, nil
+	}
+
 	streamIDs := make([]int64, len(repoStreams))
 	for i, stream := range repoStreams {
 		streamIDs[i] = stream.ID
@@ -86,36 +91,43 @@ func (u *TrackUsecase) GetLastListenedTracks(ctx context.Context, userID int64, 
 	for i, stream := range repoStreams {
 		repoTrackIDs[i] = stream.TrackID
 	}
-	repoTracks, err := u.trackRepo.GetTracksByIDs(ctx, repoTrackIDs)
+
+	repoTracks, err := u.trackRepo.GetTracksByIDs(ctx, repoTrackIDs, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	usecaseTracks := make([]*usecaseModel.Track, len(repoTracks))
-	for i, id := range streamIDs {
-		usecaseTracks[i] = model.TrackFromRepositoryToUsecase(repoTracks[id])
+	usecaseTracks := make([]*usecaseModel.Track, 0, len(repoStreams))
+	for _, stream := range repoStreams {
+		track, exists := repoTracks[stream.TrackID]
+		if exists {
+			usecaseTracks = append(usecaseTracks, model.TrackFromRepositoryToUsecase(track))
+		}
 	}
 
 	return usecaseTracks, nil
 }
 
-func (u *TrackUsecase) GetTracksByIDs(ctx context.Context, ids []int64) ([]*usecaseModel.Track, error) {
-	repoTracks, err := u.trackRepo.GetTracksByIDs(ctx, ids)
+func (u *TrackUsecase) GetTracksByIDs(ctx context.Context, ids []int64, userID int64) ([]*usecaseModel.Track, error) {
+	repoTracks, err := u.trackRepo.GetTracksByIDs(ctx, ids, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	usecaseTracks := make([]*usecaseModel.Track, len(repoTracks))
-	for i, id := range ids {
-		usecaseTracks[i] = model.TrackFromRepositoryToUsecase(repoTracks[id])
+	usecaseTracks := make([]*usecaseModel.Track, 0, len(ids))
+	for _, id := range ids {
+		track, exists := repoTracks[id]
+		if exists {
+			usecaseTracks = append(usecaseTracks, model.TrackFromRepositoryToUsecase(track))
+		}
 	}
 
 	return usecaseTracks, nil
 }
 
-func (u *TrackUsecase) GetTracksByIDsFiltered(ctx context.Context, ids []int64, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
+func (u *TrackUsecase) GetTracksByIDsFiltered(ctx context.Context, ids []int64, filters *usecaseModel.TrackFilters, userID int64) ([]*usecaseModel.Track, error) {
 	repoFilters := model.FiltersFromUsecaseToRepository(filters)
-	repoTracks, err := u.trackRepo.GetTracksByIDsFiltered(ctx, ids, repoFilters)
+	repoTracks, err := u.trackRepo.GetTracksByIDsFiltered(ctx, ids, repoFilters, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -131,8 +143,8 @@ func (u *TrackUsecase) GetAlbumIDByTrackID(ctx context.Context, id int64) (int64
 	return repoAlbumID, nil
 }
 
-func (u *TrackUsecase) GetTracksByAlbumID(ctx context.Context, id int64) ([]*usecaseModel.Track, error) {
-	repoTracks, err := u.trackRepo.GetTracksByAlbumID(ctx, id)
+func (u *TrackUsecase) GetTracksByAlbumID(ctx context.Context, id int64, userID int64) ([]*usecaseModel.Track, error) {
+	repoTracks, err := u.trackRepo.GetTracksByAlbumID(ctx, id, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -158,4 +170,48 @@ func (u *TrackUsecase) GetTracksListenedByUserID(ctx context.Context, userID int
 		return 0, err
 	}
 	return repoTracksListened, nil
+}
+
+func (u *TrackUsecase) LikeTrack(ctx context.Context, request *usecaseModel.LikeRequest) error {
+	repoRequest := model.LikeRequestFromUsecaseToRepository(request)
+
+	exists, err := u.trackRepo.CheckTrackExists(ctx, request.TrackID)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return trackErrors.NewNotFoundError("track not found")
+	}
+	if request.IsLike {
+		err := u.trackRepo.LikeTrack(ctx, repoRequest)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	err = u.trackRepo.UnlikeTrack(ctx, repoRequest)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *TrackUsecase) GetFavoriteTracks(ctx context.Context, favoriteRequest *usecaseModel.FavoriteRequest) ([]*usecaseModel.Track, error) {
+	repoRequest := model.FavoriteRequestFromUsecaseToRepository(favoriteRequest)
+	repoTracks, err := u.trackRepo.GetFavoriteTracks(ctx, repoRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
+}
+
+func (u *TrackUsecase) SearchTracks(ctx context.Context, query string, userID int64) ([]*usecaseModel.Track, error) {
+	repoTracks, err := u.trackRepo.SearchTracks(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
 }

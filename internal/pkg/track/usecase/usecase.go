@@ -5,28 +5,39 @@ import (
 
 	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
+	playlistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/playlist"
 	trackProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
+	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
 	customErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
 )
 
-func NewUsecase(trackClient *trackProto.TrackServiceClient, artistClient *artistProto.ArtistServiceClient, albumClient *albumProto.AlbumServiceClient) track.Usecase {
-	return &trackUsecase{trackClient: trackClient, artistClient: artistClient, albumClient: albumClient}
+func NewUsecase(trackClient trackProto.TrackServiceClient, artistClient artistProto.ArtistServiceClient, albumClient albumProto.AlbumServiceClient, playlistClient playlistProto.PlaylistServiceClient, userClient userProto.UserServiceClient) track.Usecase {
+	return &trackUsecase{trackClient: trackClient, artistClient: artistClient, albumClient: albumClient, playlistClient: playlistClient, userClient: userClient}
 }
 
 type trackUsecase struct {
-	trackClient  *trackProto.TrackServiceClient
-	artistClient *artistProto.ArtistServiceClient
-	albumClient  *albumProto.AlbumServiceClient
+	trackClient    trackProto.TrackServiceClient
+	artistClient   artistProto.ArtistServiceClient
+	albumClient    albumProto.AlbumServiceClient
+	playlistClient playlistProto.PlaylistServiceClient
+	userClient     userProto.UserServiceClient
 }
 
 func (u *trackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
-	protoFilters := &trackProto.Filters{
-		Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination),
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
 	}
-	protoTracks, err := (*u.trackClient).GetAllTracks(ctx, protoFilters)
+
+	protoFilters := &trackProto.UserIDWithFilters{
+		UserId:  &trackProto.UserID{Id: userID},
+		Filters: &trackProto.Filters{Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination)},
+	}
+	protoTracks, err := u.trackClient.GetAllTracks(ctx, protoFilters)
 	if err != nil {
 		return nil, customErrors.HandleTrackGRPCError(err)
 	}
@@ -41,12 +52,12 @@ func (u *trackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.T
 		albumIDs = append(albumIDs, protoTrack.AlbumId)
 	}
 
-	protoArtists, err := (*u.artistClient).GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
+	protoArtists, err := u.artistClient.GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
 	if err != nil {
 		return nil, customErrors.HandleArtistGRPCError(err)
 	}
 
-	protoAlbumTitles, err := (*u.albumClient).GetAlbumTitleByIDs(ctx, &albumProto.AlbumIDList{Ids: model.AlbumIdsFromUsecaseToAlbumProto(albumIDs)})
+	protoAlbumTitles, err := u.albumClient.GetAlbumTitleByIDs(ctx, &albumProto.AlbumIDList{Ids: model.AlbumIdsFromUsecaseToAlbumProto(albumIDs)})
 	if err != nil {
 		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
@@ -61,17 +72,22 @@ func (u *trackUsecase) GetAllTracks(ctx context.Context, filters *usecaseModel.T
 }
 
 func (u *trackUsecase) GetTrackByID(ctx context.Context, id int64) (*usecaseModel.TrackDetailed, error) {
-	protoTrack, err := (*u.trackClient).GetTrackByID(ctx, &trackProto.TrackID{Id: id})
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
+	}
+
+	protoTrack, err := u.trackClient.GetTrackByID(ctx, &trackProto.TrackIDWithUserID{TrackId: &trackProto.TrackID{Id: id}, UserId: &trackProto.UserID{Id: userID}})
 	if err != nil {
 		return nil, customErrors.HandleTrackGRPCError(err)
 	}
 
-	protoArtists, err := (*u.artistClient).GetArtistsByTrackID(ctx, &artistProto.TrackID{Id: id})
+	protoArtists, err := u.artistClient.GetArtistsByTrackID(ctx, &artistProto.TrackID{Id: id})
 	if err != nil {
 		return nil, customErrors.HandleArtistGRPCError(err)
 	}
 
-	protoAlbumTitle, err := (*u.albumClient).GetAlbumTitleByID(ctx, &albumProto.AlbumID{Id: protoTrack.Track.AlbumId})
+	protoAlbumTitle, err := u.albumClient.GetAlbumTitleByID(ctx, &albumProto.AlbumID{Id: protoTrack.Track.AlbumId})
 	if err != nil {
 		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
@@ -82,16 +98,22 @@ func (u *trackUsecase) GetTrackByID(ctx context.Context, id int64) (*usecaseMode
 }
 
 func (u *trackUsecase) GetTracksByArtistID(ctx context.Context, id int64, filters *usecaseModel.TrackFilters) ([]*usecaseModel.Track, error) {
-	protoFilters := &trackProto.Filters{
-		Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination),
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
 	}
 
-	artistTrackIDs, err := (*u.artistClient).GetTrackIDsByArtistID(ctx, &artistProto.ArtistID{Id: id})
+	artistTrackIDs, err := u.artistClient.GetTrackIDsByArtistID(ctx, &artistProto.ArtistID{Id: id})
 	if err != nil {
 		return nil, customErrors.HandleArtistGRPCError(err)
 	}
 
-	protoTracks, err := (*u.trackClient).GetTracksByIDsFiltered(ctx, &trackProto.TrackIDListWithFilters{Ids: model.TrackIDListFromArtistToTrackProto(artistTrackIDs), Filters: protoFilters})
+	protoFilters := &trackProto.TrackIDListWithFilters{
+		Ids:     model.TrackIDListFromArtistToTrackProto(artistTrackIDs, userID),
+		Filters: &trackProto.Filters{Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination)},
+	}
+
+	protoTracks, err := u.trackClient.GetTracksByIDsFiltered(ctx, protoFilters)
 	if err != nil {
 		return nil, customErrors.HandleTrackGRPCError(err)
 	}
@@ -106,12 +128,12 @@ func (u *trackUsecase) GetTracksByArtistID(ctx context.Context, id int64, filter
 		albumIDs = append(albumIDs, protoTrack.AlbumId)
 	}
 
-	protoAlbumTitles, err := (*u.albumClient).GetAlbumTitleByIDs(ctx, &albumProto.AlbumIDList{Ids: model.AlbumIdsFromUsecaseToAlbumProto(albumIDs)})
+	protoAlbumTitles, err := u.albumClient.GetAlbumTitleByIDs(ctx, &albumProto.AlbumIDList{Ids: model.AlbumIdsFromUsecaseToAlbumProto(albumIDs)})
 	if err != nil {
 		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
 
-	protoArtists, err := (*u.artistClient).GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
+	protoArtists, err := u.artistClient.GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
 	if err != nil {
 		return nil, customErrors.HandleArtistGRPCError(err)
 	}
@@ -127,17 +149,17 @@ func (u *trackUsecase) GetTracksByArtistID(ctx context.Context, id int64, filter
 
 func (u *trackUsecase) CreateStream(ctx context.Context, stream *usecaseModel.TrackStreamCreateData) (int64, error) {
 	protoTrackStreamCreateData := model.TrackStreamCreateDataFromUsecaseToProto(stream)
-	streamID, err := (*u.trackClient).CreateStream(ctx, protoTrackStreamCreateData)
+	streamID, err := u.trackClient.CreateStream(ctx, protoTrackStreamCreateData)
 	if err != nil {
 		return 0, customErrors.HandleTrackGRPCError(err)
 	}
 
-	albumID, err := (*u.trackClient).GetAlbumIDByTrackID(ctx, &trackProto.TrackID{Id: stream.TrackID})
+	albumID, err := u.trackClient.GetAlbumIDByTrackID(ctx, &trackProto.TrackID{Id: stream.TrackID})
 	if err != nil {
 		return 0, customErrors.HandleTrackGRPCError(err)
 	}
 
-	artists, err := (*u.artistClient).GetArtistsByTrackID(ctx, &artistProto.TrackID{Id: stream.TrackID})
+	artists, err := u.artistClient.GetArtistsByTrackID(ctx, &artistProto.TrackID{Id: stream.TrackID})
 	if err != nil {
 		return 0, customErrors.HandleArtistGRPCError(err)
 	}
@@ -147,12 +169,12 @@ func (u *trackUsecase) CreateStream(ctx context.Context, stream *usecaseModel.Tr
 		artistIDs = append(artistIDs, artist.Id)
 	}
 
-	_, err = (*u.artistClient).CreateStreamsByArtistIDs(ctx, model.ArtistStreamCreateDataListFromUsecaseToProto(stream.UserID, artistIDs))
+	_, err = u.artistClient.CreateStreamsByArtistIDs(ctx, model.ArtistStreamCreateDataListFromUsecaseToProto(stream.UserID, artistIDs))
 	if err != nil {
 		return 0, customErrors.HandleArtistGRPCError(err)
 	}
 
-	_, err = (*u.albumClient).CreateStream(ctx, &albumProto.AlbumStreamCreateData{
+	_, err = u.albumClient.CreateStream(ctx, &albumProto.AlbumStreamCreateData{
 		AlbumId: &albumProto.AlbumID{Id: albumID.Id},
 		UserId:  &albumProto.UserID{Id: stream.UserID},
 	})
@@ -165,7 +187,7 @@ func (u *trackUsecase) CreateStream(ctx context.Context, stream *usecaseModel.Tr
 
 func (u *trackUsecase) UpdateStreamDuration(ctx context.Context, endedStream *usecaseModel.TrackStreamUpdateData) error {
 	protoTrackStreamUpdateData := model.TrackStreamUpdateDataFromUsecaseToProto(endedStream)
-	_, err := (*u.trackClient).UpdateStreamDuration(ctx, protoTrackStreamUpdateData)
+	_, err := u.trackClient.UpdateStreamDuration(ctx, protoTrackStreamUpdateData)
 	if err != nil {
 		return customErrors.HandleTrackGRPCError(err)
 	}
@@ -180,7 +202,7 @@ func (u *trackUsecase) GetLastListenedTracks(ctx context.Context, userID int64, 
 		Filters: &trackProto.Filters{Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination)},
 	}
 
-	protoTracks, err := (*u.trackClient).GetLastListenedTracks(ctx, protoUserIDWithFilters)
+	protoTracks, err := u.trackClient.GetLastListenedTracks(ctx, protoUserIDWithFilters)
 	if err != nil {
 		return nil, customErrors.HandleTrackGRPCError(err)
 	}
@@ -195,12 +217,12 @@ func (u *trackUsecase) GetLastListenedTracks(ctx context.Context, userID int64, 
 		albumIDs = append(albumIDs, protoTrack.AlbumId)
 	}
 
-	albumTitles, err := (*u.albumClient).GetAlbumTitleByIDs(ctx, &albumProto.AlbumIDList{Ids: model.AlbumIdsFromUsecaseToAlbumProto(albumIDs)})
+	albumTitles, err := u.albumClient.GetAlbumTitleByIDs(ctx, &albumProto.AlbumIDList{Ids: model.AlbumIdsFromUsecaseToAlbumProto(albumIDs)})
 	if err != nil {
 		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
 
-	protoArtists, err := (*u.artistClient).GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
+	protoArtists, err := u.artistClient.GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
 	if err != nil {
 		return nil, customErrors.HandleArtistGRPCError(err)
 	}
@@ -215,8 +237,16 @@ func (u *trackUsecase) GetLastListenedTracks(ctx context.Context, userID int64, 
 }
 
 func (u *trackUsecase) GetTracksByAlbumID(ctx context.Context, id int64) ([]*usecaseModel.Track, error) {
-	protoAlbumID := &trackProto.AlbumID{Id: id}
-	protoTracks, err := (*u.trackClient).GetTracksByAlbumID(ctx, protoAlbumID)
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
+	}
+
+	protoAlbumID := &trackProto.AlbumIDWithUserID{
+		AlbumId: &trackProto.AlbumID{Id: id},
+		UserId:  &trackProto.UserID{Id: userID},
+	}
+	protoTracks, err := u.trackClient.GetTracksByAlbumID(ctx, protoAlbumID)
 	if err != nil {
 		return nil, customErrors.HandleTrackGRPCError(err)
 	}
@@ -226,12 +256,12 @@ func (u *trackUsecase) GetTracksByAlbumID(ctx context.Context, id int64) ([]*use
 		trackIDs = append(trackIDs, protoTrack.Id)
 	}
 
-	albumTitle, err := (*u.albumClient).GetAlbumTitleByID(ctx, &albumProto.AlbumID{Id: id})
+	albumTitle, err := u.albumClient.GetAlbumTitleByID(ctx, &albumProto.AlbumID{Id: id})
 	if err != nil {
 		return nil, customErrors.HandleAlbumGRPCError(err)
 	}
 
-	protoArtists, err := (*u.artistClient).GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
+	protoArtists, err := u.artistClient.GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
 	if err != nil {
 		return nil, customErrors.HandleArtistGRPCError(err)
 	}
@@ -239,6 +269,172 @@ func (u *trackUsecase) GetTracksByAlbumID(ctx context.Context, id int64) ([]*use
 	tracks := make([]*usecaseModel.Track, 0, len(protoTracks.Tracks))
 	for _, protoTrack := range protoTracks.Tracks {
 		track := model.TrackFromProtoToUsecase(protoTrack, albumTitle, protoArtists.Artists[protoTrack.Id])
+		tracks = append(tracks, track)
+	}
+
+	return tracks, nil
+}
+
+func (u *trackUsecase) LikeTrack(ctx context.Context, request *usecaseModel.TrackLikeRequest) error {
+	protoRequest := model.TrackLikeRequestFromUsecaseToProto(request)
+	_, err := u.trackClient.LikeTrack(ctx, protoRequest)
+	if err != nil {
+		return customErrors.HandleTrackGRPCError(err)
+	}
+	return nil
+}
+
+func (u *trackUsecase) GetPlaylistTracks(ctx context.Context, id int64) ([]*usecaseModel.Track, error) {
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
+	}
+
+	protoPlaylistTrackIds, err := u.playlistClient.GetPlaylistTrackIds(ctx, &playlistProto.GetPlaylistTrackIdsRequest{
+		PlaylistId: id,
+		UserId:     userID,
+	})
+	if err != nil {
+		return nil, customErrors.HandlePlaylistGRPCError(err)
+	}
+
+	if len(protoPlaylistTrackIds.TrackIds) == 0 {
+		return make([]*usecaseModel.Track, 0), nil
+	}
+
+	trackIDList := make([]*trackProto.TrackID, 0, len(protoPlaylistTrackIds.TrackIds))
+	for _, trackID := range protoPlaylistTrackIds.TrackIds {
+		trackIDList = append(trackIDList, &trackProto.TrackID{Id: trackID})
+	}
+
+	protoTracks, err := u.trackClient.GetTracksByIDs(ctx, &trackProto.TrackIDList{Ids: trackIDList, UserId: &trackProto.UserID{Id: userID}})
+	if err != nil {
+		return nil, customErrors.HandleTrackGRPCError(err)
+	}
+
+	trackIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		trackIDs = append(trackIDs, protoTrack.Id)
+	}
+
+	albumIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		albumIDs = append(albumIDs, protoTrack.AlbumId)
+	}
+
+	albumTitles, err := u.albumClient.GetAlbumTitleByIDs(ctx, &albumProto.AlbumIDList{Ids: model.AlbumIdsFromUsecaseToAlbumProto(albumIDs)})
+	if err != nil {
+		return nil, customErrors.HandleAlbumGRPCError(err)
+	}
+
+	protoArtists, err := u.artistClient.GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
+	if err != nil {
+		return nil, customErrors.HandleArtistGRPCError(err)
+	}
+
+	tracks := make([]*usecaseModel.Track, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		track := model.TrackFromProtoToUsecase(protoTrack, albumTitles.Titles[protoTrack.AlbumId], protoArtists.Artists[protoTrack.Id])
+		tracks = append(tracks, track)
+	}
+
+	return tracks, nil
+}
+
+func (u *trackUsecase) GetFavoriteTracks(ctx context.Context, filters *usecaseModel.TrackFilters, username string) ([]*usecaseModel.Track, error) {
+	profileUserID, err := u.userClient.GetIDByUsername(ctx, &userProto.Username{Username: username})
+	if err != nil {
+		return nil, customErrors.HandleUserGRPCError(err)
+	}
+
+	requestUserID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		requestUserID = -1
+	}
+
+	profilePrivacy, err := u.userClient.GetUserPrivacyByID(ctx, &userProto.UserID{Id: profileUserID.Id})
+	if err != nil {
+		return nil, customErrors.HandleUserGRPCError(err)
+	}
+
+	if !profilePrivacy.IsPublicFavoriteTracks && requestUserID != profileUserID.Id {
+		return make([]*usecaseModel.Track, 0), nil
+	}
+
+	protoFilters := &trackProto.FavoriteRequest{
+		ProfileUserId: &trackProto.UserID{Id: profileUserID.Id},
+		RequestUserId: &trackProto.UserID{Id: requestUserID},
+		Filters:       &trackProto.Filters{Pagination: model.PaginationFromUsecaseToTrackProto(filters.Pagination)},
+	}
+
+	protoTracks, err := u.trackClient.GetFavoriteTracks(ctx, protoFilters)
+	if err != nil {
+		return nil, customErrors.HandleTrackGRPCError(err)
+	}
+
+	trackIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		trackIDs = append(trackIDs, protoTrack.Id)
+	}
+
+	albumIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		albumIDs = append(albumIDs, protoTrack.AlbumId)
+	}
+
+	protoArtists, err := u.artistClient.GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
+	if err != nil {
+		return nil, customErrors.HandleArtistGRPCError(err)
+	}
+
+	protoAlbumTitles, err := u.albumClient.GetAlbumTitleByIDs(ctx, &albumProto.AlbumIDList{Ids: model.AlbumIdsFromUsecaseToAlbumProto(albumIDs)})
+	if err != nil {
+		return nil, customErrors.HandleAlbumGRPCError(err)
+	}
+
+	tracks := make([]*usecaseModel.Track, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		track := model.TrackFromProtoToUsecase(protoTrack, protoAlbumTitles.Titles[protoTrack.AlbumId], protoArtists.Artists[protoTrack.Id])
+		tracks = append(tracks, track)
+	}
+
+	return tracks, nil
+}
+
+func (u *trackUsecase) SearchTracks(ctx context.Context, query string) ([]*usecaseModel.Track, error) {
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
+	}
+
+	protoTracks, err := u.trackClient.SearchTracks(ctx, &trackProto.Query{Query: query, UserId: &trackProto.UserID{Id: userID}})
+	if err != nil {
+		return nil, customErrors.HandleTrackGRPCError(err)
+	}
+
+	trackIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		trackIDs = append(trackIDs, protoTrack.Id)
+	}
+
+	albumIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		albumIDs = append(albumIDs, protoTrack.AlbumId)
+	}
+
+	protoArtists, err := u.artistClient.GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
+	if err != nil {
+		return nil, customErrors.HandleArtistGRPCError(err)
+	}
+
+	protoAlbumTitles, err := u.albumClient.GetAlbumTitleByIDs(ctx, &albumProto.AlbumIDList{Ids: model.AlbumIdsFromUsecaseToAlbumProto(albumIDs)})
+	if err != nil {
+		return nil, customErrors.HandleAlbumGRPCError(err)
+	}
+
+	tracks := make([]*usecaseModel.Track, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		track := model.TrackFromProtoToUsecase(protoTrack, protoAlbumTitles.Titles[protoTrack.AlbumId], protoArtists.Artists[protoTrack.Id])
 		tracks = append(tracks, track)
 	}
 

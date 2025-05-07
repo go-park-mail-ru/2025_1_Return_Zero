@@ -19,6 +19,7 @@ type Album struct {
 	Type        AlbumType
 	Thumbnail   string
 	ReleaseDate time.Time
+	IsFavorite  bool
 }
 
 type AlbumList struct {
@@ -45,4 +46,10 @@ type AlbumFilters struct {
 type AlbumStreamCreateData struct {
 	AlbumID int64
 	UserID  int64
+}
+
+type LikeRequest struct {
+	AlbumID int64
+	UserID  int64
+	IsLike  bool
 }

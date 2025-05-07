@@ -6,11 +6,14 @@ import (
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album"
+	ctxExtractor "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/errorStatus"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/json"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/pagination"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
+	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/gorilla/mux"
 	"go.uber.org/zap"
@@ -107,6 +110,17 @@ func (h *AlbumHandler) GetAlbumsByArtistID(w http.ResponseWriter, r *http.Reques
 	json.WriteSuccessResponse(w, http.StatusOK, albums, nil)
 }
 
+// GetAlbumByID godoc
+// @Summary Get album by ID
+// @Description Get an album by its ID
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Param id path integer true "Album ID"
+// @Success 200 {object} delivery.APIResponse{body=delivery.Album} "Album details"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid album ID"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /albums/{id} [get]
 func (h *AlbumHandler) GetAlbumByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
@@ -129,4 +143,139 @@ func (h *AlbumHandler) GetAlbumByID(w http.ResponseWriter, r *http.Request) {
 
 	album := model.AlbumFromUsecaseToDelivery(usecaseAlbum, usecaseAlbum.Artists)
 	json.WriteSuccessResponse(w, http.StatusOK, album, nil)
+}
+
+// LikeAlbum godoc
+// @Summary Like an album
+// @Description Like an album for a user
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Param id path integer true "Album ID"
+// @Param likeRequest body delivery.AlbumLikeRequest true "Like request"
+// @Success 200 {object} delivery.APIResponse{body=delivery.Message} "Album liked/unliked"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid album ID"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 404 {object} delivery.APINotFoundErrorResponse "Album not found"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /albums/{id}/like [post]
+func (h *AlbumHandler) LikeAlbum(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		logger.Warn("attempt to like album for unauthorized user")
+		err := customErrors.ErrUnauthorized
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		logger.Error("failed to parse album ID", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	var deliveryLikeRequest deliveryModel.AlbumLikeRequest
+
+	err = json.ReadJSON(w, r, &deliveryLikeRequest)
+	if err != nil {
+		logger.Warn("failed to read like request", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	usecaseLikeRequest := model.AlbumLikeRequestFromDeliveryToUsecase(deliveryLikeRequest.IsLike, userID, id)
+
+	err = h.usecase.LikeAlbum(ctx, usecaseLikeRequest)
+	if err != nil {
+		logger.Error("failed to like album", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	json.WriteSuccessResponse(w, http.StatusOK, deliveryModel.Message{
+		Message: "album liked/unliked",
+	}, nil)
+}
+
+// GetFavoriteAlbums godoc
+// @Summary Get favorite albums
+// @Description Get a list of favorite albums for a user
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Param offset query integer false "Offset (default: 0)"
+// @Param limit query integer false "Limit (default: 10, max: 100)"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Album} "List of favorite albums"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /user/me/albums [get]
+func (h *AlbumHandler) GetFavoriteAlbums(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		logger.Warn("attempt to get favorite albums for unauthorized user")
+		err := customErrors.ErrUnauthorized
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	pagination, err := pagination.GetPagination(r, &h.cfg.Pagination)
+	if err != nil {
+		logger.Error("failed to get pagination", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	usecaseAlbums, err := h.usecase.GetFavoriteAlbums(ctx, &usecaseModel.AlbumFilters{
+		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
+	}, userID)
+	if err != nil {
+		logger.Error("failed to get favorite albums", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	albums := model.AlbumsFromUsecaseToDelivery(usecaseAlbums)
+	json.WriteSuccessResponse(w, http.StatusOK, albums, nil)
+}
+
+// SearchAlbums godoc
+// @Summary Search albums
+// @Description Search albums by query
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Param query query string true "Query"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Album} "List of albums"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid query"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /albums/search [get]
+func (h *AlbumHandler) SearchAlbums(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		logger.Error("query is empty")
+		json.WriteErrorResponse(w, http.StatusBadRequest, "query is empty", nil)
+		return
+	}
+
+	usecaseAlbums, err := h.usecase.SearchAlbums(ctx, query)
+	if err != nil {
+		logger.Error("failed to search albums", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	albums := model.AlbumsFromUsecaseToDelivery(usecaseAlbums)
+	json.WriteSuccessResponse(w, http.StatusOK, albums, nil)
 }

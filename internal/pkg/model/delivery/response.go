@@ -48,6 +48,13 @@ type APIForbiddenErrorResponse struct {
 	Error  string `json:"error" example:"Forbidden" description:"Error message"`
 }
 
+// APIRequestEntityTooLargeErrorResponse
+// @Description API request entity too large error response structure
+type APIRequestEntityTooLargeErrorResponse struct {
+	Status int    `json:"status" example:"413" description:"HTTP status code"`
+	Error  string `json:"error" example:"Request entity too large" description:"Error message"`
+}
+
 // APINotFoundErrorResponse
 // @Description API not found error response structure
 type APINotFoundErrorResponse struct {
