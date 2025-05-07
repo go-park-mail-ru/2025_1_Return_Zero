@@ -1,0 +1,141 @@
+syntax = "proto3";
+
+option go_package = "./artist";
+
+package artist;
+
+import "google/protobuf/empty.proto";
+
+service ArtistService {
+	rpc GetAllArtists(FiltersWithUserID) returns (ArtistList);
+	rpc GetArtistByID(ArtistIDWithUserID) returns (ArtistDetailed);
+	rpc GetArtistTitleByID(ArtistID) returns (ArtistTitle);
+	rpc GetArtistsByTrackID(TrackID) returns (ArtistWithRoleList);
+	rpc GetArtistsByTrackIDs(TrackIDList) returns (ArtistWithRoleMap);
+	rpc GetArtistsByAlbumID(AlbumID) returns (ArtistWithTitleList);
+	rpc GetArtistsByAlbumIDs(AlbumIDList) returns (ArtistWithTitleMap);
+	rpc GetAlbumIDsByArtistID(ArtistID) returns (AlbumIDList);
+	rpc GetTrackIDsByArtistID(ArtistID) returns (TrackIDList);
+	rpc CreateStreamsByArtistIDs(ArtistStreamCreateDataList) returns (google.protobuf.Empty);
+	rpc GetArtistsListenedByUserID(UserID) returns (ArtistListened);
+	rpc LikeArtist(LikeRequest) returns (google.protobuf.Empty);
+	rpc GetFavoriteArtists(FiltersWithUserID) returns (ArtistList);
+	rpc SearchArtists(Query) returns (ArtistList);
+}
+
+message Query {
+    string query = 1;
+    UserID user_id = 2;
+}
+
+message ArtistListened {
+	int64 artists_listened = 1;
+}
+
+message UserID {
+    int64 id = 1;
+}
+
+message ArtistID {
+	int64 id = 1;
+}
+
+message ArtistIDWithUserID {
+	ArtistID artist_id = 1;
+	UserID user_id = 2;
+}
+
+message ArtistIDList {
+	repeated ArtistID ids = 1;
+}
+
+message TrackID {
+	int64 id = 1;
+}
+
+message AlbumID {
+	int64 id = 1;
+}
+
+message TrackIDList {
+	repeated TrackID ids = 1;
+}
+
+message AlbumIDList {
+	repeated AlbumID ids = 1;
+}
+
+message Artist {
+	int64 id = 1;
+	string title = 2;
+	string description = 3;
+	string thumbnail = 4;
+	bool is_favorite = 5;
+}
+
+message ArtistDetailed {
+	Artist artist = 1;
+	int64 listeners_count = 2;
+	int64 favorites_count = 3;
+}
+
+message ArtistTitle {
+	string title = 1;
+}
+
+message ArtistList {
+	repeated Artist artists = 1;
+}
+
+message ArtistWithTitle {
+	int64 id = 1;
+	string title = 2;
+}
+
+message ArtistWithTitleList {
+	repeated ArtistWithTitle artists = 1;
+}
+
+message ArtistWithTitleMap {
+	map<int64, ArtistWithTitleList> artists = 1;
+}
+
+message ArtistWithRole {
+	int64 id = 1;
+	string title = 2;
+	string role = 3;
+}
+
+message ArtistWithRoleList {
+	repeated ArtistWithRole artists = 1;
+}
+
+message ArtistWithRoleMap {
+	map<int64, ArtistWithRoleList> artists = 1;
+}
+
+message Pagination {
+	int64 offset = 1;
+	int64 limit = 2;
+}
+
+message Filters {
+	Pagination pagination = 1;
+}
+
+message FiltersWithUserID {
+	Filters filters = 1;
+	UserID user_id = 2;
+}
+
+message ArtistStreamCreateDataList {
+	ArtistIDList artist_ids = 1;
+	UserID user_id = 2;
+}
+
+message LikeRequest {
+	ArtistID artist_id = 1;
+	UserID user_id = 2;
+	bool is_like = 3;
+}
+

@@ -5,103 +5,138 @@ import (
 	"errors"
 	"testing"
 
-	mock_artist "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/mocks"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
-	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
+	artistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
+	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
+	customErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func TestArtistUsecase_GetArtistByID(t *testing.T) {
+func TestGetArtistByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRepo := mock_artist.NewMockRepository(ctrl)
-	usecase := NewUsecase(mockRepo)
-	ctx := context.Background()
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	artistClient := artistProto.ArtistServiceClient(mockArtistClient)
+	userClient := userProto.UserServiceClient(mockUserClient)
+
+	artistUsecase := NewUsecase(artistClient, userClient)
 
 	tests := []struct {
 		name           string
-		artistID       int64
-		mockSetup      func()
-		expectedArtist *usecaseModel.ArtistDetailed
+		id             int64
+		ctx            context.Context
+		setupMocks     func()
+		expectedArtist *usecase.ArtistDetailed
 		expectedError  error
 	}{
 		{
-			name:     "Success",
-			artistID: 1,
-			mockSetup: func() {
-				mockRepo.EXPECT().
-					GetArtistByID(ctx, int64(1)).
-					Return(&repository.Artist{
-						ID:          1,
+			name: "Success with authenticated user",
+			id:   1,
+			ctx:  context.WithValue(context.Background(), ctxExtractor.UserContextKey{}, int64(2)),
+			setupMocks: func() {
+				mockArtistClient.EXPECT().GetArtistByID(
+					gomock.Any(),
+					&artistProto.ArtistIDWithUserID{
+						ArtistId: &artistProto.ArtistID{Id: 1},
+						UserId:   &artistProto.UserID{Id: 2},
+					},
+				).Return(&artistProto.ArtistDetailed{
+					Artist: &artistProto.Artist{
+						Id:          1,
 						Title:       "Test Artist",
-						Thumbnail:   "test-thumbnail.jpg",
 						Description: "Test Description",
-					}, nil)
-
-				mockRepo.EXPECT().
-					GetArtistStats(ctx, int64(1)).
-					Return(&repository.ArtistStats{
-						ListenersCount: 1000,
-						FavoritesCount: 500,
-					}, nil)
+						Thumbnail:   "test-thumbnail.jpg",
+						IsFavorite:  true,
+					},
+					FavoritesCount: 100,
+					ListenersCount: 500,
+				}, nil)
 			},
-			expectedArtist: &usecaseModel.ArtistDetailed{
-				Artist: usecaseModel.Artist{
+			expectedArtist: &usecase.ArtistDetailed{
+				Artist: usecase.Artist{
 					ID:          1,
 					Title:       "Test Artist",
-					Thumbnail:   "test-thumbnail.jpg",
 					Description: "Test Description",
+					Thumbnail:   "test-thumbnail.jpg",
+					IsLiked:     true,
 				},
-				Listeners: 1000,
-				Favorites: 500,
+				Favorites: 100,
+				Listeners: 500,
 			},
 			expectedError: nil,
 		},
 		{
-			name:     "Error_GetArtistByID",
-			artistID: 2,
-			mockSetup: func() {
-				mockRepo.EXPECT().
-					GetArtistByID(ctx, int64(2)).
-					Return(nil, errors.New("database error"))
+			name: "Success with unauthenticated user",
+			id:   1,
+			ctx:  context.Background(),
+			setupMocks: func() {
+				mockArtistClient.EXPECT().GetArtistByID(
+					gomock.Any(),
+					&artistProto.ArtistIDWithUserID{
+						ArtistId: &artistProto.ArtistID{Id: 1},
+						UserId:   &artistProto.UserID{Id: -1},
+					},
+				).Return(&artistProto.ArtistDetailed{
+					Artist: &artistProto.Artist{
+						Id:          1,
+						Title:       "Test Artist",
+						Description: "Test Description",
+						Thumbnail:   "test-thumbnail.jpg",
+						IsFavorite:  false,
+					},
+					FavoritesCount: 100,
+					ListenersCount: 500,
+				}, nil)
 			},
-			expectedArtist: nil,
-			expectedError:  errors.New("database error"),
+			expectedArtist: &usecase.ArtistDetailed{
+				Artist: usecase.Artist{
+					ID:          1,
+					Title:       "Test Artist",
+					Description: "Test Description",
+					Thumbnail:   "test-thumbnail.jpg",
+					IsLiked:     false,
+				},
+				Favorites: 100,
+				Listeners: 500,
+			},
+			expectedError: nil,
 		},
 		{
-			name:     "Error_GetArtistStats",
-			artistID: 3,
-			mockSetup: func() {
-				mockRepo.EXPECT().
-					GetArtistByID(ctx, int64(3)).
-					Return(&repository.Artist{
-						ID:          3,
-						Title:       "Test Artist",
-						Thumbnail:   "test-thumbnail.jpg",
-						Description: "Test Description",
-					}, nil)
-
-				mockRepo.EXPECT().
-					GetArtistStats(ctx, int64(3)).
-					Return(nil, errors.New("stats error"))
+			name: "Error from service",
+			id:   1,
+			ctx:  context.Background(),
+			setupMocks: func() {
+				mockArtistClient.EXPECT().GetArtistByID(
+					gomock.Any(),
+					&artistProto.ArtistIDWithUserID{
+						ArtistId: &artistProto.ArtistID{Id: 1},
+						UserId:   &artistProto.UserID{Id: -1},
+					},
+				).Return(nil, status.Error(codes.NotFound, "artist not found"))
 			},
 			expectedArtist: nil,
-			expectedError:  errors.New("stats error"),
+			expectedError:  customErrors.ErrArtistNotFound,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.mockSetup()
+			tt.setupMocks()
 
-			artist, err := usecase.GetArtistByID(ctx, tt.artistID)
+			artist, err := artistUsecase.GetArtistByID(tt.ctx, tt.id)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)
-				assert.Equal(t, tt.expectedError.Error(), err.Error())
-				assert.Nil(t, artist)
+				assert.Equal(t, tt.expectedError, err)
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expectedArtist, artist)
@@ -110,91 +145,599 @@ func TestArtistUsecase_GetArtistByID(t *testing.T) {
 	}
 }
 
-func TestArtistUsecase_GetAllArtists(t *testing.T) {
+func TestGetAllArtists(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockRepo := mock_artist.NewMockRepository(ctrl)
-	usecase := NewUsecase(mockRepo)
-	ctx := context.Background()
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	// Convert mock to required type with type assertion
+	artistClient := artistProto.ArtistServiceClient(mockArtistClient)
+	userClient := userProto.UserServiceClient(mockUserClient)
+
+	artistUsecase := NewUsecase(artistClient, userClient)
 
 	tests := []struct {
 		name            string
-		filters         *usecaseModel.ArtistFilters
-		mockSetup       func()
-		expectedArtists []*usecaseModel.Artist
+		filters         *usecase.ArtistFilters
+		ctx             context.Context
+		setupMocks      func()
+		expectedArtists []*usecase.Artist
 		expectedError   error
 	}{
 		{
-			name: "Success",
-			filters: &usecaseModel.ArtistFilters{
-				Pagination: &usecaseModel.Pagination{
-					Limit:  10,
+			name: "Success with authenticated user",
+			filters: &usecase.ArtistFilters{
+				Pagination: &usecase.Pagination{
 					Offset: 0,
+					Limit:  10,
 				},
 			},
-			mockSetup: func() {
-				mockRepo.EXPECT().
-					GetAllArtists(ctx, gomock.Any()).
-					Return([]*repository.Artist{
+			ctx: context.WithValue(context.Background(), ctxExtractor.UserContextKey{}, int64(1)),
+			setupMocks: func() {
+				mockArtistClient.EXPECT().GetAllArtists(
+					gomock.Any(),
+					gomock.Any(),
+				).Return(&artistProto.ArtistList{
+					Artists: []*artistProto.Artist{
 						{
-							ID:          1,
+							Id:          1,
 							Title:       "Artist 1",
-							Thumbnail:   "thumbnail1.jpg",
 							Description: "Description 1",
+							Thumbnail:   "thumbnail1.jpg",
+							IsFavorite:  true,
 						},
 						{
-							ID:          2,
+							Id:          2,
 							Title:       "Artist 2",
-							Thumbnail:   "thumbnail2.jpg",
 							Description: "Description 2",
+							Thumbnail:   "thumbnail2.jpg",
+							IsFavorite:  false,
 						},
-					}, nil)
+					},
+				}, nil)
 			},
-			expectedArtists: []*usecaseModel.Artist{
+			expectedArtists: []*usecase.Artist{
 				{
 					ID:          1,
 					Title:       "Artist 1",
-					Thumbnail:   "thumbnail1.jpg",
 					Description: "Description 1",
+					Thumbnail:   "thumbnail1.jpg",
+					IsLiked:     true,
 				},
 				{
 					ID:          2,
 					Title:       "Artist 2",
-					Thumbnail:   "thumbnail2.jpg",
 					Description: "Description 2",
+					Thumbnail:   "thumbnail2.jpg",
+					IsLiked:     false,
 				},
 			},
 			expectedError: nil,
 		},
 		{
-			name: "Error_GetAllArtists",
-			filters: &usecaseModel.ArtistFilters{
-				Pagination: &usecaseModel.Pagination{
-					Limit:  10,
+			name: "Success with unauthenticated user",
+			filters: &usecase.ArtistFilters{
+				Pagination: &usecase.Pagination{
 					Offset: 0,
+					Limit:  10,
 				},
 			},
-			mockSetup: func() {
-				mockRepo.EXPECT().
-					GetAllArtists(ctx, gomock.Any()).
-					Return(nil, errors.New("database error"))
+			ctx: context.Background(),
+			setupMocks: func() {
+				mockArtistClient.EXPECT().GetAllArtists(
+					gomock.Any(),
+					gomock.Any(),
+				).Return(&artistProto.ArtistList{
+					Artists: []*artistProto.Artist{
+						{
+							Id:          1,
+							Title:       "Artist 1",
+							Description: "Description 1",
+							Thumbnail:   "thumbnail1.jpg",
+							IsFavorite:  false,
+						},
+					},
+				}, nil)
+			},
+			expectedArtists: []*usecase.Artist{
+				{
+					ID:          1,
+					Title:       "Artist 1",
+					Description: "Description 1",
+					Thumbnail:   "thumbnail1.jpg",
+					IsLiked:     false,
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Error from service",
+			filters: &usecase.ArtistFilters{
+				Pagination: &usecase.Pagination{
+					Offset: 0,
+					Limit:  10,
+				},
+			},
+			ctx: context.Background(),
+			setupMocks: func() {
+				mockArtistClient.EXPECT().GetAllArtists(
+					gomock.Any(),
+					gomock.Any(),
+				).Return(nil, status.Error(codes.Internal, "internal error"))
 			},
 			expectedArtists: nil,
-			expectedError:   errors.New("database error"),
+			expectedError:   errors.New("internal server error: internal error"),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.mockSetup()
+			tt.setupMocks()
 
-			artists, err := usecase.GetAllArtists(ctx, tt.filters)
+			artists, err := artistUsecase.GetAllArtists(tt.ctx, tt.filters)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)
 				assert.Equal(t, tt.expectedError.Error(), err.Error())
-				assert.Nil(t, artists)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedArtists, artists)
+			}
+		})
+	}
+}
+
+func TestLikeArtist(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	// Convert mock to required type with type assertion
+	artistClient := artistProto.ArtistServiceClient(mockArtistClient)
+	userClient := userProto.UserServiceClient(mockUserClient)
+
+	artistUsecase := NewUsecase(artistClient, userClient)
+
+	tests := []struct {
+		name          string
+		request       *usecase.ArtistLikeRequest
+		ctx           context.Context
+		setupMocks    func()
+		expectedError error
+	}{
+		{
+			name: "Success",
+			request: &usecase.ArtistLikeRequest{
+				ArtistID: 1,
+				UserID:   2,
+				IsLike:   true,
+			},
+			ctx: context.Background(),
+			setupMocks: func() {
+				mockArtistClient.EXPECT().LikeArtist(
+					gomock.Any(),
+					&artistProto.LikeRequest{
+						ArtistId: &artistProto.ArtistID{Id: 1},
+						UserId:   &artistProto.UserID{Id: 2},
+						IsLike:   true,
+					},
+				).Return(&emptypb.Empty{}, nil)
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Error from service",
+			request: &usecase.ArtistLikeRequest{
+				ArtistID: 1,
+				UserID:   2,
+				IsLike:   true,
+			},
+			ctx: context.Background(),
+			setupMocks: func() {
+				mockArtistClient.EXPECT().LikeArtist(
+					gomock.Any(),
+					&artistProto.LikeRequest{
+						ArtistId: &artistProto.ArtistID{Id: 1},
+						UserId:   &artistProto.UserID{Id: 2},
+						IsLike:   true,
+					},
+				).Return(nil, status.Error(codes.NotFound, "artist not found"))
+			},
+			expectedError: customErrors.ErrArtistNotFound,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setupMocks()
+
+			err := artistUsecase.LikeArtist(tt.ctx, tt.request)
+
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tt.expectedError, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestGetFavoriteArtists(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	artistClient := artistProto.ArtistServiceClient(mockArtistClient)
+	userClient := userProto.UserServiceClient(mockUserClient)
+
+	artistUsecase := NewUsecase(artistClient, userClient)
+
+	tests := []struct {
+		name            string
+		filters         *usecase.ArtistFilters
+		username        string
+		ctx             context.Context
+		setupMocks      func()
+		expectedArtists []*usecase.Artist
+		expectedError   error
+	}{
+		{
+			name: "Success - public favorites, different user",
+			filters: &usecase.ArtistFilters{
+				Pagination: &usecase.Pagination{
+					Offset: 0,
+					Limit:  10,
+				},
+			},
+			username: "testuser",
+			ctx:      context.WithValue(context.Background(), ctxExtractor.UserContextKey{}, int64(2)),
+			setupMocks: func() {
+				mockUserClient.EXPECT().GetIDByUsername(
+					gomock.Any(),
+					&userProto.Username{Username: "testuser"},
+				).Return(&userProto.UserID{Id: 1}, nil)
+
+				mockUserClient.EXPECT().GetUserPrivacyByID(
+					gomock.Any(),
+					&userProto.UserID{Id: 1},
+				).Return(&userProto.PrivacySettings{
+					IsPublicFavoriteArtists: true,
+				}, nil)
+
+				mockArtistClient.EXPECT().GetFavoriteArtists(
+					gomock.Any(),
+					gomock.Any(),
+				).Return(&artistProto.ArtistList{
+					Artists: []*artistProto.Artist{
+						{
+							Id:          1,
+							Title:       "Artist 1",
+							Description: "Description 1",
+							Thumbnail:   "thumbnail1.jpg",
+							IsFavorite:  true,
+						},
+					},
+				}, nil)
+			},
+			expectedArtists: []*usecase.Artist{
+				{
+					ID:          1,
+					Title:       "Artist 1",
+					Description: "Description 1",
+					Thumbnail:   "thumbnail1.jpg",
+					IsLiked:     true,
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Success - private favorites, same user",
+			filters: &usecase.ArtistFilters{
+				Pagination: &usecase.Pagination{
+					Offset: 0,
+					Limit:  10,
+				},
+			},
+			username: "testuser",
+			ctx:      context.WithValue(context.Background(), ctxExtractor.UserContextKey{}, int64(1)),
+			setupMocks: func() {
+				mockUserClient.EXPECT().GetIDByUsername(
+					gomock.Any(),
+					&userProto.Username{Username: "testuser"},
+				).Return(&userProto.UserID{Id: 1}, nil)
+
+				mockUserClient.EXPECT().GetUserPrivacyByID(
+					gomock.Any(),
+					&userProto.UserID{Id: 1},
+				).Return(&userProto.PrivacySettings{
+					IsPublicFavoriteArtists: false,
+				}, nil)
+
+				mockArtistClient.EXPECT().GetFavoriteArtists(
+					gomock.Any(),
+					gomock.Any(),
+				).Return(&artistProto.ArtistList{
+					Artists: []*artistProto.Artist{
+						{
+							Id:          1,
+							Title:       "Artist 1",
+							Description: "Description 1",
+							Thumbnail:   "thumbnail1.jpg",
+							IsFavorite:  true,
+						},
+					},
+				}, nil)
+			},
+			expectedArtists: []*usecase.Artist{
+				{
+					ID:          1,
+					Title:       "Artist 1",
+					Description: "Description 1",
+					Thumbnail:   "thumbnail1.jpg",
+					IsLiked:     true,
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name: "Private favorites, different user - empty result",
+			filters: &usecase.ArtistFilters{
+				Pagination: &usecase.Pagination{
+					Offset: 0,
+					Limit:  10,
+				},
+			},
+			username: "testuser",
+			ctx:      context.WithValue(context.Background(), ctxExtractor.UserContextKey{}, int64(2)),
+			setupMocks: func() {
+				mockUserClient.EXPECT().GetIDByUsername(
+					gomock.Any(),
+					&userProto.Username{Username: "testuser"},
+				).Return(&userProto.UserID{Id: 1}, nil)
+
+				mockUserClient.EXPECT().GetUserPrivacyByID(
+					gomock.Any(),
+					&userProto.UserID{Id: 1},
+				).Return(&userProto.PrivacySettings{
+					IsPublicFavoriteArtists: false,
+				}, nil)
+			},
+			expectedArtists: []*usecase.Artist{},
+			expectedError:   nil,
+		},
+		{
+			name: "Error from GetIDByUsername",
+			filters: &usecase.ArtistFilters{
+				Pagination: &usecase.Pagination{
+					Offset: 0,
+					Limit:  10,
+				},
+			},
+			username: "testuser",
+			ctx:      context.Background(),
+			setupMocks: func() {
+				mockUserClient.EXPECT().GetIDByUsername(
+					gomock.Any(),
+					&userProto.Username{Username: "testuser"},
+				).Return(nil, status.Error(codes.NotFound, "user not found"))
+			},
+			expectedArtists: nil,
+			expectedError:   customErrors.ErrUserNotFound,
+		},
+		{
+			name: "Error from GetUserPrivacyByID",
+			filters: &usecase.ArtistFilters{
+				Pagination: &usecase.Pagination{
+					Offset: 0,
+					Limit:  10,
+				},
+			},
+			username: "testuser",
+			ctx:      context.Background(),
+			setupMocks: func() {
+				mockUserClient.EXPECT().GetIDByUsername(
+					gomock.Any(),
+					&userProto.Username{Username: "testuser"},
+				).Return(&userProto.UserID{Id: 1}, nil)
+
+				mockUserClient.EXPECT().GetUserPrivacyByID(
+					gomock.Any(),
+					&userProto.UserID{Id: 1},
+				).Return(nil, status.Error(codes.Internal, "internal error"))
+			},
+			expectedArtists: nil,
+			expectedError:   errors.New("internal server error: internal error"),
+		},
+		{
+			name: "Error from GetFavoriteArtists",
+			filters: &usecase.ArtistFilters{
+				Pagination: &usecase.Pagination{
+					Offset: 0,
+					Limit:  10,
+				},
+			},
+			username: "testuser",
+			ctx:      context.WithValue(context.Background(), ctxExtractor.UserContextKey{}, int64(1)),
+			setupMocks: func() {
+				mockUserClient.EXPECT().GetIDByUsername(
+					gomock.Any(),
+					&userProto.Username{Username: "testuser"},
+				).Return(&userProto.UserID{Id: 1}, nil)
+
+				mockUserClient.EXPECT().GetUserPrivacyByID(
+					gomock.Any(),
+					&userProto.UserID{Id: 1},
+				).Return(&userProto.PrivacySettings{
+					IsPublicFavoriteArtists: true,
+				}, nil)
+
+				mockArtistClient.EXPECT().GetFavoriteArtists(
+					gomock.Any(),
+					gomock.Any(),
+				).Return(nil, status.Error(codes.Internal, "internal error"))
+			},
+			expectedArtists: nil,
+			expectedError:   errors.New("internal server error: internal error"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setupMocks()
+
+			artists, err := artistUsecase.GetFavoriteArtists(tt.ctx, tt.filters, tt.username)
+
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tt.expectedError.Error(), err.Error())
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedArtists, artists)
+			}
+		})
+	}
+}
+
+func TestSearchArtists(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	artistClient := artistProto.ArtistServiceClient(mockArtistClient)
+	userClient := userProto.UserServiceClient(mockUserClient)
+
+	artistUsecase := NewUsecase(artistClient, userClient)
+
+	tests := []struct {
+		name            string
+		query           string
+		ctx             context.Context
+		setupMocks      func()
+		expectedArtists []*usecase.Artist
+		expectedError   error
+	}{
+		{
+			name:  "Success with authenticated user",
+			query: "test",
+			ctx:   context.WithValue(context.Background(), ctxExtractor.UserContextKey{}, int64(1)),
+			setupMocks: func() {
+				mockArtistClient.EXPECT().SearchArtists(
+					gomock.Any(),
+					&artistProto.Query{
+						Query:  "test",
+						UserId: &artistProto.UserID{Id: 1},
+					},
+				).Return(&artistProto.ArtistList{
+					Artists: []*artistProto.Artist{
+						{
+							Id:          1,
+							Title:       "Test Artist",
+							Description: "Test Description",
+							Thumbnail:   "test-thumbnail.jpg",
+							IsFavorite:  true,
+						},
+					},
+				}, nil)
+			},
+			expectedArtists: []*usecase.Artist{
+				{
+					ID:          1,
+					Title:       "Test Artist",
+					Description: "Test Description",
+					Thumbnail:   "test-thumbnail.jpg",
+					IsLiked:     true,
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name:  "Success with unauthenticated user",
+			query: "test",
+			ctx:   context.Background(),
+			setupMocks: func() {
+				mockArtistClient.EXPECT().SearchArtists(
+					gomock.Any(),
+					&artistProto.Query{
+						Query:  "test",
+						UserId: &artistProto.UserID{Id: -1},
+					},
+				).Return(&artistProto.ArtistList{
+					Artists: []*artistProto.Artist{
+						{
+							Id:          1,
+							Title:       "Test Artist",
+							Description: "Test Description",
+							Thumbnail:   "test-thumbnail.jpg",
+							IsFavorite:  false,
+						},
+					},
+				}, nil)
+			},
+			expectedArtists: []*usecase.Artist{
+				{
+					ID:          1,
+					Title:       "Test Artist",
+					Description: "Test Description",
+					Thumbnail:   "test-thumbnail.jpg",
+					IsLiked:     false,
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name:  "Error from service",
+			query: "test",
+			ctx:   context.Background(),
+			setupMocks: func() {
+				mockArtistClient.EXPECT().SearchArtists(
+					gomock.Any(),
+					&artistProto.Query{
+						Query:  "test",
+						UserId: &artistProto.UserID{Id: -1},
+					},
+				).Return(nil, status.Error(codes.Internal, "internal error"))
+			},
+			expectedArtists: nil,
+			expectedError:   errors.New("internal server error: internal error"),
+		},
+		{
+			name:  "No results",
+			query: "nonexistent",
+			ctx:   context.Background(),
+			setupMocks: func() {
+				mockArtistClient.EXPECT().SearchArtists(
+					gomock.Any(),
+					&artistProto.Query{
+						Query:  "nonexistent",
+						UserId: &artistProto.UserID{Id: -1},
+					},
+				).Return(&artistProto.ArtistList{
+					Artists: []*artistProto.Artist{},
+				}, nil)
+			},
+			expectedArtists: []*usecase.Artist{},
+			expectedError:   nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setupMocks()
+
+			artists, err := artistUsecase.SearchArtists(tt.ctx, tt.query)
+
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tt.expectedError.Error(), err.Error())
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expectedArtists, artists)

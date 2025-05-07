@@ -1,889 +1,665 @@
-package usecase
+package usecase_test
 
 import (
 	"context"
 	"errors"
 	"testing"
 
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/gen/artist"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/gen/playlist"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
+	trackUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/usecase"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-
-	mock_album "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/mocks"
-	mock_artist "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/mocks"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
-	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track"
-	mock_track "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/mocks"
-	mock_trackFile "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/trackFile/mocks"
-	mock_user "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/mocks"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func TestTrackUsecase_GetAllTracks(t *testing.T) {
+func TestGetAllTracks(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockTrackRepo := mock_track.NewMockRepository(ctrl)
-	mockArtistRepo := mock_artist.NewMockRepository(ctrl)
-	mockAlbumRepo := mock_album.NewMockRepository(ctrl)
-	mockTrackFileRepo := mock_trackFile.NewMockRepository(ctrl)
-	mockUserRepo := mock_user.NewMockRepository(ctrl)
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
 
-	usecase := NewUsecase(mockTrackRepo, mockArtistRepo, mockAlbumRepo, mockTrackFileRepo, mockUserRepo)
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
 	ctx := context.Background()
+	pagination := &usecase.Pagination{
+		Limit:  10,
+		Offset: 0,
+	}
+	filters := &usecase.TrackFilters{
+		Pagination: pagination,
+	}
 
-	tests := []struct {
-		name           string
-		filters        *usecaseModel.TrackFilters
-		mockSetup      func()
-		expectedTracks []*usecaseModel.Track
-		expectedError  error
-	}{
-		{
-			name: "Success",
-			filters: &usecaseModel.TrackFilters{
-				Pagination: &usecaseModel.Pagination{
-					Limit:  10,
-					Offset: 0,
-				},
+	trackList := &track.TrackList{
+		Tracks: []*track.Track{
+			{
+				Id:      1,
+				Title:   "Test Track",
+				AlbumId: 1,
 			},
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetAllTracks(ctx, gomock.Any()).
-					Return([]*repository.Track{
-						{
-							ID:      1,
-							Title:   "Track 1",
-							AlbumID: 10,
-						},
-						{
-							ID:      2,
-							Title:   "Track 2",
-							AlbumID: 20,
-						},
-					}, nil)
-
-				mockArtistRepo.EXPECT().
-					GetArtistsByTrackIDs(ctx, []int64{1, 2}).
-					Return(map[int64][]*repository.ArtistWithRole{
-						1: {
-							{
-								ID:    100,
-								Title: "Artist 100",
-								Role:  "main",
-							},
-						},
-						2: {
-							{
-								ID:    200,
-								Title: "Artist 200",
-								Role:  "main",
-							},
-						},
-					}, nil)
-
-				mockAlbumRepo.EXPECT().
-					GetAlbumTitleByIDs(ctx, []int64{10, 20}).
-					Return(map[int64]string{
-						10: "Album 10",
-						20: "Album 20",
-					}, nil)
-			},
-			expectedTracks: []*usecaseModel.Track{
-				{
-					ID:      1,
-					Title:   "Track 1",
-					AlbumID: 10,
-					Album:   "Album 10",
-					Artists: []*usecaseModel.TrackArtist{
-						{
-							ID:    100,
-							Title: "Artist 100",
-							Role:  "main",
-						},
-					},
-				},
-				{
-					ID:      2,
-					Title:   "Track 2",
-					AlbumID: 20,
-					Album:   "Album 20",
-					Artists: []*usecaseModel.TrackArtist{
-						{
-							ID:    200,
-							Title: "Artist 200",
-							Role:  "main",
-						},
-					},
-				},
-			},
-			expectedError: nil,
-		},
-		{
-			name: "Error_GetAllTracks",
-			filters: &usecaseModel.TrackFilters{
-				Pagination: &usecaseModel.Pagination{
-					Limit:  10,
-					Offset: 0,
-				},
-			},
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetAllTracks(ctx, gomock.Any()).
-					Return(nil, errors.New("database error"))
-			},
-			expectedTracks: nil,
-			expectedError:  errors.New("database error"),
-		},
-		{
-			name: "Error_GetArtistsByTrackIDs",
-			filters: &usecaseModel.TrackFilters{
-				Pagination: &usecaseModel.Pagination{
-					Limit:  10,
-					Offset: 0,
-				},
-			},
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetAllTracks(ctx, gomock.Any()).
-					Return([]*repository.Track{
-						{
-							ID:      1,
-							Title:   "Track 1",
-							AlbumID: 10,
-						},
-					}, nil)
-
-				mockArtistRepo.EXPECT().
-					GetArtistsByTrackIDs(ctx, []int64{1}).
-					Return(nil, errors.New("artist error"))
-			},
-			expectedTracks: nil,
-			expectedError:  errors.New("artist error"),
-		},
-		{
-			name: "Error_GetAlbumTitleByIDs",
-			filters: &usecaseModel.TrackFilters{
-				Pagination: &usecaseModel.Pagination{
-					Limit:  10,
-					Offset: 0,
-				},
-			},
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetAllTracks(ctx, gomock.Any()).
-					Return([]*repository.Track{
-						{
-							ID:      1,
-							Title:   "Track 1",
-							AlbumID: 10,
-						},
-					}, nil)
-
-				mockArtistRepo.EXPECT().
-					GetArtistsByTrackIDs(ctx, []int64{1}).
-					Return(map[int64][]*repository.ArtistWithRole{
-						1: {
-							{
-								ID:    100,
-								Title: "Artist 100",
-								Role:  "main",
-							},
-						},
-					}, nil)
-
-				mockAlbumRepo.EXPECT().
-					GetAlbumTitleByIDs(ctx, []int64{10}).
-					Return(nil, errors.New("album error"))
-			},
-			expectedTracks: nil,
-			expectedError:  errors.New("album error"),
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.mockSetup()
-
-			tracks, err := usecase.GetAllTracks(ctx, tt.filters)
-
-			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.Equal(t, tt.expectedError.Error(), err.Error())
-				assert.Nil(t, tracks)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedTracks, tracks)
-			}
-		})
+	albumTitleMap := &album.AlbumTitleMap{
+		Titles: map[int64]*album.AlbumTitle{
+			1: {Title: "Test Album"},
+		},
 	}
+
+	artistsMap := &artist.ArtistWithRoleMap{
+		Artists: map[int64]*artist.ArtistWithRoleList{
+			1: {
+				Artists: []*artist.ArtistWithRole{
+					{
+						Id:   1,
+						Role: "singer",
+					},
+				},
+			},
+		},
+	}
+
+	mockTrackClient.EXPECT().GetAllTracks(gomock.Any(), gomock.Any()).Return(trackList, nil)
+	mockAlbumClient.EXPECT().GetAlbumTitleByIDs(gomock.Any(), gomock.Any()).Return(albumTitleMap, nil)
+	mockArtistClient.EXPECT().GetArtistsByTrackIDs(gomock.Any(), gomock.Any()).Return(artistsMap, nil)
+
+	tracks, err := trackUC.GetAllTracks(ctx, filters)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(tracks))
+	assert.Equal(t, int64(1), tracks[0].ID)
+	assert.Equal(t, "Test Track", tracks[0].Title)
 }
 
-func TestTrackUsecase_GetTrackByID(t *testing.T) {
+func TestGetAllTracksError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockTrackRepo := mock_track.NewMockRepository(ctrl)
-	mockArtistRepo := mock_artist.NewMockRepository(ctrl)
-	mockAlbumRepo := mock_album.NewMockRepository(ctrl)
-	mockTrackFileRepo := mock_trackFile.NewMockRepository(ctrl)
-	mockUserRepo := mock_user.NewMockRepository(ctrl)
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
 
-	usecase := NewUsecase(mockTrackRepo, mockArtistRepo, mockAlbumRepo, mockTrackFileRepo, mockUserRepo)
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
 	ctx := context.Background()
-
-	tests := []struct {
-		name          string
-		trackID       int64
-		mockSetup     func()
-		expectedTrack *usecaseModel.TrackDetailed
-		expectedError error
-	}{
-		{
-			name:    "Success",
-			trackID: 1,
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetTrackByID(ctx, int64(1)).
-					Return(&repository.TrackWithFileKey{
-						Track: repository.Track{
-							ID:       1,
-							Title:    "Test Track",
-							Duration: 200,
-							AlbumID:  10,
-						},
-						FileKey: "test-file-key",
-					}, nil)
-
-				mockArtistRepo.EXPECT().
-					GetArtistsByTrackID(ctx, int64(1)).
-					Return([]*repository.ArtistWithRole{
-						{
-							ID:    100,
-							Title: "Test Artist",
-							Role:  "main",
-						},
-					}, nil)
-
-				mockAlbumRepo.EXPECT().
-					GetAlbumTitleByID(ctx, int64(10)).
-					Return("Test Album", nil)
-
-				mockTrackFileRepo.EXPECT().
-					GetPresignedURL("test-file-key").
-					Return("https://example.com/track.mp3", nil)
-			},
-			expectedTrack: &usecaseModel.TrackDetailed{
-				Track: usecaseModel.Track{
-					ID:       1,
-					Title:    "Test Track",
-					Duration: 200,
-					AlbumID:  10,
-					Album:    "Test Album",
-					Artists: []*usecaseModel.TrackArtist{
-						{
-							ID:    100,
-							Title: "Test Artist",
-							Role:  "main",
-						},
-					},
-				},
-				FileUrl: "https://example.com/track.mp3",
-			},
-			expectedError: nil,
-		},
-		{
-			name:    "Error_GetTrackByID",
-			trackID: 2,
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetTrackByID(ctx, int64(2)).
-					Return(nil, errors.New("database error"))
-			},
-			expectedTrack: nil,
-			expectedError: errors.New("database error"),
-		},
-		{
-			name:    "Error_GetArtistsByTrackID",
-			trackID: 3,
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetTrackByID(ctx, int64(3)).
-					Return(&repository.TrackWithFileKey{
-						Track: repository.Track{
-							ID:       3,
-							Title:    "Test Track",
-							Duration: 200,
-							AlbumID:  10,
-						},
-						FileKey: "test-file-key",
-					}, nil)
-
-				mockArtistRepo.EXPECT().
-					GetArtistsByTrackID(ctx, int64(3)).
-					Return(nil, errors.New("artist error"))
-			},
-			expectedTrack: nil,
-			expectedError: errors.New("artist error"),
-		},
-		{
-			name:    "Error_GetAlbumTitleByID",
-			trackID: 4,
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetTrackByID(ctx, int64(4)).
-					Return(&repository.TrackWithFileKey{
-						Track: repository.Track{
-							ID:       4,
-							Title:    "Test Track",
-							Duration: 200,
-							AlbumID:  10,
-						},
-						FileKey: "test-file-key",
-					}, nil)
-
-				mockArtistRepo.EXPECT().
-					GetArtistsByTrackID(ctx, int64(4)).
-					Return([]*repository.ArtistWithRole{
-						{
-							ID:    100,
-							Title: "Test Artist",
-							Role:  "main",
-						},
-					}, nil)
-
-				mockAlbumRepo.EXPECT().
-					GetAlbumTitleByID(ctx, int64(10)).
-					Return("", errors.New("album error"))
-			},
-			expectedTrack: nil,
-			expectedError: errors.New("album error"),
-		},
-		{
-			name:    "Error_GetPresignedURL",
-			trackID: 5,
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetTrackByID(ctx, int64(5)).
-					Return(&repository.TrackWithFileKey{
-						Track: repository.Track{
-							ID:       5,
-							Title:    "Test Track",
-							Duration: 200,
-							AlbumID:  10,
-						},
-						FileKey: "test-file-key",
-					}, nil)
-
-				mockArtistRepo.EXPECT().
-					GetArtistsByTrackID(ctx, int64(5)).
-					Return([]*repository.ArtistWithRole{
-						{
-							ID:    100,
-							Title: "Test Artist",
-							Role:  "main",
-						},
-					}, nil)
-
-				mockAlbumRepo.EXPECT().
-					GetAlbumTitleByID(ctx, int64(10)).
-					Return("Test Album", nil)
-
-				mockTrackFileRepo.EXPECT().
-					GetPresignedURL("test-file-key").
-					Return("", errors.New("file error"))
-			},
-			expectedTrack: nil,
-			expectedError: errors.New("file error"),
-		},
+	pagination := &usecase.Pagination{
+		Limit:  10,
+		Offset: 0,
+	}
+	filters := &usecase.TrackFilters{
+		Pagination: pagination,
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.mockSetup()
+	mockTrackClient.EXPECT().GetAllTracks(gomock.Any(), gomock.Any()).Return(nil, errors.New("test error"))
 
-			track, err := usecase.GetTrackByID(ctx, tt.trackID)
+	tracks, err := trackUC.GetAllTracks(ctx, filters)
 
-			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.Equal(t, tt.expectedError.Error(), err.Error())
-				assert.Nil(t, track)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedTrack, track)
-			}
-		})
-	}
+	assert.Error(t, err)
+	assert.Nil(t, tracks)
 }
 
-func TestTrackUsecase_GetTracksByArtistID(t *testing.T) {
+func TestGetTrackByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockTrackRepo := mock_track.NewMockRepository(ctrl)
-	mockArtistRepo := mock_artist.NewMockRepository(ctrl)
-	mockAlbumRepo := mock_album.NewMockRepository(ctrl)
-	mockTrackFileRepo := mock_trackFile.NewMockRepository(ctrl)
-	mockUserRepo := mock_user.NewMockRepository(ctrl)
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
 
-	usecase := NewUsecase(mockTrackRepo, mockArtistRepo, mockAlbumRepo, mockTrackFileRepo, mockUserRepo)
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
 	ctx := context.Background()
+	trackID := int64(1)
 
-	tests := []struct {
-		name           string
-		artistID       int64
-		mockSetup      func()
-		expectedTracks []*usecaseModel.Track
-		expectedError  error
-	}{
-		{
-			name:     "Success",
-			artistID: 100,
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetTracksByArtistID(ctx, int64(100)).
-					Return([]*repository.Track{
-						{
-							ID:      1,
-							Title:   "Track 1",
-							AlbumID: 10,
-						},
-						{
-							ID:      2,
-							Title:   "Track 2",
-							AlbumID: 20,
-						},
-					}, nil)
-
-				mockArtistRepo.EXPECT().
-					GetArtistsByTrackIDs(ctx, []int64{1, 2}).
-					Return(map[int64][]*repository.ArtistWithRole{
-						1: {
-							{
-								ID:    100,
-								Title: "Artist 100",
-								Role:  "main",
-							},
-						},
-						2: {
-							{
-								ID:    100,
-								Title: "Artist 100",
-								Role:  "main",
-							},
-							{
-								ID:    200,
-								Title: "Artist 200",
-								Role:  "featured",
-							},
-						},
-					}, nil)
-
-				mockAlbumRepo.EXPECT().
-					GetAlbumTitleByIDs(ctx, []int64{10, 20}).
-					Return(map[int64]string{
-						10: "Album 10",
-						20: "Album 20",
-					}, nil)
-			},
-			expectedTracks: []*usecaseModel.Track{
-				{
-					ID:      1,
-					Title:   "Track 1",
-					AlbumID: 10,
-					Album:   "Album 10",
-					Artists: []*usecaseModel.TrackArtist{
-						{
-							ID:    100,
-							Title: "Artist 100",
-							Role:  "main",
-						},
-					},
-				},
-				{
-					ID:      2,
-					Title:   "Track 2",
-					AlbumID: 20,
-					Album:   "Album 20",
-					Artists: []*usecaseModel.TrackArtist{
-						{
-							ID:    100,
-							Title: "Artist 100",
-							Role:  "main",
-						},
-						{
-							ID:    200,
-							Title: "Artist 200",
-							Role:  "featured",
-						},
-					},
-				},
-			},
-			expectedError: nil,
+	trackDetailed := &track.TrackDetailed{
+		Track: &track.Track{
+			Id:      1,
+			Title:   "Test Track",
+			AlbumId: 1,
 		},
-		{
-			name:     "Error_GetTracksByArtistID",
-			artistID: 101,
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetTracksByArtistID(ctx, int64(101)).
-					Return(nil, errors.New("database error"))
+		FileUrl: "test_url",
+	}
+
+	artistList := &artist.ArtistWithRoleList{
+		Artists: []*artist.ArtistWithRole{
+			{
+				Id:   1,
+				Role: "singer",
 			},
-			expectedTracks: nil,
-			expectedError:  errors.New("database error"),
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.mockSetup()
-
-			tracks, err := usecase.GetTracksByArtistID(ctx, tt.artistID)
-
-			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.Equal(t, tt.expectedError.Error(), err.Error())
-				assert.Nil(t, tracks)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedTracks, tracks)
-			}
-		})
+	albumTitle := &album.AlbumTitle{
+		Title: "Test Album",
 	}
+
+	mockTrackClient.EXPECT().GetTrackByID(gomock.Any(), gomock.Any()).Return(trackDetailed, nil)
+	mockArtistClient.EXPECT().GetArtistsByTrackID(gomock.Any(), gomock.Any()).Return(artistList, nil)
+	mockAlbumClient.EXPECT().GetAlbumTitleByID(gomock.Any(), gomock.Any()).Return(albumTitle, nil)
+
+	track, err := trackUC.GetTrackByID(ctx, trackID)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, track)
+	assert.Equal(t, int64(1), track.ID)
+	assert.Equal(t, "Test Track", track.Title)
+	assert.Equal(t, "test_url", track.FileUrl)
 }
 
-func TestTrackUsecase_CreateStream(t *testing.T) {
+func TestLikeTrack(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockTrackRepo := mock_track.NewMockRepository(ctrl)
-	mockArtistRepo := mock_artist.NewMockRepository(ctrl)
-	mockAlbumRepo := mock_album.NewMockRepository(ctrl)
-	mockTrackFileRepo := mock_trackFile.NewMockRepository(ctrl)
-	mockUserRepo := mock_user.NewMockRepository(ctrl)
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
 
-	usecase := NewUsecase(mockTrackRepo, mockArtistRepo, mockAlbumRepo, mockTrackFileRepo, mockUserRepo)
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
 	ctx := context.Background()
-
-	tests := []struct {
-		name          string
-		stream        *usecaseModel.TrackStreamCreateData
-		mockSetup     func()
-		expectedID    int64
-		expectedError error
-	}{
-		{
-			name: "Success",
-			stream: &usecaseModel.TrackStreamCreateData{
-				TrackID: 1,
-				UserID:  100,
-			},
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					CreateStream(ctx, gomock.Any()).
-					Return(int64(1), nil)
-			},
-			expectedID:    1,
-			expectedError: nil,
-		},
-		{
-			name: "Error",
-			stream: &usecaseModel.TrackStreamCreateData{
-				TrackID: 2,
-				UserID:  200,
-			},
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					CreateStream(ctx, gomock.Any()).
-					Return(int64(0), errors.New("database error"))
-			},
-			expectedID:    0,
-			expectedError: errors.New("database error"),
-		},
+	likeRequest := &usecase.TrackLikeRequest{
+		TrackID: 1,
+		UserID:  1,
+		IsLike:  true,
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.mockSetup()
+	mockTrackClient.EXPECT().LikeTrack(gomock.Any(), gomock.Any()).Return(&emptypb.Empty{}, nil)
 
-			id, err := usecase.CreateStream(ctx, tt.stream)
+	err := trackUC.LikeTrack(ctx, likeRequest)
 
-			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.Equal(t, tt.expectedError.Error(), err.Error())
-				assert.Equal(t, tt.expectedID, id)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedID, id)
-			}
-		})
-	}
+	assert.NoError(t, err)
 }
 
-func TestTrackUsecase_UpdateStreamDuration(t *testing.T) {
+func TestCreateStream(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockTrackRepo := mock_track.NewMockRepository(ctrl)
-	mockArtistRepo := mock_artist.NewMockRepository(ctrl)
-	mockAlbumRepo := mock_album.NewMockRepository(ctrl)
-	mockTrackFileRepo := mock_trackFile.NewMockRepository(ctrl)
-	mockUserRepo := mock_user.NewMockRepository(ctrl)
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
 
-	usecase := NewUsecase(mockTrackRepo, mockArtistRepo, mockAlbumRepo, mockTrackFileRepo, mockUserRepo)
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
 	ctx := context.Background()
+	stream := &usecase.TrackStreamCreateData{
+		TrackID: 1,
+		UserID:  1,
+	}
 
-	tests := []struct {
-		name          string
-		streamUpdate  *usecaseModel.TrackStreamUpdateData
-		mockSetup     func()
-		expectedError error
-	}{
-		{
-			name: "Success",
-			streamUpdate: &usecaseModel.TrackStreamUpdateData{
-				StreamID: 1,
-				UserID:   100,
-				Duration: 120,
+	albumID := &track.AlbumID{Id: 1}
+	streamID := &track.StreamID{Id: 1}
+	artists := &artist.ArtistWithRoleList{
+		Artists: []*artist.ArtistWithRole{
+			{
+				Id:   1,
+				Role: "singer",
 			},
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetStreamByID(ctx, int64(1)).
-					Return(&repository.TrackStream{
-						ID:     1,
-						UserID: 100,
-					}, nil)
-
-				mockTrackRepo.EXPECT().
-					UpdateStreamDuration(ctx, gomock.Any()).
-					Return(nil)
-			},
-			expectedError: nil,
-		},
-		{
-			name: "Error_GetStreamByID",
-			streamUpdate: &usecaseModel.TrackStreamUpdateData{
-				StreamID: 2,
-				UserID:   200,
-				Duration: 120,
-			},
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetStreamByID(ctx, int64(2)).
-					Return(nil, errors.New("database error"))
-			},
-			expectedError: errors.New("database error"),
-		},
-		{
-			name: "Error_PermissionDenied",
-			streamUpdate: &usecaseModel.TrackStreamUpdateData{
-				StreamID: 3,
-				UserID:   300,
-				Duration: 120,
-			},
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetStreamByID(ctx, int64(3)).
-					Return(&repository.TrackStream{
-						ID:     3,
-						UserID: 301,
-					}, nil)
-			},
-			expectedError: track.ErrStreamPermissionDenied,
-		},
-		{
-			name: "Error_UpdateStreamDuration",
-			streamUpdate: &usecaseModel.TrackStreamUpdateData{
-				StreamID: 4,
-				UserID:   400,
-				Duration: 120,
-			},
-			mockSetup: func() {
-				mockTrackRepo.EXPECT().
-					GetStreamByID(ctx, int64(4)).
-					Return(&repository.TrackStream{
-						ID:     4,
-						UserID: 400,
-					}, nil)
-
-				mockTrackRepo.EXPECT().
-					UpdateStreamDuration(ctx, gomock.Any()).
-					Return(errors.New("update error"))
-			},
-			expectedError: errors.New("update error"),
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.mockSetup()
+	mockTrackClient.EXPECT().CreateStream(gomock.Any(), gomock.Any()).Return(streamID, nil)
+	mockTrackClient.EXPECT().GetAlbumIDByTrackID(gomock.Any(), gomock.Any()).Return(albumID, nil)
+	mockArtistClient.EXPECT().GetArtistsByTrackID(gomock.Any(), gomock.Any()).Return(artists, nil)
+	mockArtistClient.EXPECT().CreateStreamsByArtistIDs(gomock.Any(), gomock.Any()).Return(&emptypb.Empty{}, nil)
+	mockAlbumClient.EXPECT().CreateStream(gomock.Any(), gomock.Any()).Return(&emptypb.Empty{}, nil)
 
-			err := usecase.UpdateStreamDuration(ctx, tt.streamUpdate)
+	id, err := trackUC.CreateStream(ctx, stream)
 
-			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.Equal(t, tt.expectedError.Error(), err.Error())
-			} else {
-				assert.NoError(t, err)
-			}
-		})
-	}
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), id)
 }
 
-func TestTrackUsecase_GetLastListenedTracks(t *testing.T) {
+func TestUpdateStreamDuration(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockTrackRepo := mock_track.NewMockRepository(ctrl)
-	mockArtistRepo := mock_artist.NewMockRepository(ctrl)
-	mockAlbumRepo := mock_album.NewMockRepository(ctrl)
-	mockTrackFileRepo := mock_trackFile.NewMockRepository(ctrl)
-	mockUserRepo := mock_user.NewMockRepository(ctrl)
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
 
-	usecase := NewUsecase(mockTrackRepo, mockArtistRepo, mockAlbumRepo, mockTrackFileRepo, mockUserRepo)
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
 	ctx := context.Background()
+	stream := &usecase.TrackStreamUpdateData{
+		StreamID: 1,
+		Duration: 120,
+	}
 
-	tests := []struct {
-		name           string
-		username       string
-		filters        *usecaseModel.TrackFilters
-		mockSetup      func()
-		expectedTracks []*usecaseModel.Track
-		expectedError  error
-	}{
-		{
-			name:     "Success",
-			username: "testuser",
-			filters: &usecaseModel.TrackFilters{
-				Pagination: &usecaseModel.Pagination{
-					Limit:  10,
-					Offset: 0,
-				},
+	mockTrackClient.EXPECT().UpdateStreamDuration(gomock.Any(), gomock.Any()).Return(&emptypb.Empty{}, nil)
+
+	err := trackUC.UpdateStreamDuration(ctx, stream)
+
+	assert.NoError(t, err)
+}
+
+func TestGetPlaylistTracks(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
+	ctx := context.Background()
+	playlistID := int64(1)
+
+	playlistTrackIDs := &playlist.GetPlaylistTrackIdsResponse{
+		TrackIds: []int64{1},
+	}
+
+	trackList := &track.TrackList{
+		Tracks: []*track.Track{
+			{
+				Id:      1,
+				Title:   "Test Track",
+				AlbumId: 1,
 			},
-			mockSetup: func() {
-				mockUserRepo.EXPECT().
-					GetIDByUsername(ctx, "testuser").
-					Return(int64(100), nil)
+		},
+	}
 
-				mockTrackRepo.EXPECT().
-					GetStreamsByUserID(ctx, int64(100), gomock.Any()).
-					Return([]*repository.TrackStream{
-						{
-							ID:      1,
-							TrackID: 10,
-							UserID:  100,
-						},
-						{
-							ID:      2,
-							TrackID: 20,
-							UserID:  100,
-						},
-					}, nil)
+	albumTitleMap := &album.AlbumTitleMap{
+		Titles: map[int64]*album.AlbumTitle{
+			1: {Title: "Test Album"},
+		},
+	}
 
-				mockTrackRepo.EXPECT().
-					GetTracksByIDs(ctx, []int64{10, 20}).
-					Return(map[int64]*repository.Track{
-						10: {
-							ID:      10,
-							Title:   "Track 10",
-							AlbumID: 100,
-						},
-						20: {
-							ID:      20,
-							Title:   "Track 20",
-							AlbumID: 200,
-						},
-					}, nil)
-
-				mockArtistRepo.EXPECT().
-					GetArtistsByTrackIDs(ctx, []int64{10, 20}).
-					Return(map[int64][]*repository.ArtistWithRole{
-						10: {
-							{
-								ID:    1000,
-								Title: "Artist 1000",
-								Role:  "main",
-							},
-						},
-						20: {
-							{
-								ID:    2000,
-								Title: "Artist 2000",
-								Role:  "main",
-							},
-						},
-					}, nil)
-
-				mockAlbumRepo.EXPECT().
-					GetAlbumTitleByIDs(ctx, []int64{100, 200}).
-					Return(map[int64]string{
-						100: "Album 100",
-						200: "Album 200",
-					}, nil)
-
-			},
-			expectedTracks: []*usecaseModel.Track{
-				{
-					ID:      10,
-					Title:   "Track 10",
-					AlbumID: 100,
-					Album:   "Album 100",
-					Artists: []*usecaseModel.TrackArtist{
-						{
-							ID:    1000,
-							Title: "Artist 1000",
-							Role:  "main",
-						},
-					},
-				},
-				{
-					ID:      20,
-					Title:   "Track 20",
-					AlbumID: 200,
-					Album:   "Album 200",
-					Artists: []*usecaseModel.TrackArtist{
-						{
-							ID:    2000,
-							Title: "Artist 2000",
-							Role:  "main",
-						},
+	artistsMap := &artist.ArtistWithRoleMap{
+		Artists: map[int64]*artist.ArtistWithRoleList{
+			1: {
+				Artists: []*artist.ArtistWithRole{
+					{
+						Id:   1,
+						Role: "singer",
 					},
 				},
 			},
-			expectedError: nil,
 		},
-		{
-			name:     "Error_GetIDByUsername",
-			username: "nonexistent",
-			filters: &usecaseModel.TrackFilters{
-				Pagination: &usecaseModel.Pagination{
-					Limit:  10,
-					Offset: 0,
+	}
+
+	mockPlaylistClient.EXPECT().GetPlaylistTrackIds(gomock.Any(), gomock.Any()).Return(playlistTrackIDs, nil)
+	mockTrackClient.EXPECT().GetTracksByIDs(gomock.Any(), gomock.Any()).Return(trackList, nil)
+	mockAlbumClient.EXPECT().GetAlbumTitleByIDs(gomock.Any(), gomock.Any()).Return(albumTitleMap, nil)
+	mockArtistClient.EXPECT().GetArtistsByTrackIDs(gomock.Any(), gomock.Any()).Return(artistsMap, nil)
+
+	tracks, err := trackUC.GetPlaylistTracks(ctx, playlistID)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(tracks))
+}
+
+func TestSearchTracks(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
+	ctx := context.Background()
+	query := "test"
+
+	trackList := &track.TrackList{
+		Tracks: []*track.Track{
+			{
+				Id:      1,
+				Title:   "Test Track",
+				AlbumId: 1,
+			},
+		},
+	}
+
+	albumTitleMap := &album.AlbumTitleMap{
+		Titles: map[int64]*album.AlbumTitle{
+			1: {Title: "Test Album"},
+		},
+	}
+
+	artistsMap := &artist.ArtistWithRoleMap{
+		Artists: map[int64]*artist.ArtistWithRoleList{
+			1: {
+				Artists: []*artist.ArtistWithRole{
+					{
+						Id:   1,
+						Role: "singer",
+					},
 				},
 			},
-			mockSetup: func() {
-				mockUserRepo.EXPECT().
-					GetIDByUsername(ctx, "nonexistent").
-					Return(int64(0), errors.New("user not found"))
-			},
-			expectedTracks: nil,
-			expectedError:  errors.New("user not found"),
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.mockSetup()
+	mockTrackClient.EXPECT().SearchTracks(gomock.Any(), gomock.Any()).Return(trackList, nil)
+	mockAlbumClient.EXPECT().GetAlbumTitleByIDs(gomock.Any(), gomock.Any()).Return(albumTitleMap, nil)
+	mockArtistClient.EXPECT().GetArtistsByTrackIDs(gomock.Any(), gomock.Any()).Return(artistsMap, nil)
 
-			tracks, err := usecase.GetLastListenedTracks(ctx, tt.username, tt.filters)
+	tracks, err := trackUC.SearchTracks(ctx, query)
 
-			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.Equal(t, tt.expectedError.Error(), err.Error())
-				assert.Nil(t, tracks)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedTracks, tracks)
-			}
-		})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(tracks))
+}
+
+func TestGetTracksByArtistID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
+	ctx := context.Background()
+	artistID := int64(1)
+	pagination := &usecase.Pagination{
+		Limit:  10,
+		Offset: 0,
 	}
+	filters := &usecase.TrackFilters{
+		Pagination: pagination,
+	}
+
+	artistTrackIDs := &artist.TrackIDList{
+		Ids: []*artist.TrackID{
+			{Id: 1},
+		},
+	}
+
+	trackList := &track.TrackList{
+		Tracks: []*track.Track{
+			{
+				Id:      1,
+				Title:   "Test Track",
+				AlbumId: 1,
+			},
+		},
+	}
+
+	albumTitleMap := &album.AlbumTitleMap{
+		Titles: map[int64]*album.AlbumTitle{
+			1: {Title: "Test Album"},
+		},
+	}
+
+	artistsMap := &artist.ArtistWithRoleMap{
+		Artists: map[int64]*artist.ArtistWithRoleList{
+			1: {
+				Artists: []*artist.ArtistWithRole{
+					{
+						Id:   1,
+						Role: "singer",
+					},
+				},
+			},
+		},
+	}
+
+	mockArtistClient.EXPECT().GetTrackIDsByArtistID(gomock.Any(), gomock.Any()).Return(artistTrackIDs, nil)
+	mockTrackClient.EXPECT().GetTracksByIDsFiltered(gomock.Any(), gomock.Any()).Return(trackList, nil)
+	mockAlbumClient.EXPECT().GetAlbumTitleByIDs(gomock.Any(), gomock.Any()).Return(albumTitleMap, nil)
+	mockArtistClient.EXPECT().GetArtistsByTrackIDs(gomock.Any(), gomock.Any()).Return(artistsMap, nil)
+
+	tracks, err := trackUC.GetTracksByArtistID(ctx, artistID, filters)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(tracks))
+	assert.Equal(t, int64(1), tracks[0].ID)
+	assert.Equal(t, "Test Track", tracks[0].Title)
+}
+
+func TestGetLastListenedTracks(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
+	ctx := context.Background()
+	userID := int64(1)
+	pagination := &usecase.Pagination{
+		Limit:  10,
+		Offset: 0,
+	}
+	filters := &usecase.TrackFilters{
+		Pagination: pagination,
+	}
+
+	trackList := &track.TrackList{
+		Tracks: []*track.Track{
+			{
+				Id:      1,
+				Title:   "Test Track",
+				AlbumId: 1,
+			},
+		},
+	}
+
+	albumTitleMap := &album.AlbumTitleMap{
+		Titles: map[int64]*album.AlbumTitle{
+			1: {Title: "Test Album"},
+		},
+	}
+
+	artistsMap := &artist.ArtistWithRoleMap{
+		Artists: map[int64]*artist.ArtistWithRoleList{
+			1: {
+				Artists: []*artist.ArtistWithRole{
+					{
+						Id:   1,
+						Role: "singer",
+					},
+				},
+			},
+		},
+	}
+
+	mockTrackClient.EXPECT().GetLastListenedTracks(gomock.Any(), gomock.Any()).Return(trackList, nil)
+	mockAlbumClient.EXPECT().GetAlbumTitleByIDs(gomock.Any(), gomock.Any()).Return(albumTitleMap, nil)
+	mockArtistClient.EXPECT().GetArtistsByTrackIDs(gomock.Any(), gomock.Any()).Return(artistsMap, nil)
+
+	tracks, err := trackUC.GetLastListenedTracks(ctx, userID, filters)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(tracks))
+	assert.Equal(t, int64(1), tracks[0].ID)
+	assert.Equal(t, "Test Track", tracks[0].Title)
+}
+
+func TestGetTracksByAlbumID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
+	ctx := context.Background()
+	albumID := int64(1)
+
+	trackList := &track.TrackList{
+		Tracks: []*track.Track{
+			{
+				Id:      1,
+				Title:   "Test Track",
+				AlbumId: 1,
+			},
+		},
+	}
+
+	albumTitle := &album.AlbumTitle{
+		Title: "Test Album",
+	}
+
+	artistsMap := &artist.ArtistWithRoleMap{
+		Artists: map[int64]*artist.ArtistWithRoleList{
+			1: {
+				Artists: []*artist.ArtistWithRole{
+					{
+						Id:   1,
+						Role: "singer",
+					},
+				},
+			},
+		},
+	}
+
+	mockTrackClient.EXPECT().GetTracksByAlbumID(gomock.Any(), gomock.Any()).Return(trackList, nil)
+	mockAlbumClient.EXPECT().GetAlbumTitleByID(gomock.Any(), gomock.Any()).Return(albumTitle, nil)
+	mockArtistClient.EXPECT().GetArtistsByTrackIDs(gomock.Any(), gomock.Any()).Return(artistsMap, nil)
+
+	tracks, err := trackUC.GetTracksByAlbumID(ctx, albumID)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(tracks))
+	assert.Equal(t, int64(1), tracks[0].ID)
+	assert.Equal(t, "Test Track", tracks[0].Title)
+}
+
+func TestGetFavoriteTracks(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
+	ctx := context.Background()
+	username := "testuser"
+	pagination := &usecase.Pagination{
+		Limit:  10,
+		Offset: 0,
+	}
+	filters := &usecase.TrackFilters{
+		Pagination: pagination,
+	}
+
+	userID := &user.UserID{
+		Id: 1,
+	}
+
+	userPrivacy := &user.PrivacySettings{
+		IsPublicFavoriteTracks: true,
+	}
+
+	trackList := &track.TrackList{
+		Tracks: []*track.Track{
+			{
+				Id:      1,
+				Title:   "Test Track",
+				AlbumId: 1,
+			},
+		},
+	}
+
+	albumTitleMap := &album.AlbumTitleMap{
+		Titles: map[int64]*album.AlbumTitle{
+			1: {Title: "Test Album"},
+		},
+	}
+
+	artistsMap := &artist.ArtistWithRoleMap{
+		Artists: map[int64]*artist.ArtistWithRoleList{
+			1: {
+				Artists: []*artist.ArtistWithRole{
+					{
+						Id:   1,
+						Role: "singer",
+					},
+				},
+			},
+		},
+	}
+
+	mockUserClient.EXPECT().GetIDByUsername(gomock.Any(), gomock.Any()).Return(userID, nil)
+	mockUserClient.EXPECT().GetUserPrivacyByID(gomock.Any(), gomock.Any()).Return(userPrivacy, nil)
+	mockTrackClient.EXPECT().GetFavoriteTracks(gomock.Any(), gomock.Any()).Return(trackList, nil)
+	mockAlbumClient.EXPECT().GetAlbumTitleByIDs(gomock.Any(), gomock.Any()).Return(albumTitleMap, nil)
+	mockArtistClient.EXPECT().GetArtistsByTrackIDs(gomock.Any(), gomock.Any()).Return(artistsMap, nil)
+
+	tracks, err := trackUC.GetFavoriteTracks(ctx, filters, username)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(tracks))
+	assert.Equal(t, int64(1), tracks[0].ID)
+	assert.Equal(t, "Test Track", tracks[0].Title)
+}
+
+// Test for the privacy restriction case
+func TestGetFavoriteTracksPrivate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
+	ctx := context.Background()
+	username := "testuser"
+	pagination := &usecase.Pagination{
+		Limit:  10,
+		Offset: 0,
+	}
+	filters := &usecase.TrackFilters{
+		Pagination: pagination,
+	}
+
+	userID := &user.UserID{
+		Id: 1,
+	}
+
+	userPrivacy := &user.PrivacySettings{
+		IsPublicFavoriteTracks: false,
+	}
+
+	mockUserClient.EXPECT().GetIDByUsername(gomock.Any(), gomock.Any()).Return(userID, nil)
+	mockUserClient.EXPECT().GetUserPrivacyByID(gomock.Any(), gomock.Any()).Return(userPrivacy, nil)
+
+	tracks, err := trackUC.GetFavoriteTracks(ctx, filters, username)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(tracks))
 }

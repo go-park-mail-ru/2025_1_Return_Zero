@@ -19,9 +19,7 @@ migrate_down:
 	tern migrate -c db/migrations/tern.conf --migrations db/migrations -d 0
 
 populate:
-	make migrate_down
 	make migrate_up
-	go run db/populate/main.go -file db/populate/data.sql
 
 docker-up:
 	cd deploy/ && make deploy
@@ -31,6 +29,9 @@ docker-remove:
 	-docker rm -f $$(docker ps -aq)           
 	-docker rmi -f $$(docker images -q)
 	-docker image prune -f
+
+protogen-all:
+	protoc -I proto proto/**/*.proto --go_out=gen --go-grpc_out=gen
 
 clean:
 	$(RM) -rf *.out *.html

@@ -55,7 +55,7 @@ type UserFullData struct {
 }
 
 type UserChangeSettings struct {
-	Privacy     *Privacy `json:"privacy" valid:"required"`
+	Privacy     *Privacy `json:"privacy"`
 	Password    string   `json:"password" valid:"stringlength(4|25)"`
 	NewUsername string   `json:"new_username" valid:"matches(^[a-zA-Z0-9_]+$),stringlength(3|20)"`
 	NewEmail    string   `json:"new_email" valid:"email,stringlength(5|30)"`

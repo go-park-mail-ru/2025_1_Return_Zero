@@ -41,19 +41,34 @@ func (m *MockUsecase) EXPECT() *MockUsecaseMockRecorder {
 	return m.recorder
 }
 
-// GetAlbumsByArtistID mocks base method.
-func (m *MockUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64) ([]*usecase.Album, error) {
+// GetAlbumByID mocks base method.
+func (m *MockUsecase) GetAlbumByID(ctx context.Context, id int64) (*usecase.Album, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAlbumsByArtistID", ctx, artistID)
+	ret := m.ctrl.Call(m, "GetAlbumByID", ctx, id)
+	ret0, _ := ret[0].(*usecase.Album)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAlbumByID indicates an expected call of GetAlbumByID.
+func (mr *MockUsecaseMockRecorder) GetAlbumByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAlbumByID", reflect.TypeOf((*MockUsecase)(nil).GetAlbumByID), ctx, id)
+}
+
+// GetAlbumsByArtistID mocks base method.
+func (m *MockUsecase) GetAlbumsByArtistID(ctx context.Context, artistID int64, filters *usecase.AlbumFilters) ([]*usecase.Album, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAlbumsByArtistID", ctx, artistID, filters)
 	ret0, _ := ret[0].([]*usecase.Album)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAlbumsByArtistID indicates an expected call of GetAlbumsByArtistID.
-func (mr *MockUsecaseMockRecorder) GetAlbumsByArtistID(ctx, artistID any) *gomock.Call {
+func (mr *MockUsecaseMockRecorder) GetAlbumsByArtistID(ctx, artistID, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAlbumsByArtistID", reflect.TypeOf((*MockUsecase)(nil).GetAlbumsByArtistID), ctx, artistID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAlbumsByArtistID", reflect.TypeOf((*MockUsecase)(nil).GetAlbumsByArtistID), ctx, artistID, filters)
 }
 
 // GetAllAlbums mocks base method.
@@ -69,4 +84,48 @@ func (m *MockUsecase) GetAllAlbums(ctx context.Context, filters *usecase.AlbumFi
 func (mr *MockUsecaseMockRecorder) GetAllAlbums(ctx, filters any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllAlbums", reflect.TypeOf((*MockUsecase)(nil).GetAllAlbums), ctx, filters)
+}
+
+// GetFavoriteAlbums mocks base method.
+func (m *MockUsecase) GetFavoriteAlbums(ctx context.Context, filters *usecase.AlbumFilters, userID int64) ([]*usecase.Album, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFavoriteAlbums", ctx, filters, userID)
+	ret0, _ := ret[0].([]*usecase.Album)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFavoriteAlbums indicates an expected call of GetFavoriteAlbums.
+func (mr *MockUsecaseMockRecorder) GetFavoriteAlbums(ctx, filters, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFavoriteAlbums", reflect.TypeOf((*MockUsecase)(nil).GetFavoriteAlbums), ctx, filters, userID)
+}
+
+// LikeAlbum mocks base method.
+func (m *MockUsecase) LikeAlbum(ctx context.Context, request *usecase.AlbumLikeRequest) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LikeAlbum", ctx, request)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// LikeAlbum indicates an expected call of LikeAlbum.
+func (mr *MockUsecaseMockRecorder) LikeAlbum(ctx, request any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LikeAlbum", reflect.TypeOf((*MockUsecase)(nil).LikeAlbum), ctx, request)
+}
+
+// SearchAlbums mocks base method.
+func (m *MockUsecase) SearchAlbums(ctx context.Context, query string) ([]*usecase.Album, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchAlbums", ctx, query)
+	ret0, _ := ret[0].([]*usecase.Album)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchAlbums indicates an expected call of SearchAlbums.
+func (mr *MockUsecaseMockRecorder) SearchAlbums(ctx, query any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchAlbums", reflect.TypeOf((*MockUsecase)(nil).SearchAlbums), ctx, query)
 }

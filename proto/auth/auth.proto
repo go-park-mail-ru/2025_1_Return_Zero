@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option go_package = "./auth";
+
+package auth;
+
+service AuthService {
+    rpc CreateSession(UserID) returns (SessionID);
+    rpc DeleteSession(SessionID) returns (Nothing);
+    rpc GetSession(SessionID) returns (UserID);
+}
+
+message UserID {
+    int64 id = 1;
+}
+
+message SessionID {
+    string session_id = 1;
+}
+
+message Nothing {
+    bool dummy = 1;
+}

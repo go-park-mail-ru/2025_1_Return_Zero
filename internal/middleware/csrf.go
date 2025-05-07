@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/json"
 )
 
 func generateCSRFToken(tokenLength int) (string, error) {
@@ -28,7 +28,7 @@ func CSRFMiddleware(cfg config.CSRFConfig) func(http.Handler) http.Handler {
 				if err != nil || cookie.Value == "" {
 					newToken, err := generateCSRFToken(cfg.CSRFTokenLength)
 					if err != nil {
-						helpers.WriteErrorResponse(w, http.StatusInternalServerError, "Failed to generate CSRF token", nil)
+						json.WriteErrorResponse(w, http.StatusInternalServerError, "Failed to generate CSRF token", nil)
 						return
 					}
 					token = newToken
@@ -52,20 +52,20 @@ func CSRFMiddleware(cfg config.CSRFConfig) func(http.Handler) http.Handler {
 			cookie, err := r.Cookie(cfg.CSRFCookieName)
 			if err != nil {
 				if errors.Is(err, http.ErrNoCookie) {
-					helpers.WriteErrorResponse(w, http.StatusForbidden, "CSRF token missing", nil)
+					json.WriteErrorResponse(w, http.StatusForbidden, "CSRF token missing", nil)
 					return
 				}
-				helpers.WriteErrorResponse(w, http.StatusInternalServerError, "Error reading CSRF cookie", nil)
+				json.WriteErrorResponse(w, http.StatusInternalServerError, "Error reading CSRF cookie", nil)
 				return
 			}
 			if cookie.Value == "" {
-				helpers.WriteErrorResponse(w, http.StatusForbidden, "CSRF token missing", nil)
+				json.WriteErrorResponse(w, http.StatusForbidden, "CSRF token missing", nil)
 				return
 			}
 
 			token := r.Header.Get(cfg.CSRFHeaderName)
 			if token == "" || token != cookie.Value {
-				helpers.WriteErrorResponse(w, http.StatusForbidden, "Invalid CSRF token", nil)
+				json.WriteErrorResponse(w, http.StatusForbidden, "Invalid CSRF token", nil)
 				return
 			}
 			next.ServeHTTP(w, r)

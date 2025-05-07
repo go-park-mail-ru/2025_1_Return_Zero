@@ -40,6 +40,16 @@ definitions:
         example: 404
         type: integer
     type: object
+  delivery.APIRequestEntityTooLargeErrorResponse:
+    description: API request entity too large error response structure
+    properties:
+      error:
+        example: Request entity too large
+        type: string
+      status:
+        example: 413
+        type: integer
+    type: object
   delivery.APIResponse:
     description: API response wrapper
     properties:
@@ -58,6 +68,12 @@ definitions:
         example: 401
         type: integer
     type: object
+  delivery.AddTrackToPlaylistRequest:
+    description: Add track to playlist request structure
+    properties:
+      track_id:
+        type: integer
+    type: object
   delivery.Album:
     description: A music album entity
     properties:
@@ -68,6 +84,9 @@ definitions:
       id:
         example: 1
         type: integer
+      is_liked:
+        example: true
+        type: boolean
       release_date:
         example: "2021-01-01"
         type: string
@@ -92,6 +111,12 @@ definitions:
         example: Inabakumori
         type: string
     type: object
+  delivery.AlbumLikeRequest:
+    properties:
+      value:
+        example: true
+        type: boolean
+    type: object
   delivery.AlbumType:
     enum:
     - album
@@ -113,6 +138,9 @@ definitions:
       id:
         example: 1
         type: integer
+      is_liked:
+        example: false
+        type: boolean
       thumbnail_url:
         example: https://example.com/artist.jpg
         type: string
@@ -132,6 +160,9 @@ definitions:
       id:
         example: 1
         type: integer
+      is_liked:
+        example: false
+        type: boolean
       listeners_count:
         example: 1000
         type: integer
@@ -141,6 +172,13 @@ definitions:
       title:
         example: Inabakumori
         type: string
+    type: object
+  delivery.ArtistLikeRequest:
+    description: A request to like or unlike an artist. Should be authenticated
+    properties:
+      value:
+        example: true
+        type: boolean
     type: object
   delivery.AvatarURL:
     properties:
@@ -163,6 +201,53 @@ definitions:
     properties:
       msg:
         example: object have been successfully created/updated
+        type: string
+    type: object
+  delivery.Playlist:
+    description: Playlist structure
+    properties:
+      id:
+        type: integer
+      thumbnail_url:
+        type: string
+      title:
+        type: string
+      username:
+        type: string
+    type: object
+  delivery.PlaylistLikeRequest:
+    description: A request to like or unlike an playlist. Should be authenticated
+    properties:
+      value:
+        example: true
+        type: boolean
+    type: object
+  delivery.PlaylistWithIsIncludedTrack:
+    description: Playlist with is included track structure
+    properties:
+      id:
+        type: integer
+      is_included:
+        type: boolean
+      thumbnail_url:
+        type: string
+      title:
+        type: string
+      username:
+        type: string
+    type: object
+  delivery.PlaylistWithIsLiked:
+    description: Playlist with is liked structure
+    properties:
+      id:
+        type: integer
+      is_liked:
+        type: boolean
+      thumbnail_url:
+        type: string
+      title:
+        type: string
+      username:
         type: string
     type: object
   delivery.Privacy:
@@ -225,6 +310,9 @@ definitions:
       id:
         example: 1
         type: integer
+      is_liked:
+        example: false
+        type: boolean
       thumbnail_url:
         example: https://example.com/image.jpg
         type: string
@@ -265,12 +353,22 @@ definitions:
       id:
         example: 1
         type: integer
+      is_liked:
+        example: false
+        type: boolean
       thumbnail_url:
         example: https://example.com/image.jpg
         type: string
       title:
         example: Lagtrain
         type: string
+    type: object
+  delivery.TrackLikeRequest:
+    description: A request to like or unlike an track. Should be authenticated
+    properties:
+      value:
+        example: true
+        type: boolean
     type: object
   delivery.UserChangeSettings:
     properties:
@@ -363,6 +461,165 @@ paths:
       summary: Get albums
       tags:
       - albums
+  /albums/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get an album by its ID
+      parameters:
+      - description: Album ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Album details
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Album'
+              type: object
+        "400":
+          description: Bad request - invalid album ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get album by ID
+      tags:
+      - albums
+  /albums/{id}/like:
+    post:
+      consumes:
+      - application/json
+      description: Like an album for a user
+      parameters:
+      - description: Album ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Like request
+        in: body
+        name: likeRequest
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.AlbumLikeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Album liked/unliked
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Message'
+              type: object
+        "400":
+          description: Bad request - invalid album ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "404":
+          description: Album not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Like an album
+      tags:
+      - albums
+  /albums/{id}/tracks:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of tracks by a specific album with optional pagination
+        filters
+      parameters:
+      - description: Album ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of tracks by album
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Track'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid album ID or filters
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "404":
+          description: Album not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get tracks by album ID
+      tags:
+      - tracks
+  /albums/search:
+    get:
+      consumes:
+      - application/json
+      description: Search albums by query
+      parameters:
+      - description: Query
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of albums
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Album'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid query
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Search albums
+      tags:
+      - albums
   /artists:
     get:
       consumes:
@@ -447,6 +704,14 @@ paths:
         name: id
         required: true
         type: integer
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -472,6 +737,54 @@ paths:
       summary: Get albums by artist ID
       tags:
       - albums
+  /artists/{id}/like:
+    post:
+      consumes:
+      - application/json
+      description: Like an artist for a user
+      parameters:
+      - description: Artist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Like request
+        in: body
+        name: likeRequest
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.ArtistLikeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Artist liked/unliked
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Message'
+              type: object
+        "400":
+          description: Bad request - invalid artist ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "404":
+          description: Artist not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Like an artist
+      tags:
+      - artists
   /artists/{id}/tracks:
     get:
       consumes:
@@ -483,6 +796,14 @@ paths:
         in: path
         name: id
         required: true
+        type: integer
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
         type: integer
       produces:
       - application/json
@@ -513,6 +834,42 @@ paths:
       summary: Get tracks by artist ID
       tags:
       - tracks
+  /artists/search:
+    get:
+      consumes:
+      - application/json
+      description: Search artists by query
+      parameters:
+      - description: Query
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of artists
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Artist'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid query
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Search artists
+      tags:
+      - artists
   /auth/check:
     get:
       consumes:
@@ -624,6 +981,465 @@ paths:
       summary: Register a new user
       tags:
       - auth
+  /playlists:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create a new playlist with a title and thumbnail image
+      parameters:
+      - description: Playlist title
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Playlist thumbnail image
+        in: formData
+        name: thumbnail
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created playlist
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Playlist'
+              type: object
+        "400":
+          description: Bad request - invalid form data
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "413":
+          description: Request entity too large
+          schema:
+            $ref: '#/definitions/delivery.APIRequestEntityTooLargeErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Create a new playlist
+      tags:
+      - playlists
+  /playlists/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a playlist by its ID (only available to the playlist owner)
+      parameters:
+      - description: Playlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Playlist removed successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Message'
+              type: object
+        "400":
+          description: Bad request - invalid ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "403":
+          description: Forbidden - user is not the playlist owner
+          schema:
+            $ref: '#/definitions/delivery.APIForbiddenErrorResponse'
+        "404":
+          description: Playlist not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Remove a playlist
+      tags:
+      - playlists
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a specific playlist by its ID with all its details
+      parameters:
+      - description: Playlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Playlist details
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.PlaylistWithIsLiked'
+              type: object
+        "400":
+          description: Bad request - invalid ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "404":
+          description: Playlist not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get a playlist by ID
+      tags:
+      - playlists
+    put:
+      consumes:
+      - multipart/form-data
+      description: Update a playlist's title and/or thumbnail
+      parameters:
+      - description: Playlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: New playlist title
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: New playlist thumbnail image
+        in: formData
+        name: thumbnail
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated playlist
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Playlist'
+              type: object
+        "400":
+          description: Bad request - invalid ID or form data
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "404":
+          description: Playlist not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Update a playlist
+      tags:
+      - playlists
+  /playlists/{id}/like:
+    post:
+      consumes:
+      - application/json
+      description: Like a playlist
+      parameters:
+      - description: Playlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Playlist like request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.PlaylistLikeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Playlist liked/unliked successfully
+          schema:
+            $ref: '#/definitions/delivery.APIResponse'
+        "400":
+          description: Bad request - invalid ID or request body
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "404":
+          description: Playlist not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Like a playlist
+      tags:
+      - playlists
+  /playlists/{id}/tracks:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of tracks by a specific playlist with optional pagination
+        filters
+      parameters:
+      - description: Playlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of tracks by playlist
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Track'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid playlist ID or filters
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "404":
+          description: Playlist not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get playlist tracks
+      tags:
+      - tracks
+    post:
+      consumes:
+      - application/json
+      description: Adds a track to a specific playlist
+      parameters:
+      - description: Playlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Track information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.AddTrackToPlaylistRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Track added successfully
+          schema:
+            $ref: '#/definitions/delivery.APIResponse'
+        "400":
+          description: Bad request - invalid ID or request body
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "404":
+          description: Playlist or track not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Add a track to a playlist
+      tags:
+      - playlists
+  /playlists/{id}/tracks/{trackId}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes a track from a specific playlist
+      parameters:
+      - description: Playlist ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Track ID
+        in: path
+        name: trackId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Track removed successfully
+          schema:
+            $ref: '#/definitions/delivery.APIResponse'
+        "400":
+          description: Bad request - invalid IDs
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "404":
+          description: Playlist or track not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Remove a track from a playlist
+      tags:
+      - playlists
+  /playlists/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all playlists accessible to the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of playlists
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Playlist'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get combined playlists for current user
+      tags:
+      - playlists
+  /playlists/search:
+    get:
+      consumes:
+      - application/json
+      description: Search playlists by query
+      parameters:
+      - description: Search query
+        in: query
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of playlists
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Playlist'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid query
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Search playlists
+      tags:
+      - playlists
+  /playlists/to-add:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all playlists owned by the current user with information
+        about whether the track is already included
+      parameters:
+      - description: Track ID to check inclusion status
+        in: query
+        name: trackId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of playlists with track inclusion status
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.PlaylistWithIsIncludedTrack'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid track ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get playlists available for adding a track
+      tags:
+      - playlists
   /streams/{id}:
     put:
       description: updates listening duration at the end of stream
@@ -751,6 +1567,54 @@ paths:
       summary: Get track by ID
       tags:
       - tracks
+  /tracks/{id}/like:
+    post:
+      consumes:
+      - application/json
+      description: Like a track for a user
+      parameters:
+      - description: Track ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Is like
+        in: body
+        name: likeRequest
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.TrackLikeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Track liked/unliked
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.Message'
+              type: object
+        "400":
+          description: Bad request - invalid track ID
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "404":
+          description: Track not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Like a track
+      tags:
+      - tracks
   /tracks/{id}/stream:
     post:
       description: Creates stream for track by id, essentially it means saving track
@@ -786,7 +1650,162 @@ paths:
       summary: Create stream for track by id
       tags:
       - tracks
+  /tracks/search:
+    get:
+      consumes:
+      - application/json
+      description: Search tracks by query
+      parameters:
+      - description: Query
+        in: path
+        name: query
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of tracks
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Track'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid query
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Search tracks
+      tags:
+      - tracks
   /user/{username}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves user's profile information and privacy settings
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User data, privacy settings and statistics, -1 - if the statistics
+            field is not allowed to display
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  $ref: '#/definitions/delivery.UserFullData'
+              type: object
+        "400":
+          description: Bad request - username not found in URL or user not found
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+      summary: Get user profile data and privacy settings
+      tags:
+      - user
+  /user/{username}/artists:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of favorite artists for a user
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of favorite artists
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Artist'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid username
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get favorite artists
+      tags:
+      - artists
+  /user/{username}/playlists:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all playlists owned by a specific user
+      parameters:
+      - description: Username of the user
+        in: query
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of playlists
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Playlist'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid username
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get profile playlists
+      tags:
+      - playlists
+  /user/me:
     delete:
       consumes:
       - application/json
@@ -828,36 +1847,6 @@ paths:
       summary: Delete user account
       tags:
       - user
-    get:
-      consumes:
-      - application/json
-      description: Retrieves user's profile information and privacy settings
-      parameters:
-      - description: Username
-        in: path
-        name: username
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: User data, privacy settings and statistics, -1 - if the statistics
-            field is not allowed to display
-          schema:
-            allOf:
-            - $ref: '#/definitions/delivery.APIResponse'
-            - properties:
-                body:
-                  $ref: '#/definitions/delivery.UserFullData'
-              type: object
-        "400":
-          description: Bad request - username not found in URL or user not found
-          schema:
-            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
-      summary: Get user profile data and privacy settings
-      tags:
-      - user
     put:
       consumes:
       - application/json
@@ -889,7 +1878,46 @@ paths:
       summary: Change user data
       tags:
       - user
-  /user/{username}/avatar:
+  /user/me/albums:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of favorite albums for a user
+      parameters:
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of favorite albums
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Album'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get favorite albums
+      tags:
+      - albums
+  /user/me/avatar:
     post:
       consumes:
       - multipart/form-data
@@ -924,7 +1952,55 @@ paths:
       summary: Upload user avatar
       tags:
       - user
-  /users/{username}/history:
+  /users/{username}/tracks:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of favorite tracks for a user
+      parameters:
+      - description: Username
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of favorite tracks
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Track'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid username or filters
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/delivery.APINotFoundErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get favorite tracks
+      tags:
+      - tracks
+  /users/me/history:
     get:
       consumes:
       - application/json

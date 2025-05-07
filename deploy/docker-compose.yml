@@ -1,12 +1,6 @@
 # docker-compose up
 # docker rm $(docker ps -a -q) && docker volume prune -f
 
-networks:
-  app-network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
 
 services:
   postgres:
@@ -25,9 +19,8 @@ services:
       - '${POSTGRES_PORT}:${POSTGRES_PORT}'
     volumes:
       - 'pgdata:/var/lib/postgresql/data'
+      - './_postgres:/docker-entrypoint-initdb.d'
     tty: true
-    networks:
-      - app-network
 
   redis:
     image: 'redis'
@@ -41,9 +34,6 @@ services:
     ports:
       - '6379:6379'
     tty: true
-    networks:
-      app-network:
-        ipv4_address: 172.20.0.10
 
   go-api:
     build:
@@ -64,6 +54,12 @@ services:
       S3_ENDPOINT: ${S3_ENDPOINT}
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_PORT}
+      ARTIST_SERVICE_HOST: artist-grpc
+      ALBUM_SERVICE_HOST: album-grpc
+      TRACK_SERVICE_HOST: track-grpc
+      PLAYLIST_SERVICE_HOST: playlist-grpc
+      AUTH_SERVICE_HOST: auth-grpc
+      USER_SERVICE_HOST: user-grpc
     restart: always
     ports:
       - '8080:8080'
@@ -71,8 +67,132 @@ services:
     depends_on:
       - postgres
       - redis
-    networks:
-      - app-network
+      - artist-grpc
+      - album-grpc
+      - track-grpc
+      - playlist-grpc
+      - auth-grpc
+      - user-grpc
+
+  artist-grpc:
+    build:
+      context: ..
+      dockerfile: deploy/images/artist/Dockerfile
+    environment:
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: postgres
+    container_name: artist-grpc
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - '5001:5001'
+    tty: true
+
+  track-grpc:
+    build:
+      context: ..
+      dockerfile: deploy/images/track/Dockerfile
+    environment:
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: postgres
+      S3_TRACKS_BUCKET: ${S3_TRACKS_BUCKET}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_REGION: ${S3_REGION}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+    container_name: track-grpc
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - '5002:5002'
+    tty: true
+
+  album-grpc:
+    build:
+      context: ..
+      dockerfile: deploy/images/album/Dockerfile
+    environment:
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: postgres
+    container_name: album-grpc
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - '5003:5003'
+    tty: true
+    
+  auth-grpc:
+    build:
+      context: ..
+      dockerfile: deploy/images/auth/Dockerfile
+    environment:
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_HOST: redis
+    container_name: auth-grpc
+    restart: always
+    depends_on:
+      - redis
+    ports:
+      - '5004:5004'
+    tty: true
+
+  user-grpc:
+    build:
+      context: ..
+      dockerfile: deploy/images/user/Dockerfile
+    environment:
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: postgres
+      S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_REGION: ${S3_REGION}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+    container_name: user-grpc
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - '5005:5005'
+    tty: true
+
+  playlist-grpc:
+    build:
+      context: ..
+      dockerfile: deploy/images/playlist/Dockerfile
+    environment:
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: postgres
+      S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_REGION: ${S3_REGION}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+    container_name: playlist-grpc
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - '5006:5006'
+    tty: true
 
   nginx:
     build:
@@ -87,8 +207,48 @@ services:
     depends_on:
       - go-api
     tty: true
-    networks:
-      - app-network
+
+  prometheus:
+    build:
+      context: ./images/prometheus
+      dockerfile: Dockerfile
+    container_name: prometheus
+    restart: always
+    ports:
+      - '9090:9090'
+
+  grafana:
+    build:
+      context: ./images/grafana
+      dockerfile: Dockerfile
+    container_name: grafana
+    restart: always
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USERNAME}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: false
+    # volumes:
+    #   - ./images/grafana/grafana.ini:/etc/grafana/grafana.ini
+    ports:
+      - '3000:3000'
+    depends_on:
+      - prometheus
+
+  node-exporter:
+    restart: always
+    image: mirror.gcr.io/prom/node-exporter:latest
+    container_name: node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+#      - --collector.filesystem.ignored-mount-points
+    ports:
+      - "9100:9100"
+    tty: true
 
 volumes:
   pgdata:

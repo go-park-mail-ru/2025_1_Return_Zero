@@ -7,6 +7,7 @@ type Artist struct {
 	Title       string `json:"title" example:"Inabakumori" description:"Artist name"`
 	Description string `json:"description" example:"Inabakumori is a Japanese artist" description:"Artist description"`
 	Thumbnail   string `json:"thumbnail_url" example:"https://example.com/artist.jpg" description:"URL to the artist thumbnail"`
+	IsLiked     bool   `json:"is_liked" example:"false" description:"Whether the artist is liked"`
 }
 
 // ArtistDetailed represents a detailed music artist entity
@@ -19,4 +20,10 @@ type ArtistDetailed struct {
 
 type ArtistFilters struct {
 	Pagination *Pagination
+}
+
+// LikeRequest represents a request to like or unlike an artist
+// @Description A request to like or unlike an artist. Should be authenticated
+type ArtistLikeRequest struct {
+	IsLike bool `json:"value" example:"true" description:"Whether the artist is liked"`
 }

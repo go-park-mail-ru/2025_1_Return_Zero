@@ -2,12 +2,15 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"net/http"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user"
+
+	authProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/auth"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 )
 
-func Auth(userUsecase user.Usecase) func(http.Handler) http.Handler {
+func Auth(authClient *authProto.AuthServiceClient) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			sessionCookie, err := r.Cookie("session_id")
@@ -17,14 +20,15 @@ func Auth(userUsecase user.Usecase) func(http.Handler) http.Handler {
 			}
 
 			sessionID := sessionCookie.Value
-			user, err := userUsecase.GetUserBySID(r.Context(), sessionID)
+			userIDProto, err := (*authClient).GetSession(r.Context(), model.SessionIDFromUsecaseToProto(sessionID))
 			if err != nil {
 				next.ServeHTTP(w, r)
 				return
 			}
-			ctx := context.WithValue(r.Context(), helpers.UserContextKey{}, user)
+			userID := model.UserIDFromProtoToUsecase(userIDProto)
+			fmt.Println("User ID in middleware: ", userID)
+			ctx := context.WithValue(r.Context(), ctxExtractor.UserContextKey{}, userID)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
-

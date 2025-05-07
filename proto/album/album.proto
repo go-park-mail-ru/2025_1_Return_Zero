@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+option go_package = "./album";
+
+package album;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service AlbumService {
+	rpc GetAllAlbums(FiltersWithUserID) returns (AlbumList);
+	rpc GetAlbumByID(AlbumIDWithUserID) returns (Album);
+	rpc GetAlbumTitleByID(AlbumID) returns (AlbumTitle);
+	rpc GetAlbumTitleByIDs(AlbumIDList) returns (AlbumTitleMap);
+	rpc GetAlbumsByIDs(AlbumIDListWithUserID) returns (AlbumList);
+	rpc CreateStream(AlbumStreamCreateData) returns (google.protobuf.Empty);
+	rpc LikeAlbum(LikeRequest) returns (google.protobuf.Empty);
+	rpc GetFavoriteAlbums(FiltersWithUserID) returns (AlbumList);
+	rpc SearchAlbums(Query) returns (AlbumList);
+}
+
+message Query {
+    string query = 1;
+    UserID user_id = 2;
+}
+
+message UserID {
+    int64 id = 1;
+}
+
+enum AlbumType {
+	AlbumTypeAlbum       = 0;
+	AlbumTypeEP          = 1;
+	AlbumTypeSingle      = 2;
+	AlbumTypeCompilation = 3;
+}
+
+message AlbumID {
+	int64 id = 1;
+}
+
+message AlbumIDWithUserID {
+	AlbumID album_id = 1;
+	UserID user_id = 2;
+}
+
+message AlbumIDList {
+	repeated AlbumID ids = 1;
+}
+
+message AlbumIDListWithUserID {
+	AlbumIDList ids = 1;
+	UserID user_id = 2;
+}
+
+message Album {
+	int64 id = 1;
+	string title = 2;
+	AlbumType type = 3;
+	string thumbnail = 4;
+	google.protobuf.Timestamp release_date = 5;
+	bool is_favorite = 6;
+}
+
+message AlbumList {
+	repeated Album albums = 1;
+}
+
+message AlbumTitle {
+	string title = 1;
+}
+
+message AlbumTitleMap {
+	map<int64, AlbumTitle> titles = 1;
+}
+
+message Pagination {
+	int64 offset = 1;
+	int64 limit = 2;
+}
+
+message Filters {
+	Pagination pagination = 1;
+}
+
+message FiltersWithUserID {
+	Filters filters = 1;
+	UserID user_id = 2;
+}
+
+message AlbumStreamCreateData {
+    AlbumID album_id = 1;
+    UserID user_id = 2;
+}
+
+message LikeRequest {
+	AlbumID album_id = 1;
+	UserID user_id = 2;
+	bool is_like = 3;
+}

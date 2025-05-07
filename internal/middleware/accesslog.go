@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 )
 
 type statusResponseWriter struct {
@@ -19,7 +19,7 @@ func (w *statusResponseWriter) WriteHeader(status int) {
 
 func AccessLog(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger := helpers.LoggerFromContext(r.Context())
+		logger := logger.LoggerFromContext(r.Context())
 		defer logger.Sync()
 
 		start := time.Now()
