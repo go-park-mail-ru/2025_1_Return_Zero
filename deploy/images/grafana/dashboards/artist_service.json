@@ -235,7 +235,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum by (le, method) (rate(artist_service_grpc_request_duration_seconds_bucket{method=~\"/artist.ArtistService/$GRPCHandlers\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.9, sum by (le, method) (rate(artist_service_grpc_request_duration_seconds_bucket{method=~\"/artist.ArtistService/$GRPCHandlers\"}[$__rate_interval])))",
           "legendFormat": "{{method}}, {{le}}",
           "range": true,
           "refId": "A"
@@ -341,7 +341,7 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum by (le, operation) (rate(artist_service_database_duration_seconds_bucket{operation=~\"$DBHandlers\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.9, sum by (le, operation) (rate(artist_service_database_duration_seconds_bucket{operation=~\"$DBHandlers\"}[$__rate_interval])))",
           "legendFormat": "{{operation}}",
           "range": true,
           "refId": "A"
