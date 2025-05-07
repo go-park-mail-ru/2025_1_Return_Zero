@@ -16,6 +16,7 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/mocks"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func TestCreateUser(t *testing.T) {
@@ -370,98 +371,103 @@ func TestGetUserByID(t *testing.T) {
 	assert.Equal(t, responseUser.Email, result.Email)
 }
 
-// func TestChangeUserData(t *testing.T) {
-//     ctrl := gomock.NewController(t)
-//     defer ctrl.Finish()
+func TestChangeUserData(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-//     mockUserClient := mocks.NewMockUserServiceClient(ctrl)
-//     mockAuthClient := mocks.NewMockAuthServiceClient(ctrl)
-//     mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
-//     mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
-//     mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+	mockAuthClient := mocks.NewMockAuthServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
 
-//     userClient := user.UserServiceClient(mockUserClient)
-//     authClient := auth.AuthServiceClient(mockAuthClient)
-//     artistClient := artist.ArtistServiceClient(mockArtistClient)
-//     playlistClient := playlist.PlaylistServiceClient(mockPlaylistClient)
-//     trackClient := track.TrackServiceClient(mockTrackClient)
+	userClient := user.UserServiceClient(mockUserClient)
+	authClient := auth.AuthServiceClient(mockAuthClient)
+	artistClient := artist.ArtistServiceClient(mockArtistClient)
+	playlistClient := playlist.PlaylistServiceClient(mockPlaylistClient)
+	trackClient := track.TrackServiceClient(mockTrackClient)
 
-//     userClientPtr := &userClient
-//     authClientPtr := &authClient
-//     artistClientPtr := &artistClient
-//     playlistClientPtr := &playlistClient
-//     trackClientPtr := &trackClient
+	userClientPtr := &userClient
+	authClientPtr := &authClient
+	artistClientPtr := &artistClient
+	playlistClientPtr := &playlistClient
+	trackClientPtr := &trackClient
 
-//     userUC := userUsecase.NewUserUsecase(userClientPtr, authClientPtr, artistClientPtr, trackClientPtr, playlistClientPtr)
+	userUC := userUsecase.NewUserUsecase(userClientPtr, authClientPtr, artistClientPtr, trackClientPtr, playlistClientPtr)
 
-//     ctx := context.Background()
-//     username := "testuser"
-//     userID := int64(1)
-//     newUsername := "newuser"
+	ctx := context.Background()
+	username := "testuser"
+	userID := int64(1)
+	newUsername := "newuser"
 
-//     changeData := &usecase.UserChangeSettings{
-//         Password:    "oldpass",
-//         NewUsername: "newuser",
-//         NewEmail:    "newemail@example.com",
-//         NewPassword: "newpass",
-//         Privacy: &usecase.UserPrivacy{
-//             IsPublicPlaylists:       true,
-//             IsPublicMinutesListened: true,
-//             IsPublicFavoriteArtists: true,
-//         },
-//     }
+	changeData := &usecase.UserChangeSettings{
+		Password:    "oldpass",
+		NewUsername: "newuser",
+		NewEmail:    "newemail@example.com",
+		NewPassword: "newpass",
+		Privacy: &usecase.UserPrivacy{
+			IsPublicPlaylists:       true,
+			IsPublicMinutesListened: true,
+			IsPublicFavoriteArtists: true,
+		},
+	}
 
-//     privacy := &user.PrivacySettings{
-//         IsPublicPlaylists:       true,
-//         IsPublicMinutesListened: true,
-//         IsPublicFavoriteArtists: true,
-//         IsPublicTracksListened:  false,
-//         IsPublicFavoriteTracks:  false,
-//         IsPublicArtistsListened: false,
-//     }
+	privacy := &user.PrivacySettings{
+		IsPublicPlaylists:       true,
+		IsPublicMinutesListened: true,
+		IsPublicFavoriteArtists: true,
+		IsPublicTracksListened:  false,
+		IsPublicFavoriteTracks:  false,
+		IsPublicArtistsListened: false,
+	}
 
-//     userData := &user.UserFullData{
-//         Username: "newuser",
-//         Email:    "newemail@example.com",
-//         Avatar:   "avatar.jpg",
-//         Privacy:  privacy,
-//     }
+	userData := &user.UserFullData{
+		Username: "newuser",
+		Email:    "newemail@example.com",
+		Avatar:   "avatar.jpg",
+		Privacy:  privacy,
+	}
 
-// 	gomock.InOrder(
-// 		// Сначала настройки приватности
-// 		mockUserClient.EXPECT().ChangeUserPrivacySettings(gomock.Any(), &user.PrivacySettings{
-// 			Username:                username,
-// 			IsPublicPlaylists:       true,
-// 			IsPublicMinutesListened: true,
-// 			IsPublicFavoriteArtists: true,
-// 		}).Return(&user.Nothing{}, nil),
+	gomock.InOrder(
+		mockUserClient.EXPECT().ChangeUserPrivacySettings(gomock.Any(), &user.PrivacySettings{
+			Username:                username,
+			IsPublicPlaylists:       true,
+			IsPublicMinutesListened: true,
+			IsPublicFavoriteArtists: true,
+		}).Return(&user.Nothing{}, nil),
 
-// 		// Сразу после этого изменение данных пользователя
-// 		mockUserClient.EXPECT().ChangeUserData(gomock.Any(), gomock.Any()).Return(&user.Nothing{Dummy: true}, nil),
+		mockPlaylistClient.EXPECT().UpdatePlaylistsPublisityByUserID(gomock.Any(), &playlist.UpdatePlaylistsPublisityByUserIDRequest{
+			UserId:   userID,
+			IsPublic: true,
+		}).Return(&emptypb.Empty{}, nil),
 
-// 		// Затем обновление публичности плейлистов
-// 		mockPlaylistClient.EXPECT().UpdatePlaylistsPublisityByUserID(gomock.Any(), &playlist.UpdatePlaylistsPublisityByUserIDRequest{
-// 			UserId:   userID,
-// 			IsPublic: true,
-// 		}).Return(&emptypb.Empty{}, nil),
+		mockUserClient.EXPECT().ChangeUserData(gomock.Any(), gomock.Any()).Return(&user.Nothing{Dummy: true}, nil),
 
-// 		// Потом получение ID по новому имени пользователя
-// 		mockUserClient.EXPECT().GetIDByUsername(gomock.Any(), &user.Username{Username: newUsername}).Return(&user.UserID{Id: userID}, nil),
+		mockUserClient.EXPECT().GetUserFullData(gomock.Any(), &user.Username{Username: "newuser"}).Return(userData, nil),
 
-// 		// И наконец получение полных данных и аватара
-// 		mockUserClient.EXPECT().GetUserFullData(gomock.Any(), &user.Username{Username: "newuser"}).Return(userData, nil),
-// 		mockUserClient.EXPECT().GetUserAvatarURL(gomock.Any(), &user.FileKey{FileKey: "avatar.jpg"}).
-// 			Return(&user.AvatarUrl{Url: "http://example.com/avatars/avatar.jpg"}, nil),
-// 	)
+		mockUserClient.EXPECT().GetIDByUsername(gomock.Any(), &user.Username{Username: newUsername}).Return(&user.UserID{Id: userID}, nil),
 
-//     result, err := userUC.ChangeUserData(ctx, username, changeData, userID)
+		mockArtistClient.EXPECT().GetArtistsListenedByUserID(gomock.Any(), &artist.UserID{Id: userID}).Return(&artist.ArtistListened{ArtistsListened: 42}, nil),
 
-//     assert.NoError(t, err)
-//     assert.NotNil(t, result)
-//     assert.Equal(t, userData.Username, result.Username)
-//     assert.Equal(t, userData.Email, result.Email)
-//     assert.Equal(t, privacy.IsPublicPlaylists, result.Privacy.IsPublicPlaylists)
-// }
+		mockUserClient.EXPECT().GetIDByUsername(gomock.Any(), &user.Username{Username: newUsername}).Return(&user.UserID{Id: userID}, nil),
+
+		mockTrackClient.EXPECT().GetTracksListenedByUserID(gomock.Any(), &track.UserID{Id: userID}).Return(&track.TracksListened{Tracks: 10}, nil),
+
+		mockUserClient.EXPECT().GetIDByUsername(gomock.Any(), &user.Username{Username: newUsername}).Return(&user.UserID{Id: userID}, nil),
+
+		mockTrackClient.EXPECT().GetMinutesListenedByUserID(gomock.Any(), &track.UserID{Id: userID}).Return(&track.MinutesListened{Minutes: 120}, nil),
+
+		mockUserClient.EXPECT().GetUserAvatarURL(gomock.Any(), &user.FileKey{FileKey: "avatar.jpg"}).Return(&user.AvatarUrl{Url: "http://example.com/avatars/avatar.jpg"}, nil),
+	)
+
+	result, err := userUC.ChangeUserData(ctx, username, changeData, userID)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, userData.Username, result.Username)
+	assert.Equal(t, userData.Email, result.Email)
+	assert.Equal(t, privacy.IsPublicPlaylists, result.Privacy.IsPublicPlaylists)
+}
 
 func TestErrorHandling(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -504,4 +510,32 @@ func TestErrorHandling(t *testing.T) {
 	assert.Equal(t, expectedErr, err)
 	assert.Nil(t, result)
 	assert.Empty(t, sid)
+}
+
+func TestDeleteUser(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+	mockAuthClient := mocks.NewMockAuthServiceClient(ctrl)
+
+	userClient := user.UserServiceClient(mockUserClient)
+	authClient := auth.AuthServiceClient(mockAuthClient)
+
+	userClientPtr := &userClient
+	authClientPtr := &authClient
+
+	userUC := userUsecase.NewUserUsecase(userClientPtr, authClientPtr, nil, nil, nil)
+
+	ctx := context.Background()
+	userData := &usecase.User{
+		Username: "testuser",
+	}
+
+	mockUserClient.EXPECT().DeleteUser(gomock.Any(), gomock.Any()).Return(&user.Nothing{Dummy: true}, nil)
+	mockAuthClient.EXPECT().DeleteSession(gomock.Any(), gomock.Any()).Return(&auth.Nothing{Dummy: true}, nil)
+
+	err := userUC.DeleteUser(ctx, userData, "test-session-id")
+
+	assert.NoError(t, err)
 }
