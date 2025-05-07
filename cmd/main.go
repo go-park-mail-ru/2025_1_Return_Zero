@@ -24,6 +24,8 @@ import (
 	albumUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/usecase"
 	artistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/delivery/http"
 	artistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/usecase"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	playlistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/playlist/delivery/http"
 	playlistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/playlist/usecase"
@@ -34,6 +36,8 @@ import (
 	"github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
+
+	metrics "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/metrics"
 )
 
 // @title Return Zero API
@@ -79,6 +83,17 @@ func main() {
 		return
 	}
 
+	reg := prometheus.NewRegistry()
+	metrics := metrics.NewMetrics(reg, "api")
+	go func() {
+		http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+		address := fmt.Sprintf(":%d", cfg.Prometheus.ApiPort)
+		logger.Info(fmt.Sprintf("Serving metrics responds on port %d", cfg.Prometheus.ApiPort))
+		if err := http.ListenAndServe(address, nil); err != nil {
+			logger.Fatal("Error starting metrics server", zap.Error(err))
+		}
+	}()
+
 	artistClient := artistProto.NewArtistServiceClient(clients.ArtistClient)
 	albumClient := albumProto.NewAlbumServiceClient(clients.AlbumClient)
 	trackClient := trackProto.NewTrackServiceClient(clients.TrackClient)
@@ -92,6 +107,7 @@ func main() {
 	r.Use(middleware.Auth(&authClient))
 	r.Use(middleware.CorsMiddleware(cfg.Cors))
 	// r.Use(middleware.CSRFMiddleware(cfg.CSRF))
+	r.Use(middleware.MetricsMiddleware(metrics))
 
 	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackClient, artistClient, albumClient, playlistClient, userClient), cfg)
 	albumHandler := albumHttp.NewAlbumHandler(albumUsecase.NewUsecase(albumClient, artistClient), cfg)
@@ -145,6 +161,8 @@ func main() {
 	r.HandleFunc("/api/v1/user/{username}/tracks", trackHandler.GetFavoriteTracks).Methods("GET")
 	r.HandleFunc("/api/v1/user/{username}/playlists", playlistHandler.GetProfilePlaylists).Methods("GET")
 	r.HandleFunc("/api/v1/user/me/albums", albumHandler.GetFavoriteAlbums).Methods("GET")
+
+	r.Handle("/api/v1/metrics", promhttp.Handler())
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Port),

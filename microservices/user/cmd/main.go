@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 
@@ -11,9 +12,12 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/s3"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/interceptors"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/internal/delivery"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/internal/repository"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/internal/usecase"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
@@ -42,7 +46,19 @@ func main() {
 	}
 	defer conn.Close()
 
-	accessInterceptor := interceptors.NewAccessInterceptor(logger)
+	reg := prometheus.NewRegistry()
+	metrics := metrics.NewMetrics(reg, "user_service")
+
+	accessInterceptor := interceptors.NewAccessInterceptor(logger, metrics)
+
+	go func() {
+		http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+		address := fmt.Sprintf(":%d", cfg.Prometheus.UserPort)
+		logger.Info(fmt.Sprintf("Serving metrics responds on port %d", cfg.Prometheus.UserPort))
+		if err := http.ListenAndServe(address, nil); err != nil {
+			logger.Fatal("Error starting metrics server", zap.String("error", err.Error()))
+		}
+	}()
 
 	server := grpc.NewServer(
 		grpc.UnaryInterceptor(accessInterceptor.UnaryServerInterceptor()),
@@ -62,8 +78,8 @@ func main() {
 		return
 	}
 
-	userRepository := repository.NewUserPostgresRepository(postgresPool)
-	userS3Repository := repository.NewS3Repository(s3, cfg.S3.S3ImagesBucket)
+	userRepository := repository.NewUserPostgresRepository(postgresPool, metrics)
+	userS3Repository := repository.NewS3Repository(s3, cfg.S3.S3ImagesBucket, metrics)
 	userUsecase := usecase.NewUserUsecase(userRepository, userS3Repository)
 	userService := delivery.NewUserService(userUsecase)
 	userProto.RegisterUserServiceServer(server, userService)

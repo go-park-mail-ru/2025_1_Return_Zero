@@ -5,12 +5,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 	"strings"
 
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	domain "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/internal/domain"
 	artistErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/model/errors"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/model/repository"
+	metrics "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
 	"github.com/lib/pq"
 	"go.uber.org/zap"
 )
@@ -139,18 +141,21 @@ const (
 )
 
 type artistPostgresRepository struct {
-	db *sql.DB
+	db      *sql.DB
+	metrics *metrics.Metrics
 }
 
-func NewArtistPostgresRepository(db *sql.DB) domain.Repository {
-	return &artistPostgresRepository{db: db}
+func NewArtistPostgresRepository(db *sql.DB, metrics *metrics.Metrics) domain.Repository {
+	return &artistPostgresRepository{db: db, metrics: metrics}
 }
 
 func (r *artistPostgresRepository) GetAllArtists(ctx context.Context, filters *repoModel.Filters, userID int64) ([]*repoModel.Artist, error) {
+  start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting all artists with filters from db", zap.Any("filters", filters), zap.String("query", GetAllArtistsQuery))
 	rows, err := r.db.QueryContext(ctx, GetAllArtistsQuery, filters.Pagination.Limit, filters.Pagination.Offset, userID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetAllArtitst").Inc()
 		logger.Error("failed to get all artists", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get all artists: %v", err)
 	}
@@ -162,17 +167,20 @@ func (r *artistPostgresRepository) GetAllArtists(ctx context.Context, filters *r
 		var isFavorite sql.NullBool
 		err = rows.Scan(&artist.ID, &artist.Title, &artist.Description, &artist.Thumbnail, &isFavorite)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetAllArtitst").Inc()
 			logger.Error("failed to scan artist", zap.Error(err))
 			return nil, artistErrors.NewInternalError("failed to scan artist: %v", err)
 		}
 		artist.IsFavorite = isFavorite.Valid && isFavorite.Bool
 		artists = append(artists, &artist)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetAllArtists").Observe(duration)
 	return artists, nil
 }
 
 func (r *artistPostgresRepository) GetArtistByID(ctx context.Context, id int64, userID int64) (*repoModel.Artist, error) {
+  start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artist by id from db", zap.Int64("id", id), zap.String("query", GetArtistByIDQuery))
 	row := r.db.QueryRowContext(ctx, GetArtistByIDQuery, id, userID)
@@ -182,6 +190,7 @@ func (r *artistPostgresRepository) GetArtistByID(ctx context.Context, id int64, 
 	err := row.Scan(&artistObject.ID, &artistObject.Title, &artistObject.Description, &artistObject.Thumbnail, &isFavorite)
 
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistByID").Inc()
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("artist not found", zap.Error(err))
 			return nil, artistErrors.ErrArtistNotFound
@@ -189,6 +198,8 @@ func (r *artistPostgresRepository) GetArtistByID(ctx context.Context, id int64, 
 		logger.Error("failed to get artist by id", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get artist by id: %v", err)
 	}
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetArtistByID").Observe(duration)
 
 	artistObject.IsFavorite = isFavorite.Valid && isFavorite.Bool
 
@@ -196,6 +207,7 @@ func (r *artistPostgresRepository) GetArtistByID(ctx context.Context, id int64, 
 }
 
 func (r *artistPostgresRepository) GetArtistTitleByID(ctx context.Context, id int64) (string, error) {
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artist title by id from db", zap.Int64("id", id), zap.String("query", GetArtistTitleByIDQuery))
 	row := r.db.QueryRowContext(ctx, GetArtistTitleByIDQuery, id)
@@ -203,6 +215,7 @@ func (r *artistPostgresRepository) GetArtistTitleByID(ctx context.Context, id in
 	var title string
 	err := row.Scan(&title)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistTitleByID").Inc()
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("artist not found", zap.Error(err))
 			return "", artistErrors.ErrArtistNotFound
@@ -210,15 +223,18 @@ func (r *artistPostgresRepository) GetArtistTitleByID(ctx context.Context, id in
 		logger.Error("failed to get artist title by id", zap.Error(err))
 		return "", artistErrors.NewInternalError("failed to get artist title by id: %v", err)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetArtistTitleByID").Observe(duration)
 	return title, nil
 }
 
 func (r *artistPostgresRepository) GetArtistsByTrackID(ctx context.Context, id int64) ([]*repoModel.ArtistWithRole, error) {
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artists by track id from db", zap.Int64("id", id), zap.String("query", GetArtistsByTrackIDQuery))
 	rows, err := r.db.QueryContext(ctx, GetArtistsByTrackIDQuery, id)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByTrackID").Inc()
 		logger.Error("failed to get artists by track id", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get artists by track id: %v", err)
 	}
@@ -229,20 +245,24 @@ func (r *artistPostgresRepository) GetArtistsByTrackID(ctx context.Context, id i
 		var artist repoModel.ArtistWithRole
 		err := rows.Scan(&artist.ID, &artist.Title, &artist.Role)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByTrackID").Inc()
 			logger.Error("failed to scan artist", zap.Error(err))
 			return nil, artistErrors.NewInternalError("failed to scan artist: %v", err)
 		}
 		artists = append(artists, &artist)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetArtistsByTrackID").Observe(duration)
 	return artists, nil
 }
 
 func (r *artistPostgresRepository) GetArtistsByTrackIDs(ctx context.Context, trackIDs []int64) (map[int64][]*repoModel.ArtistWithRole, error) {
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artists by track ids from db", zap.Any("ids", trackIDs), zap.String("query", GetArtistsByTrackIDsQuery))
 	rows, err := r.db.QueryContext(ctx, GetArtistsByTrackIDsQuery, pq.Array(trackIDs))
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByTrackIDs").Inc()
 		logger.Error("failed to get artists by track ids", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get artists by track ids: %v", err)
 	}
@@ -254,16 +274,19 @@ func (r *artistPostgresRepository) GetArtistsByTrackIDs(ctx context.Context, tra
 		var id int64
 		err := rows.Scan(&artist.ID, &artist.Title, &artist.Role, &id)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByTrackIDs").Inc()
 			logger.Error("failed to scan artist", zap.Error(err))
 			return nil, artistErrors.NewInternalError("failed to scan artist: %v", err)
 		}
 		artists[id] = append(artists[id], &artist)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetArtistsByTrackIDs").Observe(duration)
 	return artists, nil
 }
 
 func (r *artistPostgresRepository) GetArtistStats(ctx context.Context, id int64) (*repoModel.ArtistStats, error) {
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artist stats by id from db", zap.Int64("id", id), zap.String("query", GetArtistStatsQuery))
 	row := r.db.QueryRowContext(ctx, GetArtistStatsQuery, id)
@@ -271,18 +294,22 @@ func (r *artistPostgresRepository) GetArtistStats(ctx context.Context, id int64)
 	var stats repoModel.ArtistStats
 	err := row.Scan(&stats.ListenersCount, &stats.FavoritesCount)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistStats").Inc()
 		logger.Error("failed to get artist stats by id", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get artist stats by id: %v", err)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetArtistStats").Observe(duration)
 	return &stats, nil
 }
 
 func (r *artistPostgresRepository) GetArtistsByAlbumID(ctx context.Context, albumID int64) ([]*repoModel.ArtistWithTitle, error) {
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artists by album id from db", zap.Int64("id", albumID), zap.String("query", GetArtistsByAlbumIDQuery))
 	rows, err := r.db.QueryContext(ctx, GetArtistsByAlbumIDQuery, albumID)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByAlbumID").Inc()
 		logger.Error("failed to get artists by album id", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get artists by album id: %v", err)
 	}
@@ -293,20 +320,24 @@ func (r *artistPostgresRepository) GetArtistsByAlbumID(ctx context.Context, albu
 		var artist repoModel.ArtistWithTitle
 		err := rows.Scan(&artist.ID, &artist.Title)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByAlbumID").Inc()
 			logger.Error("failed to scan artist", zap.Error(err))
 			return nil, artistErrors.NewInternalError("failed to scan artist: %v", err)
 		}
 		artists = append(artists, &artist)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetArtistsByAlbumID").Observe(duration)
 	return artists, nil
 }
 
 func (r *artistPostgresRepository) GetArtistsByAlbumIDs(ctx context.Context, albumIDs []int64) (map[int64][]*repoModel.ArtistWithTitle, error) {
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artists by album ids from db", zap.Any("ids", albumIDs), zap.String("query", GetArtistsByAlbumIDsQuery))
 	rows, err := r.db.QueryContext(ctx, GetArtistsByAlbumIDsQuery, pq.Array(albumIDs))
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByAlbumIDs").Inc()
 		logger.Error("failed to get artists by album ids", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get artists by album ids: %v", err)
 	}
@@ -318,20 +349,24 @@ func (r *artistPostgresRepository) GetArtistsByAlbumIDs(ctx context.Context, alb
 		var albumID int64
 		err := rows.Scan(&artist.ID, &artist.Title, &albumID)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByAlbumIDs").Inc()
 			logger.Error("failed to scan artist", zap.Error(err))
 			return nil, artistErrors.NewInternalError("failed to scan artist: %v", err)
 		}
 		artists[albumID] = append(artists[albumID], &artist)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetArtistsByAlbumIDs").Observe(duration)
 	return artists, nil
 }
 
 func (r *artistPostgresRepository) GetAlbumIDsByArtistID(ctx context.Context, id int64) ([]int64, error) {
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting album ids by artist id from db", zap.Int64("id", id), zap.String("query", GetAlbumIDsByArtistIDQuery))
 	rows, err := r.db.QueryContext(ctx, GetAlbumIDsByArtistIDQuery, id)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetAlbumIDsByArtistID").Inc()
 		logger.Error("failed to get album ids by artist id", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get album ids by artist id: %v", err)
 	}
@@ -342,20 +377,24 @@ func (r *artistPostgresRepository) GetAlbumIDsByArtistID(ctx context.Context, id
 		var albumID int64
 		err := rows.Scan(&albumID)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetAlbumIDsByArtistID").Inc()
 			logger.Error("failed to scan album id", zap.Error(err))
 			return nil, artistErrors.NewInternalError("failed to scan album id: %v", err)
 		}
 		albumIDs = append(albumIDs, albumID)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetAlbumIDsByArtistID").Observe(duration)
 	return albumIDs, nil
 }
 
 func (r *artistPostgresRepository) GetTrackIDsByArtistID(ctx context.Context, id int64) ([]int64, error) {
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting track ids by artist id from db", zap.Int64("id", id), zap.String("query", GetTrackIDsByArtistID))
 	rows, err := r.db.QueryContext(ctx, GetTrackIDsByArtistID, id)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetTrackIDsByArtistID").Inc()
 		logger.Error("failed to get track ids by artist id", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get track ids by artist id: %v", err)
 	}
@@ -366,25 +405,30 @@ func (r *artistPostgresRepository) GetTrackIDsByArtistID(ctx context.Context, id
 		var trackID int64
 		err := rows.Scan(&trackID)
 		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetTrackIDsByArtistID").Inc()
 			logger.Error("failed to scan track id", zap.Error(err))
 			return nil, artistErrors.NewInternalError("failed to scan track id: %v", err)
 		}
 		trackIDs = append(trackIDs, trackID)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetTrackIDsByArtistID").Observe(duration)
 	return trackIDs, nil
 }
 
 func (r *artistPostgresRepository) CreateStreamsByArtistIDs(ctx context.Context, data *repoModel.ArtistStreamCreateDataList) error {
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Creating streams for artists", zap.Any("data", data))
 
 	if len(data.ArtistIDs) == 0 {
+		r.metrics.DatabaseErrors.WithLabelValues("CreateStreamsByArtistIDs").Inc()
 		return nil
 	}
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CreateStreamsByArtistIDs").Inc()
 		logger.Error("failed to begin transaction", zap.Error(err))
 		return artistErrors.NewInternalError("failed to begin transaction: %v", err)
 	}
@@ -403,19 +447,23 @@ func (r *artistPostgresRepository) CreateStreamsByArtistIDs(ctx context.Context,
 
 	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CreateStreamsByArtistIDs").Inc()
 		logger.Error("failed to create streams for artists", zap.Error(err))
 		return artistErrors.NewInternalError("failed to create streams for artists: %v", err)
 	}
 
 	if err := tx.Commit(); err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CreateStreamsByArtistIDs").Inc()
 		logger.Error("failed to commit transaction", zap.Error(err))
 		return artistErrors.NewInternalError("failed to commit transaction: %v", err)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("CreateStreamsByArtistIDs").Observe(duration)
 	return nil
 }
 
 func (r *artistPostgresRepository) GetArtistsListenedByUserID(ctx context.Context, userID int64) (int64, error) {
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artists listened by user id from db", zap.Int64("userID", userID), zap.String("query", GetArtistsListenedByUserIDQuery))
 	row := r.db.QueryRowContext(ctx, GetArtistsListenedByUserIDQuery, userID)
@@ -423,10 +471,12 @@ func (r *artistPostgresRepository) GetArtistsListenedByUserID(ctx context.Contex
 	var artistsListened int64
 	err := row.Scan(&artistsListened)
 	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsListenedByUserID").Inc()
 		logger.Error("failed to get artists listened by user id", zap.Error(err))
 		return 0, artistErrors.NewInternalError("failed to get artists listened by user id: %v", err)
 	}
-
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetArtistsListenedByUserID").Observe(duration)
 	return artistsListened, nil
 }
 
