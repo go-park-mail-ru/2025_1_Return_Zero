@@ -106,7 +106,7 @@ func main() {
 	r.Use(middleware.AccessLog)
 	r.Use(middleware.Auth(&authClient))
 	r.Use(middleware.CorsMiddleware(cfg.Cors))
-	// r.Use(middleware.CSRFMiddleware(cfg.CSRF))
+	r.Use(middleware.CSRFMiddleware(cfg.CSRF))
 	r.Use(middleware.MetricsMiddleware(metrics))
 
 	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackClient, artistClient, albumClient, playlistClient, userClient), cfg)
