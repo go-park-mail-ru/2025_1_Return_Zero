@@ -166,7 +166,7 @@ func (h *AlbumHandler) LikeAlbum(w http.ResponseWriter, r *http.Request) {
 	userID, exists := ctxExtractor.UserFromContext(ctx)
 	if !exists {
 		logger.Warn("attempt to like album for unauthorized user")
-		err := customErrors.ErrLikeAlbumUnauthorized
+		err := customErrors.ErrUnauthorized
 		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
@@ -180,13 +180,16 @@ func (h *AlbumHandler) LikeAlbum(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	deliveryLikeRequest := &deliveryModel.AlbumLikeRequest{
-		IsLike: true,
+	var deliveryLikeRequest deliveryModel.AlbumLikeRequest
+
+	err = json.ReadJSON(w, r, &deliveryLikeRequest)
+	if err != nil {
+		logger.Warn("failed to read like request", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
 	}
 
-	json.ReadJSON(w, r, deliveryLikeRequest)
-
-	usecaseLikeRequest := model.AlbumLikeRequestFromDeliveryToUsecase(deliveryLikeRequest, userID, id)
+	usecaseLikeRequest := model.AlbumLikeRequestFromDeliveryToUsecase(deliveryLikeRequest.IsLike, userID, id)
 
 	err = h.usecase.LikeAlbum(ctx, usecaseLikeRequest)
 	if err != nil {
@@ -198,4 +201,81 @@ func (h *AlbumHandler) LikeAlbum(w http.ResponseWriter, r *http.Request) {
 	json.WriteSuccessResponse(w, http.StatusOK, deliveryModel.Message{
 		Message: "album liked/unliked",
 	}, nil)
+}
+
+// GetFavoriteAlbums godoc
+// @Summary Get favorite albums
+// @Description Get a list of favorite albums for a user
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Param offset query integer false "Offset (default: 0)"
+// @Param limit query integer false "Limit (default: 10, max: 100)"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Album} "List of favorite albums"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /user/me/albums [get]
+func (h *AlbumHandler) GetFavoriteAlbums(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		logger.Warn("attempt to get favorite albums for unauthorized user")
+		err := customErrors.ErrUnauthorized
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	pagination, err := pagination.GetPagination(r, &h.cfg.Pagination)
+	if err != nil {
+		logger.Error("failed to get pagination", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	usecaseAlbums, err := h.usecase.GetFavoriteAlbums(ctx, &usecaseModel.AlbumFilters{
+		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
+	}, userID)
+	if err != nil {
+		logger.Error("failed to get favorite albums", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	albums := model.AlbumsFromUsecaseToDelivery(usecaseAlbums)
+	json.WriteSuccessResponse(w, http.StatusOK, albums, nil)
+}
+
+// SearchAlbums godoc
+// @Summary Search albums
+// @Description Search albums by query
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Param query query string true "Query"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Album} "List of albums"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid query"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /albums/search [get]
+func (h *AlbumHandler) SearchAlbums(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		logger.Error("query is empty")
+		json.WriteErrorResponse(w, http.StatusBadRequest, "query is empty", nil)
+		return
+	}
+
+	usecaseAlbums, err := h.usecase.SearchAlbums(ctx, query)
+	if err != nil {
+		logger.Error("failed to search albums", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	albums := model.AlbumsFromUsecaseToDelivery(usecaseAlbums)
+	json.WriteSuccessResponse(w, http.StatusOK, albums, nil)
 }

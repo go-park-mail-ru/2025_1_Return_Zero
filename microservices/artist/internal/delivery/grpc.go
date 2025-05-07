@@ -129,3 +129,19 @@ func (s *ArtistService) LikeArtist(ctx context.Context, req *artistProto.LikeReq
 	}
 	return &emptypb.Empty{}, nil
 }
+
+func (s *ArtistService) GetFavoriteArtists(ctx context.Context, req *artistProto.FiltersWithUserID) (*artistProto.ArtistList, error) {
+	artists, err := s.artistUsecase.GetFavoriteArtists(ctx, model.ArtistFiltersFromProtoToUsecase(req.Filters), req.UserId.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.ArtistListFromUsecaseToProto(artists), nil
+}
+
+func (s *ArtistService) SearchArtists(ctx context.Context, req *artistProto.Query) (*artistProto.ArtistList, error) {
+	artists, err := s.artistUsecase.SearchArtists(ctx, req.Query, req.UserId.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.ArtistListFromUsecaseToProto(artists), nil
+}

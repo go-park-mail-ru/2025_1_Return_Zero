@@ -45,3 +45,9 @@ type LikeRequest struct {
 	UserID  int64
 	IsLike  bool
 }
+
+type FavoriteRequest struct {
+	ProfileUserID int64
+	RequestUserID int64
+	Filters       *TrackFilters
+}

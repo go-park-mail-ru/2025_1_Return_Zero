@@ -32,6 +32,6 @@ type AlbumFilters struct {
 
 type AlbumLikeRequest struct {
 	AlbumID int64
-	IsLike  bool
 	UserID  int64
+	IsLike  bool
 }

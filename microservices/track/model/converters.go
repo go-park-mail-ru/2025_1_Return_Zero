@@ -144,3 +144,19 @@ func LikeRequestFromUsecaseToRepository(likeRequest *usecaseModel.LikeRequest) *
 		UserID:  likeRequest.UserID,
 	}
 }
+
+func FavoriteRequestFromProtoToUsecase(favoriteRequest *trackProto.FavoriteRequest) *usecaseModel.FavoriteRequest {
+	return &usecaseModel.FavoriteRequest{
+		RequestUserID: favoriteRequest.RequestUserId.Id,
+		ProfileUserID: favoriteRequest.ProfileUserId.Id,
+		Filters:       FiltersFromProtoToUsecase(favoriteRequest.Filters),
+	}
+}
+
+func FavoriteRequestFromUsecaseToRepository(favoriteRequest *usecaseModel.FavoriteRequest) *repoModel.FavoriteRequest {
+	return &repoModel.FavoriteRequest{
+		RequestUserID: favoriteRequest.RequestUserID,
+		ProfileUserID: favoriteRequest.ProfileUserID,
+		Filters:       FiltersFromUsecaseToRepository(favoriteRequest.Filters),
+	}
+}

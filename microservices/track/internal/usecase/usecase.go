@@ -78,6 +78,11 @@ func (u *TrackUsecase) GetLastListenedTracks(ctx context.Context, userID int64, 
 	if err != nil {
 		return nil, err
 	}
+
+	if len(repoStreams) == 0 {
+		return []*usecaseModel.Track{}, nil
+	}
+
 	streamIDs := make([]int64, len(repoStreams))
 	for i, stream := range repoStreams {
 		streamIDs[i] = stream.ID
@@ -86,14 +91,18 @@ func (u *TrackUsecase) GetLastListenedTracks(ctx context.Context, userID int64, 
 	for i, stream := range repoStreams {
 		repoTrackIDs[i] = stream.TrackID
 	}
+
 	repoTracks, err := u.trackRepo.GetTracksByIDs(ctx, repoTrackIDs, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	usecaseTracks := make([]*usecaseModel.Track, len(repoTracks))
-	for i, id := range streamIDs {
-		usecaseTracks[i] = model.TrackFromRepositoryToUsecase(repoTracks[id])
+	usecaseTracks := make([]*usecaseModel.Track, 0, len(repoStreams))
+	for _, stream := range repoStreams {
+		track, exists := repoTracks[stream.TrackID]
+		if exists {
+			usecaseTracks = append(usecaseTracks, model.TrackFromRepositoryToUsecase(track))
+		}
 	}
 
 	return usecaseTracks, nil
@@ -105,9 +114,12 @@ func (u *TrackUsecase) GetTracksByIDs(ctx context.Context, ids []int64, userID i
 		return nil, err
 	}
 
-	usecaseTracks := make([]*usecaseModel.Track, len(repoTracks))
-	for i, id := range ids {
-		usecaseTracks[i] = model.TrackFromRepositoryToUsecase(repoTracks[id])
+	usecaseTracks := make([]*usecaseModel.Track, 0, len(ids))
+	for _, id := range ids {
+		track, exists := repoTracks[id]
+		if exists {
+			usecaseTracks = append(usecaseTracks, model.TrackFromRepositoryToUsecase(track))
+		}
 	}
 
 	return usecaseTracks, nil
@@ -184,4 +196,22 @@ func (u *TrackUsecase) LikeTrack(ctx context.Context, request *usecaseModel.Like
 		return err
 	}
 	return nil
+}
+
+func (u *TrackUsecase) GetFavoriteTracks(ctx context.Context, favoriteRequest *usecaseModel.FavoriteRequest) ([]*usecaseModel.Track, error) {
+	repoRequest := model.FavoriteRequestFromUsecaseToRepository(favoriteRequest)
+	repoTracks, err := u.trackRepo.GetFavoriteTracks(ctx, repoRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
+}
+
+func (u *TrackUsecase) SearchTracks(ctx context.Context, query string, userID int64) ([]*usecaseModel.Track, error) {
+	repoTracks, err := u.trackRepo.SearchTracks(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
 }

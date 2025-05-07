@@ -19,6 +19,13 @@ service ArtistService {
 	rpc CreateStreamsByArtistIDs(ArtistStreamCreateDataList) returns (google.protobuf.Empty);
 	rpc GetArtistsListenedByUserID(UserID) returns (ArtistListened);
 	rpc LikeArtist(LikeRequest) returns (google.protobuf.Empty);
+	rpc GetFavoriteArtists(FiltersWithUserID) returns (ArtistList);
+	rpc SearchArtists(Query) returns (ArtistList);
+}
+
+message Query {
+    string query = 1;
+    UserID user_id = 2;
 }
 
 message ArtistListened {
@@ -131,3 +138,4 @@ message LikeRequest {
 	UserID user_id = 2;
 	bool is_like = 3;
 }
+

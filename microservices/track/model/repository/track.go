@@ -44,3 +44,9 @@ type LikeRequest struct {
 	TrackID int64
 	UserID  int64
 }
+
+type FavoriteRequest struct {
+	ProfileUserID int64
+	RequestUserID int64
+	Filters       *TrackFilters
+}

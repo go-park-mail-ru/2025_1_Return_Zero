@@ -62,6 +62,11 @@ type TrackService struct {
 	Host string
 }
 
+type PlaylistService struct {
+	Port int `mapstructure:"port"`
+	Host string
+}
+
 type AuthService struct {
 	Port int `mapstructure:"port"`
 	Host string
@@ -73,11 +78,12 @@ type UserService struct {
 }
 
 type Services struct {
-	ArtistService ArtistService `mapstructure:"artist_service"`
-	AlbumService  AlbumService  `mapstructure:"album_service"`
-	TrackService  TrackService  `mapstructure:"track_service"`
-	AuthService   AuthService   `mapstructure:"auth_service"`
-	UserService   UserService   `mapstructure:"user_service"`
+	ArtistService   ArtistService   `mapstructure:"artist_service"`
+	AlbumService    AlbumService    `mapstructure:"album_service"`
+	TrackService    TrackService    `mapstructure:"track_service"`
+	AuthService     AuthService     `mapstructure:"auth_service"`
+	UserService     UserService     `mapstructure:"user_service"`
+	PlaylistService PlaylistService `mapstructure:"playlist_service"`
 }
 
 type PaginationConfig struct {
@@ -85,6 +91,17 @@ type PaginationConfig struct {
 	MaxLimit      int `mapstructure:"max_limit"`
 	DefaultOffset int `mapstructure:"default_offset"`
 	DefaultLimit  int `mapstructure:"default_limit"`
+}
+
+type Prometheus struct {
+	ArtistPort     int `mapstructure:"artist_port"`
+	AlbumPort      int `mapstructure:"album_port"`
+	TrackPort      int `mapstructure:"track_port"`
+	AuthPort       int `mapstructure:"auth_port"`
+	UserPort       int `mapstructure:"user_port"`
+	PlaylistPort   int `mapstructure:"playlist_port"`
+	PrometheusPort int `mapstructure:"prometheus_port"`
+	ApiPort        int `mapstructure:"api_port"`
 }
 
 type Config struct {
@@ -96,6 +113,7 @@ type Config struct {
 	Redis      RedisConfig
 	CSRF       CSRFConfig
 	Services   Services
+	Prometheus Prometheus
 }
 
 func LoadConfig() (*Config, error) {
@@ -133,6 +151,6 @@ func LoadConfig() (*Config, error) {
 	config.Services.TrackService.Host = os.Getenv("TRACK_SERVICE_HOST")
 	config.Services.AuthService.Host = os.Getenv("AUTH_SERVICE_HOST")
 	config.Services.UserService.Host = os.Getenv("USER_SERVICE_HOST")
-
+	config.Services.PlaylistService.Host = os.Getenv("PLAYLIST_SERVICE_HOST")
 	return &config, nil
 }

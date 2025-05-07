@@ -57,7 +57,7 @@ type TrackDetailed struct {
 	FileUrl string `json:"file_url" example:"https://example.com/track.mp3" description:"URL to the track file"`
 }
 
-// LikeRequest represents a request to like or unlike an track
+// TrackLikeRequest represents a request to like or unlike an track
 // @Description A request to like or unlike an track. Should be authenticated
 type TrackLikeRequest struct {
 	IsLike bool `json:"value" example:"true" description:"Whether the track is liked"`

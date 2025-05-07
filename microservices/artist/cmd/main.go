@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 
@@ -13,6 +14,9 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/internal/repository"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/internal/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/interceptors"
+	metrics "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 
@@ -40,7 +44,10 @@ func main() {
 	}
 	defer conn.Close()
 
-	accessInterceptor := interceptors.NewAccessInterceptor(logger)
+	reg := prometheus.NewRegistry()
+	metrics := metrics.NewMetrics(reg, "artist_service")
+
+	accessInterceptor := interceptors.NewAccessInterceptor(logger, metrics)
 
 	server := grpc.NewServer(
 		grpc.UnaryInterceptor(accessInterceptor.UnaryServerInterceptor()),
@@ -53,7 +60,16 @@ func main() {
 	}
 	defer postgresPool.Close()
 
-	artistRepository := repository.NewArtistPostgresRepository(postgresPool)
+	go func() {
+		http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+		address := fmt.Sprintf(":%d", cfg.Prometheus.ArtistPort)
+		logger.Info(fmt.Sprintf("Serving metrics responds on port %d", cfg.Prometheus.ArtistPort))
+		if err := http.ListenAndServe(address, nil); err != nil {
+			logger.Fatal("Error starting metrics server", zap.String("error", err.Error()))
+		}
+	}()
+
+	artistRepository := repository.NewArtistPostgresRepository(postgresPool, metrics)
 	artistUsecase := usecase.NewArtistUsecase(artistRepository)
 	artistService := delivery.NewArtistService(artistUsecase)
 	artistProto.RegisterArtistServiceServer(server, artistService)

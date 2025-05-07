@@ -483,7 +483,7 @@ func (h *UserHandler) ChangeUserData(w http.ResponseWriter, r *http.Request) {
 		json.WriteErrorResponse(w, http.StatusBadRequest, "failed to convert change user data", nil)
 		return
 	}
-	newUser, err := h.usecase.ChangeUserData(ctx, userAuth.Username, userChangeDataUsecase)
+	newUser, err := h.usecase.ChangeUserData(ctx, userAuth.Username, userChangeDataUsecase, userID)
 	if err != nil {
 		logger.Error("failed to change user data", zap.Error(err))
 		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)

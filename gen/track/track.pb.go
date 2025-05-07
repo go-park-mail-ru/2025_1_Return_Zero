@@ -22,6 +22,58 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Query struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Query         string                 `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
+	UserId        *UserID                `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Query) Reset() {
+	*x = Query{}
+	mi := &file_track_track_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Query) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Query) ProtoMessage() {}
+
+func (x *Query) ProtoReflect() protoreflect.Message {
+	mi := &file_track_track_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Query.ProtoReflect.Descriptor instead.
+func (*Query) Descriptor() ([]byte, []int) {
+	return file_track_track_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *Query) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+func (x *Query) GetUserId() *UserID {
+	if x != nil {
+		return x.UserId
+	}
+	return nil
+}
+
 type AlbumID struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -31,7 +83,7 @@ type AlbumID struct {
 
 func (x *AlbumID) Reset() {
 	*x = AlbumID{}
-	mi := &file_track_track_proto_msgTypes[0]
+	mi := &file_track_track_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -43,7 +95,7 @@ func (x *AlbumID) String() string {
 func (*AlbumID) ProtoMessage() {}
 
 func (x *AlbumID) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[0]
+	mi := &file_track_track_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -56,7 +108,7 @@ func (x *AlbumID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AlbumID.ProtoReflect.Descriptor instead.
 func (*AlbumID) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{0}
+	return file_track_track_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *AlbumID) GetId() int64 {
@@ -76,7 +128,7 @@ type AlbumIDWithUserID struct {
 
 func (x *AlbumIDWithUserID) Reset() {
 	*x = AlbumIDWithUserID{}
-	mi := &file_track_track_proto_msgTypes[1]
+	mi := &file_track_track_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -88,7 +140,7 @@ func (x *AlbumIDWithUserID) String() string {
 func (*AlbumIDWithUserID) ProtoMessage() {}
 
 func (x *AlbumIDWithUserID) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[1]
+	mi := &file_track_track_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -101,7 +153,7 @@ func (x *AlbumIDWithUserID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AlbumIDWithUserID.ProtoReflect.Descriptor instead.
 func (*AlbumIDWithUserID) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{1}
+	return file_track_track_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *AlbumIDWithUserID) GetAlbumId() *AlbumID {
@@ -127,7 +179,7 @@ type MinutesListened struct {
 
 func (x *MinutesListened) Reset() {
 	*x = MinutesListened{}
-	mi := &file_track_track_proto_msgTypes[2]
+	mi := &file_track_track_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -139,7 +191,7 @@ func (x *MinutesListened) String() string {
 func (*MinutesListened) ProtoMessage() {}
 
 func (x *MinutesListened) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[2]
+	mi := &file_track_track_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -152,7 +204,7 @@ func (x *MinutesListened) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MinutesListened.ProtoReflect.Descriptor instead.
 func (*MinutesListened) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{2}
+	return file_track_track_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *MinutesListened) GetMinutes() int64 {
@@ -171,7 +223,7 @@ type TracksListened struct {
 
 func (x *TracksListened) Reset() {
 	*x = TracksListened{}
-	mi := &file_track_track_proto_msgTypes[3]
+	mi := &file_track_track_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -183,7 +235,7 @@ func (x *TracksListened) String() string {
 func (*TracksListened) ProtoMessage() {}
 
 func (x *TracksListened) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[3]
+	mi := &file_track_track_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -196,7 +248,7 @@ func (x *TracksListened) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TracksListened.ProtoReflect.Descriptor instead.
 func (*TracksListened) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{3}
+	return file_track_track_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *TracksListened) GetTracks() int64 {
@@ -220,7 +272,7 @@ type Track struct {
 
 func (x *Track) Reset() {
 	*x = Track{}
-	mi := &file_track_track_proto_msgTypes[4]
+	mi := &file_track_track_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -232,7 +284,7 @@ func (x *Track) String() string {
 func (*Track) ProtoMessage() {}
 
 func (x *Track) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[4]
+	mi := &file_track_track_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -245,7 +297,7 @@ func (x *Track) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Track.ProtoReflect.Descriptor instead.
 func (*Track) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{4}
+	return file_track_track_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Track) GetId() int64 {
@@ -299,7 +351,7 @@ type TrackList struct {
 
 func (x *TrackList) Reset() {
 	*x = TrackList{}
-	mi := &file_track_track_proto_msgTypes[5]
+	mi := &file_track_track_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -311,7 +363,7 @@ func (x *TrackList) String() string {
 func (*TrackList) ProtoMessage() {}
 
 func (x *TrackList) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[5]
+	mi := &file_track_track_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -324,7 +376,7 @@ func (x *TrackList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackList.ProtoReflect.Descriptor instead.
 func (*TrackList) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{5}
+	return file_track_track_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *TrackList) GetTracks() []*Track {
@@ -343,7 +395,7 @@ type TrackID struct {
 
 func (x *TrackID) Reset() {
 	*x = TrackID{}
-	mi := &file_track_track_proto_msgTypes[6]
+	mi := &file_track_track_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -355,7 +407,7 @@ func (x *TrackID) String() string {
 func (*TrackID) ProtoMessage() {}
 
 func (x *TrackID) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[6]
+	mi := &file_track_track_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -368,7 +420,7 @@ func (x *TrackID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackID.ProtoReflect.Descriptor instead.
 func (*TrackID) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{6}
+	return file_track_track_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *TrackID) GetId() int64 {
@@ -388,7 +440,7 @@ type TrackIDWithUserID struct {
 
 func (x *TrackIDWithUserID) Reset() {
 	*x = TrackIDWithUserID{}
-	mi := &file_track_track_proto_msgTypes[7]
+	mi := &file_track_track_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -400,7 +452,7 @@ func (x *TrackIDWithUserID) String() string {
 func (*TrackIDWithUserID) ProtoMessage() {}
 
 func (x *TrackIDWithUserID) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[7]
+	mi := &file_track_track_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -413,7 +465,7 @@ func (x *TrackIDWithUserID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackIDWithUserID.ProtoReflect.Descriptor instead.
 func (*TrackIDWithUserID) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{7}
+	return file_track_track_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *TrackIDWithUserID) GetTrackId() *TrackID {
@@ -440,7 +492,7 @@ type TrackIDList struct {
 
 func (x *TrackIDList) Reset() {
 	*x = TrackIDList{}
-	mi := &file_track_track_proto_msgTypes[8]
+	mi := &file_track_track_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -452,7 +504,7 @@ func (x *TrackIDList) String() string {
 func (*TrackIDList) ProtoMessage() {}
 
 func (x *TrackIDList) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[8]
+	mi := &file_track_track_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -465,7 +517,7 @@ func (x *TrackIDList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackIDList.ProtoReflect.Descriptor instead.
 func (*TrackIDList) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{8}
+	return file_track_track_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *TrackIDList) GetUserId() *UserID {
@@ -492,7 +544,7 @@ type TrackIDListWithFilters struct {
 
 func (x *TrackIDListWithFilters) Reset() {
 	*x = TrackIDListWithFilters{}
-	mi := &file_track_track_proto_msgTypes[9]
+	mi := &file_track_track_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -504,7 +556,7 @@ func (x *TrackIDListWithFilters) String() string {
 func (*TrackIDListWithFilters) ProtoMessage() {}
 
 func (x *TrackIDListWithFilters) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[9]
+	mi := &file_track_track_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -517,7 +569,7 @@ func (x *TrackIDListWithFilters) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackIDListWithFilters.ProtoReflect.Descriptor instead.
 func (*TrackIDListWithFilters) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{9}
+	return file_track_track_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *TrackIDListWithFilters) GetIds() *TrackIDList {
@@ -543,7 +595,7 @@ type UserID struct {
 
 func (x *UserID) Reset() {
 	*x = UserID{}
-	mi := &file_track_track_proto_msgTypes[10]
+	mi := &file_track_track_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -555,7 +607,7 @@ func (x *UserID) String() string {
 func (*UserID) ProtoMessage() {}
 
 func (x *UserID) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[10]
+	mi := &file_track_track_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -568,7 +620,7 @@ func (x *UserID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserID.ProtoReflect.Descriptor instead.
 func (*UserID) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{10}
+	return file_track_track_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *UserID) GetId() int64 {
@@ -588,7 +640,7 @@ type UserIDWithFilters struct {
 
 func (x *UserIDWithFilters) Reset() {
 	*x = UserIDWithFilters{}
-	mi := &file_track_track_proto_msgTypes[11]
+	mi := &file_track_track_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -600,7 +652,7 @@ func (x *UserIDWithFilters) String() string {
 func (*UserIDWithFilters) ProtoMessage() {}
 
 func (x *UserIDWithFilters) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[11]
+	mi := &file_track_track_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -613,7 +665,7 @@ func (x *UserIDWithFilters) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserIDWithFilters.ProtoReflect.Descriptor instead.
 func (*UserIDWithFilters) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{11}
+	return file_track_track_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *UserIDWithFilters) GetUserId() *UserID {
@@ -639,7 +691,7 @@ type StreamID struct {
 
 func (x *StreamID) Reset() {
 	*x = StreamID{}
-	mi := &file_track_track_proto_msgTypes[12]
+	mi := &file_track_track_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -651,7 +703,7 @@ func (x *StreamID) String() string {
 func (*StreamID) ProtoMessage() {}
 
 func (x *StreamID) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[12]
+	mi := &file_track_track_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -664,7 +716,7 @@ func (x *StreamID) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamID.ProtoReflect.Descriptor instead.
 func (*StreamID) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{12}
+	return file_track_track_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *StreamID) GetId() int64 {
@@ -684,7 +736,7 @@ type TrackStreamCreateData struct {
 
 func (x *TrackStreamCreateData) Reset() {
 	*x = TrackStreamCreateData{}
-	mi := &file_track_track_proto_msgTypes[13]
+	mi := &file_track_track_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -696,7 +748,7 @@ func (x *TrackStreamCreateData) String() string {
 func (*TrackStreamCreateData) ProtoMessage() {}
 
 func (x *TrackStreamCreateData) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[13]
+	mi := &file_track_track_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -709,7 +761,7 @@ func (x *TrackStreamCreateData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackStreamCreateData.ProtoReflect.Descriptor instead.
 func (*TrackStreamCreateData) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{13}
+	return file_track_track_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *TrackStreamCreateData) GetTrackId() *TrackID {
@@ -737,7 +789,7 @@ type TrackStreamUpdateData struct {
 
 func (x *TrackStreamUpdateData) Reset() {
 	*x = TrackStreamUpdateData{}
-	mi := &file_track_track_proto_msgTypes[14]
+	mi := &file_track_track_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -749,7 +801,7 @@ func (x *TrackStreamUpdateData) String() string {
 func (*TrackStreamUpdateData) ProtoMessage() {}
 
 func (x *TrackStreamUpdateData) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[14]
+	mi := &file_track_track_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -762,7 +814,7 @@ func (x *TrackStreamUpdateData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackStreamUpdateData.ProtoReflect.Descriptor instead.
 func (*TrackStreamUpdateData) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{14}
+	return file_track_track_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *TrackStreamUpdateData) GetStreamId() *StreamID {
@@ -797,7 +849,7 @@ type TrackStream struct {
 
 func (x *TrackStream) Reset() {
 	*x = TrackStream{}
-	mi := &file_track_track_proto_msgTypes[15]
+	mi := &file_track_track_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -809,7 +861,7 @@ func (x *TrackStream) String() string {
 func (*TrackStream) ProtoMessage() {}
 
 func (x *TrackStream) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[15]
+	mi := &file_track_track_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -822,7 +874,7 @@ func (x *TrackStream) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackStream.ProtoReflect.Descriptor instead.
 func (*TrackStream) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{15}
+	return file_track_track_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *TrackStream) GetId() int64 {
@@ -855,7 +907,7 @@ type TrackStreamList struct {
 
 func (x *TrackStreamList) Reset() {
 	*x = TrackStreamList{}
-	mi := &file_track_track_proto_msgTypes[16]
+	mi := &file_track_track_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -867,7 +919,7 @@ func (x *TrackStreamList) String() string {
 func (*TrackStreamList) ProtoMessage() {}
 
 func (x *TrackStreamList) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[16]
+	mi := &file_track_track_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -880,7 +932,7 @@ func (x *TrackStreamList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackStreamList.ProtoReflect.Descriptor instead.
 func (*TrackStreamList) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{16}
+	return file_track_track_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *TrackStreamList) GetStreams() []*TrackStream {
@@ -900,7 +952,7 @@ type TrackStreamListWithFilters struct {
 
 func (x *TrackStreamListWithFilters) Reset() {
 	*x = TrackStreamListWithFilters{}
-	mi := &file_track_track_proto_msgTypes[17]
+	mi := &file_track_track_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -912,7 +964,7 @@ func (x *TrackStreamListWithFilters) String() string {
 func (*TrackStreamListWithFilters) ProtoMessage() {}
 
 func (x *TrackStreamListWithFilters) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[17]
+	mi := &file_track_track_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -925,7 +977,7 @@ func (x *TrackStreamListWithFilters) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackStreamListWithFilters.ProtoReflect.Descriptor instead.
 func (*TrackStreamListWithFilters) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{17}
+	return file_track_track_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *TrackStreamListWithFilters) GetStreams() *TrackStreamList {
@@ -952,7 +1004,7 @@ type TrackDetailed struct {
 
 func (x *TrackDetailed) Reset() {
 	*x = TrackDetailed{}
-	mi := &file_track_track_proto_msgTypes[18]
+	mi := &file_track_track_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -964,7 +1016,7 @@ func (x *TrackDetailed) String() string {
 func (*TrackDetailed) ProtoMessage() {}
 
 func (x *TrackDetailed) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[18]
+	mi := &file_track_track_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -977,7 +1029,7 @@ func (x *TrackDetailed) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrackDetailed.ProtoReflect.Descriptor instead.
 func (*TrackDetailed) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{18}
+	return file_track_track_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *TrackDetailed) GetTrack() *Track {
@@ -1004,7 +1056,7 @@ type Pagination struct {
 
 func (x *Pagination) Reset() {
 	*x = Pagination{}
-	mi := &file_track_track_proto_msgTypes[19]
+	mi := &file_track_track_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1016,7 +1068,7 @@ func (x *Pagination) String() string {
 func (*Pagination) ProtoMessage() {}
 
 func (x *Pagination) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[19]
+	mi := &file_track_track_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1029,7 +1081,7 @@ func (x *Pagination) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Pagination.ProtoReflect.Descriptor instead.
 func (*Pagination) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{19}
+	return file_track_track_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *Pagination) GetOffset() int64 {
@@ -1055,7 +1107,7 @@ type Filters struct {
 
 func (x *Filters) Reset() {
 	*x = Filters{}
-	mi := &file_track_track_proto_msgTypes[20]
+	mi := &file_track_track_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1067,7 +1119,7 @@ func (x *Filters) String() string {
 func (*Filters) ProtoMessage() {}
 
 func (x *Filters) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[20]
+	mi := &file_track_track_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1080,7 +1132,7 @@ func (x *Filters) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Filters.ProtoReflect.Descriptor instead.
 func (*Filters) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{20}
+	return file_track_track_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *Filters) GetPagination() *Pagination {
@@ -1101,7 +1153,7 @@ type LikeRequest struct {
 
 func (x *LikeRequest) Reset() {
 	*x = LikeRequest{}
-	mi := &file_track_track_proto_msgTypes[21]
+	mi := &file_track_track_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1113,7 +1165,7 @@ func (x *LikeRequest) String() string {
 func (*LikeRequest) ProtoMessage() {}
 
 func (x *LikeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_track_track_proto_msgTypes[21]
+	mi := &file_track_track_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1126,7 +1178,7 @@ func (x *LikeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LikeRequest.ProtoReflect.Descriptor instead.
 func (*LikeRequest) Descriptor() ([]byte, []int) {
-	return file_track_track_proto_rawDescGZIP(), []int{21}
+	return file_track_track_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *LikeRequest) GetTrackId() *TrackID {
@@ -1150,11 +1202,74 @@ func (x *LikeRequest) GetIsLike() bool {
 	return false
 }
 
+type FavoriteRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProfileUserId *UserID                `protobuf:"bytes,1,opt,name=profile_user_id,json=profileUserId,proto3" json:"profile_user_id,omitempty"`
+	RequestUserId *UserID                `protobuf:"bytes,2,opt,name=request_user_id,json=requestUserId,proto3" json:"request_user_id,omitempty"`
+	Filters       *Filters               `protobuf:"bytes,3,opt,name=filters,proto3" json:"filters,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FavoriteRequest) Reset() {
+	*x = FavoriteRequest{}
+	mi := &file_track_track_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FavoriteRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FavoriteRequest) ProtoMessage() {}
+
+func (x *FavoriteRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_track_track_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FavoriteRequest.ProtoReflect.Descriptor instead.
+func (*FavoriteRequest) Descriptor() ([]byte, []int) {
+	return file_track_track_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *FavoriteRequest) GetProfileUserId() *UserID {
+	if x != nil {
+		return x.ProfileUserId
+	}
+	return nil
+}
+
+func (x *FavoriteRequest) GetRequestUserId() *UserID {
+	if x != nil {
+		return x.RequestUserId
+	}
+	return nil
+}
+
+func (x *FavoriteRequest) GetFilters() *Filters {
+	if x != nil {
+		return x.Filters
+	}
+	return nil
+}
+
 var File_track_track_proto protoreflect.FileDescriptor
 
 const file_track_track_proto_rawDesc = "" +
 	"\n" +
-	"\x11track/track.proto\x12\x05track\x1a\x1bgoogle/protobuf/empty.proto\"\x19\n" +
+	"\x11track/track.proto\x12\x05track\x1a\x1bgoogle/protobuf/empty.proto\"E\n" +
+	"\x05Query\x12\x14\n" +
+	"\x05query\x18\x01 \x01(\tR\x05query\x12&\n" +
+	"\auser_id\x18\x02 \x01(\v2\r.track.UserIDR\x06userId\"\x19\n" +
 	"\aAlbumID\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\"f\n" +
 	"\x11AlbumIDWithUserID\x12)\n" +
@@ -1222,7 +1337,11 @@ const file_track_track_proto_rawDesc = "" +
 	"\vLikeRequest\x12)\n" +
 	"\btrack_id\x18\x01 \x01(\v2\x0e.track.TrackIDR\atrackId\x12&\n" +
 	"\auser_id\x18\x02 \x01(\v2\r.track.UserIDR\x06userId\x12\x17\n" +
-	"\ais_like\x18\x03 \x01(\bR\x06isLike2\x99\x06\n" +
+	"\ais_like\x18\x03 \x01(\bR\x06isLike\"\xa9\x01\n" +
+	"\x0fFavoriteRequest\x125\n" +
+	"\x0fprofile_user_id\x18\x01 \x01(\v2\r.track.UserIDR\rprofileUserId\x125\n" +
+	"\x0frequest_user_id\x18\x02 \x01(\v2\r.track.UserIDR\rrequestUserId\x12(\n" +
+	"\afilters\x18\x03 \x01(\v2\x0e.track.FiltersR\afilters2\x88\a\n" +
 	"\fTrackService\x12:\n" +
 	"\fGetAllTracks\x12\x18.track.UserIDWithFilters\x1a\x10.track.TrackList\x12>\n" +
 	"\fGetTrackByID\x12\x18.track.TrackIDWithUserID\x1a\x14.track.TrackDetailed\x12=\n" +
@@ -1235,7 +1354,9 @@ const file_track_track_proto_rawDesc = "" +
 	"\x12GetTracksByAlbumID\x12\x18.track.AlbumIDWithUserID\x1a\x10.track.TrackList\x12C\n" +
 	"\x1aGetMinutesListenedByUserID\x12\r.track.UserID\x1a\x16.track.MinutesListened\x12A\n" +
 	"\x19GetTracksListenedByUserID\x12\r.track.UserID\x1a\x15.track.TracksListened\x127\n" +
-	"\tLikeTrack\x12\x12.track.LikeRequest\x1a\x16.google.protobuf.EmptyB\tZ\a./trackb\x06proto3"
+	"\tLikeTrack\x12\x12.track.LikeRequest\x1a\x16.google.protobuf.Empty\x12.\n" +
+	"\fSearchTracks\x12\f.track.Query\x1a\x10.track.TrackList\x12=\n" +
+	"\x11GetFavoriteTracks\x12\x16.track.FavoriteRequest\x1a\x10.track.TrackListB\tZ\a./trackb\x06proto3"
 
 var (
 	file_track_track_proto_rawDescOnce sync.Once
@@ -1249,85 +1370,95 @@ func file_track_track_proto_rawDescGZIP() []byte {
 	return file_track_track_proto_rawDescData
 }
 
-var file_track_track_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_track_track_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_track_track_proto_goTypes = []any{
-	(*AlbumID)(nil),                    // 0: track.AlbumID
-	(*AlbumIDWithUserID)(nil),          // 1: track.AlbumIDWithUserID
-	(*MinutesListened)(nil),            // 2: track.MinutesListened
-	(*TracksListened)(nil),             // 3: track.TracksListened
-	(*Track)(nil),                      // 4: track.Track
-	(*TrackList)(nil),                  // 5: track.TrackList
-	(*TrackID)(nil),                    // 6: track.TrackID
-	(*TrackIDWithUserID)(nil),          // 7: track.TrackIDWithUserID
-	(*TrackIDList)(nil),                // 8: track.TrackIDList
-	(*TrackIDListWithFilters)(nil),     // 9: track.TrackIDListWithFilters
-	(*UserID)(nil),                     // 10: track.UserID
-	(*UserIDWithFilters)(nil),          // 11: track.UserIDWithFilters
-	(*StreamID)(nil),                   // 12: track.StreamID
-	(*TrackStreamCreateData)(nil),      // 13: track.TrackStreamCreateData
-	(*TrackStreamUpdateData)(nil),      // 14: track.TrackStreamUpdateData
-	(*TrackStream)(nil),                // 15: track.TrackStream
-	(*TrackStreamList)(nil),            // 16: track.TrackStreamList
-	(*TrackStreamListWithFilters)(nil), // 17: track.TrackStreamListWithFilters
-	(*TrackDetailed)(nil),              // 18: track.TrackDetailed
-	(*Pagination)(nil),                 // 19: track.Pagination
-	(*Filters)(nil),                    // 20: track.Filters
-	(*LikeRequest)(nil),                // 21: track.LikeRequest
-	(*emptypb.Empty)(nil),              // 22: google.protobuf.Empty
+	(*Query)(nil),                      // 0: track.Query
+	(*AlbumID)(nil),                    // 1: track.AlbumID
+	(*AlbumIDWithUserID)(nil),          // 2: track.AlbumIDWithUserID
+	(*MinutesListened)(nil),            // 3: track.MinutesListened
+	(*TracksListened)(nil),             // 4: track.TracksListened
+	(*Track)(nil),                      // 5: track.Track
+	(*TrackList)(nil),                  // 6: track.TrackList
+	(*TrackID)(nil),                    // 7: track.TrackID
+	(*TrackIDWithUserID)(nil),          // 8: track.TrackIDWithUserID
+	(*TrackIDList)(nil),                // 9: track.TrackIDList
+	(*TrackIDListWithFilters)(nil),     // 10: track.TrackIDListWithFilters
+	(*UserID)(nil),                     // 11: track.UserID
+	(*UserIDWithFilters)(nil),          // 12: track.UserIDWithFilters
+	(*StreamID)(nil),                   // 13: track.StreamID
+	(*TrackStreamCreateData)(nil),      // 14: track.TrackStreamCreateData
+	(*TrackStreamUpdateData)(nil),      // 15: track.TrackStreamUpdateData
+	(*TrackStream)(nil),                // 16: track.TrackStream
+	(*TrackStreamList)(nil),            // 17: track.TrackStreamList
+	(*TrackStreamListWithFilters)(nil), // 18: track.TrackStreamListWithFilters
+	(*TrackDetailed)(nil),              // 19: track.TrackDetailed
+	(*Pagination)(nil),                 // 20: track.Pagination
+	(*Filters)(nil),                    // 21: track.Filters
+	(*LikeRequest)(nil),                // 22: track.LikeRequest
+	(*FavoriteRequest)(nil),            // 23: track.FavoriteRequest
+	(*emptypb.Empty)(nil),              // 24: google.protobuf.Empty
 }
 var file_track_track_proto_depIdxs = []int32{
-	0,  // 0: track.AlbumIDWithUserID.album_id:type_name -> track.AlbumID
-	10, // 1: track.AlbumIDWithUserID.user_id:type_name -> track.UserID
-	4,  // 2: track.TrackList.tracks:type_name -> track.Track
-	6,  // 3: track.TrackIDWithUserID.track_id:type_name -> track.TrackID
-	10, // 4: track.TrackIDWithUserID.user_id:type_name -> track.UserID
-	10, // 5: track.TrackIDList.user_id:type_name -> track.UserID
-	6,  // 6: track.TrackIDList.ids:type_name -> track.TrackID
-	8,  // 7: track.TrackIDListWithFilters.ids:type_name -> track.TrackIDList
-	20, // 8: track.TrackIDListWithFilters.filters:type_name -> track.Filters
-	10, // 9: track.UserIDWithFilters.user_id:type_name -> track.UserID
-	20, // 10: track.UserIDWithFilters.filters:type_name -> track.Filters
-	6,  // 11: track.TrackStreamCreateData.track_id:type_name -> track.TrackID
-	10, // 12: track.TrackStreamCreateData.user_id:type_name -> track.UserID
-	12, // 13: track.TrackStreamUpdateData.stream_id:type_name -> track.StreamID
-	10, // 14: track.TrackStreamUpdateData.user_id:type_name -> track.UserID
-	6,  // 15: track.TrackStream.track_id:type_name -> track.TrackID
-	15, // 16: track.TrackStreamList.streams:type_name -> track.TrackStream
-	16, // 17: track.TrackStreamListWithFilters.streams:type_name -> track.TrackStreamList
-	20, // 18: track.TrackStreamListWithFilters.filters:type_name -> track.Filters
-	4,  // 19: track.TrackDetailed.track:type_name -> track.Track
-	19, // 20: track.Filters.pagination:type_name -> track.Pagination
-	6,  // 21: track.LikeRequest.track_id:type_name -> track.TrackID
-	10, // 22: track.LikeRequest.user_id:type_name -> track.UserID
-	11, // 23: track.TrackService.GetAllTracks:input_type -> track.UserIDWithFilters
-	7,  // 24: track.TrackService.GetTrackByID:input_type -> track.TrackIDWithUserID
-	13, // 25: track.TrackService.CreateStream:input_type -> track.TrackStreamCreateData
-	14, // 26: track.TrackService.UpdateStreamDuration:input_type -> track.TrackStreamUpdateData
-	11, // 27: track.TrackService.GetLastListenedTracks:input_type -> track.UserIDWithFilters
-	8,  // 28: track.TrackService.GetTracksByIDs:input_type -> track.TrackIDList
-	9,  // 29: track.TrackService.GetTracksByIDsFiltered:input_type -> track.TrackIDListWithFilters
-	6,  // 30: track.TrackService.GetAlbumIDByTrackID:input_type -> track.TrackID
-	1,  // 31: track.TrackService.GetTracksByAlbumID:input_type -> track.AlbumIDWithUserID
-	10, // 32: track.TrackService.GetMinutesListenedByUserID:input_type -> track.UserID
-	10, // 33: track.TrackService.GetTracksListenedByUserID:input_type -> track.UserID
-	21, // 34: track.TrackService.LikeTrack:input_type -> track.LikeRequest
-	5,  // 35: track.TrackService.GetAllTracks:output_type -> track.TrackList
-	18, // 36: track.TrackService.GetTrackByID:output_type -> track.TrackDetailed
-	12, // 37: track.TrackService.CreateStream:output_type -> track.StreamID
-	22, // 38: track.TrackService.UpdateStreamDuration:output_type -> google.protobuf.Empty
-	5,  // 39: track.TrackService.GetLastListenedTracks:output_type -> track.TrackList
-	5,  // 40: track.TrackService.GetTracksByIDs:output_type -> track.TrackList
-	5,  // 41: track.TrackService.GetTracksByIDsFiltered:output_type -> track.TrackList
-	0,  // 42: track.TrackService.GetAlbumIDByTrackID:output_type -> track.AlbumID
-	5,  // 43: track.TrackService.GetTracksByAlbumID:output_type -> track.TrackList
-	2,  // 44: track.TrackService.GetMinutesListenedByUserID:output_type -> track.MinutesListened
-	3,  // 45: track.TrackService.GetTracksListenedByUserID:output_type -> track.TracksListened
-	22, // 46: track.TrackService.LikeTrack:output_type -> google.protobuf.Empty
-	35, // [35:47] is the sub-list for method output_type
-	23, // [23:35] is the sub-list for method input_type
-	23, // [23:23] is the sub-list for extension type_name
-	23, // [23:23] is the sub-list for extension extendee
-	0,  // [0:23] is the sub-list for field type_name
+	11, // 0: track.Query.user_id:type_name -> track.UserID
+	1,  // 1: track.AlbumIDWithUserID.album_id:type_name -> track.AlbumID
+	11, // 2: track.AlbumIDWithUserID.user_id:type_name -> track.UserID
+	5,  // 3: track.TrackList.tracks:type_name -> track.Track
+	7,  // 4: track.TrackIDWithUserID.track_id:type_name -> track.TrackID
+	11, // 5: track.TrackIDWithUserID.user_id:type_name -> track.UserID
+	11, // 6: track.TrackIDList.user_id:type_name -> track.UserID
+	7,  // 7: track.TrackIDList.ids:type_name -> track.TrackID
+	9,  // 8: track.TrackIDListWithFilters.ids:type_name -> track.TrackIDList
+	21, // 9: track.TrackIDListWithFilters.filters:type_name -> track.Filters
+	11, // 10: track.UserIDWithFilters.user_id:type_name -> track.UserID
+	21, // 11: track.UserIDWithFilters.filters:type_name -> track.Filters
+	7,  // 12: track.TrackStreamCreateData.track_id:type_name -> track.TrackID
+	11, // 13: track.TrackStreamCreateData.user_id:type_name -> track.UserID
+	13, // 14: track.TrackStreamUpdateData.stream_id:type_name -> track.StreamID
+	11, // 15: track.TrackStreamUpdateData.user_id:type_name -> track.UserID
+	7,  // 16: track.TrackStream.track_id:type_name -> track.TrackID
+	16, // 17: track.TrackStreamList.streams:type_name -> track.TrackStream
+	17, // 18: track.TrackStreamListWithFilters.streams:type_name -> track.TrackStreamList
+	21, // 19: track.TrackStreamListWithFilters.filters:type_name -> track.Filters
+	5,  // 20: track.TrackDetailed.track:type_name -> track.Track
+	20, // 21: track.Filters.pagination:type_name -> track.Pagination
+	7,  // 22: track.LikeRequest.track_id:type_name -> track.TrackID
+	11, // 23: track.LikeRequest.user_id:type_name -> track.UserID
+	11, // 24: track.FavoriteRequest.profile_user_id:type_name -> track.UserID
+	11, // 25: track.FavoriteRequest.request_user_id:type_name -> track.UserID
+	21, // 26: track.FavoriteRequest.filters:type_name -> track.Filters
+	12, // 27: track.TrackService.GetAllTracks:input_type -> track.UserIDWithFilters
+	8,  // 28: track.TrackService.GetTrackByID:input_type -> track.TrackIDWithUserID
+	14, // 29: track.TrackService.CreateStream:input_type -> track.TrackStreamCreateData
+	15, // 30: track.TrackService.UpdateStreamDuration:input_type -> track.TrackStreamUpdateData
+	12, // 31: track.TrackService.GetLastListenedTracks:input_type -> track.UserIDWithFilters
+	9,  // 32: track.TrackService.GetTracksByIDs:input_type -> track.TrackIDList
+	10, // 33: track.TrackService.GetTracksByIDsFiltered:input_type -> track.TrackIDListWithFilters
+	7,  // 34: track.TrackService.GetAlbumIDByTrackID:input_type -> track.TrackID
+	2,  // 35: track.TrackService.GetTracksByAlbumID:input_type -> track.AlbumIDWithUserID
+	11, // 36: track.TrackService.GetMinutesListenedByUserID:input_type -> track.UserID
+	11, // 37: track.TrackService.GetTracksListenedByUserID:input_type -> track.UserID
+	22, // 38: track.TrackService.LikeTrack:input_type -> track.LikeRequest
+	0,  // 39: track.TrackService.SearchTracks:input_type -> track.Query
+	23, // 40: track.TrackService.GetFavoriteTracks:input_type -> track.FavoriteRequest
+	6,  // 41: track.TrackService.GetAllTracks:output_type -> track.TrackList
+	19, // 42: track.TrackService.GetTrackByID:output_type -> track.TrackDetailed
+	13, // 43: track.TrackService.CreateStream:output_type -> track.StreamID
+	24, // 44: track.TrackService.UpdateStreamDuration:output_type -> google.protobuf.Empty
+	6,  // 45: track.TrackService.GetLastListenedTracks:output_type -> track.TrackList
+	6,  // 46: track.TrackService.GetTracksByIDs:output_type -> track.TrackList
+	6,  // 47: track.TrackService.GetTracksByIDsFiltered:output_type -> track.TrackList
+	1,  // 48: track.TrackService.GetAlbumIDByTrackID:output_type -> track.AlbumID
+	6,  // 49: track.TrackService.GetTracksByAlbumID:output_type -> track.TrackList
+	3,  // 50: track.TrackService.GetMinutesListenedByUserID:output_type -> track.MinutesListened
+	4,  // 51: track.TrackService.GetTracksListenedByUserID:output_type -> track.TracksListened
+	24, // 52: track.TrackService.LikeTrack:output_type -> google.protobuf.Empty
+	6,  // 53: track.TrackService.SearchTracks:output_type -> track.TrackList
+	6,  // 54: track.TrackService.GetFavoriteTracks:output_type -> track.TrackList
+	41, // [41:55] is the sub-list for method output_type
+	27, // [27:41] is the sub-list for method input_type
+	27, // [27:27] is the sub-list for extension type_name
+	27, // [27:27] is the sub-list for extension extendee
+	0,  // [0:27] is the sub-list for field type_name
 }
 
 func init() { file_track_track_proto_init() }
@@ -1341,7 +1472,7 @@ func file_track_track_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_track_track_proto_rawDesc), len(file_track_track_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   22,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -1,0 +1,40 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+  
+  - job_name: 'api'
+    static_configs:
+      - targets: ['go-api:9096']
+  
+  - job_name: 'artist-service'
+    static_configs:
+      - targets: ['artist-grpc:9091']
+  
+  - job_name: 'track-service'
+    static_configs:
+      - targets: ['track-grpc:9092']
+  
+  - job_name: 'album-service'
+    static_configs:
+      - targets: ['album-grpc:9093']
+  
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['auth-grpc:9094']
+      
+  - job_name: 'user-service'
+    static_configs:
+      - targets: ['user-grpc:9095']
+
+  - job_name: 'playlist-service'
+    static_configs:
+      - targets: ['playlist-grpc:9097']
+  
+  - job_name: 'node-exporter'
+    static_configs:
+    - targets: ['node-exporter:9100']

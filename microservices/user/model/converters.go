@@ -170,5 +170,5 @@ func FileKeyFromUsecaseToProto(fileKey string) *protoModel.FileKey {
 	return &protoModel.FileKey{
 		FileKey: fileKey,
 	}
-	
+
 }

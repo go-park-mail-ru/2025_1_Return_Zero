@@ -31,6 +31,8 @@ type ArtistServiceClient interface {
 	CreateStreamsByArtistIDs(ctx context.Context, in *ArtistStreamCreateDataList, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetArtistsListenedByUserID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*ArtistListened, error)
 	LikeArtist(ctx context.Context, in *LikeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetFavoriteArtists(ctx context.Context, in *FiltersWithUserID, opts ...grpc.CallOption) (*ArtistList, error)
+	SearchArtists(ctx context.Context, in *Query, opts ...grpc.CallOption) (*ArtistList, error)
 }
 
 type artistServiceClient struct {
@@ -149,6 +151,24 @@ func (c *artistServiceClient) LikeArtist(ctx context.Context, in *LikeRequest, o
 	return out, nil
 }
 
+func (c *artistServiceClient) GetFavoriteArtists(ctx context.Context, in *FiltersWithUserID, opts ...grpc.CallOption) (*ArtistList, error) {
+	out := new(ArtistList)
+	err := c.cc.Invoke(ctx, "/artist.ArtistService/GetFavoriteArtists", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *artistServiceClient) SearchArtists(ctx context.Context, in *Query, opts ...grpc.CallOption) (*ArtistList, error) {
+	out := new(ArtistList)
+	err := c.cc.Invoke(ctx, "/artist.ArtistService/SearchArtists", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ArtistServiceServer is the server API for ArtistService service.
 // All implementations must embed UnimplementedArtistServiceServer
 // for forward compatibility
@@ -165,6 +185,8 @@ type ArtistServiceServer interface {
 	CreateStreamsByArtistIDs(context.Context, *ArtistStreamCreateDataList) (*emptypb.Empty, error)
 	GetArtistsListenedByUserID(context.Context, *UserID) (*ArtistListened, error)
 	LikeArtist(context.Context, *LikeRequest) (*emptypb.Empty, error)
+	GetFavoriteArtists(context.Context, *FiltersWithUserID) (*ArtistList, error)
+	SearchArtists(context.Context, *Query) (*ArtistList, error)
 	mustEmbedUnimplementedArtistServiceServer()
 }
 
@@ -207,6 +229,12 @@ func (UnimplementedArtistServiceServer) GetArtistsListenedByUserID(context.Conte
 }
 func (UnimplementedArtistServiceServer) LikeArtist(context.Context, *LikeRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LikeArtist not implemented")
+}
+func (UnimplementedArtistServiceServer) GetFavoriteArtists(context.Context, *FiltersWithUserID) (*ArtistList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetFavoriteArtists not implemented")
+}
+func (UnimplementedArtistServiceServer) SearchArtists(context.Context, *Query) (*ArtistList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchArtists not implemented")
 }
 func (UnimplementedArtistServiceServer) mustEmbedUnimplementedArtistServiceServer() {}
 
@@ -437,6 +465,42 @@ func _ArtistService_LikeArtist_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ArtistService_GetFavoriteArtists_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FiltersWithUserID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArtistServiceServer).GetFavoriteArtists(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/artist.ArtistService/GetFavoriteArtists",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArtistServiceServer).GetFavoriteArtists(ctx, req.(*FiltersWithUserID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ArtistService_SearchArtists_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Query)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ArtistServiceServer).SearchArtists(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/artist.ArtistService/SearchArtists",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ArtistServiceServer).SearchArtists(ctx, req.(*Query))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ArtistService_ServiceDesc is the grpc.ServiceDesc for ArtistService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -491,6 +555,14 @@ var ArtistService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "LikeArtist",
 			Handler:    _ArtistService_LikeArtist_Handler,
+		},
+		{
+			MethodName: "GetFavoriteArtists",
+			Handler:    _ArtistService_GetFavoriteArtists_Handler,
+		},
+		{
+			MethodName: "SearchArtists",
+			Handler:    _ArtistService_SearchArtists_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -10,4 +10,6 @@ type Usecase interface {
 	GetArtistByID(ctx context.Context, id int64) (*usecaseModel.ArtistDetailed, error)
 	GetAllArtists(ctx context.Context, filters *usecaseModel.ArtistFilters) ([]*usecaseModel.Artist, error)
 	LikeArtist(ctx context.Context, request *usecaseModel.ArtistLikeRequest) error
+	GetFavoriteArtists(ctx context.Context, filters *usecaseModel.ArtistFilters, username string) ([]*usecaseModel.Artist, error)
+	SearchArtists(ctx context.Context, query string) ([]*usecaseModel.Artist, error)
 }

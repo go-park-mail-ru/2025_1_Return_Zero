@@ -37,12 +37,12 @@ func GetPagination(r *http.Request, cfg *config.PaginationConfig) (*deliveryMode
 
 	offset, err := query.ReadInt(r.URL.Query(), "offset", cfg.DefaultOffset)
 	if err != nil {
-		return nil, err
+		return nil, customErrors.ErrInvalidOffset
 	}
 
 	limit, err := query.ReadInt(r.URL.Query(), "limit", cfg.DefaultLimit)
 	if err != nil {
-		return nil, err
+		return nil, customErrors.ErrInvalidLimit
 	}
 
 	pagination.Offset = offset

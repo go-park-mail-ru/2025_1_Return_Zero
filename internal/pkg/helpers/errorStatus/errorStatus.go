@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
-	userAvatarFile "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/userAvatarFile"
 )
 
 var mapErrorStatus = map[error]int{
@@ -23,21 +22,22 @@ var mapErrorStatus = map[error]int{
 	customErrors.ErrGetSession:    http.StatusInternalServerError,
 	customErrors.ErrDeleteSession: http.StatusInternalServerError,
 
-	customErrors.ErrInvalidOffset:             http.StatusBadRequest,
-	customErrors.ErrInvalidLimit:              http.StatusBadRequest,
-	customErrors.ErrPasswordRequired:          http.StatusBadRequest,
-	userAvatarFile.ErrFailedToUploadAvatar:    http.StatusBadRequest,
-	userAvatarFile.ErrUnsupportedImageFormat:  http.StatusBadRequest,
-	userAvatarFile.ErrFailedToEncodeWebp:      http.StatusBadRequest,
-	userAvatarFile.ErrFailedToParseImage:      http.StatusBadRequest,
-	customErrors.ErrArtistNotFound:            http.StatusNotFound,
-	customErrors.ErrAlbumNotFound:             http.StatusNotFound,
-	customErrors.ErrStreamHistoryUnauthorized: http.StatusForbidden,
-	customErrors.ErrStreamUpdateUnauthorized:  http.StatusForbidden,
-	customErrors.ErrStreamCreateUnauthorized:  http.StatusForbidden,
-	customErrors.ErrLikeArtistUnauthorized:    http.StatusForbidden,
-	customErrors.ErrLikeAlbumUnauthorized:     http.StatusForbidden,
-	customErrors.ErrLikeTrackUnauthorized:     http.StatusForbidden,
+	customErrors.ErrInvalidOffset:            http.StatusBadRequest,
+	customErrors.ErrInvalidLimit:             http.StatusBadRequest,
+	customErrors.ErrPasswordRequired:         http.StatusBadRequest,
+	customErrors.ErrUnsupportedImageFormat:   http.StatusBadRequest,
+	customErrors.ErrFailedToParseImage:       http.StatusBadRequest,
+	customErrors.ErrArtistNotFound:           http.StatusNotFound,
+	customErrors.ErrAlbumNotFound:            http.StatusNotFound,
+	customErrors.ErrUnauthorized:             http.StatusForbidden,
+	customErrors.ErrPlaylistNotFound:         http.StatusNotFound,
+	customErrors.ErrPlaylistPermissionDenied: http.StatusForbidden,
+	customErrors.ErrPlaylistDuplicate:        http.StatusConflict,
+	customErrors.ErrPlaylistTrackNotFound:    http.StatusNotFound,
+	customErrors.ErrPlaylistTrackDuplicate:   http.StatusConflict,
+	customErrors.ErrPlaylistImageNotUploaded: http.StatusBadRequest,
+	customErrors.ErrPlaylistBadRequest:       http.StatusBadRequest,
+	customErrors.ErrPlaylistUnauthorized:     http.StatusUnauthorized,
 }
 
 func ErrorStatus(err error) int {
