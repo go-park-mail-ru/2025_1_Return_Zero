@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
 	domain "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/playlist/internal/domain"
 	playlistErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/playlist/model/errors"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/playlist/model/repository"
-
 	"go.uber.org/zap"
 )
 
@@ -143,11 +143,12 @@ const (
 )
 
 type PlaylistPostgresRepository struct {
-	db *sql.DB
+	db      *sql.DB
+	metrics *metrics.Metrics
 }
 
-func NewPlaylistPostgresRepository(db *sql.DB) domain.Repository {
-	return &PlaylistPostgresRepository{db: db}
+func NewPlaylistPostgresRepository(db *sql.DB, metrics *metrics.Metrics) domain.Repository {
+	return &PlaylistPostgresRepository{db: db, metrics: metrics}
 }
 
 func (r *PlaylistPostgresRepository) GetPlaylistByID(ctx context.Context, id int64) (*repoModel.Playlist, error) {

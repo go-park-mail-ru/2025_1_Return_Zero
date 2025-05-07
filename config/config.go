@@ -99,6 +99,7 @@ type Prometheus struct {
 	TrackPort      int `mapstructure:"track_port"`
 	AuthPort       int `mapstructure:"auth_port"`
 	UserPort       int `mapstructure:"user_port"`
+	PlaylistPort   int `mapstructure:"playlist_port"`
 	PrometheusPort int `mapstructure:"prometheus_port"`
 	ApiPort        int `mapstructure:"api_port"`
 }

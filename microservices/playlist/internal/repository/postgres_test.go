@@ -8,6 +8,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
 	playlistErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/playlist/model/errors"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/playlist/model/repository"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +30,7 @@ func TestGetPlaylistByID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
@@ -55,7 +56,7 @@ func TestGetPlaylistByIDNotFound(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
 
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
@@ -74,7 +75,7 @@ func TestCreatePlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.CreatePlaylistRequest{
 		Title:     "New Playlist",
 		UserID:    1,
@@ -111,7 +112,7 @@ func TestCreatePlaylistDuplicate(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.CreatePlaylistRequest{
 		Title:     "New Playlist",
 		UserID:    1,
@@ -135,7 +136,7 @@ func TestGetCombinedPlaylistsByUserID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url"}).
@@ -166,7 +167,7 @@ func TestGetCombinedPlaylistsByUserIDError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
 
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
@@ -184,7 +185,7 @@ func TestTrackExistsInPlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
 	trackID := int64(2)
 
@@ -205,7 +206,7 @@ func TestTrackExistsInPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
 	trackID := int64(2)
 
@@ -224,7 +225,7 @@ func TestAddTrackToPlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
 		PlaylistID: 1,
 		TrackID:    2,
@@ -258,7 +259,7 @@ func TestAddTrackToPlaylistGetPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
 		PlaylistID: 1,
 		TrackID:    2,
@@ -279,7 +280,7 @@ func TestAddTrackToPlaylistTrackExistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
 		PlaylistID: 1,
 		TrackID:    2,
@@ -307,7 +308,7 @@ func TestAddTrackToPlaylistInsertError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
 		PlaylistID: 1,
 		TrackID:    2,
@@ -341,7 +342,7 @@ func TestAddTrackToPlaylistPermissionDenied(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
 		PlaylistID: 1,
 		TrackID:    2,
@@ -366,7 +367,7 @@ func TestAddTrackToPlaylistDuplicate(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
 		PlaylistID: 1,
 		TrackID:    2,
@@ -397,7 +398,7 @@ func TestRemoveTrackFromPlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
 		PlaylistID: 1,
 		TrackID:    2,
@@ -431,7 +432,7 @@ func TestRemoveTrackFromPlaylistGetPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
 		PlaylistID: 1,
 		TrackID:    2,
@@ -452,7 +453,7 @@ func TestRemoveTrackFromPlaylistPermissionDenied(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
 		PlaylistID: 1,
 		TrackID:    2,
@@ -477,7 +478,7 @@ func TestRemoveTrackFromPlaylistTrackNotFound(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
 		PlaylistID: 1,
 		TrackID:    2,
@@ -508,7 +509,7 @@ func TestRemoveTrackFromPlaylistTrackExistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
 		PlaylistID: 1,
 		TrackID:    2,
@@ -536,7 +537,7 @@ func TestRemoveTrackFromPlaylistDeleteError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
 		PlaylistID: 1,
 		TrackID:    2,
@@ -570,7 +571,7 @@ func TestGetPlaylistTrackIds(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistTrackIdsRequest{
 		PlaylistID: 1,
 	}
@@ -598,7 +599,7 @@ func TestGetPlaylistTrackIdsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistTrackIdsRequest{
 		PlaylistID: 1,
 	}
@@ -618,7 +619,7 @@ func TestUpdatePlaylistWithThumbnail(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{
 		PlaylistID: 1,
 		Title:      "Updated Playlist",
@@ -653,7 +654,7 @@ func TestUpdatePlaylistWithThumbnailError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{
 		PlaylistID: 1,
 		Title:      "Updated Playlist",
@@ -676,7 +677,7 @@ func TestUpdatePlaylistWithoutThumbnail(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{
 		PlaylistID: 1,
 		Title:      "Updated Playlist",
@@ -711,7 +712,7 @@ func TestUpdatePlaylistWithoutThumbnailError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{
 		PlaylistID: 1,
 		Title:      "Updated Playlist",
@@ -734,7 +735,7 @@ func TestRemovePlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemovePlaylistRequest{
 		PlaylistID: 1,
 		UserID:     1,
@@ -754,7 +755,7 @@ func TestRemovePlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemovePlaylistRequest{
 		PlaylistID: 1,
 		UserID:     1,
@@ -774,7 +775,7 @@ func TestGetPlaylistsToAdd(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistsToAddRequest{
 		TrackID: 1,
 		UserID:  2,
@@ -806,7 +807,7 @@ func TestGetPlaylistsToAddError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistsToAddRequest{
 		TrackID: 1,
 		UserID:  2,
@@ -827,7 +828,7 @@ func TestGetPlaylistsToAddScanError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistsToAddRequest{
 		TrackID: 1,
 		UserID:  2,
@@ -851,7 +852,7 @@ func TestUpdatePlaylistsPublisityByUserID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistsPublisityByUserIDRequest{
 		UserID:   1,
 		IsPublic: true,
@@ -871,7 +872,7 @@ func TestUpdatePlaylistsPublisityByUserIDError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistsPublisityByUserIDRequest{
 		UserID:   1,
 		IsPublic: true,
@@ -891,7 +892,7 @@ func TestCheckExistsPlaylistAndNotDifferentUser(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
 	userID := int64(2)
 
@@ -912,7 +913,7 @@ func TestCheckExistsPlaylistAndNotDifferentUserError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
 	userID := int64(2)
 
@@ -931,7 +932,7 @@ func TestLikePlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
 		PlaylistID: 1,
 		UserID:     2,
@@ -957,7 +958,7 @@ func TestLikePlaylistCheckExistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
 		PlaylistID: 1,
 		UserID:     2,
@@ -977,7 +978,7 @@ func TestLikePlaylistInsertError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
 		PlaylistID: 1,
 		UserID:     2,
@@ -1003,7 +1004,7 @@ func TestUnlikePlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
 		PlaylistID: 1,
 		UserID:     2,
@@ -1023,7 +1024,7 @@ func TestUnlikePlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
 		PlaylistID: 1,
 		UserID:     2,
@@ -1043,7 +1044,7 @@ func TestGetPlaylistWithIsLikedByID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
 	userID := int64(2)
 
@@ -1070,7 +1071,7 @@ func TestGetPlaylistWithIsLikedByIDError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
 	userID := int64(2)
 
@@ -1089,7 +1090,7 @@ func TestGetProfilePlaylists(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetProfilePlaylistsRequest{
 		UserID: 1,
 	}
@@ -1122,7 +1123,7 @@ func TestGetProfilePlaylistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetProfilePlaylistsRequest{
 		UserID: 1,
 	}
@@ -1142,7 +1143,7 @@ func TestGetProfilePlaylistsScanError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetProfilePlaylistsRequest{
 		UserID: 1,
 	}
@@ -1165,7 +1166,7 @@ func TestSearchPlaylists(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.SearchPlaylistsRequest{
 		Query:  "test playlist",
 		UserID: 1,
@@ -1197,7 +1198,7 @@ func TestSearchPlaylistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.SearchPlaylistsRequest{
 		Query:  "test playlist",
 		UserID: 1,
@@ -1218,7 +1219,7 @@ func TestSearchPlaylistsScanError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.SearchPlaylistsRequest{
 		Query:  "test playlist",
 		UserID: 1,
@@ -1242,7 +1243,7 @@ func TestCreatePlaylistGetPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.CreatePlaylistRequest{
 		Title:     "New Playlist",
 		UserID:    1,
@@ -1271,7 +1272,7 @@ func TestUpdatePlaylistGetPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewPlaylistPostgresRepository(db)
+	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{
 		PlaylistID: 1,
 		Title:      "Updated Playlist",

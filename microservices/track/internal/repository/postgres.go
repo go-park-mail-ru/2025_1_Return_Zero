@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 	"strings"
+	"time"
 
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
@@ -151,7 +151,7 @@ func NewTrackPostgresRepository(db *sql.DB, metrics *metrics.Metrics) domain.Rep
 }
 
 func (r *TrackPostgresRepository) GetAllTracks(ctx context.Context, filters *repoModel.TrackFilters, userID int64) ([]*repoModel.Track, error) {
-  start := time.Now()
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting all tracks from db", zap.Any("filters", filters), zap.String("query", GetAllTracksQuery))
 	rows, err := r.db.Query(GetAllTracksQuery, filters.Pagination.Limit, filters.Pagination.Offset, userID)
@@ -185,7 +185,7 @@ func (r *TrackPostgresRepository) GetAllTracks(ctx context.Context, filters *rep
 }
 
 func (r *TrackPostgresRepository) GetTrackByID(ctx context.Context, id int64, userID int64) (*repoModel.TrackWithFileKey, error) {
-  start := time.Now()
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting track by id from db", zap.Int64("id", id), zap.String("query", GetTrackByIDQuery))
 	var trackObject repoModel.TrackWithFileKey
@@ -304,7 +304,7 @@ func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID
 }
 
 func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int64, userID int64) (map[int64]*repoModel.Track, error) {
-  start := time.Now()
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting tracks by ids from db", zap.Any("ids", ids), zap.String("query", GetTracksByIDsQuery))
 	rows, err := r.db.QueryContext(ctx, GetTracksByIDsQuery, pq.Array(ids), userID)
@@ -338,10 +338,10 @@ func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int6
 		for _, id := range ids {
 			if _, ok := tracks[id]; !ok {
 				r.metrics.DatabaseErrors.WithLabelValues("GetTracksByIDs").Inc()
-				logger.Error("track not found", zap.Int64("id", id))
-				return nil, trackErrors.ErrTrackNotFound
 				missingIDs = append(missingIDs, id)
+				logger.Error("failed to get tracks by ids", zap.Int64("id", id))
 			}
+
 		}
 		if len(missingIDs) > 0 {
 			logger.Warn("some tracks were not found", zap.Int64s("missing_ids", missingIDs))
@@ -353,7 +353,7 @@ func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int6
 }
 
 func (r *TrackPostgresRepository) GetTracksByIDsFiltered(ctx context.Context, ids []int64, filters *repoModel.TrackFilters, userID int64) ([]*repoModel.Track, error) {
-  start := time.Now()
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting tracks by ids from db", zap.Any("ids", ids), zap.String("query", GetTracksByIDsFilteredQuery))
 	rows, err := r.db.QueryContext(ctx, GetTracksByIDsFilteredQuery, pq.Array(ids), filters.Pagination.Limit, filters.Pagination.Offset, userID)
@@ -403,7 +403,7 @@ func (r *TrackPostgresRepository) GetAlbumIDByTrackID(ctx context.Context, id in
 }
 
 func (r *TrackPostgresRepository) GetTracksByAlbumID(ctx context.Context, id int64, userID int64) ([]*repoModel.Track, error) {
-  start := time.Now()
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting tracks by album id from db", zap.Int64("id", id), zap.String("query", GetTracksByAlbumIDQuery))
 	rows, err := r.db.QueryContext(ctx, GetTracksByAlbumIDQuery, id, userID)

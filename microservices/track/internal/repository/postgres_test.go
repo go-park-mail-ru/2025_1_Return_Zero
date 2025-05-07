@@ -8,6 +8,7 @@ import (
 
 	"github.com/DATA-DOG/go-sqlmock"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
 	trackErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/model/errors"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/model/repository"
 	"github.com/lib/pq"
@@ -30,7 +31,7 @@ func TestGetAllTracks(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	filters := &repoModel.TrackFilters{
 		Pagination: &repoModel.Pagination{
 			Limit:  10,
@@ -71,7 +72,7 @@ func TestGetAllTracksError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	filters := &repoModel.TrackFilters{
 		Pagination: &repoModel.Pagination{
 			Limit:  10,
@@ -94,7 +95,7 @@ func TestGetTrackByID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	trackID := int64(1)
 	userID := int64(1)
 
@@ -123,7 +124,7 @@ func TestGetTrackByIDNotFound(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	trackID := int64(1)
 	userID := int64(1)
 
@@ -143,7 +144,7 @@ func TestCreateStream(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	createData := &repoModel.TrackStreamCreateData{
 		TrackID: 1,
 		UserID:  1,
@@ -166,7 +167,7 @@ func TestCreateStreamError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	createData := &repoModel.TrackStreamCreateData{
 		TrackID: 1,
 		UserID:  1,
@@ -186,7 +187,7 @@ func TestGetStreamByID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	streamID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"id", "user_id", "track_id", "duration"}).
@@ -211,7 +212,7 @@ func TestGetStreamByIDNotFound(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	streamID := int64(1)
 
 	mock.ExpectQuery("SELECT id, user_id, track_id, duration").
@@ -230,7 +231,7 @@ func TestUpdateStreamDuration(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	updateData := &repoModel.TrackStreamUpdateData{
 		StreamID: 1,
 		Duration: 200,
@@ -249,7 +250,7 @@ func TestUpdateStreamDurationNotFound(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	updateData := &repoModel.TrackStreamUpdateData{
 		StreamID: 1,
 		Duration: 180,
@@ -269,7 +270,7 @@ func TestGetStreamsByUserID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
 	filters := &repoModel.TrackFilters{
 		Pagination: &repoModel.Pagination{
@@ -305,7 +306,7 @@ func TestGetStreamsByUserIDError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
 	filters := &repoModel.TrackFilters{
 		Pagination: &repoModel.Pagination{
@@ -328,7 +329,7 @@ func TestGetTracksByIDs(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	trackIDs := []int64{1, 2}
 	userID := int64(1)
 
@@ -355,7 +356,7 @@ func TestGetTracksByIDsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	trackIDs := []int64{1, 2}
 	userID := int64(1)
 
@@ -373,7 +374,7 @@ func TestGetTracksByIDsFiltered(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	trackIDs := []int64{1, 2}
 	filters := &repoModel.TrackFilters{
 		Pagination: &repoModel.Pagination{
@@ -406,7 +407,7 @@ func TestGetTracksByIDsFilteredError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	trackIDs := []int64{1, 2}
 	filters := &repoModel.TrackFilters{
 		Pagination: &repoModel.Pagination{
@@ -430,7 +431,7 @@ func TestGetAlbumIDByTrackID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	trackID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"album_id"}).AddRow(1)
@@ -450,7 +451,7 @@ func TestGetAlbumIDByTrackIDError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	trackID := int64(1)
 
 	mock.ExpectQuery("SELECT album_id").
@@ -467,7 +468,7 @@ func TestGetTracksByAlbumID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	albumID := int64(1)
 	userID := int64(1)
 
@@ -494,7 +495,7 @@ func TestGetTracksByAlbumIDError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	albumID := int64(1)
 	userID := int64(1)
 
@@ -512,7 +513,7 @@ func TestGetMinutesListenedByUserID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"minutes"}).AddRow(1)
@@ -532,7 +533,7 @@ func TestGetMinutesListenedByUserIDError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
 
 	mock.ExpectQuery("SELECT COALESCE").
@@ -549,7 +550,7 @@ func TestGetTracksListenedByUserID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"count"}).AddRow(1)
@@ -569,7 +570,7 @@ func TestGetTracksListenedByUserIDError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
 
 	mock.ExpectQuery("SELECT COUNT").
@@ -586,7 +587,7 @@ func TestCheckTrackExists(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	trackID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
@@ -606,7 +607,7 @@ func TestCheckTrackExistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	trackID := int64(1)
 
 	mock.ExpectQuery("SELECT EXISTS").
@@ -623,7 +624,7 @@ func TestLikeTrack(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	likeRequest := &repoModel.LikeRequest{
 		TrackID: 1,
 		UserID:  1,
@@ -642,7 +643,7 @@ func TestLikeTrackError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	likeRequest := &repoModel.LikeRequest{
 		TrackID: 1,
 		UserID:  1,
@@ -661,7 +662,7 @@ func TestUnlikeTrack(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	likeRequest := &repoModel.LikeRequest{
 		TrackID: 1,
 		UserID:  1,
@@ -680,7 +681,7 @@ func TestUnlikeTrackError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	likeRequest := &repoModel.LikeRequest{
 		TrackID: 1,
 		UserID:  1,
@@ -699,7 +700,7 @@ func TestGetFavoriteTracks(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	favoriteRequest := &repoModel.FavoriteRequest{
 		RequestUserID: 1,
 		ProfileUserID: 2,
@@ -734,7 +735,7 @@ func TestGetFavoriteTracksError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	favoriteRequest := &repoModel.FavoriteRequest{
 		RequestUserID: 1,
 		ProfileUserID: 2,
@@ -760,7 +761,7 @@ func TestSearchTracks(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	query := "test track"
 	userID := int64(1)
 
@@ -787,7 +788,7 @@ func TestSearchTracksError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	query := "test track"
 	userID := int64(1)
 
@@ -805,7 +806,7 @@ func TestGetTracksByIDsScanError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	trackIDs := []int64{1, 2}
 	userID := int64(1)
 
@@ -826,7 +827,7 @@ func TestGetTracksByIDsFilteredScanError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	trackIDs := []int64{1, 2}
 	filters := &repoModel.TrackFilters{
 		Pagination: &repoModel.Pagination{
@@ -853,7 +854,7 @@ func TestGetAllTracksScanError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	filters := &repoModel.TrackFilters{
 		Pagination: &repoModel.Pagination{
 			Limit:  10,
@@ -879,7 +880,7 @@ func TestGetStreamsByUserIDScanError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewTrackPostgresRepository(db)
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
 	filters := &repoModel.TrackFilters{
 		Pagination: &repoModel.Pagination{

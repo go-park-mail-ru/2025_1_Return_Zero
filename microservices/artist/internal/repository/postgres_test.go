@@ -10,6 +10,7 @@ import (
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	artistErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/model/errors"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/model/repository"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -30,7 +31,7 @@ func TestGetAllArtists(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	filters := &repoModel.Filters{
 		Pagination: &repoModel.Pagination{
 			Limit:  10,
@@ -69,7 +70,7 @@ func TestGetAllArtistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	filters := &repoModel.Filters{
 		Pagination: &repoModel.Pagination{
 			Limit:  10,
@@ -92,7 +93,7 @@ func TestGetArtistByID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	artistID := int64(1)
 	userID := int64(1)
 
@@ -119,7 +120,7 @@ func TestGetArtistByIDNotFound(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	artistID := int64(1)
 	userID := int64(1)
 
@@ -139,7 +140,7 @@ func TestGetArtistTitleByID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	artistID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"title"}).AddRow("Artist 1")
@@ -159,7 +160,7 @@ func TestGetArtistTitleByIDNotFound(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	artistID := int64(1)
 
 	mock.ExpectQuery("SELECT title").
@@ -178,7 +179,7 @@ func TestGetArtistsByTrackID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	trackID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"id", "title", "role"}).
@@ -206,7 +207,7 @@ func TestGetArtistsByTrackIDs(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	trackIDs := []int64{1, 2}
 
 	rows := sqlmock.NewRows([]string{"id", "title", "role", "track_id"}).
@@ -243,7 +244,7 @@ func TestGetArtistStats(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	artistID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"listeners_count", "favorites_count"}).
@@ -265,7 +266,7 @@ func TestGetArtistsByAlbumID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	albumID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"id", "title"}).
@@ -291,7 +292,7 @@ func TestGetArtistsByAlbumIDs(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	albumIDs := []int64{1, 2}
 
 	rows := sqlmock.NewRows([]string{"id", "title", "album_id"}).
@@ -325,7 +326,7 @@ func TestGetAlbumIDsByArtistID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	artistID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"album_id"}).
@@ -349,7 +350,7 @@ func TestGetTrackIDsByArtistID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	artistID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"track_id"}).
@@ -373,7 +374,7 @@ func TestCreateStreamsByArtistIDs(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	data := &repoModel.ArtistStreamCreateDataList{
 		ArtistIDs: []int64{1, 2},
 		UserID:    1,
@@ -394,7 +395,7 @@ func TestCreateStreamsByArtistIDsEmptyList(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	data := &repoModel.ArtistStreamCreateDataList{
 		ArtistIDs: []int64{},
 		UserID:    1,
@@ -409,7 +410,7 @@ func TestGetArtistsListenedByUserID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"count"}).
@@ -430,7 +431,7 @@ func TestLikeArtist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikeRequest{
 		ArtistID: 1,
 		UserID:   1,
@@ -449,7 +450,7 @@ func TestUnlikeArtist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikeRequest{
 		ArtistID: 1,
 		UserID:   1,
@@ -468,7 +469,7 @@ func TestCheckArtistExists(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	artistID := int64(1)
 
 	rows := sqlmock.NewRows([]string{"exists"}).
@@ -489,7 +490,7 @@ func TestGetFavoriteArtists(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	filters := &repoModel.Filters{
 		Pagination: &repoModel.Pagination{
 			Limit:  10,
@@ -528,7 +529,7 @@ func TestSearchArtists(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewArtistPostgresRepository(db)
+	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	query := "test artist"
 	userID := int64(1)
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 	"strings"
+	"time"
 
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	domain "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/album/internal/domain"
@@ -96,20 +96,19 @@ const (
 )
 
 type albumPostgresRepository struct {
-	db *sql.DB
+	db      *sql.DB
 	metrics *metrics.Metrics
 }
 
 func NewAlbumPostgresRepository(db *sql.DB, metrics *metrics.Metrics) domain.Repository {
 	return &albumPostgresRepository{
-		db: db,
+		db:      db,
 		metrics: metrics,
 	}
 }
 
-=======
 func (r *albumPostgresRepository) GetAllAlbums(ctx context.Context, filters *repoModel.AlbumFilters, userID int64) ([]*repoModel.Album, error) {
-  start := time.Now()
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting all albums from db", zap.Any("filters", filters), zap.String("query", GetAllAlbumsQuery))
 	rows, err := r.db.Query(GetAllAlbumsQuery, filters.Pagination.Limit, filters.Pagination.Offset, userID)
@@ -143,7 +142,7 @@ func (r *albumPostgresRepository) GetAllAlbums(ctx context.Context, filters *rep
 }
 
 func (r *albumPostgresRepository) GetAlbumByID(ctx context.Context, id int64, userID int64) (*repoModel.Album, error) {
-  start := time.Now()
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting album by id from db", zap.Int64("id", id), zap.String("query", GetAlbumByIDQuery))
 	row := r.db.QueryRow(GetAlbumByIDQuery, id, userID)
@@ -221,9 +220,8 @@ func (r *albumPostgresRepository) GetAlbumTitleByID(ctx context.Context, id int6
 	return title, nil
 }
 
-
 func (r *albumPostgresRepository) GetAlbumsByIDs(ctx context.Context, ids []int64, userID int64) ([]*repoModel.Album, error) {
-  start := time.Now()
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting albums by ids from db", zap.Any("ids", ids), zap.String("query", GetAlbumsByIDsQuery))
 	rows, err := r.db.Query(GetAlbumsByIDsQuery, pq.Array(ids), userID)

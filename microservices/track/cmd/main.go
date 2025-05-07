@@ -46,7 +46,7 @@ func main() {
 	defer conn.Close()
 
 	reg := prometheus.NewRegistry()
-	metrics := metrics.NewMetrics(reg, "album_service")
+	metrics := metrics.NewMetrics(reg, "track_service")
 
 	accessInterceptor := interceptors.NewAccessInterceptor(logger, metrics)
 

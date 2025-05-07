@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
-	metrics "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"

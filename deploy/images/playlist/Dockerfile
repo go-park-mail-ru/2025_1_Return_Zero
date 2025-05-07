@@ -19,6 +19,8 @@ COPY ./config ./config
 
 COPY ./microservices/interceptors ./microservices/interceptors
 
+COPY ./microservices/metrics ./microservices/metrics
+
 COPY ./microservices/playlist ./microservices/playlist
 
 COPY ./config.yaml ./config.yaml

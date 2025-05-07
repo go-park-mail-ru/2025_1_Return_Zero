@@ -30,6 +30,10 @@ scrape_configs:
   - job_name: 'user-service'
     static_configs:
       - targets: ['user-grpc:9095']
+
+  - job_name: 'playlist-service'
+    static_configs:
+      - targets: ['playlist-grpc:9097']
   
   - job_name: 'node-exporter'
     static_configs:

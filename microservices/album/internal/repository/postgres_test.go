@@ -10,6 +10,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/album/model/repository"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/metrics"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -30,7 +31,7 @@ func TestGetAllAlbums(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	filters := &repoModel.AlbumFilters{
 		Pagination: &repoModel.Pagination{
@@ -64,7 +65,7 @@ func TestGetAlbumByID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	albumID := int64(1)
 	userID := int64(1)
@@ -91,7 +92,7 @@ func TestGetAlbumByIDNotFound(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	albumID := int64(999)
 	userID := int64(1)
@@ -109,7 +110,7 @@ func TestGetAlbumTitleByID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	albumID := int64(1)
 
@@ -130,7 +131,7 @@ func TestGetAlbumTitleByIDNotFound(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	albumID := int64(999)
 
@@ -147,7 +148,7 @@ func TestGetAlbumTitleByIDs(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	albumIDs := []int64{1, 2}
 
@@ -171,7 +172,7 @@ func TestGetAlbumsByIDs(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	albumIDs := []int64{1, 2}
 	userID := int64(1)
@@ -201,7 +202,7 @@ func TestCreateStream(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	albumID := int64(1)
 	userID := int64(1)
@@ -219,7 +220,7 @@ func TestCheckAlbumExists(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	albumID := int64(1)
 
@@ -240,7 +241,7 @@ func TestLikeAlbum(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	request := &repoModel.LikeRequest{
 		AlbumID: 1,
@@ -260,7 +261,7 @@ func TestUnlikeAlbum(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	request := &repoModel.LikeRequest{
 		AlbumID: 1,
@@ -280,7 +281,7 @@ func TestGetFavoriteAlbums(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	filters := &repoModel.AlbumFilters{
 		Pagination: &repoModel.Pagination{
@@ -315,7 +316,7 @@ func TestSearchAlbums(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	query := "test"
 	userID := int64(1)
@@ -345,7 +346,7 @@ func TestSearchAlbumsMultipleWords(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	query := "test album"
 	userID := int64(1)
@@ -371,7 +372,7 @@ func TestGetAllAlbumsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	filters := &repoModel.AlbumFilters{
 		Pagination: &repoModel.Pagination{
@@ -395,7 +396,7 @@ func TestGetAlbumsByIDsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	albumIDs := []int64{1, 2}
 	userID := int64(1)
@@ -414,7 +415,7 @@ func TestCreateStreamError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	albumID := int64(1)
 	userID := int64(1)
@@ -433,7 +434,7 @@ func TestCheckAlbumExistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
 	defer db.Close()
 
-	repo := NewAlbumPostgresRepository(db)
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
 
 	albumID := int64(1)
 
