@@ -1,8 +1,8 @@
 package metrics
 
 import (
-	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 )
 
 type Metrics struct {
@@ -27,7 +27,7 @@ func NewMetrics(reg prometheus.Registerer, namespace string) *Metrics {
 			prometheus.HistogramOpts{
 				Name:      "http_request_duration_seconds",
 				Help:      "Duration of HTTP requests in seconds",
-				Buckets:   prometheus.DefBuckets,
+				Buckets:   prometheus.ExponentialBucketsRange(0.006099375, 16.075897965, 10),
 				Namespace: namespace,
 			},
 			[]string{"method", "path"},

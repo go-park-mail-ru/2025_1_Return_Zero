@@ -162,7 +162,7 @@ func (r *userPostgresRepository) getPassword(ctx context.Context, id int64) (str
 	var storedHash string
 	err := row.Scan(&storedHash)
 	if err != nil {
-		r.metrics.DatabaseErrors.WithLabelValues("getPassword").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("GetPassword").Inc()
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("user not found", zap.Error(err))
 			return "", userErrors.NewNotFoundError("user not found")
@@ -171,7 +171,7 @@ func (r *userPostgresRepository) getPassword(ctx context.Context, id int64) (str
 		return "", err
 	}
 	duration := time.Since(start).Seconds()
-	r.metrics.DatabaseDuration.WithLabelValues("getPassword").Observe(duration)
+	r.metrics.DatabaseDuration.WithLabelValues("GetPassword").Observe(duration)
 	return storedHash, nil
 }
 
@@ -192,19 +192,19 @@ func (r *userPostgresRepository) CreateUser(ctx context.Context, regData *repoMo
 	logger.Info("Creating new user", zap.String("username: ", lowerUsername))
 	err := r.db.QueryRowContext(ctx, checkUserExist, lowerUsername, regData.Email).Scan(&exists)
 	if err != nil && err != sql.ErrNoRows {
-		r.metrics.DatabaseErrors.WithLabelValues("createUser").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("CreateUser").Inc()
 		logger.Error("failed to check user existence", zap.Error(err))
 		return nil, err
 	}
 	if exists {
-		r.metrics.DatabaseErrors.WithLabelValues("createUser").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("CreateUser").Inc()
 		logger.Error("user with this username or email already exists")
 		return nil, userErrors.NewUserExistError("user with this username or email already exists %s, %s", lowerUsername, regData.Email)
 	}
 
 	salt := createSalt()
 	if salt == nil {
-		r.metrics.DatabaseErrors.WithLabelValues("createUser").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("CreateUser").Inc()
 		logger.Error("failed to create salt")
 		return nil, userErrors.NewCreateSaltError("failed to create salt")
 	}
@@ -214,7 +214,7 @@ func (r *userPostgresRepository) CreateUser(ctx context.Context, regData *repoMo
 	err = r.db.QueryRowContext(ctx, createUserQuery, lowerUsername,
 		hashedPassword, regData.Email).Scan(&userID)
 	if err != nil {
-		r.metrics.DatabaseErrors.WithLabelValues("createUser").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("CreateUser").Inc()
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("user not found", zap.Error(err))
 			return nil, userErrors.NewNotFoundError("user not found: %s", lowerUsername)
@@ -225,12 +225,12 @@ func (r *userPostgresRepository) CreateUser(ctx context.Context, regData *repoMo
 
 	_, err = r.db.ExecContext(ctx, createUserSettingsQuery, userID)
 	if err != nil {
-		r.metrics.DatabaseErrors.WithLabelValues("createUser").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("CreateUser").Inc()
 		logger.Error("failed to create user settings", zap.Error(err))
 		return nil, err
 	}
 	duration := time.Since(start).Seconds()
-	r.metrics.DatabaseDuration.WithLabelValues("createUser").Observe(duration)
+	r.metrics.DatabaseDuration.WithLabelValues("CreateUser").Observe(duration)
 	return &repoModel.User{
 		ID:        userID,
 		Username:  lowerUsername,
@@ -249,7 +249,7 @@ func (r *userPostgresRepository) LoginUser(ctx context.Context, logData *repoMod
 	var userRepo repoModel.User
 	err := row.Scan(&userRepo.ID, &userRepo.Username, &userRepo.Email, &storedHash, &userRepo.Thumbnail)
 	if err != nil {
-		r.metrics.DatabaseErrors.WithLabelValues("loginUser").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("LoginUser").Inc()
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("user not found", zap.Error(err))
 			return nil, userErrors.NewNotFoundError("user not found: %s", lowerUsername)
@@ -259,12 +259,12 @@ func (r *userPostgresRepository) LoginUser(ctx context.Context, logData *repoMod
 	}
 
 	if !checkPasswordHash(storedHash, logData.Password) {
-		r.metrics.DatabaseErrors.WithLabelValues("loginUser").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("LoginUser").Inc()
 		logger.Error("wrong password", zap.Error(err))
 		return nil, userErrors.NewWrongPasswordError("wrong password")
 	}
 	duration := time.Since(start).Seconds()
-	r.metrics.DatabaseDuration.WithLabelValues("loginUser").Observe(duration)
+	r.metrics.DatabaseDuration.WithLabelValues("LoginUser").Observe(duration)
 	return &userRepo, nil
 }
 
@@ -276,7 +276,7 @@ func (r *userPostgresRepository) GetUserByID(ctx context.Context, ID int64) (*re
 	var userRepo repoModel.User
 	err := row.Scan(&userRepo.ID, &userRepo.Username, &userRepo.Email, &userRepo.Thumbnail)
 	if err != nil {
-		r.metrics.DatabaseErrors.WithLabelValues("getUserByID").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("GetUserByID").Inc()
 		if errors.Is(err, sql.ErrNoRows) {
 			logger.Error("user not found", zap.Error(err))
 			return nil, userErrors.NewNotFoundError("user not found")
@@ -285,7 +285,7 @@ func (r *userPostgresRepository) GetUserByID(ctx context.Context, ID int64) (*re
 		return nil, err
 	}
 	duration := time.Since(start).Seconds()
-	r.metrics.DatabaseDuration.WithLabelValues("getUserByID").Observe(duration)
+	r.metrics.DatabaseDuration.WithLabelValues("GetUserByID").Observe(duration)
 	return &userRepo, nil
 }
 
@@ -295,12 +295,12 @@ func (r *userPostgresRepository) UploadAvatar(ctx context.Context, avatarUrl str
 	logger.Info("Loading avatar by ID", zap.Int64("ID", ID))
 	_, err := r.db.ExecContext(ctx, uploadAvatarQuery, avatarUrl, ID)
 	if err != nil {
-		r.metrics.DatabaseErrors.WithLabelValues("uploadAvatar").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("UploadAvatar").Inc()
 		logger.Error("failed to upload avatar", zap.Error(err))
 		return err
 	}
 	duration := time.Since(start).Seconds()
-	r.metrics.DatabaseDuration.WithLabelValues("uploadAvatar").Observe(duration)	
+	r.metrics.DatabaseDuration.WithLabelValues("UploadAvatar").Observe(duration)
 	return nil
 }
 
@@ -313,7 +313,7 @@ func (r *userPostgresRepository) GetIDByUsername(ctx context.Context, username s
 	var userID int64
 	err := row.Scan(&userID)
 	if err != nil {
-		r.metrics.DatabaseErrors.WithLabelValues("getIDByUsername").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("GetIDByUsername").Inc()
 		logger.Error("failed to get user ID", zap.Error(err))
 		if errors.Is(err, sql.ErrNoRows) {
 			return 0, userErrors.NewNotFoundError("user not found: %s", lowerUsername)
@@ -322,7 +322,7 @@ func (r *userPostgresRepository) GetIDByUsername(ctx context.Context, username s
 		return 0, err
 	}
 	duration := time.Since(start).Seconds()
-	r.metrics.DatabaseDuration.WithLabelValues("getIDByUsername").Observe(duration)
+	r.metrics.DatabaseDuration.WithLabelValues("GetIDByUsername").Observe(duration)
 	return userID, nil
 }
 
@@ -332,29 +332,29 @@ func (r *userPostgresRepository) DeleteUser(ctx context.Context, userRepo *repoM
 	logger.Info("Deleting user", zap.String("username", userRepo.Username))
 	id, err := r.GetIDByUsername(ctx, userRepo.Username)
 	if err != nil {
-		r.metrics.DatabaseErrors.WithLabelValues("deleteUser").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("DeleteUser").Inc()
 		logger.Error("failed to find user", zap.Error(err))
 		return err
 	}
 	storedHash, err := r.getPassword(ctx, id)
 	if err != nil {
-		r.metrics.DatabaseErrors.WithLabelValues("deleteUser").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("DeleteUser").Inc()
 		logger.Error("failed to get password hash", zap.Error(err))
 		return err
 	}
 	if !checkPasswordHash(storedHash, userRepo.Password) {
-		r.metrics.DatabaseErrors.WithLabelValues("deleteUser").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("DeleteUser").Inc()
 		logger.Error("wrong password", zap.Error(err))
 		return userErrors.NewWrongPasswordError("wrong password")
 	}
 	_, err = r.db.ExecContext(ctx, deleteUserQuery, userRepo.Username, userRepo.Email)
 	if err != nil {
-		r.metrics.DatabaseErrors.WithLabelValues("deleteUser").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("DeleteUser").Inc()
 		logger.Error("failed to delete user", zap.Error(err))
 		return err
 	}
 	duration := time.Since(start).Seconds()
-	r.metrics.DatabaseDuration.WithLabelValues("deleteUser").Observe(duration)
+	r.metrics.DatabaseDuration.WithLabelValues("DeleteUser").Observe(duration)
 	return nil
 }
 
@@ -366,24 +366,24 @@ func (r *userPostgresRepository) changeUsername(ctx context.Context, id int64, n
 	var isExist bool
 	err := r.db.QueryRowContext(ctx, checkIsUsernameUniqueQuery, newLowerUsername, id).Scan(&isExist)
 	if err != nil && err != sql.ErrNoRows {
-		r.metrics.DatabaseErrors.WithLabelValues("changeUsername").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("СhangeUsername").Inc()
 		logger.Error("failed to check username uniqueness", zap.Error(err))
 		return err
 	}
 	if isExist {
-		r.metrics.DatabaseErrors.WithLabelValues("changeUsername").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("СhangeUsername").Inc()
 		logger.Error("username already occupied. username: ", zap.String("username", newLowerUsername))
 		return userErrors.NewUserExistError("username already occupied. username: %s", newLowerUsername)
 	}
 
 	_, err = r.db.ExecContext(ctx, changeUsernameQuery, newLowerUsername, id)
 	if err != nil {
-		r.metrics.DatabaseErrors.WithLabelValues("changeUsername").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("СhangeUsername").Inc()
 		logger.Error("failed to change username", zap.Error(err))
 		return err
 	}
 	duration := time.Since(start).Seconds()
-	r.metrics.DatabaseDuration.WithLabelValues("changeUsername").Observe(duration)
+	r.metrics.DatabaseDuration.WithLabelValues("СhangeUsername").Observe(duration)
 	return nil
 }
 
@@ -394,7 +394,7 @@ func (r *userPostgresRepository) changeEmail(ctx context.Context, id int64, newE
 	var isExist bool
 	err := r.db.QueryRowContext(ctx, checkIsEmailUniqueQuery, newEmail, id).Scan(&isExist)
 	if err != nil && err != sql.ErrNoRows {
-		r.metrics.DatabaseErrors.WithLabelValues("changeEmail").Inc()
+		r.metrics.DatabaseErrors.WithLabelValues("сhangeEmail").Inc()
 		logger.Error("failed to check email uniqueness", zap.Error(err))
 		return err
 	}
@@ -488,7 +488,7 @@ func (r *userPostgresRepository) ChangeUserData(ctx context.Context, username st
 
 func (r *userPostgresRepository) ChangeUserPrivacySettings(ctx context.Context, username string, privacySettings *repoModel.PrivacySettings) error {
 	start := time.Now()
-	
+
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Changing user privacy", zap.String("username", username))
 	id, err := r.GetIDByUsername(ctx, username)

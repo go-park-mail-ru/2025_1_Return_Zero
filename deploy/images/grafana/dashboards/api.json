@@ -18,421 +18,18 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 3,
   "links": [],
   "panels": [
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 11,
-        "x": 0,
-        "y": 0
-      },
-      "id": 10,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.6.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "go_memstats_heap_alloc_bytes{job!~\"prometheus|node-exporter\"} / (1024)",
-          "hide": false,
-          "legendFormat": "{{job}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Heap in Kbytes",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "semi-dark-green",
-            "mode": "fixed"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 11,
-        "y": 0
-      },
-      "id": 11,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.6.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "go_memstats_heap_alloc_bytes{job=\"api\"} / (1024)",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Api Heap in Kbytes",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 11,
-        "x": 0,
-        "y": 8
-      },
-      "id": 9,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.6.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "go_goroutines{job!~\"prometheus|node-exporter\"}",
-          "legendFormat": "{{job}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "All Goroutines",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 11,
-        "y": 8
-      },
-      "id": 8,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.6.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "go_goroutines{job=\"api\"}",
-          "legendFormat": "Api Goroutines",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Api Goroutines",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 5,
-        "y": 16
-      },
-      "id": 1,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.6.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "api_http_requests_total",
-          "legendFormat": "{{path}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "API Handlers",
-      "type": "timeseries"
-    },
-    {
       "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 0
       },
-      "id": 7,
+      "id": 41,
       "panels": [
         {
           "datasource": {
@@ -495,11 +92,11 @@
           },
           "gridPos": {
             "h": 8,
-            "w": 12,
+            "w": 11,
             "x": 0,
-            "y": 25
+            "y": 1
           },
-          "id": 6,
+          "id": 9,
           "options": {
             "legend": {
               "calcs": [],
@@ -513,18 +110,81 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "api_http_requests_total{status=\"401\"}",
-              "legendFormat": "{{path}}",
+              "expr": "go_goroutines{job!~\"prometheus|node-exporter\"}",
+              "legendFormat": "{{job}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "401 status code",
+          "title": "All Goroutines",
           "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 11,
+            "y": 1
+          },
+          "id": 8,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "12.0.0",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "go_goroutines{job=\"api\"}",
+              "legendFormat": "Api Goroutines",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Api Goroutines",
+          "type": "stat"
         },
         {
           "datasource": {
@@ -587,103 +247,11 @@
           },
           "gridPos": {
             "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 25
-          },
-          "id": 3,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "hideZeros": false,
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "11.6.1",
-          "targets": [
-            {
-              "editorMode": "code",
-              "expr": "api_http_requests_total{status=\"500\"}",
-              "legendFormat": "{{path}}",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "500 status code",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
+            "w": 11,
             "x": 0,
-            "y": 786
+            "y": 655
           },
-          "id": 4,
+          "id": 10,
           "options": {
             "legend": {
               "calcs": [],
@@ -697,22 +265,86 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "api_http_requests_total{status=\"403\"}",
-              "legendFormat": "{{path}}",
+              "expr": "go_memstats_heap_alloc_bytes{job!~\"prometheus|node-exporter\"} / (1024)",
+              "hide": false,
+              "legendFormat": "{{job}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "403 status code",
+          "title": "Heap in Kbytes",
           "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "fixedColor": "semi-dark-green",
+                "mode": "fixed"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 12,
+            "x": 11,
+            "y": 655
+          },
+          "id": 11,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "percentChangeColorMode": "standard",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": false,
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "pluginVersion": "12.0.0",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "go_memstats_heap_alloc_bytes{job=\"api\"} / (1024)",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Api Heap in Kbytes",
+          "type": "stat"
+        },
+        {
+          "datasource": {
             "uid": "PBFA97CFB590B2093"
           },
           "fieldConfig": {
@@ -772,10 +404,10 @@
           "gridPos": {
             "h": 8,
             "w": 12,
-            "x": 12,
-            "y": 786
+            "x": 5,
+            "y": 663
           },
-          "id": 5,
+          "id": 1,
           "options": {
             "legend": {
               "calcs": [],
@@ -789,113 +421,21 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "api_http_requests_total{status=\"409\"}",
+              "expr": "api_http_requests_total",
               "legendFormat": "{{path}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "409 status code",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisBorderShow": false,
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "barWidthFactor": 0.6,
-                "drawStyle": "line",
-                "fillOpacity": 0,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "insertNulls": false,
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "auto",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 794
-          },
-          "id": 2,
-          "options": {
-            "legend": {
-              "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "hideZeros": false,
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "11.6.1",
-          "targets": [
-            {
-              "editorMode": "code",
-              "expr": "api_http_requests_total{status=\"404\"}",
-              "legendFormat": "{{path}}",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "404 status code",
+          "title": "API Handlers",
           "type": "timeseries"
         }
       ],
-      "title": "Error codes",
+      "title": "Go Runtime Data",
       "type": "row"
     },
     {
@@ -904,9 +444,9 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 25
+        "y": 1
       },
-      "id": 12,
+      "id": 42,
       "panels": [
         {
           "datasource": {
@@ -968,12 +508,12 @@
             "overrides": []
           },
           "gridPos": {
-            "h": 9,
-            "w": 12,
+            "h": 10,
+            "w": 24,
             "x": 0,
-            "y": 26
+            "y": 2
           },
-          "id": 13,
+          "id": 43,
           "maxPerRow": 2,
           "options": {
             "legend": {
@@ -988,23 +528,19 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
-              },
               "editorMode": "code",
-              "expr": "api_http_requests_total{path=~\"${auth_endpoint:pipe}\"}",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{path}}",
+              "exemplar": false,
+              "expr": "sum without(status)(\n  rate(\n    api_http_requests_total{\n      path=~\"$AuthHandlers\"\n    }[$__rate_interval]\n  )\n)\n",
+              "legendFormat": "$AuthHandlers",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "$auth_endpoint - hit",
+          "title": "RPS AuthHandlers",
           "type": "timeseries"
         },
         {
@@ -1018,17 +554,36 @@
                 "mode": "palette-classic"
               },
               "custom": {
-                "fillOpacity": 80,
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
                 "gradientMode": "none",
                 "hideFrom": {
                   "legend": false,
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
                 "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
                 }
               },
               "mappings": [],
@@ -1048,12 +603,12 @@
             "overrides": []
           },
           "gridPos": {
-            "h": 9,
-            "w": 12,
-            "x": 12,
-            "y": 26
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 240
           },
-          "id": 14,
+          "id": 44,
           "maxPerRow": 2,
           "options": {
             "legend": {
@@ -1068,18 +623,19 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "api_http_request_duration_seconds_bucket{path=~\"$auth_endpoint\"}",
-              "legendFormat": "{{le}}",
+              "expr": "histogram_quantile(0.95, sum by (le, path) (rate(api_http_request_duration_seconds_bucket{path=~\"$AuthHandlers\"}[$__rate_interval])))",
+              "legendFormat": "{{path}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "$auth_endpoint - timings",
-          "type": "histogram"
+          "title": "AuthHandlers - timings",
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -1089,7 +645,40 @@
           "fieldConfig": {
             "defaults": {
               "color": {
-                "mode": "thresholds"
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
               },
               "mappings": [],
               "thresholds": {
@@ -1108,57 +697,40 @@
             "overrides": []
           },
           "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 6,
-            "y": 611
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 250
           },
-          "id": 15,
+          "id": 45,
+          "maxPerRow": 2,
           "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "percentChangeColorMode": "standard",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
             },
-            "showPercentChange": false,
-            "textMode": "auto",
-            "wideLayout": true
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum(increase(api_http_requests_total{path=\"$auth_endpoint\"}[1h]))",
-              "legendFormat": "__auto",
+              "expr": "(rate(api_http_request_duration_seconds_sum{path=~\"$AuthHandlers\"}[$__rate_interval]) / rate(api_http_request_duration_seconds_count{path=~\"$AuthHandlers\"}[$__rate_interval])) * 1000",
+              "legendFormat": "{{path}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "Requests $auth_endpoint per hour",
-          "type": "stat"
-        }
-      ],
-      "repeat": "auth_endpoint",
-      "title": "Auth handler - ${auth_endpoint}",
-      "type": "row"
-    },
-    {
-      "collapsed": true,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 26
-      },
-      "id": 16,
-      "panels": [
+          "title": "ART AuthHandlers",
+          "type": "timeseries"
+        },
         {
           "datasource": {
             "type": "prometheus",
@@ -1222,9 +794,9 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 27
+            "y": 260
           },
-          "id": 17,
+          "id": 46,
           "options": {
             "legend": {
               "calcs": [],
@@ -1238,25 +810,33 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
-              },
               "editorMode": "code",
-              "expr": "api_http_requests_total{path=\"/api/v1/user/{username}\", method=\"GET\"}",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{path}}",
+              "expr": "rate(api_http_requests_total{path=~\"$AuthHandlers\", status!=\"200\"}[$__rate_interval])",
+              "legendFormat": "{{path}}, {{status}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "/api/v1/user/{username} - hit (GET)",
+          "title": "RPS Errors",
           "type": "timeseries"
-        },
+        }
+      ],
+      "title": "Auth handler",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 2
+      },
+      "id": 47,
+      "panels": [
         {
           "datasource": {
             "type": "prometheus",
@@ -1268,17 +848,36 @@
                 "mode": "palette-classic"
               },
               "custom": {
-                "fillOpacity": 80,
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
                 "gradientMode": "none",
                 "hideFrom": {
                   "legend": false,
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
                 "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
                 }
               },
               "mappings": [],
@@ -1298,12 +897,13 @@
             "overrides": []
           },
           "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 27
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 3
           },
-          "id": 18,
+          "id": 48,
+          "maxPerRow": 2,
           "options": {
             "legend": {
               "calcs": [],
@@ -1317,18 +917,19 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "api_http_request_duration_seconds_bucket{path=\"/api/v1/user/{username}\", method=\"GET\"}",
-              "legendFormat": "{{le}}",
+              "expr": "sum without(status)(\n  rate(\n    api_http_requests_total{\n      path=~\"$UserHandlers\"\n    }[$__rate_interval]\n  )\n)\n",
+              "legendFormat": "{{path}}, {{method}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "/api/v1/user/{username} - timings (GET)",
-          "type": "histogram"
+          "title": "RPS UserHandlers",
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -1338,7 +939,40 @@
           "fieldConfig": {
             "defaults": {
               "color": {
-                "mode": "thresholds"
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
               },
               "mappings": [],
               "thresholds": {
@@ -1357,57 +991,134 @@
             "overrides": []
           },
           "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 6,
-            "y": 99
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 13
           },
-          "id": 19,
+          "id": 52,
+          "maxPerRow": 2,
           "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "percentChangeColorMode": "standard",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
             },
-            "showPercentChange": false,
-            "textMode": "auto",
-            "wideLayout": true
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum(increase(api_http_requests_total{path=\"/api/v1/user/{username}\", method=\"GET\"}[1h]))",
-              "legendFormat": "__auto",
+              "expr": "histogram_quantile(0.95, sum by (le, path, method) (rate(api_http_request_duration_seconds_bucket{path=~\"$UserHandlers\"}[$__rate_interval])))",
+              "legendFormat": "{{path}}, {{method}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "Requests /api/v1/user/{username} per hour (GET)",
-          "type": "stat"
-        }
-      ],
-      "repeat": "user_endpoint",
-      "title": "User handler - /api/v1/user/{username} (method = GET)",
-      "type": "row"
-    },
-    {
-      "collapsed": true,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 27
-      },
-      "id": 20,
-      "panels": [
+          "title": "UserHandlers - timings",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 23
+          },
+          "id": 50,
+          "maxPerRow": 2,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "(rate(api_http_request_duration_seconds_sum{path=~\"$UserHandlers\"}[$__rate_interval]) / rate(api_http_request_duration_seconds_count{path=~\"$UserHandlers\"}[$__rate_interval])) * 1000",
+              "legendFormat": "{{path}}, {{method}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "ART UserHandlers",
+          "type": "timeseries"
+        },
         {
           "datasource": {
             "type": "prometheus",
@@ -1471,9 +1182,9 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 108
+            "y": 33
           },
-          "id": 21,
+          "id": 51,
           "options": {
             "legend": {
               "calcs": [],
@@ -1487,25 +1198,33 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
-              },
               "editorMode": "code",
-              "expr": "api_http_requests_total{path=~\"${user_endpoint:pipe}\", method=\"PUT\"}",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{path}}",
+              "expr": "rate(api_http_requests_total{path=~\"$UserHandlers\", status!=\"200\"}[$__rate_interval])",
+              "legendFormat": "{{path}}, {{status}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "$user_endpoint - hit (PUT)",
+          "title": "RPS Errors",
           "type": "timeseries"
-        },
+        }
+      ],
+      "title": "User handler",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 3
+      },
+      "id": 53,
+      "panels": [
         {
           "datasource": {
             "type": "prometheus",
@@ -1517,17 +1236,36 @@
                 "mode": "palette-classic"
               },
               "custom": {
-                "fillOpacity": 80,
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
                 "gradientMode": "none",
                 "hideFrom": {
                   "legend": false,
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
                 "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
                 }
               },
               "mappings": [],
@@ -1547,12 +1285,13 @@
             "overrides": []
           },
           "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 108
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 42
           },
-          "id": 22,
+          "id": 54,
+          "maxPerRow": 2,
           "options": {
             "legend": {
               "calcs": [],
@@ -1566,18 +1305,19 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "api_http_request_duration_seconds_bucket{path=~\"$user_endpoint\", method=\"PUT\"}",
-              "legendFormat": "{{le}}",
+              "expr": "sum without(status)(\n  rate(\n    api_http_requests_total{\n      path=~\"$ArtistsHandlers\"\n    }[$__rate_interval]\n  )\n)\n",
+              "legendFormat": "{{path}}, {{method}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "$user_endpoint - timings (PUT)",
-          "type": "histogram"
+          "title": "RPS ArtistsHandlers ",
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -1587,7 +1327,40 @@
           "fieldConfig": {
             "defaults": {
               "color": {
-                "mode": "thresholds"
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
               },
               "mappings": [],
               "thresholds": {
@@ -1606,56 +1379,134 @@
             "overrides": []
           },
           "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 6,
-            "y": 116
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 52
           },
-          "id": 23,
+          "id": 55,
+          "maxPerRow": 2,
           "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "percentChangeColorMode": "standard",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
             },
-            "showPercentChange": false,
-            "textMode": "auto",
-            "wideLayout": true
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum(increase(api_http_requests_total{path=\"$user_endpoint\", method=\"PUT\"}[1h]))",
-              "legendFormat": "__auto",
+              "expr": "histogram_quantile(0.95, sum by (le, path, method) (rate(api_http_request_duration_seconds_bucket{path=~\"$ArtistsHandlers\"}[$__rate_interval])))",
+              "legendFormat": "{{path}}, {{method}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "Requests $user_endpoint per hour (PUT)",
-          "type": "stat"
-        }
-      ],
-      "title": "User handler - /api/v1/user/me (method = PUT)",
-      "type": "row"
-    },
-    {
-      "collapsed": true,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 28
-      },
-      "id": 24,
-      "panels": [
+          "title": "ArtistsHandlers - timings",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 62
+          },
+          "id": 56,
+          "maxPerRow": 2,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "(rate(api_http_request_duration_seconds_sum{path=~\"$ArtistsHandlers\"}[$__rate_interval]) / rate(api_http_request_duration_seconds_count{path=~\"$ArtistsHandlers\"}[$__rate_interval])) * 1000",
+              "legendFormat": "{{path}}, {{method}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "ART ArtistsHandlers",
+          "type": "timeseries"
+        },
         {
           "datasource": {
             "type": "prometheus",
@@ -1719,9 +1570,9 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 125
+            "y": 72
           },
-          "id": 25,
+          "id": 57,
           "options": {
             "legend": {
               "calcs": [],
@@ -1735,23 +1586,125 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
-              },
               "editorMode": "code",
-              "expr": "api_http_requests_total{path=~\"${user_endpoint:pipe}\", method=\"DELETE\"}",
-              "hide": false,
-              "instant": false,
-              "legendFormat": "{{path}}",
+              "expr": "rate(api_http_requests_total{path=~\"$ArtistsHandlers\", status!=\"200\"}[$__rate_interval])",
+              "legendFormat": "{{path}}, {{status}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "$user_endpoint - hit (DELETE)",
+          "title": "RPS Errors",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Artists handler",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 58,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 81
+          },
+          "id": 59,
+          "maxPerRow": 2,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "sum without(status)(\n  rate(\n    api_http_requests_total{\n      path=~\"$AlbumsHandlers\"\n    }[$__rate_interval]\n  )\n)\n",
+              "legendFormat": "{{path}}, {{method}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "RPS $AlbumsHandlers ",
           "type": "timeseries"
         },
         {
@@ -1765,17 +1718,224 @@
                 "mode": "palette-classic"
               },
               "custom": {
-                "fillOpacity": 80,
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
                 "gradientMode": "none",
                 "hideFrom": {
                   "legend": false,
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
                 "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 91
+          },
+          "id": 60,
+          "maxPerRow": 2,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.95, sum by (le, path, method) (rate(api_http_request_duration_seconds_bucket{path=~\"$AlbumsHandlers\"}[$__rate_interval])))",
+              "legendFormat": "{{path}}, {{method}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "AlbumsHandlers - timings",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 101
+          },
+          "id": 61,
+          "maxPerRow": 2,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "(rate(api_http_request_duration_seconds_sum{path=~\"$AlbumsHandlers\"}[$__rate_interval]) / rate(api_http_request_duration_seconds_count{path=~\"$AlbumsHandlers\"}[$__rate_interval]))",
+              "legendFormat": "{{path}}, {{method}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "ART AlbumsHandlers",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
                 }
               },
               "mappings": [],
@@ -1797,10 +1957,10 @@
           "gridPos": {
             "h": 8,
             "w": 12,
-            "x": 12,
-            "y": 125
+            "x": 0,
+            "y": 111
           },
-          "id": 26,
+          "id": 62,
           "options": {
             "legend": {
               "calcs": [],
@@ -1814,18 +1974,126 @@
               "sort": "none"
             }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "api_http_request_duration_seconds_bucket{path=~\"$user_endpoint\", method=\"DELETE\"}",
-              "legendFormat": "{{le}}",
+              "expr": "rate(api_http_requests_total{path=~\"$AlbumsHandlers\", status!=\"200\"}[$__rate_interval])",
+              "legendFormat": "{{path}}, {{status}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "$user_endpoint - timings (DELETE)",
-          "type": "histogram"
+          "title": "RPS Errors",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Albums handler",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 63,
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 82
+          },
+          "id": 64,
+          "maxPerRow": 2,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "sum without(status)(\n  rate(\n    api_http_requests_total{\n      path=~\"$TracksHandlers\"\n    }[$__rate_interval]\n  )\n)\n",
+              "legendFormat": "{{path}}, {{method}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "RPS $TracksHandlers ",
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -1835,7 +2103,228 @@
           "fieldConfig": {
             "defaults": {
               "color": {
-                "mode": "thresholds"
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 92
+          },
+          "id": 65,
+          "maxPerRow": 2,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "histogram_quantile(0.95, sum by (le, path, method) (rate(api_http_request_duration_seconds_bucket{path=~\"$TracksHandlers\"}[$__rate_interval])))",
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "$TracksHandlers - timings",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 102
+          },
+          "id": 66,
+          "maxPerRow": 2,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.0",
+          "repeatDirection": "h",
+          "targets": [
+            {
+              "editorMode": "code",
+              "expr": "(rate(api_http_request_duration_seconds_sum{path=~\"$TracksHandlers\"}[$__rate_interval]) / rate(api_http_request_duration_seconds_count{path=~\"$TracksHandlers\"}[$__rate_interval])) * 1000",
+              "legendFormat": "{{path}}, {{method}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "ART $TracksHandlers",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
               },
               "mappings": [],
               "thresholds": {
@@ -1856,290 +2345,39 @@
           "gridPos": {
             "h": 8,
             "w": 12,
-            "x": 6,
-            "y": 149
+            "x": 0,
+            "y": 112
           },
-          "id": 27,
+          "id": 67,
           "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "percentChangeColorMode": "standard",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
             },
-            "showPercentChange": false,
-            "textMode": "auto",
-            "wideLayout": true
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
           },
-          "pluginVersion": "11.6.1",
+          "pluginVersion": "12.0.0",
           "targets": [
             {
               "editorMode": "code",
-              "expr": "sum(increase(api_http_requests_total{path=\"$user_endpoint\", method=\"DELETE\"}[1h]))",
-              "legendFormat": "__auto",
+              "expr": "rate(api_http_requests_total{path=~\"$TracksHandlers\", status!=\"200\"}[$__rate_interval])",
+              "legendFormat": "{{path}}, {{status}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "Requests $user_endpoint per hour (DELETE)",
-          "type": "stat"
+          "title": "RPS Errors",
+          "type": "timeseries"
         }
       ],
-      "title": "User handler - /api/v1/user/me (method = DELETE)",
+      "title": "Tracks handler",
       "type": "row"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 29
-      },
-      "id": 28,
-      "panels": [],
-      "title": "User handler - /api/v1/user/me/avatar (method = POST)",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 30
-      },
-      "id": 29,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.6.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "editorMode": "code",
-          "expr": "api_http_requests_total{path=\"/api/v1/user/me/avatar\", method=\"POST\"}",
-          "hide": false,
-          "instant": false,
-          "legendFormat": "{{path}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "/api/v1/user/me/avatar - hit (POST)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "fillOpacity": 80,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineWidth": 1,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 30
-      },
-      "id": 30,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.6.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "api_http_request_duration_seconds_bucket{path=\"/api/v1/user/me/avatar\", method=\"POST\"}",
-          "legendFormat": "{{le}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "/api/v1/user/me/avatar - timings (POST)",
-      "type": "histogram"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 6,
-        "y": 38
-      },
-      "id": 31,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.6.1",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "sum(increase(api_http_requests_total{path=\"/api/v1/user/me/avatar\", method=\"POST\"}[1h]))",
-          "legendFormat": "__auto",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Requests /api/v1/user/me/avatar per hour (POST)",
-      "type": "stat"
     }
   ],
   "preload": false,
@@ -2163,11 +2401,8 @@
           ]
         },
         "definition": "label_values(api_http_requests_total,path)",
-        "description": "all auth endpoints",
-        "includeAll": false,
-        "label": "auth_endpoint",
         "multi": true,
-        "name": "auth_endpoint",
+        "name": "AuthHandlers",
         "options": [],
         "query": {
           "qryType": 1,
@@ -2181,17 +2416,17 @@
       {
         "current": {
           "text": [
+            "/api/v1/user/me",
             "/api/v1/user/{username}"
           ],
           "value": [
+            "/api/v1/user/me",
             "/api/v1/user/{username}"
           ]
         },
         "definition": "label_values(api_http_requests_total,path)",
-        "description": "all user endpoints",
-        "label": "user_endpoint",
         "multi": true,
-        "name": "user_endpoint",
+        "name": "UserHandlers",
         "options": [],
         "query": {
           "qryType": 1,
@@ -2199,31 +2434,103 @@
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
-        "regex": "^/api/v1/user/me",
+        "regex": "^/api/v1/user/.*",
         "type": "query"
       },
       {
         "current": {
           "text": [
-            "GET"
+            "/api/v1/user/me",
+            "/api/v1/user/{username}"
           ],
           "value": [
-            "GET"
+            "/api/v1/user/me",
+            "/api/v1/user/{username}"
           ]
         },
-        "definition": "label_values(api_http_requests_total,method)",
-        "description": "method",
-        "label": "method",
+        "definition": "label_values(api_http_requests_total,path)",
         "multi": true,
-        "name": "method",
+        "name": "ArtistsHandlers",
         "options": [],
         "query": {
           "qryType": 1,
-          "query": "label_values(api_http_requests_total,method)",
+          "query": "label_values(api_http_requests_total,path)",
           "refId": "PrometheusVariableQueryEditor-VariableQuery"
         },
         "refresh": 2,
-        "regex": "",
+        "regex": "^/api/v1/artists.*",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": [
+            "/api/v1/user/me",
+            "/api/v1/user/{username}"
+          ],
+          "value": [
+            "/api/v1/user/me",
+            "/api/v1/user/{username}"
+          ]
+        },
+        "definition": "label_values(api_http_requests_total,path)",
+        "multi": true,
+        "name": "AlbumsHandlers",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(api_http_requests_total,path)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "^/api/v1/albums/.*",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": [
+            "/api/v1/user/me",
+            "/api/v1/user/{username}"
+          ],
+          "value": [
+            "/api/v1/user/me",
+            "/api/v1/user/{username}"
+          ]
+        },
+        "definition": "label_values(api_http_requests_total,path)",
+        "multi": true,
+        "name": "TracksHandlers",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(api_http_requests_total,path)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "^/api/v1/tracks/.*",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": [
+            "/api/v1/user/me",
+            "/api/v1/user/{username}"
+          ],
+          "value": [
+            "/api/v1/user/me",
+            "/api/v1/user/{username}"
+          ]
+        },
+        "definition": "label_values(api_http_requests_total,path)",
+        "multi": true,
+        "name": "PlaylistsHandlers",
+        "options": [],
+        "query": {
+          "qryType": 1,
+          "query": "label_values(api_http_requests_total,path)",
+          "refId": "PrometheusVariableQueryEditor-VariableQuery"
+        },
+        "refresh": 2,
+        "regex": "^/api/v1/playlists/.*",
         "type": "query"
       }
     ]

@@ -16,7 +16,7 @@ func NewMetrics(reg prometheus.Registerer, namespace string) *Metrics {
 	metrics := &Metrics{
 		GRPCTotalNumberOfRequests: prometheus.NewCounterVec(
 			prometheus.CounterOpts{
-				Name:      "grpc_total_number_of_requests",
+				Name:      "grpc_number_of_requests_total",
 				Help:      "Total number of requests received",
 				Namespace: namespace,
 			},

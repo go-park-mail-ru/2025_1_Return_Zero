@@ -67,7 +67,7 @@ func (r *authRedisRepository) DeleteSession(ctx context.Context, sessionID strin
 		return authErrors.NewDeleteSessionError("failed to delete session: %v", err)
 	}
 	duration := time.Since(start).Seconds()
-	r.metrics.DatabaseDuration.WithLabelValues("delete_session").Observe(duration)
+	r.metrics.DatabaseDuration.WithLabelValues("DeleteSession").Observe(duration)
 	return nil
 }
 
@@ -85,6 +85,6 @@ func (r *authRedisRepository) GetSession(ctx context.Context, sessionID string) 
 		return -1, authErrors.NewGetSessionError("failed to get session: %v", err)
 	}
 	duration := time.Since(start).Seconds()
-	r.metrics.DatabaseDuration.WithLabelValues("get_session").Observe(duration)
+	r.metrics.DatabaseDuration.WithLabelValues("GetSession").Observe(duration)
 	return id, nil
 }
