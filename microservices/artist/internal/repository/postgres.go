@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 
@@ -153,7 +152,14 @@ func (r *artistPostgresRepository) GetAllArtists(ctx context.Context, filters *r
 	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting all artists with filters from db", zap.Any("filters", filters), zap.String("query", GetAllArtistsQuery))
-	rows, err := r.db.QueryContext(ctx, GetAllArtistsQuery, filters.Pagination.Limit, filters.Pagination.Offset, userID)
+	stmt, err := r.db.PrepareContext(ctx, GetAllArtistsQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetAllArtitst").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx, filters.Pagination.Limit, filters.Pagination.Offset, userID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetAllArtitst").Inc()
 		logger.Error("failed to get all artists", zap.Error(err))
@@ -183,11 +189,18 @@ func (r *artistPostgresRepository) GetArtistByID(ctx context.Context, id int64, 
 	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artist by id from db", zap.Int64("id", id), zap.String("query", GetArtistByIDQuery))
-	row := r.db.QueryRowContext(ctx, GetArtistByIDQuery, id, userID)
+	stmt, err := r.db.PrepareContext(ctx, GetArtistByIDQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistByID").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+	row := stmt.QueryRowContext(ctx, id, userID)
 
 	var artistObject repoModel.Artist
 	var isFavorite sql.NullBool
-	err := row.Scan(&artistObject.ID, &artistObject.Title, &artistObject.Description, &artistObject.Thumbnail, &isFavorite)
+	err = row.Scan(&artistObject.ID, &artistObject.Title, &artistObject.Description, &artistObject.Thumbnail, &isFavorite)
 
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetArtistByID").Inc()
@@ -210,10 +223,18 @@ func (r *artistPostgresRepository) GetArtistTitleByID(ctx context.Context, id in
 	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artist title by id from db", zap.Int64("id", id), zap.String("query", GetArtistTitleByIDQuery))
-	row := r.db.QueryRowContext(ctx, GetArtistTitleByIDQuery, id)
+	stmt, err := r.db.PrepareContext(ctx, GetArtistTitleByIDQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistTitleByID").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return "", artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRowContext(ctx, id)
 
 	var title string
-	err := row.Scan(&title)
+	err = row.Scan(&title)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetArtistTitleByID").Inc()
 		if errors.Is(err, sql.ErrNoRows) {
@@ -232,7 +253,14 @@ func (r *artistPostgresRepository) GetArtistsByTrackID(ctx context.Context, id i
 	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artists by track id from db", zap.Int64("id", id), zap.String("query", GetArtistsByTrackIDQuery))
-	rows, err := r.db.QueryContext(ctx, GetArtistsByTrackIDQuery, id)
+	stmt, err := r.db.PrepareContext(ctx, GetArtistsByTrackIDQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByTrackID").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx, id)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByTrackID").Inc()
 		logger.Error("failed to get artists by track id", zap.Error(err))
@@ -260,7 +288,14 @@ func (r *artistPostgresRepository) GetArtistsByTrackIDs(ctx context.Context, tra
 	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artists by track ids from db", zap.Any("ids", trackIDs), zap.String("query", GetArtistsByTrackIDsQuery))
-	rows, err := r.db.QueryContext(ctx, GetArtistsByTrackIDsQuery, pq.Array(trackIDs))
+	stmt, err := r.db.PrepareContext(ctx, GetArtistsByTrackIDsQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByTrackIDs").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx, pq.Array(trackIDs))
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByTrackIDs").Inc()
 		logger.Error("failed to get artists by track ids", zap.Error(err))
@@ -289,10 +324,17 @@ func (r *artistPostgresRepository) GetArtistStats(ctx context.Context, id int64)
 	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artist stats by id from db", zap.Int64("id", id), zap.String("query", GetArtistStatsQuery))
-	row := r.db.QueryRowContext(ctx, GetArtistStatsQuery, id)
+	stmt, err := r.db.PrepareContext(ctx, GetArtistStatsQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistStats").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+	row := stmt.QueryRowContext(ctx, id)
 
 	var stats repoModel.ArtistStats
-	err := row.Scan(&stats.ListenersCount, &stats.FavoritesCount)
+	err = row.Scan(&stats.ListenersCount, &stats.FavoritesCount)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetArtistStats").Inc()
 		logger.Error("failed to get artist stats by id", zap.Error(err))
@@ -307,7 +349,14 @@ func (r *artistPostgresRepository) GetArtistsByAlbumID(ctx context.Context, albu
 	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artists by album id from db", zap.Int64("id", albumID), zap.String("query", GetArtistsByAlbumIDQuery))
-	rows, err := r.db.QueryContext(ctx, GetArtistsByAlbumIDQuery, albumID)
+	stmt, err := r.db.PrepareContext(ctx, GetArtistsByAlbumIDQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByAlbumID").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx, albumID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByAlbumID").Inc()
 		logger.Error("failed to get artists by album id", zap.Error(err))
@@ -335,7 +384,14 @@ func (r *artistPostgresRepository) GetArtistsByAlbumIDs(ctx context.Context, alb
 	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artists by album ids from db", zap.Any("ids", albumIDs), zap.String("query", GetArtistsByAlbumIDsQuery))
-	rows, err := r.db.QueryContext(ctx, GetArtistsByAlbumIDsQuery, pq.Array(albumIDs))
+	stmt, err := r.db.PrepareContext(ctx, GetArtistsByAlbumIDsQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByAlbumIDs").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx, pq.Array(albumIDs))
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByAlbumIDs").Inc()
 		logger.Error("failed to get artists by album ids", zap.Error(err))
@@ -364,7 +420,14 @@ func (r *artistPostgresRepository) GetAlbumIDsByArtistID(ctx context.Context, id
 	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting album ids by artist id from db", zap.Int64("id", id), zap.String("query", GetAlbumIDsByArtistIDQuery))
-	rows, err := r.db.QueryContext(ctx, GetAlbumIDsByArtistIDQuery, id)
+	stmt, err := r.db.PrepareContext(ctx, GetAlbumIDsByArtistIDQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetAlbumIDsByArtistID").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx, id)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetAlbumIDsByArtistID").Inc()
 		logger.Error("failed to get album ids by artist id", zap.Error(err))
@@ -392,7 +455,14 @@ func (r *artistPostgresRepository) GetTrackIDsByArtistID(ctx context.Context, id
 	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting track ids by artist id from db", zap.Int64("id", id), zap.String("query", GetTrackIDsByArtistID))
-	rows, err := r.db.QueryContext(ctx, GetTrackIDsByArtistID, id)
+	stmt, err := r.db.PrepareContext(ctx, GetTrackIDsByArtistID)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetTrackIDsByArtistID").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+	rows, err := stmt.QueryContext(ctx, id)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetTrackIDsByArtistID").Inc()
 		logger.Error("failed to get track ids by artist id", zap.Error(err))
@@ -434,18 +504,18 @@ func (r *artistPostgresRepository) CreateStreamsByArtistIDs(ctx context.Context,
 	}
 	defer tx.Rollback()
 
-	query := "INSERT INTO artist_stream (artist_id, user_id) VALUES "
-	args := make([]interface{}, 0, len(data.ArtistIDs)*2)
+	query := `INSERT INTO artist_stream (artist_id, user_id) 
+              SELECT unnest($1::bigint[]), $2`
 
-	for i, artistID := range data.ArtistIDs {
-		if i > 0 {
-			query += ", "
-		}
-		query += fmt.Sprintf("($%d, $%d)", i*2+1, i*2+2)
-		args = append(args, artistID, data.UserID)
+	stmt, err := tx.PrepareContext(ctx, query)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CreateStreamsByArtistIDs").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
+	defer stmt.Close()
 
-	_, err = tx.ExecContext(ctx, query, args...)
+	_, err = stmt.ExecContext(ctx, pq.Array(data.ArtistIDs), data.UserID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("CreateStreamsByArtistIDs").Inc()
 		logger.Error("failed to create streams for artists", zap.Error(err))
@@ -466,10 +536,18 @@ func (r *artistPostgresRepository) GetArtistsListenedByUserID(ctx context.Contex
 	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting artists listened by user id from db", zap.Int64("userID", userID), zap.String("query", GetArtistsListenedByUserIDQuery))
-	row := r.db.QueryRowContext(ctx, GetArtistsListenedByUserIDQuery, userID)
+	stmt, err := r.db.PrepareContext(ctx, GetArtistsListenedByUserIDQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsListenedByUserID").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return 0, artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRowContext(ctx, userID)
 
 	var artistsListened int64
-	err := row.Scan(&artistsListened)
+	err = row.Scan(&artistsListened)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsListenedByUserID").Inc()
 		logger.Error("failed to get artists listened by user id", zap.Error(err))
@@ -483,10 +561,16 @@ func (r *artistPostgresRepository) GetArtistsListenedByUserID(ctx context.Contex
 func (r *artistPostgresRepository) CheckArtistExists(ctx context.Context, id int64) (bool, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Checking if artist exists", zap.Int64("id", id), zap.String("query", CheckArtistExistsQuery))
-	row := r.db.QueryRowContext(ctx, CheckArtistExistsQuery, id)
+	stmt, err := r.db.PrepareContext(ctx, CheckArtistExistsQuery)
+	if err != nil {
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return false, artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+	row := stmt.QueryRowContext(ctx, id)
 
 	var exists bool
-	err := row.Scan(&exists)
+	err = row.Scan(&exists)
 	if err != nil {
 		logger.Error("failed to check if artist exists", zap.Error(err))
 		return false, artistErrors.NewInternalError("failed to check if artist exists: %v", err)
@@ -499,8 +583,14 @@ func (r *artistPostgresRepository) CheckArtistExists(ctx context.Context, id int
 func (r *artistPostgresRepository) LikeArtist(ctx context.Context, request *repoModel.LikeRequest) error {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting to like artist", zap.Any("request", request), zap.Int64("artistID", request.ArtistID), zap.Int64("userID", request.UserID))
+	stmt, err := r.db.PrepareContext(ctx, LikeArtistByUserIDQuery)
+	if err != nil {
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
-	_, err := r.db.ExecContext(ctx, LikeArtistByUserIDQuery, request.ArtistID, request.UserID)
+	_, err = stmt.ExecContext(ctx, request.ArtistID, request.UserID)
 	if err != nil {
 		logger.Error("failed to like artist", zap.Error(err))
 		return artistErrors.NewInternalError("failed to like artist: %v", err)
@@ -512,8 +602,14 @@ func (r *artistPostgresRepository) LikeArtist(ctx context.Context, request *repo
 func (r *artistPostgresRepository) UnlikeArtist(ctx context.Context, request *repoModel.LikeRequest) error {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting to unlike artist", zap.Any("request", request), zap.Int64("artistID", request.ArtistID), zap.Int64("userID", request.UserID))
+	stmt, err := r.db.PrepareContext(ctx, UnlikeArtistByUserIDQuery)
+	if err != nil {
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
-	_, err := r.db.ExecContext(ctx, UnlikeArtistByUserIDQuery, request.ArtistID, request.UserID)
+	_, err = stmt.ExecContext(ctx, request.ArtistID, request.UserID)
 	if err != nil {
 		logger.Error("failed to unlike artist", zap.Error(err))
 		return artistErrors.NewInternalError("failed to unlike artist: %v", err)
@@ -525,7 +621,14 @@ func (r *artistPostgresRepository) UnlikeArtist(ctx context.Context, request *re
 func (r *artistPostgresRepository) GetFavoriteArtists(ctx context.Context, filters *repoModel.Filters, userID int64) ([]*repoModel.Artist, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting favorite artists by user id from db", zap.Int64("userID", userID), zap.String("query", GetFavoriteArtistsQuery))
-	rows, err := r.db.QueryContext(ctx, GetFavoriteArtistsQuery, userID, filters.Pagination.Limit, filters.Pagination.Offset)
+	stmt, err := r.db.PrepareContext(ctx, GetFavoriteArtistsQuery)
+	if err != nil {
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx, userID, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
 		logger.Error("failed to get favorite artists", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get favorite artists: %v", err)
@@ -552,6 +655,12 @@ func (r *artistPostgresRepository) GetFavoriteArtists(ctx context.Context, filte
 func (r *artistPostgresRepository) SearchArtists(ctx context.Context, query string, userID int64) ([]*repoModel.Artist, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Requesting search artists by query from db", zap.String("query", query), zap.Int64("userID", userID), zap.String("query", SearchArtistsQuery))
+	stmt, err := r.db.PrepareContext(ctx, SearchArtistsQuery)
+	if err != nil {
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
 	words := strings.Fields(query)
 	for i, word := range words {
@@ -559,7 +668,7 @@ func (r *artistPostgresRepository) SearchArtists(ctx context.Context, query stri
 	}
 	tsQueryString := strings.Join(words, " & ")
 
-	rows, err := r.db.QueryContext(ctx, SearchArtistsQuery, tsQueryString, userID, query)
+	rows, err := stmt.QueryContext(ctx, tsQueryString, userID, query)
 	if err != nil {
 		logger.Error("failed to search artists", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to search artists: %v", err)

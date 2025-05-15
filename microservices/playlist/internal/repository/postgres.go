@@ -158,8 +158,16 @@ func (r *PlaylistPostgresRepository) GetPlaylistByID(ctx context.Context, id int
 
 	start := time.Now()
 
+	stmt, err := r.db.PrepareContext(ctx, GetPlaylistByIDQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistByID").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+
 	var playlist repoModel.Playlist
-	err := r.db.QueryRowContext(ctx, GetPlaylistByIDQuery, id).Scan(&playlist.ID, &playlist.Title, &playlist.UserID, &playlist.Thumbnail, &playlist.IsPublic)
+	err = stmt.QueryRowContext(ctx, id).Scan(&playlist.ID, &playlist.Title, &playlist.UserID, &playlist.Thumbnail, &playlist.IsPublic)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistByID").Inc()
 		if err == sql.ErrNoRows {
@@ -181,9 +189,16 @@ func (r *PlaylistPostgresRepository) CreatePlaylist(ctx context.Context, playlis
 	logger.Info("Creating playlist", zap.Any("playlist", playlistCreateRequest))
 
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, CreatePlaylistQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CreatePlaylist").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
 	var id int64
-	err := r.db.QueryRowContext(ctx, CreatePlaylistQuery, playlistCreateRequest.Title, playlistCreateRequest.UserID, playlistCreateRequest.Thumbnail, playlistCreateRequest.IsPublic).Scan(&id)
+	err = stmt.QueryRowContext(ctx, playlistCreateRequest.Title, playlistCreateRequest.UserID, playlistCreateRequest.Thumbnail, playlistCreateRequest.IsPublic).Scan(&id)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("CreatePlaylist").Inc()
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
@@ -209,8 +224,14 @@ func (r *PlaylistPostgresRepository) CreatePlaylist(ctx context.Context, playlis
 func (r *PlaylistPostgresRepository) GetCombinedPlaylistsByUserID(ctx context.Context, userID int64) (*repoModel.PlaylistList, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Getting playlists by user id", zap.Int64("user_id", userID))
-
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, GetPlaylistsByUserIDQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetCombinedPlaylistsByUserID").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
 	var playlists repoModel.PlaylistList
 	rows, err := r.db.QueryContext(ctx, GetPlaylistsByUserIDQuery, userID)
@@ -242,9 +263,16 @@ func (r *PlaylistPostgresRepository) TrackExistsInPlaylist(ctx context.Context, 
 	logger.Info("Checking if track exists in playlist", "playlist_id", playlistID, "track_id", trackID)
 
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, TrackExistsInPlaylistQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("TrackExistsInPlaylist").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return false, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
 	var exists bool
-	err := r.db.QueryRowContext(ctx, TrackExistsInPlaylistQuery, playlistID, trackID).Scan(&exists)
+	err = stmt.QueryRowContext(ctx, playlistID, trackID).Scan(&exists)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("TrackExistsInPlaylist").Inc()
 		logger.Error("Failed to check if track exists in playlist", zap.Error(err))
@@ -262,6 +290,13 @@ func (r *PlaylistPostgresRepository) AddTrackToPlaylist(ctx context.Context, req
 	logger.Info("Adding track to playlist", zap.Int64("playlist_id", request.PlaylistID), zap.Int64("track_id", request.TrackID))
 
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, AddTrackToPlaylistQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("AddTrackToPlaylist").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
 	playlist, err := r.GetPlaylistByID(ctx, request.PlaylistID)
 	if err != nil {
@@ -286,7 +321,7 @@ func (r *PlaylistPostgresRepository) AddTrackToPlaylist(ctx context.Context, req
 		return playlistErrors.ErrPlaylistTrackDuplicate
 	}
 
-	_, err = r.db.ExecContext(ctx, AddTrackToPlaylistQuery, request.PlaylistID, request.TrackID)
+	_, err = stmt.ExecContext(ctx, request.PlaylistID, request.TrackID)
 	if err != nil {
 		logger.Error("Failed to add track to playlist", zap.Error(err))
 		return playlistErrors.NewInternalError("failed to add track to playlist: %v", err)
@@ -303,6 +338,13 @@ func (r *PlaylistPostgresRepository) RemoveTrackFromPlaylist(ctx context.Context
 	logger.Info("Removing track from playlist", zap.Int64("playlist_id", request.PlaylistID), zap.Int64("track_id", request.TrackID))
 
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, RemoveTrackFromPlaylistQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("RemoveTrackFromPlaylist").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
 	playlist, err := r.GetPlaylistByID(ctx, request.PlaylistID)
 	if err != nil {
@@ -327,7 +369,7 @@ func (r *PlaylistPostgresRepository) RemoveTrackFromPlaylist(ctx context.Context
 		return playlistErrors.ErrPlaylistTrackNotFound
 	}
 
-	_, err = r.db.ExecContext(ctx, RemoveTrackFromPlaylistQuery, request.PlaylistID, request.TrackID)
+	_, err = stmt.ExecContext(ctx, request.PlaylistID, request.TrackID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("RemoveTrackFromPlaylist").Inc()
 		logger.Error("Failed to remove track from playlist", zap.Error(err))
@@ -345,9 +387,16 @@ func (r *PlaylistPostgresRepository) GetPlaylistTrackIds(ctx context.Context, re
 	logger.Info("Getting playlist track ids", "playlist_id", request.PlaylistID)
 
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, GetPlaylistTrackIdsQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistTrackIds").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
 	var trackIds []int64
-	rows, err := r.db.QueryContext(ctx, GetPlaylistTrackIdsQuery, request.PlaylistID)
+	rows, err := stmt.QueryContext(ctx, request.PlaylistID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistTrackIds").Inc()
 		logger.Error("Failed to get playlist track ids", zap.Error(err))
@@ -386,16 +435,24 @@ func (r *PlaylistPostgresRepository) UpdatePlaylist(ctx context.Context, request
 
 	start := time.Now()
 
+	stmt, err := r.db.PrepareContext(ctx, UpdatePlaylistWithThumbnailQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylist").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+
 	var id int64
 	if request.Thumbnail != "" {
-		err := r.db.QueryRowContext(ctx, UpdatePlaylistWithThumbnailQuery, request.PlaylistID, request.Title, request.Thumbnail, request.UserID).Scan(&id)
+		err := stmt.QueryRowContext(ctx, request.PlaylistID, request.Title, request.Thumbnail, request.UserID).Scan(&id)
 		if err != nil {
 			r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylist").Inc()
 			logger.Error("Failed to update playlist", zap.Error(err))
 			return nil, playlistErrors.NewInternalError("failed to update playlist: %v", err)
 		}
 	} else {
-		err := r.db.QueryRowContext(ctx, UpdatePlaylistWithoutThumbnailQuery, request.PlaylistID, request.Title, request.UserID).Scan(&id)
+		err := stmt.QueryRowContext(ctx, request.PlaylistID, request.Title, request.UserID).Scan(&id)
 		if err != nil {
 			r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylist").Inc()
 			logger.Error("Failed to update playlist", zap.Error(err))
@@ -421,8 +478,15 @@ func (r *PlaylistPostgresRepository) RemovePlaylist(ctx context.Context, request
 	logger.Info("Removing playlist", zap.Int64("playlist_id", request.PlaylistID))
 
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, RemovePlaylistQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("RemovePlaylist").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
-	_, err := r.db.ExecContext(ctx, RemovePlaylistQuery, request.PlaylistID, request.UserID)
+	_, err = stmt.ExecContext(ctx, request.PlaylistID, request.UserID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("RemovePlaylist").Inc()
 		logger.Error("Failed to remove playlist", zap.Error(err))
@@ -440,9 +504,16 @@ func (r *PlaylistPostgresRepository) GetPlaylistsToAdd(ctx context.Context, requ
 	logger.Info("Getting playlists to add track to", zap.Int64("track_id", request.TrackID), zap.Int64("user_id", request.UserID))
 
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, GetPlaylistsToAddQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistsToAdd").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
 	var response repoModel.GetPlaylistsToAddResponse
-	rows, err := r.db.QueryContext(ctx, GetPlaylistsToAddQuery, request.TrackID, request.UserID)
+	rows, err := stmt.QueryContext(ctx, request.TrackID, request.UserID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistsToAdd").Inc()
 		logger.Error("Failed to get playlists to add track to", zap.Error(err))
@@ -485,8 +556,15 @@ func (r *PlaylistPostgresRepository) UpdatePlaylistsPublisityByUserID(ctx contex
 	logger.Info("Updating playlists publisity by user id", zap.Int64("user_id", request.UserID), zap.Bool("is_public", request.IsPublic))
 
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, UpdatePlaylistsPublisityByUserIDQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylistsPublisityByUserID").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
-	_, err := r.db.ExecContext(ctx, UpdatePlaylistsPublisityByUserIDQuery, request.UserID, request.IsPublic)
+	_, err = stmt.ExecContext(ctx, request.UserID, request.IsPublic)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylistsPublisityByUserID").Inc()
 		logger.Error("Failed to update playlists publisity by user id", zap.Error(err))
@@ -504,9 +582,16 @@ func (r *PlaylistPostgresRepository) CheckExistsPlaylistAndNotDifferentUser(ctx 
 	logger.Info("Checking if playlist exists and is not different user", zap.Int64("playlist_id", playlistID), zap.Int64("user_id", userID))
 
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, CheckExistsPlaylistAndNotDifferentUserQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CheckExistsPlaylistAndNotDifferentUser").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return false, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
 	var exists bool
-	err := r.db.QueryRowContext(ctx, CheckExistsPlaylistAndNotDifferentUserQuery, playlistID, userID).Scan(&exists)
+	err = stmt.QueryRowContext(ctx, playlistID, userID).Scan(&exists)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("CheckExistsPlaylistAndNotDifferentUser").Inc()
 		logger.Error("Failed to check if playlist exists and is not different user", zap.Error(err))
@@ -524,6 +609,13 @@ func (r *PlaylistPostgresRepository) LikePlaylist(ctx context.Context, request *
 	logger.Info("Liking playlist", zap.Int64("playlist_id", request.PlaylistID), zap.Int64("user_id", request.UserID))
 
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, LikePlaylistQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("LikePlaylist").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
 	exists, err := r.CheckExistsPlaylistAndNotDifferentUser(ctx, request.PlaylistID, request.UserID)
 	if err != nil {
@@ -537,7 +629,7 @@ func (r *PlaylistPostgresRepository) LikePlaylist(ctx context.Context, request *
 		return playlistErrors.ErrPlaylistNotFound
 	}
 
-	_, err = r.db.ExecContext(ctx, LikePlaylistQuery, request.UserID, request.PlaylistID)
+	_, err = stmt.ExecContext(ctx, request.UserID, request.PlaylistID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("LikePlaylist").Inc()
 		logger.Error("Failed to like playlist", zap.Error(err))
@@ -555,8 +647,15 @@ func (r *PlaylistPostgresRepository) UnlikePlaylist(ctx context.Context, request
 	logger.Info("Unliking playlist", zap.Int64("playlist_id", request.PlaylistID), zap.Int64("user_id", request.UserID))
 
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, UnlikePlaylistQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("UnlikePlaylist").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
-	_, err := r.db.ExecContext(ctx, UnlikePlaylistQuery, request.UserID, request.PlaylistID)
+	_, err = stmt.ExecContext(ctx, request.UserID, request.PlaylistID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("UnlikePlaylist").Inc()
 		logger.Error("Failed to unlike playlist", zap.Error(err))
@@ -574,10 +673,17 @@ func (r *PlaylistPostgresRepository) GetPlaylistWithIsLikedByID(ctx context.Cont
 	logger.Info("Getting playlist with is liked by id", zap.Int64("playlist_id", id), zap.Int64("user_id", userID))
 
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, GetPlaylistWithIsLikedByIDQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistWithIsLikedByID").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
 	var playlist repoModel.Playlist
 	var isLiked sql.NullBool
-	err := r.db.QueryRowContext(ctx, GetPlaylistWithIsLikedByIDQuery, id, userID).Scan(&playlist.ID, &playlist.Title, &playlist.UserID, &playlist.Thumbnail, &isLiked)
+	err = stmt.QueryRowContext(ctx, id, userID).Scan(&playlist.ID, &playlist.Title, &playlist.UserID, &playlist.Thumbnail, &isLiked)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetPlaylistWithIsLikedByID").Inc()
 		logger.Error("Failed to get playlist with is liked by id", zap.Error(err))
@@ -598,9 +704,16 @@ func (r *PlaylistPostgresRepository) GetProfilePlaylists(ctx context.Context, re
 	logger.Info("Getting profile playlists", zap.Int64("user_id", request.UserID))
 
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, GetProfilePlaylistsQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetProfilePlaylists").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
 	var playlists repoModel.GetProfilePlaylistsResponse
-	rows, err := r.db.QueryContext(ctx, GetProfilePlaylistsQuery, request.UserID)
+	rows, err := stmt.QueryContext(ctx, request.UserID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetProfilePlaylists").Inc()
 		logger.Error("Failed to get profile playlists", zap.Error(err))
@@ -637,6 +750,13 @@ func (r *PlaylistPostgresRepository) SearchPlaylists(ctx context.Context, reques
 	logger.Info("Searching playlists", zap.String("query", request.Query))
 
 	start := time.Now()
+	stmt, err := r.db.PrepareContext(ctx, SearchPlaylistsQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("SearchPlaylists").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
 	words := strings.Fields(request.Query)
 	for i, word := range words {
@@ -645,7 +765,7 @@ func (r *PlaylistPostgresRepository) SearchPlaylists(ctx context.Context, reques
 	tsQueryString := strings.Join(words, " & ")
 
 	var playlists repoModel.PlaylistList
-	rows, err := r.db.QueryContext(ctx, SearchPlaylistsQuery, tsQueryString, request.UserID, request.Query)
+	rows, err := stmt.QueryContext(ctx, tsQueryString, request.UserID, request.Query)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("SearchPlaylists").Inc()
 		logger.Error("Failed to search playlists", zap.Error(err))
