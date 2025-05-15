@@ -24,8 +24,6 @@ import (
 	albumUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/usecase"
 	artistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/delivery/http"
 	artistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/usecase"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	playlistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/playlist/delivery/http"
 	playlistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/playlist/usecase"
@@ -34,6 +32,8 @@ import (
 	userHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/delivery/http"
 	userUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/usecase"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
 
@@ -155,11 +155,11 @@ func main() {
 	r.HandleFunc("/api/v1/user/me/avatar", userHandler.UploadAvatar).Methods("POST")
 	r.HandleFunc("/api/v1/user/me", userHandler.ChangeUserData).Methods("PUT")
 	r.HandleFunc("/api/v1/user/me", userHandler.DeleteUser).Methods("DELETE")
-	r.HandleFunc("/api/v1/user/{username}", userHandler.GetUserData).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username:[a-zA-Z0-9_]+}", userHandler.GetUserData).Methods("GET")
 	r.HandleFunc("/api/v1/user/me/history", trackHandler.GetLastListenedTracks).Methods("GET")
-	r.HandleFunc("/api/v1/user/{username}/artists", artistHandler.GetFavoriteArtists).Methods("GET")
-	r.HandleFunc("/api/v1/user/{username}/tracks", trackHandler.GetFavoriteTracks).Methods("GET")
-	r.HandleFunc("/api/v1/user/{username}/playlists", playlistHandler.GetProfilePlaylists).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username:[a-zA-Z0-9_]+}/artists", artistHandler.GetFavoriteArtists).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username:[a-zA-Z0-9_]+}/tracks", trackHandler.GetFavoriteTracks).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username:[a-zA-Z0-9_]+}/playlists", playlistHandler.GetProfilePlaylists).Methods("GET")
 	r.HandleFunc("/api/v1/user/me/albums", albumHandler.GetFavoriteAlbums).Methods("GET")
 
 	r.Handle("/api/v1/metrics", promhttp.Handler())
