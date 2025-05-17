@@ -18,7 +18,12 @@ type trackS3Repository struct {
 }
 
 func NewTrackS3Repository(s3 *s3.S3, bucketName string, expiration time.Duration, metrics *metrics.Metrics) domain.S3Repository {
-	return &trackS3Repository{s3: s3, bucketName: bucketName, expiration: expiration}
+	return &trackS3Repository{
+		s3:         s3,
+		bucketName: bucketName,
+		expiration: expiration,
+		metrics:    metrics,
+	}
 }
 
 func (r *trackS3Repository) GetPresignedURL(trackKey string) (string, error) {
@@ -42,6 +47,6 @@ func (r *trackS3Repository) GetPresignedURL(trackKey string) (string, error) {
 		return "", err
 	}
 	duration := time.Since(start).Seconds()
-	r.metrics.DatabaseDuration.WithLabelValues("GetPresignedURL").Observe(duration)	
+	r.metrics.DatabaseDuration.WithLabelValues("GetPresignedURL").Observe(duration)
 	return url, nil
 }
