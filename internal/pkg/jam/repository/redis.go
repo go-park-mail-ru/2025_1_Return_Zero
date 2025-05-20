@@ -177,7 +177,7 @@ func (r *jamRedisRepository) CheckAllReadyAndPlay(ctx context.Context, roomID st
 
 	total, _ := redis.Int(redis.DoContext(conn, ctx, "SCARD", "jam:"+roomID+":users"))
 	loaded, _ := redis.Int(redis.DoContext(conn, ctx, "SCARD", "jam:"+roomID+":loaded"))
-	if total > 0 && loaded == total {
+	if loaded == total {
 		payload, err := json.Marshal(repository.JamMessage{
 			Type: "play",
 		})
