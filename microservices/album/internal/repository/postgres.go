@@ -93,6 +93,16 @@ const (
 		    ts_rank(a.search_vector, to_tsquery('multilingual', $1)) DESC,
 		    similarity(a.title_trgm, $3) DESC
 	`
+
+	CreateAlbumQuery = `
+		INSERT INTO album (title, type, thumbnail_url, label_id)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id`
+	
+	DeleteAlbumQuery = `
+		DELETE FROM album
+		WHERE id = $1
+	`
 )
 
 type albumPostgresRepository struct {
@@ -455,4 +465,49 @@ func (r *albumPostgresRepository) SearchAlbums(ctx context.Context, query string
 	}
 
 	return albums, nil
+}
+
+func (r *albumPostgresRepository) CreateAlbum(ctx context.Context, album *repoModel.CreateAlbumRequest) (int64, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Creating album in db", zap.Any("album", album), zap.String("query", "CreateAlbum"))
+
+	stmt, err := r.db.PrepareContext(ctx, CreateAlbumQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CreateAlbum").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return 0, albumErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+	var albumID int64
+	err = stmt.QueryRowContext(ctx, album.Title, album.Type, album.Thumbnail, album.LabelID).Scan(&albumID)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CreateAlbum").Inc()
+		logger.Error("failed to create album", zap.Error(err))
+		return 0, albumErrors.NewInternalError("failed to create album: %v", err)
+	}
+	
+
+	return albumID, nil
+}
+
+func (r *albumPostgresRepository) DeleteAlbum(ctx context.Context, albumID int64) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Deleting album from db", zap.Int64("albumID", albumID), zap.String("query", "DeleteAlbum"))
+
+	stmt, err := r.db.PrepareContext(ctx, DeleteAlbumQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("DeleteAlbum").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return albumErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, albumID)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("DeleteAlbum").Inc()
+		logger.Error("failed to delete album", zap.Error(err))
+		return albumErrors.NewInternalError("failed to delete album: %v", err)
+	}
+
+	return nil
 }

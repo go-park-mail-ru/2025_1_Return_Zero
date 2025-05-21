@@ -252,3 +252,12 @@ func (u *userUsecase) GetUserByID(ctx context.Context, id int64) (*usecaseModel.
 	userUsecase.AvatarUrl = avatarURLUsecase
 	return userUsecase, nil
 }
+
+func (u *userUsecase) GetLabelIDByUserID(ctx context.Context, userID int64) (int64, error) {
+	labelID, err := (*u.userClient).GetLabelIDByUserID(ctx, model.UserIDFromUsecaseToProtoUser(userID))
+	if err != nil {
+		return -1, cusstomErrors.HandleUserGRPCError(err)
+	}
+	labelIDUsecase := model.LabelIDFromProtoToUsecase(labelID)
+	return labelIDUsecase, nil
+}

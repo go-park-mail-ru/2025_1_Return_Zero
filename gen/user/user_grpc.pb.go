@@ -30,6 +30,11 @@ type UserServiceClient interface {
 	GetUserPrivacyByID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*PrivacySettings, error)
 	GetUserAvatarURL(ctx context.Context, in *FileKey, opts ...grpc.CallOption) (*AvatarUrl, error)
 	UploadUserAvatar(ctx context.Context, in *AvatarImage, opts ...grpc.CallOption) (*FileKey, error)
+	GetLabelIDByUserID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*LabelID, error)
+	UpdateUsersLabelID(ctx context.Context, in *RequestUpdateUserLabelID, opts ...grpc.CallOption) (*Nothing, error)
+	ChecksUsersByUsernames(ctx context.Context, in *Usernames, opts ...grpc.CallOption) (*Nothing, error)
+	GetUsersByLabelID(ctx context.Context, in *LabelID, opts ...grpc.CallOption) (*Usernames, error)
+	RemoveUsersLabelID(ctx context.Context, in *RequestRemoveUserLabelID, opts ...grpc.CallOption) (*Nothing, error)
 }
 
 type userServiceClient struct {
@@ -148,6 +153,51 @@ func (c *userServiceClient) UploadUserAvatar(ctx context.Context, in *AvatarImag
 	return out, nil
 }
 
+func (c *userServiceClient) GetLabelIDByUserID(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*LabelID, error) {
+	out := new(LabelID)
+	err := c.cc.Invoke(ctx, "/user.UserService/GetLabelIDByUserID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) UpdateUsersLabelID(ctx context.Context, in *RequestUpdateUserLabelID, opts ...grpc.CallOption) (*Nothing, error) {
+	out := new(Nothing)
+	err := c.cc.Invoke(ctx, "/user.UserService/UpdateUsersLabelID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) ChecksUsersByUsernames(ctx context.Context, in *Usernames, opts ...grpc.CallOption) (*Nothing, error) {
+	out := new(Nothing)
+	err := c.cc.Invoke(ctx, "/user.UserService/ChecksUsersByUsernames", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) GetUsersByLabelID(ctx context.Context, in *LabelID, opts ...grpc.CallOption) (*Usernames, error) {
+	out := new(Usernames)
+	err := c.cc.Invoke(ctx, "/user.UserService/GetUsersByLabelID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *userServiceClient) RemoveUsersLabelID(ctx context.Context, in *RequestRemoveUserLabelID, opts ...grpc.CallOption) (*Nothing, error) {
+	out := new(Nothing)
+	err := c.cc.Invoke(ctx, "/user.UserService/RemoveUsersLabelID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -164,6 +214,11 @@ type UserServiceServer interface {
 	GetUserPrivacyByID(context.Context, *UserID) (*PrivacySettings, error)
 	GetUserAvatarURL(context.Context, *FileKey) (*AvatarUrl, error)
 	UploadUserAvatar(context.Context, *AvatarImage) (*FileKey, error)
+	GetLabelIDByUserID(context.Context, *UserID) (*LabelID, error)
+	UpdateUsersLabelID(context.Context, *RequestUpdateUserLabelID) (*Nothing, error)
+	ChecksUsersByUsernames(context.Context, *Usernames) (*Nothing, error)
+	GetUsersByLabelID(context.Context, *LabelID) (*Usernames, error)
+	RemoveUsersLabelID(context.Context, *RequestRemoveUserLabelID) (*Nothing, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -206,6 +261,21 @@ func (UnimplementedUserServiceServer) GetUserAvatarURL(context.Context, *FileKey
 }
 func (UnimplementedUserServiceServer) UploadUserAvatar(context.Context, *AvatarImage) (*FileKey, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UploadUserAvatar not implemented")
+}
+func (UnimplementedUserServiceServer) GetLabelIDByUserID(context.Context, *UserID) (*LabelID, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLabelIDByUserID not implemented")
+}
+func (UnimplementedUserServiceServer) UpdateUsersLabelID(context.Context, *RequestUpdateUserLabelID) (*Nothing, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUsersLabelID not implemented")
+}
+func (UnimplementedUserServiceServer) ChecksUsersByUsernames(context.Context, *Usernames) (*Nothing, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChecksUsersByUsernames not implemented")
+}
+func (UnimplementedUserServiceServer) GetUsersByLabelID(context.Context, *LabelID) (*Usernames, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUsersByLabelID not implemented")
+}
+func (UnimplementedUserServiceServer) RemoveUsersLabelID(context.Context, *RequestRemoveUserLabelID) (*Nothing, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveUsersLabelID not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 
@@ -436,6 +506,96 @@ func _UserService_UploadUserAvatar_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_GetLabelIDByUserID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetLabelIDByUserID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/GetLabelIDByUserID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetLabelIDByUserID(ctx, req.(*UserID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_UpdateUsersLabelID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestUpdateUserLabelID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UpdateUsersLabelID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/UpdateUsersLabelID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UpdateUsersLabelID(ctx, req.(*RequestUpdateUserLabelID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_ChecksUsersByUsernames_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Usernames)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).ChecksUsersByUsernames(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/ChecksUsersByUsernames",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).ChecksUsersByUsernames(ctx, req.(*Usernames))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_GetUsersByLabelID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LabelID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetUsersByLabelID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/GetUsersByLabelID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetUsersByLabelID(ctx, req.(*LabelID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _UserService_RemoveUsersLabelID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestRemoveUserLabelID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).RemoveUsersLabelID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.UserService/RemoveUsersLabelID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).RemoveUsersLabelID(ctx, req.(*RequestRemoveUserLabelID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -490,6 +650,26 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UploadUserAvatar",
 			Handler:    _UserService_UploadUserAvatar_Handler,
+		},
+		{
+			MethodName: "GetLabelIDByUserID",
+			Handler:    _UserService_GetLabelIDByUserID_Handler,
+		},
+		{
+			MethodName: "UpdateUsersLabelID",
+			Handler:    _UserService_UpdateUsersLabelID_Handler,
+		},
+		{
+			MethodName: "ChecksUsersByUsernames",
+			Handler:    _UserService_ChecksUsersByUsernames_Handler,
+		},
+		{
+			MethodName: "GetUsersByLabelID",
+			Handler:    _UserService_GetUsersByLabelID_Handler,
+		},
+		{
+			MethodName: "RemoveUsersLabelID",
+			Handler:    _UserService_RemoveUsersLabelID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

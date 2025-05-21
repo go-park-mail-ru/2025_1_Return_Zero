@@ -43,8 +43,14 @@ type PrivacySettings struct {
 }
 
 type UserFullData struct {
-	Username   string `sql:"username"`
-	Thumbnail  string `sql:"thumbnail_url"`
-	Email      string `sql:"email"`
-	Privacy    *PrivacySettings
+	Username  string `sql:"username"`
+	Thumbnail string `sql:"thumbnail_url"`
+	Email     string `sql:"email"`
+	Privacy   *PrivacySettings
+}
+
+type Label struct {
+	ID      int64   `sql:"id"`
+	Name    string  `sql:"name"`
+	Members []int64 `sql:"members"`
 }

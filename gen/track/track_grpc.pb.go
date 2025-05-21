@@ -33,6 +33,8 @@ type TrackServiceClient interface {
 	LikeTrack(ctx context.Context, in *LikeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	SearchTracks(ctx context.Context, in *Query, opts ...grpc.CallOption) (*TrackList, error)
 	GetFavoriteTracks(ctx context.Context, in *FavoriteRequest, opts ...grpc.CallOption) (*TrackList, error)
+	AddTracksToAlbum(ctx context.Context, in *TracksListWithAlbumID, opts ...grpc.CallOption) (*TrackIdsList, error)
+	DeleteTracksByAlbumID(ctx context.Context, in *AlbumID, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type trackServiceClient struct {
@@ -169,6 +171,24 @@ func (c *trackServiceClient) GetFavoriteTracks(ctx context.Context, in *Favorite
 	return out, nil
 }
 
+func (c *trackServiceClient) AddTracksToAlbum(ctx context.Context, in *TracksListWithAlbumID, opts ...grpc.CallOption) (*TrackIdsList, error) {
+	out := new(TrackIdsList)
+	err := c.cc.Invoke(ctx, "/track.TrackService/AddTracksToAlbum", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *trackServiceClient) DeleteTracksByAlbumID(ctx context.Context, in *AlbumID, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/track.TrackService/DeleteTracksByAlbumID", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TrackServiceServer is the server API for TrackService service.
 // All implementations must embed UnimplementedTrackServiceServer
 // for forward compatibility
@@ -187,6 +207,8 @@ type TrackServiceServer interface {
 	LikeTrack(context.Context, *LikeRequest) (*emptypb.Empty, error)
 	SearchTracks(context.Context, *Query) (*TrackList, error)
 	GetFavoriteTracks(context.Context, *FavoriteRequest) (*TrackList, error)
+	AddTracksToAlbum(context.Context, *TracksListWithAlbumID) (*TrackIdsList, error)
+	DeleteTracksByAlbumID(context.Context, *AlbumID) (*emptypb.Empty, error)
 	mustEmbedUnimplementedTrackServiceServer()
 }
 
@@ -235,6 +257,12 @@ func (UnimplementedTrackServiceServer) SearchTracks(context.Context, *Query) (*T
 }
 func (UnimplementedTrackServiceServer) GetFavoriteTracks(context.Context, *FavoriteRequest) (*TrackList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFavoriteTracks not implemented")
+}
+func (UnimplementedTrackServiceServer) AddTracksToAlbum(context.Context, *TracksListWithAlbumID) (*TrackIdsList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddTracksToAlbum not implemented")
+}
+func (UnimplementedTrackServiceServer) DeleteTracksByAlbumID(context.Context, *AlbumID) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteTracksByAlbumID not implemented")
 }
 func (UnimplementedTrackServiceServer) mustEmbedUnimplementedTrackServiceServer() {}
 
@@ -501,6 +529,42 @@ func _TrackService_GetFavoriteTracks_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TrackService_AddTracksToAlbum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TracksListWithAlbumID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TrackServiceServer).AddTracksToAlbum(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/track.TrackService/AddTracksToAlbum",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TrackServiceServer).AddTracksToAlbum(ctx, req.(*TracksListWithAlbumID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TrackService_DeleteTracksByAlbumID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AlbumID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TrackServiceServer).DeleteTracksByAlbumID(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/track.TrackService/DeleteTracksByAlbumID",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TrackServiceServer).DeleteTracksByAlbumID(ctx, req.(*AlbumID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TrackService_ServiceDesc is the grpc.ServiceDesc for TrackService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -563,6 +627,14 @@ var TrackService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetFavoriteTracks",
 			Handler:    _TrackService_GetFavoriteTracks_Handler,
+		},
+		{
+			MethodName: "AddTracksToAlbum",
+			Handler:    _TrackService_AddTracksToAlbum_Handler,
+		},
+		{
+			MethodName: "DeleteTracksByAlbumID",
+			Handler:    _TrackService_DeleteTracksByAlbumID_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -138,6 +139,15 @@ const (
 		    CASE WHEN t.search_vector @@ to_tsquery('multilingual', $1) THEN 0 ELSE 1 END,
 		    ts_rank(t.search_vector, to_tsquery('multilingual', $1)) DESC,
 		    similarity(t.title_trgm, $3) DESC
+	`
+
+	AddTracksToAlbumQuery = `
+		INSERT INTO track (title, thumbnail_url, duration, album_id, file_url)
+		VALUES ($1, $2, $3, $4, $5)
+	`
+	DeleteTracksByAlbumIDQuery = `
+		DELETE FROM track
+		WHERE album_id = $1
 	`
 )
 
@@ -739,4 +749,104 @@ func (r *TrackPostgresRepository) SearchTracks(ctx context.Context, query string
 	r.metrics.DatabaseDuration.WithLabelValues("SearchTracks").Observe(duration)
 
 	return tracks, nil
+}
+
+func (r *TrackPostgresRepository) AddTracksToAlbum(ctx context.Context, tracksList []*repoModel.Track) ([]int64, error) {
+    logger := loggerPkg.LoggerFromContext(ctx)
+    logger.Info("Adding tracks to album in db", zap.Any("tracksList", tracksList))
+
+    start := time.Now()
+
+    tx, err := r.db.BeginTx(ctx, nil)
+    if err != nil {
+        r.metrics.DatabaseErrors.WithLabelValues("AddTracksToAlbum").Inc()
+        logger.Error("failed to begin transaction", zap.Error(err))
+        return nil, trackErrors.NewInternalError("failed to begin transaction: %v", err)
+    }
+
+    valueStrings := make([]string, 0, len(tracksList))
+    valueArgs := make([]interface{}, 0, len(tracksList)*6)
+
+    for i, track := range tracksList {
+        baseIndex := i * 6
+        valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d, $%d)",
+            baseIndex+1, baseIndex+2, baseIndex+3, baseIndex+4, baseIndex+5, baseIndex+6))
+
+        valueArgs = append(valueArgs,
+            track.Title,
+            track.Thumbnail,
+            track.Duration,
+            track.AlbumID,
+            fmt.Sprintf("%s.mp3", track.Title),
+            i + 1)
+    }
+
+    stmt := fmt.Sprintf("INSERT INTO track (title, thumbnail_url, duration, album_id, file_url, position) VALUES %s RETURNING id",
+        strings.Join(valueStrings, ","))
+
+    rows, err := tx.QueryContext(ctx, stmt, valueArgs...)
+    if err != nil {
+        tx.Rollback()
+        r.metrics.DatabaseErrors.WithLabelValues("AddTracksToAlbum").Inc()
+        logger.Error("failed to insert tracks", zap.Error(err))
+        return nil, trackErrors.NewInternalError("failed to insert tracks: %v", err)
+    }
+    defer rows.Close()
+
+    var trackIDs []int64
+    for rows.Next() {
+        var id int64
+        if err := rows.Scan(&id); err != nil {
+            tx.Rollback()
+            r.metrics.DatabaseErrors.WithLabelValues("AddTracksToAlbum").Inc()
+            logger.Error("failed to scan track id", zap.Error(err))
+            return nil, trackErrors.NewInternalError("failed to scan track id: %v", err)
+        }
+        trackIDs = append(trackIDs, id)
+    }
+
+    if err = rows.Err(); err != nil {
+        tx.Rollback()
+        r.metrics.DatabaseErrors.WithLabelValues("AddTracksToAlbum").Inc()
+        logger.Error("failed to iterate over result rows", zap.Error(err))
+        return nil, trackErrors.NewInternalError("failed to iterate over result rows: %v", err)
+    }
+
+    if err = tx.Commit(); err != nil {
+        r.metrics.DatabaseErrors.WithLabelValues("AddTracksToAlbum").Inc()
+        logger.Error("failed to commit transaction", zap.Error(err))
+        return nil, trackErrors.NewInternalError("failed to commit transaction: %v", err)
+    }
+
+    duration := time.Since(start).Seconds()
+    r.metrics.DatabaseDuration.WithLabelValues("AddTracksToAlbum").Observe(duration)
+
+    return trackIDs, nil
+}
+
+func (r *TrackPostgresRepository) DeleteTracksByAlbumID(ctx context.Context, albumID int64) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Deleting tracks by album id from db", zap.Int64("albumID", albumID))
+
+	start := time.Now()
+
+	stmt, err := r.db.PrepareContext(ctx, DeleteTracksByAlbumIDQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("DeleteTracksByAlbumID").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return trackErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, albumID)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("DeleteTracksByAlbumID").Inc()
+		logger.Error("failed to delete tracks by album id", zap.Error(err))
+		return trackErrors.NewInternalError("failed to delete tracks by album id: %v", err)
+	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("DeleteTracksByAlbumID").Observe(duration)
+
+	return nil
 }

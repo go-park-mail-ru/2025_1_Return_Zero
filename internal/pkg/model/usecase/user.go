@@ -67,3 +67,9 @@ type ChangeSettings struct {
 	NewEmail    string
 	NewPassword string
 }
+
+type Label struct {
+	Id      int64
+	Name    string
+	Members []string
+}

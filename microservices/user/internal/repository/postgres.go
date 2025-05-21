@@ -17,6 +17,7 @@ import (
 	domain "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/internal/domain"
 	userErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/model/errors"
 	repoModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/model/repository"
+	"github.com/lib/pq"
 	"go.uber.org/zap"
 )
 
@@ -127,6 +128,46 @@ const (
 				is_public_tracks_listened, is_public_favorite_tracks, is_public_artists_listened
 			FROM user_settings
 			WHERE user_id = $1
+	`
+	GetLabelIDByUserIDQuery = `
+			SELECT label_id
+			FROM "user"
+			WHERE id = $1
+	`
+	UpdateLabelQuery = `
+			UPDATE "user"
+			SET label_id = $1
+			WHERE username = ANY($2)
+	`
+	RemoveLabelQuery = `
+			UPDATE "user"
+			SET label_id = NULL
+			WHERE label_id = $1 AND username = ANY($2)
+	`
+	CheckIsLabelNameUniqueQuery = `
+			SELECT 1
+			FROM label
+			WHERE name = $1
+	`
+	UpdateLabelNameQuery = `
+			UPDATE label
+			SET name = $1
+			WHERE id = $2
+	`
+	GetLabelByIdQuery = `
+			SELECT name
+			FROM label
+			WHERE id = $1
+	`
+	GetUsersByLabelIDQuery = `
+			SELECT username
+			FROM "user"
+			WHERE label_id = $1
+	`
+	GetIdsByUsernamesQuery = `
+			SELECT id
+			FROM "user"
+			WHERE username = ANY($1)
 	`
 )
 
@@ -766,4 +807,282 @@ func (r *userPostgresRepository) GetFullUserData(ctx context.Context, username s
 		Thumbnail: user.Thumbnail,
 		Privacy:   privacy,
 	}, nil
+}
+
+func (r *userPostgresRepository) GetLabelIDByUserID(ctx context.Context, userID int64) (int64, error) {
+	start := time.Now()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Getting label ID by user ID", zap.Int64("userID", userID))
+
+	stmt, err := r.db.PrepareContext(ctx, GetLabelIDByUserIDQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("getLabelIDByUserID").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return 0, err
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRowContext(ctx, userID)
+	var labelID sql.NullInt64
+	err = row.Scan(&labelID)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("getLabelIDByUserID").Inc()
+		if errors.Is(err, sql.ErrNoRows) {
+			logger.Error("label not found", zap.Error(err))
+			return 0, err
+		}
+		logger.Error("failed to get label ID", zap.Error(err))
+		return 0, err
+	}
+
+	var labelReturnID int64
+	if labelID.Valid {
+		labelReturnID = labelID.Int64
+	} else {
+		labelReturnID = -1
+	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("getLabelIDByUserID").Observe(duration)
+	return labelReturnID, nil
+}
+
+func (r *userPostgresRepository) CheckUsersByUsernames(ctx context.Context, usernames []string) error {
+	start := time.Now()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Checking users by username", zap.Strings("usernames", usernames))
+
+	stmt, err := r.db.PrepareContext(ctx, GetIdsByUsernamesQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CheckUsersByUsernames").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return err
+	}
+	defer stmt.Close()
+
+	lowerUsernames := make([]string, len(usernames))
+	for i, username := range usernames {
+		lowerUsernames[i] = strings.ToLower(username)
+	}
+	result, err := stmt.ExecContext(ctx, pq.Array(lowerUsernames))
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CheckUsersByUsernames").Inc()
+		logger.Error("failed to query usernames", zap.Error(err))
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CheckUsersByUsernames").Inc()
+		logger.Error("failed to get affected rows", zap.Error(err))
+		return err
+	}
+	if rows != int64(len(usernames)) {
+		r.metrics.DatabaseErrors.WithLabelValues("CheckUsersByUsernames").Inc()
+		logger.Error("not all users were found", zap.Int64("expected", int64(len(usernames))), zap.Int64("actual", rows))
+		return userErrors.NewNotFoundError("not all users were found")
+	}
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("CheckUsersByUsernames").Observe(duration)
+	return nil
+}
+
+func (r *userPostgresRepository) UpdateUsersLabel(ctx context.Context, labelID int64, usernames []string) error {
+	start := time.Now()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Updating user label", zap.Int64("labelID", labelID), zap.Strings("usernames", usernames))
+
+	stmt, err := r.db.PrepareContext(ctx, UpdateLabelQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("UpdateUsersLabel").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return err
+	}
+	defer stmt.Close()
+
+	lowerUsernames := make([]string, len(usernames))
+	for i, username := range usernames {
+		lowerUsernames[i] = strings.ToLower(username)
+	}
+
+	result, err := stmt.ExecContext(ctx, labelID, pq.Array(lowerUsernames))
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("UpdateUserLabel").Inc()
+		logger.Error("failed to update user label", zap.Error(err))
+		return err
+	}
+
+	rowsAffeted, err := result.RowsAffected()
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("UpdateUserLabel").Inc()
+		logger.Error("failed to get affected rows", zap.Error(err))
+		return err
+	}
+
+	if rowsAffeted != int64(len(usernames)) {
+		r.metrics.DatabaseErrors.WithLabelValues("UpdateUserLabel").Inc()
+		logger.Error("not all users were updated", zap.Int64("expected", int64(len(usernames))), zap.Int64("actual", rowsAffeted))
+		return userErrors.NewNotFoundError("not all users were updated")
+	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("UpdateUserLabel").Observe(duration)
+	return nil
+}
+
+func (r *userPostgresRepository) CheckLabelNameUnique(ctx context.Context, name string) (bool, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Checking label name uniqueness", zap.String("name", name))
+
+	stmt, err := r.db.PrepareContext(ctx, CheckIsLabelNameUniqueQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("CheckLabelNameUnique").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return false, err
+	}
+	defer stmt.Close()
+
+	var exists bool
+	err = stmt.QueryRowContext(ctx, name).Scan(&exists)
+	if err != nil && err != sql.ErrNoRows {
+		return false, err
+	}
+	return exists, nil
+}
+
+func (r *userPostgresRepository) UpdateLabel(ctx context.Context, newName string, labelID int64) error {
+	start := time.Now()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Updating label", zap.Int64("labelID", labelID), zap.String("newName", newName))
+
+	stmt, err := r.db.PrepareContext(ctx, UpdateLabelNameQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("UpdateLabel").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, newName, labelID)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("UpdateLabel").Inc()
+		logger.Error("failed to update label", zap.Error(err))
+		return err
+	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("UpdateLabel").Observe(duration)
+	return nil
+}
+
+func (r *userPostgresRepository) GetLabelById(ctx context.Context, labelID int64) (string, error) {
+	start := time.Now()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Getting label by ID", zap.Int64("labelID", labelID))
+
+	stmt, err := r.db.PrepareContext(ctx, GetLabelByIdQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetLabelById").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return "", err
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRowContext(ctx, labelID)
+	var labelName string
+	err = row.Scan(&labelName)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetLabelById").Inc()
+		if errors.Is(err, sql.ErrNoRows) {
+			logger.Error("label not found", zap.Error(err))
+			return "", err
+		}
+		logger.Error("failed to get label by ID", zap.Error(err))
+		return "", err
+	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetLabelById").Observe(duration)
+	return labelName, nil
+}
+
+func (r *userPostgresRepository) GetUsersByLabelID(ctx context.Context, labelID int64) ([]string, error) {
+	start := time.Now()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Getting users by label ID", zap.Int64("labelID", labelID))
+
+	stmt, err := r.db.PrepareContext(ctx, GetUsersByLabelIDQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetUsersByLabelID").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx, labelID)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetUsersByLabelID").Inc()
+		logger.Error("failed to get users by label ID", zap.Error(err))
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []string
+	for rows.Next() {
+		var username string
+		err = rows.Scan(&username)
+		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetUsersByLabelID").Inc()
+			logger.Error("failed to scan row", zap.Error(err))
+			return nil, err
+		}
+		users = append(users, username)
+	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetUsersByLabelID").Observe(duration)
+	return users, nil
+}
+
+func (r *userPostgresRepository) RemoveUsersFromLabel(ctx context.Context, labelID int64, usernames []string) error {
+	start := time.Now()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Removing users from label", zap.Int64("labelID", labelID), zap.Strings("usernames", usernames))
+
+	stmt, err := r.db.PrepareContext(ctx, RemoveLabelQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("RemoveUsersFromLabel").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return err
+	}
+	defer stmt.Close()
+
+	lowerUsernames := make([]string, len(usernames))
+	for i, username := range usernames {
+		lowerUsernames[i] = strings.ToLower(username)
+	}
+
+	result, err := stmt.ExecContext(ctx, labelID, pq.Array(lowerUsernames))
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("RemoveUsersFromLabel").Inc()
+		logger.Error("failed to remove users from label", zap.Error(err))
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("RemoveUsersFromLabel").Inc()
+		logger.Error("failed to get affected rows", zap.Error(err))
+		return err
+	}
+
+	if rowsAffected != int64(len(usernames)) {
+		r.metrics.DatabaseErrors.WithLabelValues("RemoveUsersFromLabel").Inc()
+		logger.Error("not all users were removed from label", zap.Int64("expected", int64(len(usernames))), zap.Int64("actual", rowsAffected))
+		return userErrors.NewNotFoundError("not all users were removed from label")
+	}
+
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("RemoveUsersFromLabel").Observe(duration)
+	return nil
 }

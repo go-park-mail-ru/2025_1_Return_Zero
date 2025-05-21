@@ -24,4 +24,19 @@ type Repository interface {
 	CheckArtistExists(ctx context.Context, id int64) (bool, error)
 	GetFavoriteArtists(ctx context.Context, filters *repoModel.Filters, userID int64) ([]*repoModel.Artist, error)
 	SearchArtists(ctx context.Context, query string, userID int64) ([]*repoModel.Artist, error)
+	CreateArtist(ctx context.Context, artist *repoModel.Artist) (*repoModel.Artist, error)
+	CheckArtistNameExist(ctx context.Context, name string) (bool, error)
+	ChangeArtistTitle(ctx context.Context, newTitle, Title string) error
+	GetArtistByTitle(ctx context.Context, title string) (*repoModel.Artist, error)
+	UploadAvatar(ctx context.Context, artistTitle string, avatarURL string) error
+	GetArtistLabelID(ctx context.Context, artistTitle string) (int64, error)
+	GetArtistsLabelID(ctx context.Context, filters *repoModel.Filters, labelID int64) ([]*repoModel.Artist, error)
+	DeleteArtist(ctx context.Context, title string) error
+	AddArtistsToAlbum(ctx context.Context, artistsIDs []int64, albumID int64) error
+	AddArtistsToTracks(ctx context.Context, artistsIDs []int64, trackIDs []int64) error
+}
+
+type S3Repository interface {
+	GetAvatarURL(ctx context.Context, fileKey string) (string, error)
+	UploadArtistAvatar(ctx context.Context, artistTitle string, file []byte) (string, error)
 }

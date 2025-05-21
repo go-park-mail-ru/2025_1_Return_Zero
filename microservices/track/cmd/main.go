@@ -52,6 +52,8 @@ func main() {
 
 	server := grpc.NewServer(
 		grpc.UnaryInterceptor(accessInterceptor.UnaryServerInterceptor()),
+		grpc.MaxRecvMsgSize(50*1024*1024), // 50 MB
+		grpc.MaxSendMsgSize(50*1024*1024), // 50 MB
 	)
 
 	go func() {

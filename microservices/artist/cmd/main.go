@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/postgres"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/s3"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/internal/delivery"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/internal/repository"
@@ -60,6 +61,13 @@ func main() {
 	}
 	defer postgresPool.Close()
 
+	fmt.Println("config ", cfg.S3.S3ImagesBucket)
+	s3, err := s3.InitS3(cfg.S3)
+	if err != nil {
+		logger.Error("Error initializing S3:", zap.Error(err))
+		return
+	}
+
 	go func() {
 		http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 		address := fmt.Sprintf(":%d", cfg.Prometheus.ArtistPort)
@@ -70,7 +78,8 @@ func main() {
 	}()
 
 	artistRepository := repository.NewArtistPostgresRepository(postgresPool, metrics)
-	artistUsecase := usecase.NewArtistUsecase(artistRepository)
+	s3Repository := repository.NewS3Repository(s3, cfg.S3.S3ImagesBucket, metrics)
+	artistUsecase := usecase.NewArtistUsecase(artistRepository, s3Repository)
 	artistService := delivery.NewArtistService(artistUsecase)
 	artistProto.RegisterArtistServiceServer(server, artistService)
 

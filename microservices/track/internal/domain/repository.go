@@ -24,8 +24,12 @@ type Repository interface {
 	UnlikeTrack(ctx context.Context, likeRequest *repoModel.LikeRequest) error
 	GetFavoriteTracks(ctx context.Context, favoriteRequest *repoModel.FavoriteRequest) ([]*repoModel.Track, error)
 	SearchTracks(ctx context.Context, query string, userID int64) ([]*repoModel.Track, error)
+	AddTracksToAlbum(ctx context.Context, tracksList []*repoModel.Track) ([]int64, error)
+	DeleteTracksByAlbumID(ctx context.Context, albumID int64) error
 }
 
 type S3Repository interface {
 	GetPresignedURL(trackKey string) (string, error)
+	UploadTrack(ctx context.Context, fileKey string, file []byte) error
+	UploadTrackAvatar(ctx context.Context, trackTitle string, file []byte) (string, error)
 }

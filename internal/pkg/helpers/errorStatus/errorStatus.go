@@ -38,6 +38,8 @@ var mapErrorStatus = map[error]int{
 	customErrors.ErrPlaylistImageNotUploaded: http.StatusBadRequest,
 	customErrors.ErrPlaylistBadRequest:       http.StatusBadRequest,
 	customErrors.ErrPlaylistUnauthorized:     http.StatusUnauthorized,
+
+	customErrors.ErrLableExist: http.StatusBadRequest,
 }
 
 func ErrorStatus(err error) int {

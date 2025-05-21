@@ -18,4 +18,10 @@ type Repository interface {
 	UnlikeAlbum(ctx context.Context, request *repoModel.LikeRequest) error
 	GetFavoriteAlbums(ctx context.Context, filters *repoModel.AlbumFilters, userID int64) ([]*repoModel.Album, error)
 	SearchAlbums(ctx context.Context, query string, userID int64) ([]*repoModel.Album, error)
+	CreateAlbum(ctx context.Context, album *repoModel.CreateAlbumRequest) (int64, error)
+	DeleteAlbum(ctx context.Context, albumID int64) error
+}
+
+type S3Repository interface {
+	UploadAlbumAvatar(ctx context.Context, albumTitle string, file []byte) (string, error)
 }

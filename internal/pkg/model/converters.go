@@ -125,6 +125,29 @@ func AlbumLikeRequestFromDeliveryToUsecase(isLike bool, userID int64, albumID in
 	}
 }
 
+func TrackRequestFromDeliveryToUsecase(deliveryTrack *delivery.CreateTrackRequest) *usecase.CreateTrackRequest {
+	return &usecase.CreateTrackRequest{
+		Title:    deliveryTrack.Title,
+		Track:    deliveryTrack.Track,
+	}
+}
+
+func NewAlbumFromDeliveryToUsecase(deliveryAlbum *delivery.CreateAlbumRequest) *usecase.CreateAlbumRequest {
+	tracks := make([]*usecase.CreateTrackRequest, 0, len(deliveryAlbum.Tracks))
+	for _, deliveryTrack := range deliveryAlbum.Tracks {
+		tracks = append(tracks, TrackRequestFromDeliveryToUsecase(deliveryTrack))
+	}
+
+	return &usecase.CreateAlbumRequest{
+		Title:      deliveryAlbum.Title,
+		Image:      deliveryAlbum.Image,
+		Type:       deliveryAlbum.Type,
+		LabelID:    deliveryAlbum.LabelID,
+		Tracks:     tracks,
+		ArtistsIDs: deliveryAlbum.ArtistsIDs,
+	}
+}
+
 ///////////////////////////////////// ARTIST ////////////////////////////////////
 
 func ArtistWithTitleListFromProtoToUsecase(protoArtistWithTitleList []*artistProto.ArtistWithTitle) []*usecase.AlbumArtist {
@@ -241,6 +264,29 @@ func ArtistLikeRequestFromDeliveryToUsecase(isLike bool, userID int64, artistID 
 		ArtistID: artistID,
 		IsLike:   isLike,
 		UserID:   userID,
+	}
+}
+
+func ArtistLoadFromUsecaseToProto(artist *usecase.ArtistLoad) *artistProto.ArtistLoad {
+	return &artistProto.ArtistLoad{
+		Title:   artist.Title,
+		Image:   artist.Image,
+		LabelId: artist.LabelID,
+	}
+}
+
+func ArtistLoadFromDeliveryToUsecase(deliveryArtist *delivery.CreateArtistRequest) *usecase.ArtistLoad {
+	return &usecase.ArtistLoad{
+		Title:   deliveryArtist.Title,
+		Image:   deliveryArtist.Image,
+		LabelID: deliveryArtist.LabelID,
+	}
+}
+
+func ArtistDeleteFromDeliveryToUsecase(deleteArtist *delivery.DeleteArtistRequest) *usecase.ArtistDelete {
+	return &usecase.ArtistDelete{
+		Title:   deleteArtist.Title,
+		LabelID: deleteArtist.LabelID,
 	}
 }
 
@@ -473,6 +519,70 @@ func ChangeDataFromDeliveryToUsecase(deliveryUser *delivery.UserChangeSettings) 
 		NewEmail:    deliveryUser.NewEmail,
 		NewPassword: deliveryUser.NewPassword,
 		Privacy:     privacyDelivery,
+	}
+}
+
+func LabelIDFromUsecaseToProto(userID int64) *userProto.LabelID {
+	return &userProto.LabelID{
+		Id: userID,
+	}
+}
+
+func LabelIDFromProtoToUsecase(protoLabelID *userProto.LabelID) int64 {
+	return protoLabelID.Id
+}
+
+func LabelFromUsecaseToProto(label *usecase.Label) *userProto.Label {
+	return &userProto.Label{
+		Id:        label.Id,
+		Name:      label.Name,
+		Usernames: label.Members,
+	}
+}
+
+func LabelFromProtoToUsecase(protoLabel *userProto.Label) *usecase.Label {
+	return &usecase.Label{
+		Id:      protoLabel.Id,
+		Name:    protoLabel.Name,
+		Members: protoLabel.Usernames,
+	}
+}
+
+func LabelFromDeliveryToUsecase(deliveryLabel *delivery.Label) *usecase.Label {
+	return &usecase.Label{
+		Name:    deliveryLabel.LabelName,
+		Members: deliveryLabel.Usernames,
+		Id:      deliveryLabel.Id,
+	}
+}
+
+func LabelFromUsecaseToDelivery(usecaseLabel *usecase.Label) *delivery.Label {
+	return &delivery.Label{
+		Id:        usecaseLabel.Id,
+		LabelName: usecaseLabel.Name,
+		Usernames: usecaseLabel.Members,
+	}
+}
+
+func MembersFromProtoToUsecase(users *userProto.UsersToFront) []*usecase.User {
+	members := make([]*usecase.User, 0, len(users.Users))
+	for _, user := range users.Users {
+		members = append(members, &usecase.User{
+			Username:  user.Username,
+			Email:     user.Email,
+			AvatarUrl: user.Avatar,
+			ID:        user.Id,
+		})
+	}
+	return members
+}
+
+func ArtistEditFromDeliveryToUsecase(editRequest *delivery.EditArtistRequest) *usecase.ArtistEdit {
+	return &usecase.ArtistEdit{
+		Title:    editRequest.Title,
+		Image:    editRequest.Image,
+		LabelID:  editRequest.LabelID,
+		NewTitle: editRequest.NewTitle,
 	}
 }
 
@@ -812,4 +922,35 @@ func UserIDFromUsecaseToProto(userID int64) *authProto.UserID {
 	return &authProto.UserID{
 		Id: userID,
 	}
+}
+
+func TrackLoadFromUsecaseToProto(track *usecase.CreateTrackRequest) *trackProto.TrackLoad {
+	return &trackProto.TrackLoad{
+		Title:    track.Title,
+		File:     track.Track,
+	}
+}
+
+func TrackListLoadFromUsecaseToProto(tracks []*usecase.CreateTrackRequest) []*trackProto.TrackLoad {
+	trackList := make([]*trackProto.TrackLoad, 0, len(tracks))
+	for _, track := range tracks {
+		trackList = append(trackList, TrackLoadFromUsecaseToProto(track))
+	}
+	return trackList
+}
+
+func TracksIdsFromProtoToUsecase(protoTracks *trackProto.TrackIdsList) []int64 {
+	trackIds := make([]int64, 0, len(protoTracks.Ids))
+	for _, id := range protoTracks.Ids {
+		trackIds = append(trackIds, id.Id)
+	}
+	return trackIds
+}
+
+func TracksIdsFromUsecaseToProtoArtist(trackIDs []int64) *artistProto.TrackIDList {
+	trackIds := make([]*artistProto.TrackID, 0, len(trackIDs))
+	for _, id := range trackIDs {
+		trackIds = append(trackIds, &artistProto.TrackID{Id: id})
+	}
+	return &artistProto.TrackIDList{Ids: trackIds}
 }

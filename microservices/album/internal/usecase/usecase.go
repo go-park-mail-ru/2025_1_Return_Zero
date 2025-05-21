@@ -11,10 +11,11 @@ import (
 
 type AlbumUsecase struct {
 	albumRepository domain.Repository
+	s3Repository    domain.S3Repository
 }
 
-func NewAlbumUsecase(albumRepository domain.Repository) domain.Usecase {
-	return &AlbumUsecase{albumRepository: albumRepository}
+func NewAlbumUsecase(albumRepository domain.Repository, s3Repository domain.S3Repository) domain.Usecase {
+	return &AlbumUsecase{albumRepository: albumRepository, s3Repository: s3Repository}
 }
 
 func (u *AlbumUsecase) GetAllAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters, userID int64) ([]*usecaseModel.Album, error) {
@@ -115,4 +116,34 @@ func (u *AlbumUsecase) SearchAlbums(ctx context.Context, query string, userID in
 	}
 
 	return model.AlbumListFromRepositoryToUsecase(albums), nil
+}
+
+func (u *AlbumUsecase) CreateAlbum(ctx context.Context, album *usecaseModel.CreateAlbumRequest) (int64, error) {
+	repoAlbum := model.AlbumRequestFromUsecaseToRepository(album)
+	avatarThumbnail, err := u.s3Repository.UploadAlbumAvatar(ctx, album.Title, album.Image)
+	if err != nil {
+		return 0, err
+	}
+	repoAlbum.Thumbnail = avatarThumbnail
+	albumID, err := u.albumRepository.CreateAlbum(ctx, repoAlbum)
+	if err != nil {
+		return 0, err
+	}
+
+	return albumID, nil
+}
+
+func (u *AlbumUsecase) DeleteAlbum(ctx context.Context, albumID int64) error {
+	exists, err := u.albumRepository.CheckAlbumExists(ctx, albumID)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return albumErrors.NewNotFoundError("album not found")
+	}
+	err = u.albumRepository.DeleteAlbum(ctx, albumID)
+	if err != nil {
+		return err
+	}
+	return nil
 }

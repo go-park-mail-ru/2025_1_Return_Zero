@@ -6,6 +6,7 @@ type Artist struct {
 	Description string
 	Thumbnail   string
 	IsFavorite  bool
+	LabelID     int64
 }
 
 type ArtistList struct {
@@ -63,4 +64,22 @@ type LikeRequest struct {
 	ArtistID int64
 	UserID   int64
 	IsLike   bool
+}
+
+type ArtistLoad struct {
+	Title   string
+	Image   []byte
+	LabelID int64
+}
+
+type ArtistEdit struct {
+	Title    string
+	NewTitle string
+	Image    []byte
+	LabelID  int64
+}
+
+type ArtistDelete struct {
+	Title   string
+	LabelID int64
 }

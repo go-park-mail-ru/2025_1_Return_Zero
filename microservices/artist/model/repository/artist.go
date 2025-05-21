@@ -6,6 +6,7 @@ type Artist struct {
 	Description string `sql:"description"`
 	Thumbnail   string `sql:"thumbnail_url"`
 	IsFavorite  bool   `sql:"is_favorite"`
+	LabelID     int64  `sql:"label_id"`
 }
 
 type ArtistWithTitle struct {
@@ -41,4 +42,11 @@ type ArtistStreamCreateDataList struct {
 type LikeRequest struct {
 	ArtistID int64
 	UserID   int64
+}
+
+type ArtistEdit struct {
+	Title    string
+	NewTitle string
+	Image    []byte
+	LabelID  int64
 }

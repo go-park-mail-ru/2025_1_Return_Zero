@@ -103,3 +103,21 @@ func (s *AlbumService) SearchAlbums(ctx context.Context, req *albumProto.Query) 
 	}
 	return model.AlbumListFromUsecaseToProto(albums), nil
 }
+
+func (s *AlbumService) CreateAlbum(ctx context.Context, req *albumProto.CreateAlbumRequest) (*albumProto.AlbumID, error) {
+	albumID, err := s.albumUsecase.CreateAlbum(ctx, model.AlbumRequestFromProtoToUsecase(req))
+	if err != nil {
+		return nil, err
+	}
+	return &albumProto.AlbumID{
+		Id: albumID,
+	}, nil
+}
+
+func (s *AlbumService) DeleteAlbum(ctx context.Context, req *albumProto.AlbumID) (*emptypb.Empty, error) {
+	err := s.albumUsecase.DeleteAlbum(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}

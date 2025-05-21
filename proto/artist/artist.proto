@@ -21,6 +21,34 @@ service ArtistService {
 	rpc LikeArtist(LikeRequest) returns (google.protobuf.Empty);
 	rpc GetFavoriteArtists(FiltersWithUserID) returns (ArtistList);
 	rpc SearchArtists(Query) returns (ArtistList);
+	rpc CreateArtist(ArtistLoad) returns (Artist);
+	rpc EditArtist(ArtistEdit) returns (Artist);
+	rpc GetArtistsLabelID(FiltersWithLabelID) returns (ArtistList);
+	rpc DeleteArtist(ArtistDelete) returns (google.protobuf.Empty);
+	rpc ConnectArtists(ArtistsIDWithAlbumID) returns (google.protobuf.Empty);
+}
+
+message ArtistsIDWithAlbumID {
+	ArtistIDList artist_ids = 1;
+	AlbumID album_id = 2;
+	TrackIDList track_ids = 3;
+}
+
+message ArtistDelete {
+	string title = 1;
+	int64 label_id = 2;
+}
+
+message FiltersWithLabelID {
+	Filters filters = 1;
+	int64 label_id = 2;
+}
+
+message ArtistEdit {
+	string title = 1;
+	bytes image = 2;
+	int64 label_id = 3;
+	string new_title = 4;
 }
 
 message Query {
@@ -63,6 +91,12 @@ message TrackIDList {
 
 message AlbumIDList {
 	repeated AlbumID ids = 1;
+}
+
+message ArtistLoad {
+	string title = 1;
+	bytes image = 2;
+	int64 label_id = 3;
 }
 
 message Artist {

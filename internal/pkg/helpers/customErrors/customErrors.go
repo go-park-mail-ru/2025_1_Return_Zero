@@ -39,6 +39,11 @@ var (
 	ErrPlaylistDuplicate            = errors.New("playlist with this title by you already exists")
 	ErrPlaylistTrackNotFound        = errors.New("track not found in playlist")
 	ErrPlaylistTrackDuplicate       = errors.New("track already in playlist")
+	ErrLableExist                   = errors.New("label already exist")
+
+	ErrUnsupportedImageFormatError = errors.New("unsupported image format")
+
+	ErrFailedToUploadAlbumImage = errors.New("failed to upload album image")
 )
 
 func HandleAlbumGRPCError(err error) error {
