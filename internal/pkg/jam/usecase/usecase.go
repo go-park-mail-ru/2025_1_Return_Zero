@@ -110,6 +110,27 @@ func (u *Usecase) HandleClientMessage(ctx context.Context, roomID string, userID
 			return err
 		}
 		u.jamRepository.CheckAllReadyAndPlay(ctx, roomID)
+	case "host:play":
+		if !isHost {
+			return errors.New("not host")
+		}
+		u.jamRepository.CheckAllReadyAndPlay(ctx, roomID)
+	case "host:pause":
+		if !isHost {
+			return errors.New("not host")
+		}
+		err := u.jamRepository.PauseJam(ctx, roomID)
+		if err != nil {
+			return err
+		}
+	case "host:seek":
+		if !isHost {
+			return errors.New("not host")
+		}
+		err := u.jamRepository.SeekJam(ctx, roomID, m.Position)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -137,5 +158,6 @@ func (u *Usecase) LeaveJam(ctx context.Context, roomID string, userID string) er
 		return err
 	}
 
+	u.jamRepository.CheckAllReadyAndPlay(ctx, roomID)
 	return nil
 }

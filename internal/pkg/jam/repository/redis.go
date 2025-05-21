@@ -356,3 +356,31 @@ func (r *jamRedisRepository) ExistsRoom(ctx context.Context, roomID string) (boo
 	}
 	return exists, nil
 }
+
+func (r *jamRedisRepository) SeekJam(ctx context.Context, roomID string, position int64) error {
+	conn, err := r.getConn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	_, err = redis.DoContext(conn, ctx, "HSET", "jam:"+roomID+":track", "position", position)
+	if err != nil {
+		return err
+	}
+
+	seekPayload, err := json.Marshal(repository.JamMessage{
+		Type:     "seek",
+		Position: position,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = redis.DoContext(conn, ctx, "PUBLISH", "jam:"+roomID+":pubsub", string(seekPayload))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

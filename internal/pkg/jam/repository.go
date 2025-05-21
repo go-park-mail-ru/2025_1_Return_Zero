@@ -18,4 +18,5 @@ type Repository interface {
 	RemoveUser(ctx context.Context, roomID string, userID string) error
 	RemoveJam(ctx context.Context, roomID string) error
 	ExistsRoom(ctx context.Context, roomID string) (bool, error)
+	SeekJam(ctx context.Context, roomID string, position int64) error
 }
