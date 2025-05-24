@@ -25,6 +25,9 @@ import (
 	artistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/delivery/http"
 	artistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/usecase"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
+	jamHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/jam/delivery/http"
+	jamRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/jam/repository"
+	jamUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/jam/usecase"
 	playlistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/playlist/delivery/http"
 	playlistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/playlist/usecase"
 	trackHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/delivery/http"
@@ -114,6 +117,7 @@ func main() {
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistClient, userClient), cfg)
 	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(&userClient, &authClient, &artistClient, &trackClient, &playlistClient))
 	playlistHandler := playlistHttp.NewPlaylistHandler(playlistUsecase.NewUsecase(&playlistClient, &userClient), cfg)
+	jamHandler := jamHttp.NewJamHandler(jamUsecase.NewUsecase(jamRepository.NewJamRedisRepository(redisPool)), cfg, redisPool)
 
 	r.HandleFunc("/api/v1/tracks", trackHandler.GetAllTracks).Methods("GET")
 	r.HandleFunc("/api/v1/tracks/{id:[0-9]+}", trackHandler.GetTrackByID).Methods("GET")
@@ -162,6 +166,8 @@ func main() {
 	r.HandleFunc("/api/v1/user/{username}/playlists", playlistHandler.GetProfilePlaylists).Methods("GET")
 	r.HandleFunc("/api/v1/user/me/albums", albumHandler.GetFavoriteAlbums).Methods("GET")
 
+	r.HandleFunc("/api/v1/jams", jamHandler.CreateRoom).Methods("POST")
+	r.HandleFunc("/api/v1/jams/{id}", jamHandler.WSHandler).Methods("GET")
 	r.Handle("/api/v1/metrics", promhttp.Handler())
 
 	srv := &http.Server{

@@ -20,8 +20,12 @@ func CorsMiddleware(cfg config.Cors) func(http.Handler) http.Handler {
 			var allowedOrigin string
 
 			for _, o := range cfg.AllowedOrigins {
-				if cfg.AllowCredentials && o == "*" {
-					allowedOrigin = origin
+				if o == "*" {
+					if cfg.AllowCredentials {
+						allowedOrigin = origin
+					} else {
+						allowedOrigin = "*"
+					}
 					break
 				}
 				if o == origin {
