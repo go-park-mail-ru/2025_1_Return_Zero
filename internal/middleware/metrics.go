@@ -63,6 +63,10 @@ var pathPatterns = []*regexp.Regexp{
 	regexp.MustCompile(`^/api/v1/user/([^/]+)/tracks$`),
 	regexp.MustCompile(`^/api/v1/user/([^/]+)/playlists$`),
 	regexp.MustCompile(`^/api/v1/user/me/albums$`),
+
+	// jams handlers
+	regexp.MustCompile(`^/api/v1/jams$`),
+	regexp.MustCompile(`^/api/v1/jams/([^/]+)$`),
 }
 
 var pathReplacements = []string{
@@ -118,6 +122,10 @@ var pathReplacements = []string{
 	"/api/v1/user/{username}/tracks",
 	"/api/v1/user/{username}/playlists",
 	"/api/v1/user/me/albums",
+
+	// jams handlers
+	"/api/v1/jams",
+	"/api/v1/jams/{id}",
 }
 
 func ExtractPath(path string) string {
