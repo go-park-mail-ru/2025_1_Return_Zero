@@ -2,7 +2,7 @@ package delivery
 
 type CreateJamRequest struct {
 	TrackID  string `json:"track_id" valid:"required"`
-	Position int64  `json:"position" valid:"required"`
+	Position int64  `json:"position" valid:"optional"`
 }
 
 type CreateJamResponse struct {
