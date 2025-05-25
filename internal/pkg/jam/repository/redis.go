@@ -147,11 +147,9 @@ func (r *jamRedisRepository) GetInitialJamData(ctx context.Context, roomID strin
 		loadedMap[u] = isLoaded
 	}
 
-	// Populate user information
 	userNames := make(map[string]string)
 	userImages := make(map[string]string)
 
-	// Get all unique user IDs (including host and users)
 	allUserIDs := make(map[string]bool)
 	if hostID != "" {
 		allUserIDs[hostID] = true
@@ -160,7 +158,6 @@ func (r *jamRedisRepository) GetInitialJamData(ctx context.Context, roomID strin
 		allUserIDs[userID] = true
 	}
 
-	// Fetch user info for each user
 	for userID := range allUserIDs {
 		username, avatarURL, err := r.GetUserInfo(ctx, roomID, userID)
 		if err == nil {
@@ -284,9 +281,20 @@ func (r *jamRedisRepository) MarkUserAsReady(ctx context.Context, roomID string,
 		return err
 	}
 
+	users, err := redis.Strings(redis.DoContext(conn, ctx, "SMEMBERS", "jam:"+roomID+":users"))
+	if err != nil {
+		return err
+	}
+
+	loadedMap := make(map[string]bool)
+	for _, u := range users {
+		isLoaded, _ := redis.Bool(redis.DoContext(conn, ctx, "SISMEMBER", "jam:"+roomID+":loaded", u))
+		loadedMap[u] = isLoaded
+	}
+
 	payload, err := json.Marshal(repository.JamMessage{
 		Type:   "ready",
-		UserID: userID,
+		Loaded: loadedMap,
 	})
 	if err != nil {
 		return err
