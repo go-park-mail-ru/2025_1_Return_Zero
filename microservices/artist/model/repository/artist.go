@@ -45,7 +45,7 @@ type LikeRequest struct {
 }
 
 type ArtistEdit struct {
-	Title    string
+	ArtistID int64
 	NewTitle string
 	Image    []byte
 	LabelID  int64

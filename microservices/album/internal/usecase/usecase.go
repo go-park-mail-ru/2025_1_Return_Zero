@@ -118,19 +118,19 @@ func (u *AlbumUsecase) SearchAlbums(ctx context.Context, query string, userID in
 	return model.AlbumListFromRepositoryToUsecase(albums), nil
 }
 
-func (u *AlbumUsecase) CreateAlbum(ctx context.Context, album *usecaseModel.CreateAlbumRequest) (int64, error) {
+func (u *AlbumUsecase) CreateAlbum(ctx context.Context, album *usecaseModel.CreateAlbumRequest) (int64, string, error) {
 	repoAlbum := model.AlbumRequestFromUsecaseToRepository(album)
 	avatarThumbnail, err := u.s3Repository.UploadAlbumAvatar(ctx, album.Title, album.Image)
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 	repoAlbum.Thumbnail = avatarThumbnail
 	albumID, err := u.albumRepository.CreateAlbum(ctx, repoAlbum)
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 
-	return albumID, nil
+	return albumID, avatarThumbnail, nil
 }
 
 func (u *AlbumUsecase) DeleteAlbum(ctx context.Context, albumID int64) error {
@@ -146,4 +146,14 @@ func (u *AlbumUsecase) DeleteAlbum(ctx context.Context, albumID int64) error {
 		return err
 	}
 	return nil
+}
+
+func (u *AlbumUsecase) GetAlbumsLabelID(ctx context.Context, filters *usecaseModel.AlbumFilters, labelID int64) ([]*usecaseModel.Album, error) {
+	repoFilters := model.FiltersFromUsecaseToRepository(filters)
+	albums, err := u.albumRepository.GetAlbumsLabelID(ctx, repoFilters, labelID)
+	if err != nil {
+		return nil, err
+	}
+
+	return model.AlbumListFromRepositoryToUsecase(albums), nil
 }

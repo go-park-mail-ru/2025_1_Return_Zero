@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
@@ -58,13 +59,13 @@ func (h *LabelHandler) CreateLabel(w http.ResponseWriter, r *http.Request) {
 	err := json.ReadJSON(w, r, &label)
 	if err != nil {
 		logger.Error("Failed to read JSON", zap.Error(err))
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "Failed to read JSON", nil)
 		return
 	}
 	labelUsecase := model.LabelFromDeliveryToUsecase(label)
 	newLabel, err := h.usecase.CreateLabel(ctx, labelUsecase)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
@@ -91,7 +92,7 @@ func (h *LabelHandler) GetLabel(w http.ResponseWriter, r *http.Request) {
 	isAdmin := ctxExtractor.AdminFromContext(ctx)
 	if !isAdmin {
 		logger.Error("Unauthorized access attempt")
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		json.WriteErrorResponse(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
 	vars := mux.Vars(r)
@@ -99,13 +100,13 @@ func (h *LabelHandler) GetLabel(w http.ResponseWriter, r *http.Request) {
 	labelIDInt, err := strconv.ParseInt(labelID, 10, 64)
 	if err != nil {
 		logger.Error("Invalid label ID", zap.Error(err))
-		http.Error(w, "Invalid label ID", http.StatusBadRequest)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "Invalid label ID", nil)
 		return
 	}
 
 	label, err := h.usecase.GetLabel(ctx, labelIDInt)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
@@ -202,7 +203,7 @@ func (h *LabelHandler) CreateArtist(w http.ResponseWriter, r *http.Request) {
 // @Accept multipart/form-data
 // @Produce json
 // @Security LabelAuth
-// @Param title formData string true "Current artist name"
+// @Param artist_id formData string true "Artist ID to edit"
 // @Param new_title formData string false "New artist name (required if thumbnail is not provided)"
 // @Param thumbnail formData file false "New artist profile image (required if new_title is not provided, max 6MB)"
 // @Success 200 {object} delivery.Artist "Updated artist"
@@ -230,17 +231,21 @@ func (h *LabelHandler) EditArtist(w http.ResponseWriter, r *http.Request) {
 
 	editRequest := &delivery.EditArtistRequest{}
 
-	editRequest.Title = r.FormValue("title")
-	if editRequest.Title == "" {
-		logger.Error("title is empty")
-		json.WriteErrorResponse(w, http.StatusBadRequest, "title is empty", nil)
+	artistID := r.FormValue("artist_id")
+	if artistID == "" {
+		logger.Error("artist_id is empty")
+		json.WriteErrorResponse(w, http.StatusBadRequest, "artist_id is empty", nil)
 		return
 	}
-	if len(editRequest.Title) > 100 {
-		logger.Error("title is too long")
-		json.WriteErrorResponse(w, http.StatusBadRequest, "title is too long", nil)
+
+	artistIdInt, err := strconv.Atoi(artistID)
+	if err != nil {
+		logger.Error("failed to parse artist_id", zap.Error(err))
+		json.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse artist_id", nil)
 		return
 	}
+	artistIdInt64 := int64(artistIdInt)
+	editRequest.ArtistID = artistIdInt64
 
 	editRequest.NewTitle = r.FormValue("new_title")
 	if len(editRequest.NewTitle) > 100 {
@@ -513,14 +518,32 @@ func (h *LabelHandler) CreateAlbum(w http.ResponseWriter, r *http.Request) {
 
 	request.Tracks = tracks
 
-	albumID, err := h.usecase.CreateAlbum(ctx, model.NewAlbumFromDeliveryToUsecase(request))
+	albumID, albumURL, err := h.usecase.CreateAlbum(ctx, model.NewAlbumFromDeliveryToUsecase(request))
 	if err != nil {
 		logger.Error("failed to create album", zap.Error(err))
 		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
-	json.WriteSuccessResponse(w, http.StatusCreated, delivery.SuccessCreateAlbum{AlbumID: albumID}, nil)
+	artists := make([]*delivery.AlbumArtist, 0, len(request.ArtistsIDs))
+	for _, artistID := range request.ArtistsIDs {
+		artist := &delivery.AlbumArtist{
+			ID:    artistID,
+			Title: "",
+		}
+		artists = append(artists, artist)
+	}
+
+	deliveryAlbum := delivery.Album{
+		ID:          albumID,
+		Title:       request.Title,
+		Type:        model.AlbumTypeConverter(request.Type),
+		Thumbnail:   albumURL,
+		ReleaseDate: time.Now(),
+		Artists:     artists,
+	}
+
+	json.WriteSuccessResponse(w, http.StatusCreated, deliveryAlbum, nil)
 }
 
 // UpdateLabel godoc
@@ -532,9 +555,9 @@ func (h *LabelHandler) CreateAlbum(w http.ResponseWriter, r *http.Request) {
 // @Security AdminAuth
 // @Param request body delivery.EditLabelRequest true "Label update information containing labelID, users to add, and users to remove"
 // @Success 200 {object} delivery.Message "Label edited successfully"
-// @Failure 400 {string} delivery.APIBadRequestErrorResponse "Bad request - invalid input"
-// @Failure 401 {string} delivery.APIUnauthorizedErrorResponse "Unauthorized - admin access required"
-// @Failure 500 {string} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid input"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized - admin access required"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /api/v1/label [put]
 func (h *LabelHandler) UpdateLabel(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -543,7 +566,7 @@ func (h *LabelHandler) UpdateLabel(w http.ResponseWriter, r *http.Request) {
 	isAdmin := ctxExtractor.AdminFromContext(ctx)
 	if !isAdmin {
 		logger.Error("Unauthorized access attempt")
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		json.WriteErrorResponse(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
 
@@ -552,14 +575,14 @@ func (h *LabelHandler) UpdateLabel(w http.ResponseWriter, r *http.Request) {
 	err := json.ReadJSON(w, r, &label)
 	if err != nil {
 		logger.Error("Failed to read JSON", zap.Error(err))
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "Failed to read JSON", nil)
 		return
 	}
 
 	err = h.usecase.UpdateLabel(ctx, label.LabelID, label.ToAdd, label.ToRemove)
 	if err != nil {
 		logger.Error("Failed to update label", zap.Error(err))
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
@@ -597,13 +620,13 @@ func (h *LabelHandler) DeleteAlbum(w http.ResponseWriter, r *http.Request) {
 	err := json.ReadJSON(w, r, &req)
 	if err != nil {
 		logger.Error("Failed to read JSON", zap.Error(err))
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		json.WriteErrorResponse(w, http.StatusBadRequest, "Failed to read JSON", nil)
 		return
 	}
 	if isLabel {
 		if req.LabelID != labelID {
 			logger.Error("Label ID mismatch", zap.Error(err))
-			http.Error(w, "Label ID mismatch", http.StatusBadRequest)
+			json.WriteErrorResponse(w, http.StatusBadRequest, "Label ID mismatch", nil)
 			return
 		}
 	}
@@ -611,9 +634,55 @@ func (h *LabelHandler) DeleteAlbum(w http.ResponseWriter, r *http.Request) {
 	err = h.usecase.DeleteAlbum(ctx, req.LabelID, req.AlbumID)
 	if err != nil {
 		logger.Error("Failed to delete album", zap.Error(err))
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
 		return
 	}
 
 	json.WriteJSON(w, http.StatusOK, delivery.Message{Message: "Album deleted successfully"}, nil)
+}
+
+// GetAlbumsByLabelID godoc
+// @Summary Get albums by label ID
+// @Description Retrieves a list of albums associated with the user's label with optional pagination.
+// @Tags label
+// @Accept json
+// @Produce json
+// @Security LabelAuth
+// @Param offset query integer false "Offset (default: 0)"
+// @Param limit query integer false "Limit (default: 10, max: 100)"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Album} "List of albums in the label"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid pagination parameters"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized"
+// @Failure 403 {object} delivery.APIForbiddenErrorResponse "Forbidden - user not in label"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /api/v1/label/albums [get]
+func (h *LabelHandler) GetAlbumsByLabelID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	labelID, isLabel := ctxExtractor.LabelFromContext(ctx)
+	if !isLabel {
+		logger.Error("failed to get labelID")
+		json.WriteErrorResponse(w, http.StatusForbidden, "user not in label", nil)
+		return
+	}
+
+	pagination, err := pagination.GetPagination(r, &h.cfg.Pagination)
+	if err != nil {
+		logger.Error("failed to get pagination", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	albums, err := h.usecase.GetAlbumsByLabelID(ctx, labelID, &usecase.AlbumFilters{
+		Pagination: model.PaginationFromDeliveryToUsecase(pagination),
+	})
+	if err != nil {
+		logger.Error("failed to get albums", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	albumsDelivery := model.AlbumsFromUsecaseToDelivery(albums)
+	json.WriteSuccessResponse(w, http.StatusOK, albumsDelivery, nil)
 }

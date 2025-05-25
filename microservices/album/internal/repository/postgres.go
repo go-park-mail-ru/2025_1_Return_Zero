@@ -98,10 +98,18 @@ const (
 		INSERT INTO album (title, type, thumbnail_url, label_id)
 		VALUES ($1, $2, $3, $4)
 		RETURNING id`
-	
+
 	DeleteAlbumQuery = `
 		DELETE FROM album
 		WHERE id = $1
+	`
+	GetAlbumsLabelIDQuery = `
+		SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date, FALSE AS is_favorite
+		FROM album a
+		JOIN album_stats als ON a.id = als.album_id
+		WHERE a.label_id = $1
+		ORDER BY als.listeners_count DESC, a.id DESC
+		LIMIT $2 OFFSET $3
 	`
 )
 
@@ -485,7 +493,6 @@ func (r *albumPostgresRepository) CreateAlbum(ctx context.Context, album *repoMo
 		logger.Error("failed to create album", zap.Error(err))
 		return 0, albumErrors.NewInternalError("failed to create album: %v", err)
 	}
-	
 
 	return albumID, nil
 }
@@ -510,4 +517,43 @@ func (r *albumPostgresRepository) DeleteAlbum(ctx context.Context, albumID int64
 	}
 
 	return nil
+}
+
+func (r *albumPostgresRepository) GetAlbumsLabelID(ctx context.Context, filters *repoModel.AlbumFilters, labelID int64) ([]*repoModel.Album, error) {
+	start := time.Now()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting albums by label ID from db", zap.Int64("labelID", labelID), zap.Any("filters", filters), zap.String("query", "GetAlbumsLabelID"))
+
+	stmt, err := r.db.PrepareContext(ctx, GetAlbumsLabelIDQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetAlbumsLabelID").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return nil, albumErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx, labelID, filters.Pagination.Limit, filters.Pagination.Offset)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetAlbumsLabelID").Inc()
+		logger.Error("failed to get all albums", zap.Error(err))
+		return nil, albumErrors.NewInternalError("failed to get all albums: %v", err)
+	}
+	defer rows.Close()
+
+	albums := make([]*repoModel.Album, 0)
+	for rows.Next() {
+		var album repoModel.Album
+		var isFavorite sql.NullBool
+		err = rows.Scan(&album.ID, &album.Title, &album.Type, &album.Thumbnail, &album.ReleaseDate, &isFavorite)
+		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetAlbumsLabelID").Inc()
+			logger.Error("failed to scan album", zap.Error(err))
+			return nil, albumErrors.NewInternalError("failed to scan album: %v", err)
+		}
+		album.IsFavorite = isFavorite.Valid && isFavorite.Bool
+		albums = append(albums, &album)
+	}
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetAlbumsLabelID").Observe(duration)
+	return albums, nil
 }

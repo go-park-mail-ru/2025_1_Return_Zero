@@ -20,6 +20,7 @@ type Repository interface {
 	SearchAlbums(ctx context.Context, query string, userID int64) ([]*repoModel.Album, error)
 	CreateAlbum(ctx context.Context, album *repoModel.CreateAlbumRequest) (int64, error)
 	DeleteAlbum(ctx context.Context, albumID int64) error
+	GetAlbumsLabelID(ctx context.Context, filters *repoModel.AlbumFilters, labelID int64) ([]*repoModel.Album, error)
 }
 
 type S3Repository interface {

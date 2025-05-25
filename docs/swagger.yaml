@@ -194,10 +194,8 @@ definitions:
     type: object
   delivery.DeleteArtistRequest:
     properties:
-      label_id:
+      artist_id:
         type: integer
-      title:
-        type: string
     type: object
   delivery.EditLabelRequest:
     properties:
@@ -456,6 +454,8 @@ definitions:
         type: string
       email:
         type: string
+      is_label:
+        type: boolean
       username:
         type: string
     type: object
@@ -723,15 +723,15 @@ paths:
         "400":
           description: Bad request - invalid input
           schema:
-            type: string
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
         "401":
           description: Unauthorized - admin access required
           schema:
-            type: string
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
         "500":
           description: Internal server error
           schema:
-            type: string
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
       security:
       - AdminAuth: []
       summary: Update a label
@@ -880,6 +880,56 @@ paths:
       summary: Create a new album
       tags:
       - label
+  /api/v1/label/albums:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of albums associated with the user's label with
+        optional pagination.
+      parameters:
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of albums in the label
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Album'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid pagination parameters
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "403":
+          description: Forbidden - user not in label
+          schema:
+            $ref: '#/definitions/delivery.APIForbiddenErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      security:
+      - LabelAuth: []
+      summary: Get albums by label ID
+      tags:
+      - label
   /api/v1/label/artist:
     delete:
       consumes:
@@ -970,9 +1020,9 @@ paths:
       description: Updates an artist's information (name and/or image). Only accessible
         by label members.
       parameters:
-      - description: Current artist name
+      - description: Artist ID to edit
         in: formData
-        name: title
+        name: artist_id
         required: true
         type: string
       - description: New artist name (required if thumbnail is not provided)

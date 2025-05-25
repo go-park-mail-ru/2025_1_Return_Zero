@@ -20,6 +20,7 @@ func UserFromRepositoryToUsecase(data *repoModel.User) *usecaseModel.UserFront {
 		Email:     data.Email,
 		Thumbnail: data.Thumbnail,
 		Id:        data.ID,
+		LabelId:   data.LabelId,
 	}
 }
 
@@ -94,6 +95,7 @@ func UserFrontFromUsecaseToProto(data *usecaseModel.UserFront) *protoModel.UserF
 		Email:    data.Email,
 		Avatar:   data.Thumbnail,
 		Id:       data.Id,
+		LabelId:  data.LabelId,
 	}
 }
 
@@ -212,4 +214,3 @@ func UserToFrontFromUsecaseToProto(user *usecaseModel.UserFront) *protoModel.Use
 		Id:       user.Id,
 	}
 }
-

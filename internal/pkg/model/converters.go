@@ -127,8 +127,8 @@ func AlbumLikeRequestFromDeliveryToUsecase(isLike bool, userID int64, albumID in
 
 func TrackRequestFromDeliveryToUsecase(deliveryTrack *delivery.CreateTrackRequest) *usecase.CreateTrackRequest {
 	return &usecase.CreateTrackRequest{
-		Title:    deliveryTrack.Title,
-		Track:    deliveryTrack.Track,
+		Title: deliveryTrack.Title,
+		Track: deliveryTrack.Track,
 	}
 }
 
@@ -145,6 +145,21 @@ func NewAlbumFromDeliveryToUsecase(deliveryAlbum *delivery.CreateAlbumRequest) *
 		LabelID:    deliveryAlbum.LabelID,
 		Tracks:     tracks,
 		ArtistsIDs: deliveryAlbum.ArtistsIDs,
+	}
+}
+
+func AlbumTypeConverter(albumType string) delivery.AlbumType {
+	switch albumType {
+	case string(usecase.AlbumTypeAlbum):
+		return delivery.AlbumTypeAlbum
+	case string(usecase.AlbumTypeEP):
+		return delivery.AlbumTypeEP
+	case string(usecase.AlbumTypeSingle):
+		return delivery.AlbumTypeSingle
+	case string(usecase.AlbumTypeCompilation):
+		return delivery.AlbumTypeCompilation
+	default:
+		return delivery.AlbumTypeAlbum
 	}
 }
 
@@ -285,8 +300,8 @@ func ArtistLoadFromDeliveryToUsecase(deliveryArtist *delivery.CreateArtistReques
 
 func ArtistDeleteFromDeliveryToUsecase(deleteArtist *delivery.DeleteArtistRequest) *usecase.ArtistDelete {
 	return &usecase.ArtistDelete{
-		Title:   deleteArtist.Title,
-		LabelID: deleteArtist.LabelID,
+		ArtistID: deleteArtist.ArtistID,
+		LabelID:  deleteArtist.LabelID,
 	}
 }
 
@@ -579,7 +594,7 @@ func MembersFromProtoToUsecase(users *userProto.UsersToFront) []*usecase.User {
 
 func ArtistEditFromDeliveryToUsecase(editRequest *delivery.EditArtistRequest) *usecase.ArtistEdit {
 	return &usecase.ArtistEdit{
-		Title:    editRequest.Title,
+		ArtistID: editRequest.ArtistID,
 		Image:    editRequest.Image,
 		LabelID:  editRequest.LabelID,
 		NewTitle: editRequest.NewTitle,
@@ -797,6 +812,7 @@ func UserFromProtoToUsecase(protoUser *userProto.UserFront) *usecase.User {
 		Username:  protoUser.Username,
 		Email:     protoUser.Email,
 		AvatarUrl: protoUser.Avatar,
+		LabelID:   protoUser.LabelId,
 	}
 }
 
@@ -926,8 +942,8 @@ func UserIDFromUsecaseToProto(userID int64) *authProto.UserID {
 
 func TrackLoadFromUsecaseToProto(track *usecase.CreateTrackRequest) *trackProto.TrackLoad {
 	return &trackProto.TrackLoad{
-		Title:    track.Title,
-		File:     track.Track,
+		Title: track.Title,
+		File:  track.Track,
 	}
 }
 

@@ -86,6 +86,7 @@ message UserFront {
     string email = 2;
     string avatar = 3;
     int64 id = 4;
+    int64 label_id = 5;
 }
 
 message UserID {

@@ -11,6 +11,7 @@ type User struct {
 	Username  string `sql:"username"`
 	Email     string `sql:"email"`
 	Thumbnail string `sql:"thumbnail"`
+	LabelId   int64  `sql:"is_label"`
 }
 
 type LoginData struct {

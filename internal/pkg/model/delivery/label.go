@@ -7,15 +7,15 @@ type CreateArtistRequest struct {
 }
 
 type EditArtistRequest struct {
-	Title    string `json:"title"`
+	ArtistID int64  `json:"artist_id"`
 	NewTitle string `json:"new_title,omitempty"`
 	Image    []byte `json:"image,omitempty"`
 	LabelID  int64  `json:"label_id"`
 }
 
 type DeleteArtistRequest struct {
-	Title   string `json:"title"`
-	LabelID int64  `json:"label_id"`
+	ArtistID int64 `json:"artist_id"`
+	LabelID  int64 `json:"-"`
 }
 
 type CreateTrackRequest struct {
@@ -33,7 +33,7 @@ type CreateAlbumRequest struct {
 }
 
 type EditLabelRequest struct {
-	LabelID  int64   `json:"label_id"`
+	LabelID  int64    `json:"label_id"`
 	ToAdd    []string `json:"to_add,omitempty"`
 	ToRemove []string `json:"to_remove,omitempty"`
 }

@@ -33,8 +33,8 @@ import (
 	userUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/usecase"
 
 	labelHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/label/delivery/http"
-	labelUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/label/usecase"
 	labelRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/label/repository"
+	labelUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/label/usecase"
 
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
@@ -182,7 +182,8 @@ func main() {
 
 	r.HandleFunc("/api/v1/label/album", labelHandler.CreateAlbum).Methods("POST")
 	r.HandleFunc("/api/v1/label/album", labelHandler.DeleteAlbum).Methods("DELETE")
-	
+	r.HandleFunc("/api/v1/label/albums", labelHandler.GetAlbumsByLabelID).Methods("GET")
+
 	r.Handle("/api/v1/metrics", promhttp.Handler())
 
 	srv := &http.Server{

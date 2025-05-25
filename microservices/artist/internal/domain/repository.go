@@ -29,9 +29,9 @@ type Repository interface {
 	ChangeArtistTitle(ctx context.Context, newTitle, Title string) error
 	GetArtistByTitle(ctx context.Context, title string) (*repoModel.Artist, error)
 	UploadAvatar(ctx context.Context, artistTitle string, avatarURL string) error
-	GetArtistLabelID(ctx context.Context, artistTitle string) (int64, error)
+	GetArtistLabelID(ctx context.Context, artistID int64) (int64, error)
 	GetArtistsLabelID(ctx context.Context, filters *repoModel.Filters, labelID int64) ([]*repoModel.Artist, error)
-	DeleteArtist(ctx context.Context, title string) error
+	DeleteArtist(ctx context.Context, artistID int64) error
 	AddArtistsToAlbum(ctx context.Context, artistsIDs []int64, albumID int64) error
 	AddArtistsToTracks(ctx context.Context, artistsIDs []int64, trackIDs []int64) error
 }

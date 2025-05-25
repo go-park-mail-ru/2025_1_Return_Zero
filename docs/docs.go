@@ -375,19 +375,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request - invalid input",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized - admin access required",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
                         }
                     }
                 }
@@ -612,6 +612,87 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/label/albums": {
+            "get": {
+                "security": [
+                    {
+                        "LabelAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of albums associated with the user's label with optional pagination.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Get albums by label ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Offset (default: 0)",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit (default: 10, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of albums in the label",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Album"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid pagination parameters",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - user not in label",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIForbiddenErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/label/artist": {
             "put": {
                 "security": [
@@ -633,8 +714,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Current artist name",
-                        "name": "title",
+                        "description": "Artist ID to edit",
+                        "name": "artist_id",
                         "in": "formData",
                         "required": true
                     },
@@ -3518,11 +3599,8 @@ const docTemplate = `{
         "delivery.DeleteArtistRequest": {
             "type": "object",
             "properties": {
-                "label_id": {
+                "artist_id": {
                     "type": "integer"
-                },
-                "title": {
-                    "type": "string"
                 }
             }
         },
@@ -3901,6 +3979,9 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "is_label": {
+                    "type": "boolean"
                 },
                 "username": {
                     "type": "string"

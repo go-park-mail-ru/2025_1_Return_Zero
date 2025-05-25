@@ -168,10 +168,10 @@ const (
 		WHERE title = $2
 	`
 
-	GetArtistLabelIdByTitleQuery = `
+	GetArtistLabelIdByIDQuery = `
 		SELECT label_id
 		FROM artist
-		WHERE title = $1
+		WHERE id = $1
 	`
 
 	GetArtistsLabelIDQuery = `
@@ -186,7 +186,7 @@ const (
 	DeleteArtistQuery = `
 		DELETE 
 		FROM artist
-		WHERE title = $1
+		WHERE id = $1
 	`
 
 	AddArtistsToAlbum = `
@@ -863,17 +863,17 @@ func (r *artistPostgresRepository) UploadAvatar(ctx context.Context, artistTitle
 	return nil
 }
 
-func (r *artistPostgresRepository) GetArtistLabelID(ctx context.Context, artistTitle string) (int64, error) {
+func (r *artistPostgresRepository) GetArtistLabelID(ctx context.Context, artistID int64) (int64, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
-	logger.Info("Requesting artist label id by title from db", zap.String("artistTitle", artistTitle))
-	stmt, err := r.db.PrepareContext(ctx, GetArtistLabelIdByTitleQuery)
+	logger.Info("Requesting artist label id by id from db", zap.Int64("artistID", artistID))
+	stmt, err := r.db.PrepareContext(ctx, GetArtistLabelIdByIDQuery)
 	if err != nil {
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return 0, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
 	defer stmt.Close()
 
-	row := stmt.QueryRowContext(ctx, artistTitle)
+	row := stmt.QueryRowContext(ctx, artistID)
 
 	var labelID int64
 	err = row.Scan(&labelID)
@@ -926,10 +926,10 @@ func (r *artistPostgresRepository) GetArtistsLabelID(ctx context.Context, filter
 	return artists, nil
 }
 
-func (r *artistPostgresRepository) DeleteArtist(ctx context.Context, title string) error {
+func (r *artistPostgresRepository) DeleteArtist(ctx context.Context, artistID int64) error {
 	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
-	logger.Info("deleting user", zap.String("title", title))
+	logger.Info("deleting user", zap.Int64("artist id", artistID))
 
 	stmt, err := r.db.PrepareContext(ctx, DeleteArtistQuery)
 	if err != nil {
@@ -939,7 +939,7 @@ func (r *artistPostgresRepository) DeleteArtist(ctx context.Context, title strin
 	}
 	defer stmt.Close()
 
-	_, err = stmt.ExecContext(ctx, title)
+	_, err = stmt.ExecContext(ctx, artistID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("DeleteArtist").Inc()
 		logger.Error("failed to delete artist", zap.Error(err))
@@ -980,30 +980,30 @@ func (r *artistPostgresRepository) AddArtistsToAlbum(ctx context.Context, artist
 }
 
 func (r *artistPostgresRepository) AddArtistsToTracks(ctx context.Context, artistsIDs []int64, trackIDs []int64) error {
-    start := time.Now()
-    logger := loggerPkg.LoggerFromContext(ctx)
-    logger.Info("Adding artists to tracks", zap.Any("artistsIds", artistsIDs), zap.Any("trackIDs", trackIDs))
+	start := time.Now()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Adding artists to tracks", zap.Any("artistsIds", artistsIDs), zap.Any("trackIDs", trackIDs))
 
-    if len(artistsIDs) == 0 || len(trackIDs) == 0 {
-        return nil
-    }
+	if len(artistsIDs) == 0 || len(trackIDs) == 0 {
+		return nil
+	}
 
-    stmt, err := r.db.PrepareContext(ctx, AddArtistsToTracks)
-    if err != nil {
-        r.metrics.DatabaseErrors.WithLabelValues("AddArtistsToTracks").Inc()
-        logger.Error("failed to prepare statement", zap.Error(err))
-        return artistErrors.NewInternalError("failed to prepare statement: %v", err)
-    }
-    defer stmt.Close()
+	stmt, err := r.db.PrepareContext(ctx, AddArtistsToTracks)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("AddArtistsToTracks").Inc()
+		logger.Error("failed to prepare statement", zap.Error(err))
+		return artistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer stmt.Close()
 
-    _, err = stmt.ExecContext(ctx, pq.Array(artistsIDs), pq.Array(trackIDs))
-    if err != nil {
-        r.metrics.DatabaseErrors.WithLabelValues("AddArtistsToTracks").Inc()
-        logger.Error("failed to add artists to tracks", zap.Error(err))
-        return artistErrors.NewInternalError("failed to add artists to tracks: %v", err)
-    }
+	_, err = stmt.ExecContext(ctx, pq.Array(artistsIDs), pq.Array(trackIDs))
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("AddArtistsToTracks").Inc()
+		logger.Error("failed to add artists to tracks", zap.Error(err))
+		return artistErrors.NewInternalError("failed to add artists to tracks: %v", err)
+	}
 
-    duration := time.Since(start).Seconds()
-    r.metrics.DatabaseDuration.WithLabelValues("AddArtistsToTracks").Observe(duration)
-    return nil
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("AddArtistsToTracks").Observe(duration)
+	return nil
 }

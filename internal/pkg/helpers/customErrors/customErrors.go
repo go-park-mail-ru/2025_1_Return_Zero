@@ -163,16 +163,7 @@ func HandleAuthGRPCError(err error) error {
 
 	switch st.Code() {
 	case codes.Unavailable:
-		switch st.Message() {
-		case "failed to create session":
-			return ErrCreateSession
-		case "failed to delete session":
-			return ErrDeleteSession
-		case "failed to get session":
-			return ErrGetSession
-		default:
-			return errors.New("internal server error: " + st.Message())
-		}
+		return ErrGetSession
 	default:
 		return err
 	}

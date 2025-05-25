@@ -35,7 +35,7 @@ message ArtistsIDWithAlbumID {
 }
 
 message ArtistDelete {
-	string title = 1;
+	int64 artist_id = 1;
 	int64 label_id = 2;
 }
 
@@ -45,7 +45,7 @@ message FiltersWithLabelID {
 }
 
 message ArtistEdit {
-	string title = 1;
+	int64 artist_id = 1;
 	bytes image = 2;
 	int64 label_id = 3;
 	string new_title = 4;

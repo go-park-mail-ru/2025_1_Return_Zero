@@ -263,7 +263,7 @@ func ArtistLoadFromProtoToUsecase(artist *protoModel.ArtistLoad) *usecaseModel.A
 
 func ArtistEditFromProtoToUsecase(artist *protoModel.ArtistEdit) *usecaseModel.ArtistEdit {
 	return &usecaseModel.ArtistEdit{
-		Title:    artist.Title,
+		ArtistID: artist.ArtistId,
 		NewTitle: artist.NewTitle,
 		Image:    artist.Image,
 		LabelID:  artist.LabelId,
@@ -271,7 +271,7 @@ func ArtistEditFromProtoToUsecase(artist *protoModel.ArtistEdit) *usecaseModel.A
 }
 func ArtistEditFromUsecaseToRepository(artist *usecaseModel.ArtistEdit) *repoModel.ArtistEdit {
 	return &repoModel.ArtistEdit{
-		Title:    artist.Title,
+		ArtistID: artist.ArtistID,
 		NewTitle: artist.NewTitle,
 		Image:    artist.Image,
 		LabelID:  artist.LabelID,
@@ -280,8 +280,8 @@ func ArtistEditFromUsecaseToRepository(artist *usecaseModel.ArtistEdit) *repoMod
 
 func ArtistDeleteFromProtoToUsecase(artist *protoModel.ArtistDelete) *usecaseModel.ArtistDelete {
 	return &usecaseModel.ArtistDelete{
-		Title:   artist.Title,
-		LabelID: artist.LabelId,
+		ArtistID: artist.ArtistId,
+		LabelID:  artist.LabelId,
 	}
 }
 

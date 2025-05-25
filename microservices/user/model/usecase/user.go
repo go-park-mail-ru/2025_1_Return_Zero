@@ -11,6 +11,7 @@ type UserFront struct {
 	Email     string
 	Thumbnail string
 	Id        int64
+	LabelId   int64
 }
 
 type LoginData struct {

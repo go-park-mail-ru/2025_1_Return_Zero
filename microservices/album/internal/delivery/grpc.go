@@ -104,13 +104,14 @@ func (s *AlbumService) SearchAlbums(ctx context.Context, req *albumProto.Query) 
 	return model.AlbumListFromUsecaseToProto(albums), nil
 }
 
-func (s *AlbumService) CreateAlbum(ctx context.Context, req *albumProto.CreateAlbumRequest) (*albumProto.AlbumID, error) {
-	albumID, err := s.albumUsecase.CreateAlbum(ctx, model.AlbumRequestFromProtoToUsecase(req))
+func (s *AlbumService) CreateAlbum(ctx context.Context, req *albumProto.CreateAlbumRequest) (*albumProto.AlbumIDAndURL, error) {
+	albumID, url, err := s.albumUsecase.CreateAlbum(ctx, model.AlbumRequestFromProtoToUsecase(req))
 	if err != nil {
 		return nil, err
 	}
-	return &albumProto.AlbumID{
-		Id: albumID,
+	return &albumProto.AlbumIDAndURL{
+		Id:  albumID,
+		Url: url,
 	}, nil
 }
 
@@ -120,4 +121,12 @@ func (s *AlbumService) DeleteAlbum(ctx context.Context, req *albumProto.AlbumID)
 		return nil, err
 	}
 	return &emptypb.Empty{}, nil
+}
+
+func (s *AlbumService) GetAlbumsLabelID(ctx context.Context, req *albumProto.FiltersWithLabelID) (*albumProto.AlbumList, error) {
+	albums, err := s.albumUsecase.GetAlbumsLabelID(ctx, model.AlbumFiltersFromProtoToUsecase(req.Filters), req.LabelId)
+	if err != nil {
+		return nil, err
+	}
+	return model.AlbumListFromUsecaseToProto(albums), nil
 }

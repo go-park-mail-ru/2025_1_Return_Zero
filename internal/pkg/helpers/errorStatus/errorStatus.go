@@ -19,7 +19,7 @@ var mapErrorStatus = map[error]int{
 	customErrors.ErrPasswordRequired: http.StatusBadRequest,
 
 	customErrors.ErrCreateSession: http.StatusInternalServerError,
-	customErrors.ErrGetSession:    http.StatusInternalServerError,
+	customErrors.ErrGetSession:    http.StatusUnauthorized,
 	customErrors.ErrDeleteSession: http.StatusInternalServerError,
 
 	customErrors.ErrInvalidOffset:            http.StatusBadRequest,

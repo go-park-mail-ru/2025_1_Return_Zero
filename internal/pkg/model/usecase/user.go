@@ -11,6 +11,7 @@ type User struct {
 	Avatar    io.Reader
 	Password  string
 	AvatarUrl string
+	LabelID   int64
 }
 
 type ChangeUserData struct {

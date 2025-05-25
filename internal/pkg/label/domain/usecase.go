@@ -12,7 +12,8 @@ type Usecase interface {
 	EditArtist(ctx context.Context, artist *usecaseModel.ArtistEdit) (*usecaseModel.Artist, error)
 	GetArtists(ctx context.Context, labelID int64, filters *usecaseModel.ArtistFilters) ([]*usecaseModel.Artist, error)
 	DeleteArtist(ctx context.Context, artist *usecaseModel.ArtistDelete) error
-	CreateAlbum(ctx context.Context, album *usecaseModel.CreateAlbumRequest) (int64, error)
+	CreateAlbum(ctx context.Context, album *usecaseModel.CreateAlbumRequest) (int64, string, error)
 	UpdateLabel(ctx context.Context, labelID int64, toAdd, toRemove []string) error
 	DeleteAlbum(ctx context.Context, albumID, labelID int64) error
+	GetAlbumsByLabelID(ctx context.Context, labelID int64, filters *usecaseModel.AlbumFilters) ([]*usecaseModel.Album, error)
 }

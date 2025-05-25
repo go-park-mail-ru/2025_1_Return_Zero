@@ -201,12 +201,16 @@ func (u *artistUsecase) UploadAvatar(ctx context.Context, artistTitle string, av
 }
 
 func (u *artistUsecase) EditArtist(ctx context.Context, artist *usecaseModel.ArtistEdit) (*usecaseModel.Artist, error) {
-	artistLabelID, err := u.artistRepo.GetArtistLabelID(ctx, artist.Title)
+	artistLabelID, err := u.artistRepo.GetArtistLabelID(ctx, artist.ArtistID)
 	if err != nil {
 		return nil, err
 	}
 	if artist.LabelID != artistLabelID {
 		return nil, artistErrors.NewForbiddenError("you are not allowed to edit this artist")
+	}
+	artistName, err := u.artistRepo.GetArtistTitleByID(ctx, artist.ArtistID)
+	if err != nil {
+		return nil, err
 	}
 	artistEdit := model.ArtistEditFromUsecaseToRepository(artist)
 	var artistTitle string
@@ -219,20 +223,20 @@ func (u *artistUsecase) EditArtist(ctx context.Context, artist *usecaseModel.Art
 		if isNameExist {
 			return nil, artistErrors.NewConflictError("artist with this name already exists")
 		}
-		isArtistExist, err := u.artistRepo.CheckArtistNameExist(ctx, artistEdit.Title)
+		isArtistExist, err := u.artistRepo.CheckArtistNameExist(ctx, artistName)
 		if err != nil {
 			return nil, err
 		}
 		if !isArtistExist {
 			return nil, artistErrors.NewNotFoundError("artist not found")
 		}
-		err = u.artistRepo.ChangeArtistTitle(ctx, artistEdit.NewTitle, artistEdit.Title)
+		err = u.artistRepo.ChangeArtistTitle(ctx, artistEdit.NewTitle, artistName)
 		if err != nil {
 			return nil, err
 		}
 		artistTitle = artistEdit.NewTitle
 	} else {
-		artistTitle = artistEdit.Title
+		artistTitle = artistName
 	}
 	if artist.Image != nil {
 		avatarURL, err := u.s3Repo.UploadArtistAvatar(ctx, artistTitle, artist.Image)
@@ -261,14 +265,14 @@ func (u *artistUsecase) GetArtistsLabelID(ctx context.Context, filters *usecaseM
 }
 
 func (u *artistUsecase) DeleteArtist(ctx context.Context, artist *usecaseModel.ArtistDelete) error {
-	artistLabelID, err := u.artistRepo.GetArtistLabelID(ctx, artist.Title)
+	artistLabelID, err := u.artistRepo.GetArtistLabelID(ctx, artist.ArtistID)
 	if err != nil {
 		return err
 	}
 	if artist.LabelID != artistLabelID {
 		return artistErrors.NewForbiddenError("you are not allowed to edit this artist")
 	}
-	err = u.artistRepo.DeleteArtist(ctx, artist.Title)
+	err = u.artistRepo.DeleteArtist(ctx, artist.ArtistID)
 	if err != nil {
 		return err
 	}

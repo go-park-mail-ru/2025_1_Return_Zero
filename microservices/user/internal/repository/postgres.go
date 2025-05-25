@@ -49,7 +49,7 @@ const (
             ) VALUES ($1, false, false, false, false, false, false)
     `
 	loginUserQuery = `
-			SELECT id, username, email, password_hash, thumbnail_url
+			SELECT id, username, email, password_hash, thumbnail_url, label_id
 			FROM "user"
 			WHERE username = $1 OR email = $2
 	`
@@ -361,7 +361,8 @@ func (r *userPostgresRepository) LoginUser(ctx context.Context, logData *repoMod
 	logger.Info("Loggining user", zap.String("username", lowerUsername))
 	row := stmt.QueryRowContext(ctx, lowerUsername, logData.Email)
 	var userRepo repoModel.User
-	err = row.Scan(&userRepo.ID, &userRepo.Username, &userRepo.Email, &storedHash, &userRepo.Thumbnail)
+	var labelID sql.NullInt64
+	err = row.Scan(&userRepo.ID, &userRepo.Username, &userRepo.Email, &storedHash, &userRepo.Thumbnail, &labelID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("LoginUser").Inc()
 		if errors.Is(err, sql.ErrNoRows) {
@@ -376,6 +377,11 @@ func (r *userPostgresRepository) LoginUser(ctx context.Context, logData *repoMod
 		r.metrics.DatabaseErrors.WithLabelValues("LoginUser").Inc()
 		logger.Error("wrong password", zap.Error(err))
 		return nil, userErrors.NewWrongPasswordError("wrong password")
+	}
+	if labelID.Valid {
+		userRepo.LabelId = labelID.Int64
+	} else {
+		userRepo.LabelId = -1
 	}
 	duration := time.Since(start).Seconds()
 	r.metrics.DatabaseDuration.WithLabelValues("LoginUser").Observe(duration)

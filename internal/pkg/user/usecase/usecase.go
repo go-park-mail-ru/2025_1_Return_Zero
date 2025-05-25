@@ -10,6 +10,7 @@ import (
 	playlistProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/playlist"
 	trackProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
 	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/ctxExtractor"
 	cusstomErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/customErrors"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
@@ -70,6 +71,12 @@ func (u *userUsecase) GetUserBySID(ctx context.Context, SID string) (*usecaseMod
 	avatar_url, err := (*u.userClient).GetUserAvatarURL(ctx, model.FileKeyFromUsecaseToProto(userUsecase.AvatarUrl))
 	if err != nil {
 		return nil, err
+	}
+	labelID, isLabel := ctxExtractor.LabelFromContext(ctx)
+	if isLabel {
+		userUsecase.LabelID = labelID
+	} else {
+		userUsecase.LabelID = -1
 	}
 	userUsecase.AvatarUrl = model.AvatarUrlFromProtoToUsecase(avatar_url)
 	return userUsecase, nil

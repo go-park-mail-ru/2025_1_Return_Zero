@@ -7,6 +7,7 @@ type UserToFront struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Avatar   string `json:"avatar_url"`
+	IsLabel  bool   `json:"is_label"`
 }
 
 type UserDelete struct {

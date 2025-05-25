@@ -32,13 +32,13 @@ type ArtistLoad struct {
 }
 
 type ArtistEdit struct {
-	Title    string
+	ArtistID int64
 	NewTitle string
 	Image    []byte
 	LabelID  int64
 }
 
 type ArtistDelete struct {
-	Title   string
-	LabelID int64
+	ArtistID int64
+	LabelID  int64
 }
