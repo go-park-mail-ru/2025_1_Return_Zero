@@ -117,7 +117,7 @@ func main() {
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistClient, userClient), cfg)
 	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(&userClient, &authClient, &artistClient, &trackClient, &playlistClient))
 	playlistHandler := playlistHttp.NewPlaylistHandler(playlistUsecase.NewUsecase(&playlistClient, &userClient), cfg)
-	jamHandler := jamHttp.NewJamHandler(jamUsecase.NewUsecase(jamRepository.NewJamRedisRepository(redisPool)), cfg, redisPool)
+	jamHandler := jamHttp.NewJamHandler(jamUsecase.NewUsecase(jamRepository.NewJamRedisRepository(redisPool), userClient), cfg)
 
 	r.HandleFunc("/api/v1/tracks", trackHandler.GetAllTracks).Methods("GET")
 	r.HandleFunc("/api/v1/tracks/{id:[0-9]+}", trackHandler.GetTrackByID).Methods("GET")

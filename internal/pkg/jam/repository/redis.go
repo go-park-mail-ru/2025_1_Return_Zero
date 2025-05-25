@@ -65,9 +65,13 @@ func (r *jamRedisRepository) AddUser(ctx context.Context, roomID string, userID 
 		return err
 	}
 
+	username, avatarURL, _ := r.GetUserInfo(ctx, roomID, userID)
+
 	joinPayload, err := json.Marshal(repository.JamMessage{
-		Type:   "user:joined",
-		UserID: userID,
+		Type:       "user:joined",
+		UserID:     userID,
+		UserNames:  map[string]string{userID: username},
+		UserImages: map[string]string{userID: avatarURL},
 	})
 	if err != nil {
 		return err
@@ -143,14 +147,42 @@ func (r *jamRedisRepository) GetInitialJamData(ctx context.Context, roomID strin
 		loadedMap[u] = isLoaded
 	}
 
+	// Populate user information
+	userNames := make(map[string]string)
+	userImages := make(map[string]string)
+
+	// Get all unique user IDs (including host and users)
+	allUserIDs := make(map[string]bool)
+	if hostID != "" {
+		allUserIDs[hostID] = true
+	}
+	for _, userID := range users {
+		allUserIDs[userID] = true
+	}
+
+	// Fetch user info for each user
+	for userID := range allUserIDs {
+		username, avatarURL, err := r.GetUserInfo(ctx, roomID, userID)
+		if err == nil {
+			if username != "" {
+				userNames[userID] = username
+			}
+			if avatarURL != "" {
+				userImages[userID] = avatarURL
+			}
+		}
+	}
+
 	return &repository.JamMessage{
-		Type:     "init",
-		TrackID:  track["id"],
-		Position: position,
-		Paused:   paused,
-		Users:    users,
-		HostID:   hostID,
-		Loaded:   loadedMap,
+		Type:       "init",
+		TrackID:    track["id"],
+		Position:   position,
+		Paused:     paused,
+		Users:      users,
+		HostID:     hostID,
+		Loaded:     loadedMap,
+		UserNames:  userNames,
+		UserImages: userImages,
 	}, nil
 }
 
@@ -280,6 +312,11 @@ func (r *jamRedisRepository) RemoveUser(ctx context.Context, roomID string, user
 		return err
 	}
 
+	_, err = redis.DoContext(conn, ctx, "DEL", "jam:"+roomID+":userinfo:"+userID)
+	if err != nil {
+		return err
+	}
+
 	payload, err := json.Marshal(repository.JamMessage{
 		Type:   "user:left",
 		UserID: userID,
@@ -302,6 +339,21 @@ func (r *jamRedisRepository) RemoveJam(ctx context.Context, roomID string) error
 		return err
 	}
 	defer conn.Close()
+
+	users, _ := redis.Strings(redis.DoContext(conn, ctx, "SMEMBERS", "jam:"+roomID+":users"))
+	hostID, _ := redis.String(redis.DoContext(conn, ctx, "GET", "jam:"+roomID+":host"))
+
+	allUserIDs := make(map[string]bool)
+	if hostID != "" {
+		allUserIDs[hostID] = true
+	}
+	for _, userID := range users {
+		allUserIDs[userID] = true
+	}
+
+	for userID := range allUserIDs {
+		redis.DoContext(conn, ctx, "DEL", "jam:"+roomID+":userinfo:"+userID)
+	}
 
 	_, err = redis.DoContext(conn, ctx, "DEL", "jam:"+roomID+":host")
 	if err != nil {
@@ -383,4 +435,82 @@ func (r *jamRedisRepository) SeekJam(ctx context.Context, roomID string, positio
 	}
 
 	return nil
+}
+
+func (r *jamRedisRepository) StoreUserInfo(ctx context.Context, roomID string, userID string, username string, avatarURL string) error {
+	conn, err := r.getConn()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	_, err = redis.DoContext(conn, ctx, "HMSET", "jam:"+roomID+":userinfo:"+userID,
+		"username", username,
+		"avatar", avatarURL,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *jamRedisRepository) GetUserInfo(ctx context.Context, roomID string, userID string) (string, string, error) {
+	conn, err := r.getConn()
+	if err != nil {
+		return "", "", err
+	}
+	defer conn.Close()
+
+	userInfo, err := redis.StringMap(redis.DoContext(conn, ctx, "HGETALL", "jam:"+roomID+":userinfo:"+userID))
+	if err != nil {
+		return "", "", err
+	}
+
+	username := userInfo["username"]
+	avatarURL := userInfo["avatar"]
+
+	return username, avatarURL, nil
+}
+
+func (r *jamRedisRepository) SubscribeToJamMessages(ctx context.Context, roomID string) (<-chan []byte, error) {
+	conn, err := r.getConn()
+	if err != nil {
+		return nil, err
+	}
+
+	pubSub := redis.PubSubConn{Conn: conn}
+	err = pubSub.Subscribe("jam:" + roomID + ":pubsub")
+	if err != nil {
+		conn.Close()
+		return nil, err
+	}
+
+	messageChan := make(chan []byte, 100)
+
+	go func() {
+		defer conn.Close()
+		defer close(messageChan)
+		defer pubSub.Unsubscribe()
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				switch v := pubSub.Receive().(type) {
+				case redis.Message:
+					select {
+					case messageChan <- v.Data:
+					case <-ctx.Done():
+						return
+					}
+				case error:
+					return
+				}
+			}
+		}
+	}()
+
+	return messageChan, nil
 }

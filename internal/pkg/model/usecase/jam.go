@@ -17,12 +17,14 @@ type JoinJamRequest struct {
 }
 
 type JamMessage struct {
-	Type     string
-	TrackID  string
-	Position int64
-	Paused   bool
-	UserID   string
-	HostID   string
-	Users    []string
-	Loaded   map[string]bool
+	Type       string
+	TrackID    string
+	Position   int64
+	Paused     bool
+	UserID     string
+	HostID     string
+	Users      []string
+	Loaded     map[string]bool
+	UserImages map[string]string
+	UserNames  map[string]string
 }

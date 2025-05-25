@@ -19,4 +19,7 @@ type Repository interface {
 	RemoveJam(ctx context.Context, roomID string) error
 	ExistsRoom(ctx context.Context, roomID string) (bool, error)
 	SeekJam(ctx context.Context, roomID string, position int64) error
+	StoreUserInfo(ctx context.Context, roomID string, userID string, username string, avatarURL string) error
+	GetUserInfo(ctx context.Context, roomID string, userID string) (string, string, error)
+	SubscribeToJamMessages(ctx context.Context, roomID string) (<-chan []byte, error)
 }

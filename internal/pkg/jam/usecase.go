@@ -11,4 +11,5 @@ type Usecase interface {
 	JoinJam(ctx context.Context, request *usecase.JoinJamRequest) (*usecase.JamMessage, error)
 	HandleClientMessage(ctx context.Context, roomID string, userID string, m *usecase.JamMessage) error
 	LeaveJam(ctx context.Context, roomID string, userID string) error
+	SubscribeToJamMessages(ctx context.Context, roomID string) (<-chan *usecase.JamMessage, error)
 }

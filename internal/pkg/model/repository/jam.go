@@ -17,12 +17,14 @@ type JoinJamRequest struct {
 }
 
 type JamMessage struct {
-	Type     string          `json:"type"`
-	TrackID  string          `json:"track_id,omitempty"`
-	Position int64           `json:"position,omitempty"`
-	Paused   bool            `json:"paused,omitempty"`
-	UserID   string          `json:"user_id,omitempty"`
-	HostID   string          `json:"host_id,omitempty"`
-	Users    []string        `json:"users,omitempty"`
-	Loaded   map[string]bool `json:"loaded,omitempty"`
+	Type       string            `json:"type"`
+	TrackID    string            `json:"track_id,omitempty"`
+	Position   int64             `json:"position,omitempty"`
+	Paused     bool              `json:"paused,omitempty"`
+	UserID     string            `json:"user_id,omitempty"`
+	HostID     string            `json:"host_id,omitempty"`
+	Users      []string          `json:"users,omitempty"`
+	Loaded     map[string]bool   `json:"loaded,omitempty"`
+	UserImages map[string]string `json:"user_images,omitempty"`
+	UserNames  map[string]string `json:"user_names,omitempty"`
 }

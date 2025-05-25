@@ -2,8 +2,11 @@ package usecase
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"strconv"
 
+	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/jam"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
@@ -14,11 +17,13 @@ import (
 
 type Usecase struct {
 	jamRepository jam.Repository
+	userClient    userProto.UserServiceClient
 }
 
-func NewUsecase(jamRepository jam.Repository) *Usecase {
+func NewUsecase(jamRepository jam.Repository, userClient userProto.UserServiceClient) *Usecase {
 	return &Usecase{
 		jamRepository: jamRepository,
+		userClient:    userClient,
 	}
 }
 
@@ -32,6 +37,13 @@ func (u *Usecase) CreateJam(ctx context.Context, request *usecase.CreateJamReque
 	if err != nil {
 		return nil, err
 	}
+
+	err = u.storeUserInfo(ctx, jamResponse.RoomID, request.UserID)
+	if err != nil {
+		logger := loggerPkg.LoggerFromContext(ctx)
+		logger.Error("failed to store host user info", zap.Error(err))
+	}
+
 	return &usecase.CreateJamResponse{
 		RoomID: jamResponse.RoomID,
 		HostID: jamResponse.HostID,
@@ -55,6 +67,11 @@ func (u *Usecase) JoinJam(ctx context.Context, request *usecase.JoinJamRequest) 
 	}
 
 	if hostID != request.UserID {
+		err = u.storeUserInfo(ctx, request.RoomID, request.UserID)
+		if err != nil {
+			logger.Error("failed to store user info", zap.Error(err))
+		}
+
 		err = u.jamRepository.AddUser(ctx, request.RoomID, request.UserID)
 		if err != nil {
 			logger.Error("failed to add user", zap.Error(err))
@@ -77,6 +94,30 @@ func (u *Usecase) JoinJam(ctx context.Context, request *usecase.JoinJamRequest) 
 	jamData := model.JamMessageFromRepositoryToUsecase(repoJamData)
 
 	return jamData, nil
+}
+
+func (u *Usecase) storeUserInfo(ctx context.Context, roomID string, userIDStr string) error {
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	userProtoData, err := u.userClient.GetUserByID(ctx, &userProto.UserID{Id: userID})
+	if err != nil {
+		return err
+	}
+
+	username := userProtoData.Username
+	avatarURL := ""
+
+	if userProtoData.Avatar != "" {
+		avatarURLProto, err := u.userClient.GetUserAvatarURL(ctx, &userProto.FileKey{FileKey: userProtoData.Avatar})
+		if err == nil {
+			avatarURL = avatarURLProto.Url
+		}
+	}
+
+	return u.jamRepository.StoreUserInfo(ctx, roomID, userIDStr, username, avatarURL)
 }
 
 func (u *Usecase) HandleClientMessage(ctx context.Context, roomID string, userID string, m *usecase.JamMessage) error {
@@ -160,4 +201,44 @@ func (u *Usecase) LeaveJam(ctx context.Context, roomID string, userID string) er
 
 	u.jamRepository.CheckAllReadyAndPlay(ctx, roomID)
 	return nil
+}
+
+func (u *Usecase) SubscribeToJamMessages(ctx context.Context, roomID string) (<-chan *usecase.JamMessage, error) {
+	repoMessageChan, err := u.jamRepository.SubscribeToJamMessages(ctx, roomID)
+	if err != nil {
+		return nil, err
+	}
+
+	usecaseMessageChan := make(chan *usecase.JamMessage, 100)
+
+	go func() {
+		defer close(usecaseMessageChan)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case repoMessage, ok := <-repoMessageChan:
+				if !ok {
+					return
+				}
+
+				var repoJamMessage repository.JamMessage
+				err := json.Unmarshal(repoMessage, &repoJamMessage)
+				if err != nil {
+					continue
+				}
+
+				usecaseMessage := model.JamMessageFromRepositoryToUsecase(&repoJamMessage)
+
+				select {
+				case usecaseMessageChan <- usecaseMessage:
+				case <-ctx.Done():
+					return
+				}
+			}
+		}
+	}()
+
+	return usecaseMessageChan, nil
 }

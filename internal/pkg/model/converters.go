@@ -833,39 +833,44 @@ func CreateJamRequestFromDeliveryToUsecase(deliveryCreateJam *delivery.CreateJam
 
 func JamMessageFromUsecaseToDelivery(usecaseJamMessage *usecase.JamMessage) *delivery.JamMessage {
 	return &delivery.JamMessage{
-		Type:     usecaseJamMessage.Type,
-		TrackID:  usecaseJamMessage.TrackID,
-		Position: usecaseJamMessage.Position,
-		Paused:   usecaseJamMessage.Paused,
-		Users:    usecaseJamMessage.Users,
-		HostID:   usecaseJamMessage.HostID,
-		Loaded:   usecaseJamMessage.Loaded,
-		UserID:   usecaseJamMessage.UserID,
+		Type:       usecaseJamMessage.Type,
+		TrackID:    usecaseJamMessage.TrackID,
+		Position:   usecaseJamMessage.Position,
+		Paused:     usecaseJamMessage.Paused,
+		Users:      usecaseJamMessage.Users,
+		HostID:     usecaseJamMessage.HostID,
+		Loaded:     usecaseJamMessage.Loaded,
+		UserID:     usecaseJamMessage.UserID,
+		UserImages: usecaseJamMessage.UserImages,
+		UserNames:  usecaseJamMessage.UserNames,
 	}
 }
 
 func JamMessageFromRepositoryToUsecase(repoJamMessage *repository.JamMessage) *usecase.JamMessage {
 	return &usecase.JamMessage{
-		Type:     repoJamMessage.Type,
-		TrackID:  repoJamMessage.TrackID,
-		Position: repoJamMessage.Position,
-		Paused:   repoJamMessage.Paused,
-		Users:    repoJamMessage.Users,
-		HostID:   repoJamMessage.HostID,
-		Loaded:   repoJamMessage.Loaded,
-		UserID:   repoJamMessage.UserID,
+		Type:       repoJamMessage.Type,
+		TrackID:    repoJamMessage.TrackID,
+		Position:   repoJamMessage.Position,
+		Paused:     repoJamMessage.Paused,
+		Users:      repoJamMessage.Users,
+		HostID:     repoJamMessage.HostID,
+		Loaded:     repoJamMessage.Loaded,
+		UserID:     repoJamMessage.UserID,
+		UserImages: repoJamMessage.UserImages,
+		UserNames:  repoJamMessage.UserNames,
 	}
 }
 
 func JamMessageFromDeliveryToUsecase(deliveryJamMessage *delivery.JamMessage) *usecase.JamMessage {
 	return &usecase.JamMessage{
-		Type:     deliveryJamMessage.Type,
-		TrackID:  deliveryJamMessage.TrackID,
-		Position: deliveryJamMessage.Position,
-		Paused:   deliveryJamMessage.Paused,
-		Users:    deliveryJamMessage.Users,
-		HostID:   deliveryJamMessage.HostID,
-		Loaded:   deliveryJamMessage.Loaded,
-		UserID:   deliveryJamMessage.UserID,
+		Type:       deliveryJamMessage.Type,
+		TrackID:    deliveryJamMessage.TrackID,
+		Position:   deliveryJamMessage.Position,
+		Paused:     deliveryJamMessage.Paused,
+		Users:      deliveryJamMessage.Users,
+		HostID:     deliveryJamMessage.HostID,
+		Loaded:     deliveryJamMessage.Loaded,
+		UserImages: deliveryJamMessage.UserImages,
+		UserNames:  deliveryJamMessage.UserNames,
 	}
 }

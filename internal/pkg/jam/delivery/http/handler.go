@@ -16,20 +16,18 @@ import (
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	delivery "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
-	"github.com/gomodule/redigo/redis"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"
 )
 
 type JamHandler struct {
-	usecase   jam.Usecase
-	cfg       *config.Config
-	redisPool *redis.Pool // for pubsub
+	usecase jam.Usecase
+	cfg     *config.Config
 }
 
-func NewJamHandler(usecase jam.Usecase, cfg *config.Config, redisPool *redis.Pool) *JamHandler {
-	return &JamHandler{usecase: usecase, cfg: cfg, redisPool: redisPool}
+func NewJamHandler(usecase jam.Usecase, cfg *config.Config) *JamHandler {
+	return &JamHandler{usecase: usecase, cfg: cfg}
 }
 
 func (h *JamHandler) CreateRoom(w http.ResponseWriter, r *http.Request) {
@@ -129,19 +127,28 @@ func (h *JamHandler) WSHandler(w http.ResponseWriter, r *http.Request) {
 	response := model.JamMessageFromUsecaseToDelivery(usecaseResponse)
 	wsConn.WriteJSON(response)
 
-	subConn := h.redisPool.Get()
-	defer subConn.Close()
-	pubSub := redis.PubSubConn{Conn: subConn}
-	pubSub.Subscribe("jam:" + roomID + ":pubsub")
+	messageChan, err := h.usecase.SubscribeToJamMessages(ctx, roomID)
+	if err != nil {
+		logger.Error("failed to subscribe to jam messages", zap.Error(err))
+		wsConn.Close()
+		return
+	}
 
 	go func() {
 		for {
-			switch v := pubSub.Receive().(type) {
-			case redis.Message:
-				wsConn.WriteMessage(websocket.TextMessage, v.Data)
-			case error:
-				logger.Error("failed to receive message", zap.Error(v))
+			select {
+			case <-ctx.Done():
 				return
+			case usecaseMessage, ok := <-messageChan:
+				if !ok {
+					return
+				}
+				deliveryMessage := model.JamMessageFromUsecaseToDelivery(usecaseMessage)
+				err := wsConn.WriteJSON(deliveryMessage)
+				if err != nil {
+					logger.Error("failed to write message to websocket", zap.Error(err))
+					return
+				}
 			}
 		}
 	}()
