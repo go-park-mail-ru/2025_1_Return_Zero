@@ -146,6 +146,9 @@ func (u *Usecase) HandleClientMessage(ctx context.Context, roomID string, userID
 			return err
 		}
 	case "client:ready":
+		if isHost {
+			return nil
+		}
 		err := u.jamRepository.MarkUserAsReady(ctx, roomID, userID)
 		if err != nil {
 			return err
