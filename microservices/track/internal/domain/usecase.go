@@ -21,4 +21,8 @@ type Usecase interface {
 	LikeTrack(ctx context.Context, likeRequest *usecaseModel.LikeRequest) error
 	GetFavoriteTracks(ctx context.Context, favoriteRequest *usecaseModel.FavoriteRequest) ([]*usecaseModel.Track, error)
 	SearchTracks(ctx context.Context, query string, userID int64) ([]*usecaseModel.Track, error)
+	GetMostLikedTracks(ctx context.Context, userID int64) ([]*usecaseModel.Track, error)
+	GetMostRecentTracks(ctx context.Context, userID int64) ([]*usecaseModel.Track, error)
+	GetMostListenedLastMonthTracks(ctx context.Context, userID int64) ([]*usecaseModel.Track, error)
+	GetMostLikedLastWeekTracks(ctx context.Context, userID int64) ([]*usecaseModel.Track, error)
 }

@@ -40,6 +40,7 @@ var mapErrorStatus = map[error]int{
 	customErrors.ErrPlaylistUnauthorized:         http.StatusUnauthorized,
 	customErrors.ErrCreateRoomNotAllDataProvided: http.StatusBadRequest,
 	customErrors.ErrRoomIDRequired:               http.StatusBadRequest,
+	customErrors.ErrInvalidSelection:             http.StatusBadRequest,
 }
 
 func ErrorStatus(err error) int {

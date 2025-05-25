@@ -125,6 +125,7 @@ func main() {
 	r.HandleFunc("/api/v1/tracks/{id:[0-9]+}/like", trackHandler.LikeTrack).Methods("POST")
 	r.HandleFunc("/api/v1/tracks/search", trackHandler.SearchTracks).Methods("GET")
 	r.HandleFunc("/api/v1/streams/{id:[0-9]+}", trackHandler.UpdateStreamDuration).Methods("PUT", "PATCH")
+	r.HandleFunc("/api/v1/selection/{selection}", trackHandler.GetSelectionTracks).Methods("GET")
 
 	r.HandleFunc("/api/v1/albums", albumHandler.GetAllAlbums).Methods("GET")
 	r.HandleFunc("/api/v1/albums/{id:[0-9]+}", albumHandler.GetAlbumByID).Methods("GET")

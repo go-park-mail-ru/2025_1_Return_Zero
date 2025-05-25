@@ -215,3 +215,35 @@ func (u *TrackUsecase) SearchTracks(ctx context.Context, query string, userID in
 	}
 	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
 }
+
+func (u *TrackUsecase) GetMostLikedTracks(ctx context.Context, userID int64) ([]*usecaseModel.Track, error) {
+	repoTracks, err := u.trackRepo.GetMostLikedTracks(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
+}
+
+func (u *TrackUsecase) GetMostRecentTracks(ctx context.Context, userID int64) ([]*usecaseModel.Track, error) {
+	repoTracks, err := u.trackRepo.GetMostRecentTracks(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
+}
+
+func (u *TrackUsecase) GetMostListenedLastMonthTracks(ctx context.Context, userID int64) ([]*usecaseModel.Track, error) {
+	repoTracks, err := u.trackRepo.GetMostListenedLastMonthTracks(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
+}
+
+func (u *TrackUsecase) GetMostLikedLastWeekTracks(ctx context.Context, userID int64) ([]*usecaseModel.Track, error) {
+	repoTracks, err := u.trackRepo.GetMostLikedLastWeekTracks(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
+}

@@ -440,3 +440,109 @@ func (u *trackUsecase) SearchTracks(ctx context.Context, query string) ([]*useca
 
 	return tracks, nil
 }
+
+func (u *trackUsecase) GetSelectionTracks(ctx context.Context, selection string) ([]*usecaseModel.Track, error) {
+	userID, exists := ctxExtractor.UserFromContext(ctx)
+	if !exists {
+		userID = -1
+	}
+
+	var protoTracks *trackProto.TrackList
+	var err error
+	switch selection {
+	case "most-liked":
+		protoTracks, err = u.trackClient.GetMostLikedTracks(ctx, &trackProto.UserID{Id: userID})
+		if err != nil {
+			return nil, customErrors.HandleTrackGRPCError(err)
+		}
+	case "most-recent":
+		protoTracks, err = u.trackClient.GetMostRecentTracks(ctx, &trackProto.UserID{Id: userID})
+		if err != nil {
+			return nil, customErrors.HandleTrackGRPCError(err)
+		}
+	case "most-listened-last-month":
+		protoTracks, err = u.trackClient.GetMostListenedLastMonthTracks(ctx, &trackProto.UserID{Id: userID})
+		if err != nil {
+			return nil, customErrors.HandleTrackGRPCError(err)
+		}
+	case "most-liked-last-week":
+		protoTracks, err = u.trackClient.GetMostLikedLastWeekTracks(ctx, &trackProto.UserID{Id: userID})
+		if err != nil {
+			return nil, customErrors.HandleTrackGRPCError(err)
+		}
+	case "top-chart":
+		protoTracks, err = u.getMostListenedFromMostListenedArtists(ctx, userID)
+		if err != nil {
+			return nil, customErrors.HandleTrackGRPCError(err)
+		}
+	default:
+		return nil, customErrors.ErrInvalidSelection
+	}
+
+	trackIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		trackIDs = append(trackIDs, protoTrack.Id)
+	}
+
+	albumIDs := make([]int64, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		albumIDs = append(albumIDs, protoTrack.AlbumId)
+	}
+
+	protoArtists, err := u.artistClient.GetArtistsByTrackIDs(ctx, &artistProto.TrackIDList{Ids: model.TrackIdsFromUsecaseToArtistProto(trackIDs)})
+	if err != nil {
+		return nil, customErrors.HandleArtistGRPCError(err)
+	}
+
+	protoAlbumTitles, err := u.albumClient.GetAlbumTitleByIDs(ctx, &albumProto.AlbumIDList{Ids: model.AlbumIdsFromUsecaseToAlbumProto(albumIDs)})
+	if err != nil {
+		return nil, customErrors.HandleAlbumGRPCError(err)
+	}
+
+	tracks := make([]*usecaseModel.Track, 0, len(protoTracks.Tracks))
+	for _, protoTrack := range protoTracks.Tracks {
+		track := model.TrackFromProtoToUsecase(protoTrack, protoAlbumTitles.Titles[protoTrack.AlbumId], protoArtists.Artists[protoTrack.Id])
+		tracks = append(tracks, track)
+	}
+
+	return tracks, nil
+}
+
+func (u *trackUsecase) getMostListenedFromMostListenedArtists(ctx context.Context, userID int64) (*trackProto.TrackList, error) {
+	protoFilters := &artistProto.FiltersWithUserID{
+		Filters: &artistProto.Filters{
+			Pagination: &artistProto.Pagination{
+				Offset: 0,
+				Limit:  5, // TOP 5
+			},
+		},
+		UserId: &artistProto.UserID{Id: -1},
+	}
+
+	mostListenedArtists, err := u.artistClient.GetAllArtists(ctx, protoFilters)
+	if err != nil {
+		return nil, customErrors.HandleArtistGRPCError(err)
+	}
+
+	var combinedProtoTracks trackProto.TrackList
+	for _, artist := range mostListenedArtists.Artists {
+		artistTrackIDs, err := u.artistClient.GetTrackIDsByArtistID(ctx, &artistProto.ArtistID{Id: artist.Id})
+		if err != nil {
+			return nil, customErrors.HandleArtistGRPCError(err)
+		}
+
+		protoFilters := &trackProto.TrackIDListWithFilters{
+			Ids:     model.TrackIDListFromArtistToTrackProto(artistTrackIDs, userID),
+			Filters: &trackProto.Filters{Pagination: model.PaginationFromUsecaseToTrackProto(&usecaseModel.Pagination{Offset: 0, Limit: 3})},
+		}
+
+		protoTracks, err := u.trackClient.GetTracksByIDsFiltered(ctx, protoFilters)
+		if err != nil {
+			return nil, customErrors.HandleTrackGRPCError(err)
+		}
+
+		combinedProtoTracks.Tracks = append(combinedProtoTracks.Tracks, protoTracks.Tracks...)
+	}
+
+	return &combinedProtoTracks, nil
+}

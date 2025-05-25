@@ -203,7 +203,8 @@ services:
     ports:
       - '8081:80'
     volumes:
-      - '../../dist:/usr/share/nginx/static'
+      - '/etc/ssl:/etc/ssl'
+      - '../../dist:/usr/share/nginx/static'   
     depends_on:
       - go-api
     tty: true

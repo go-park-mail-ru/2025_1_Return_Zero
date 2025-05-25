@@ -1341,7 +1341,7 @@ const file_track_track_proto_rawDesc = "" +
 	"\x0fFavoriteRequest\x125\n" +
 	"\x0fprofile_user_id\x18\x01 \x01(\v2\r.track.UserIDR\rprofileUserId\x125\n" +
 	"\x0frequest_user_id\x18\x02 \x01(\v2\r.track.UserIDR\rrequestUserId\x12(\n" +
-	"\afilters\x18\x03 \x01(\v2\x0e.track.FiltersR\afilters2\x88\a\n" +
+	"\afilters\x18\x03 \x01(\v2\x0e.track.FiltersR\afilters2\xf9\b\n" +
 	"\fTrackService\x12:\n" +
 	"\fGetAllTracks\x12\x18.track.UserIDWithFilters\x1a\x10.track.TrackList\x12>\n" +
 	"\fGetTrackByID\x12\x18.track.TrackIDWithUserID\x1a\x14.track.TrackDetailed\x12=\n" +
@@ -1356,7 +1356,11 @@ const file_track_track_proto_rawDesc = "" +
 	"\x19GetTracksListenedByUserID\x12\r.track.UserID\x1a\x15.track.TracksListened\x127\n" +
 	"\tLikeTrack\x12\x12.track.LikeRequest\x1a\x16.google.protobuf.Empty\x12.\n" +
 	"\fSearchTracks\x12\f.track.Query\x1a\x10.track.TrackList\x12=\n" +
-	"\x11GetFavoriteTracks\x12\x16.track.FavoriteRequest\x1a\x10.track.TrackListB\tZ\a./trackb\x06proto3"
+	"\x11GetFavoriteTracks\x12\x16.track.FavoriteRequest\x1a\x10.track.TrackList\x125\n" +
+	"\x12GetMostLikedTracks\x12\r.track.UserID\x1a\x10.track.TrackList\x12=\n" +
+	"\x1aGetMostLikedLastWeekTracks\x12\r.track.UserID\x1a\x10.track.TrackList\x12A\n" +
+	"\x1eGetMostListenedLastMonthTracks\x12\r.track.UserID\x1a\x10.track.TrackList\x126\n" +
+	"\x13GetMostRecentTracks\x12\r.track.UserID\x1a\x10.track.TrackListB\tZ\a./trackb\x06proto3"
 
 var (
 	file_track_track_proto_rawDescOnce sync.Once
@@ -1440,22 +1444,30 @@ var file_track_track_proto_depIdxs = []int32{
 	22, // 38: track.TrackService.LikeTrack:input_type -> track.LikeRequest
 	0,  // 39: track.TrackService.SearchTracks:input_type -> track.Query
 	23, // 40: track.TrackService.GetFavoriteTracks:input_type -> track.FavoriteRequest
-	6,  // 41: track.TrackService.GetAllTracks:output_type -> track.TrackList
-	19, // 42: track.TrackService.GetTrackByID:output_type -> track.TrackDetailed
-	13, // 43: track.TrackService.CreateStream:output_type -> track.StreamID
-	24, // 44: track.TrackService.UpdateStreamDuration:output_type -> google.protobuf.Empty
-	6,  // 45: track.TrackService.GetLastListenedTracks:output_type -> track.TrackList
-	6,  // 46: track.TrackService.GetTracksByIDs:output_type -> track.TrackList
-	6,  // 47: track.TrackService.GetTracksByIDsFiltered:output_type -> track.TrackList
-	1,  // 48: track.TrackService.GetAlbumIDByTrackID:output_type -> track.AlbumID
-	6,  // 49: track.TrackService.GetTracksByAlbumID:output_type -> track.TrackList
-	3,  // 50: track.TrackService.GetMinutesListenedByUserID:output_type -> track.MinutesListened
-	4,  // 51: track.TrackService.GetTracksListenedByUserID:output_type -> track.TracksListened
-	24, // 52: track.TrackService.LikeTrack:output_type -> google.protobuf.Empty
-	6,  // 53: track.TrackService.SearchTracks:output_type -> track.TrackList
-	6,  // 54: track.TrackService.GetFavoriteTracks:output_type -> track.TrackList
-	41, // [41:55] is the sub-list for method output_type
-	27, // [27:41] is the sub-list for method input_type
+	11, // 41: track.TrackService.GetMostLikedTracks:input_type -> track.UserID
+	11, // 42: track.TrackService.GetMostLikedLastWeekTracks:input_type -> track.UserID
+	11, // 43: track.TrackService.GetMostListenedLastMonthTracks:input_type -> track.UserID
+	11, // 44: track.TrackService.GetMostRecentTracks:input_type -> track.UserID
+	6,  // 45: track.TrackService.GetAllTracks:output_type -> track.TrackList
+	19, // 46: track.TrackService.GetTrackByID:output_type -> track.TrackDetailed
+	13, // 47: track.TrackService.CreateStream:output_type -> track.StreamID
+	24, // 48: track.TrackService.UpdateStreamDuration:output_type -> google.protobuf.Empty
+	6,  // 49: track.TrackService.GetLastListenedTracks:output_type -> track.TrackList
+	6,  // 50: track.TrackService.GetTracksByIDs:output_type -> track.TrackList
+	6,  // 51: track.TrackService.GetTracksByIDsFiltered:output_type -> track.TrackList
+	1,  // 52: track.TrackService.GetAlbumIDByTrackID:output_type -> track.AlbumID
+	6,  // 53: track.TrackService.GetTracksByAlbumID:output_type -> track.TrackList
+	3,  // 54: track.TrackService.GetMinutesListenedByUserID:output_type -> track.MinutesListened
+	4,  // 55: track.TrackService.GetTracksListenedByUserID:output_type -> track.TracksListened
+	24, // 56: track.TrackService.LikeTrack:output_type -> google.protobuf.Empty
+	6,  // 57: track.TrackService.SearchTracks:output_type -> track.TrackList
+	6,  // 58: track.TrackService.GetFavoriteTracks:output_type -> track.TrackList
+	6,  // 59: track.TrackService.GetMostLikedTracks:output_type -> track.TrackList
+	6,  // 60: track.TrackService.GetMostLikedLastWeekTracks:output_type -> track.TrackList
+	6,  // 61: track.TrackService.GetMostListenedLastMonthTracks:output_type -> track.TrackList
+	6,  // 62: track.TrackService.GetMostRecentTracks:output_type -> track.TrackList
+	45, // [45:63] is the sub-list for method output_type
+	27, // [27:45] is the sub-list for method input_type
 	27, // [27:27] is the sub-list for extension type_name
 	27, // [27:27] is the sub-list for extension extendee
 	0,  // [0:27] is the sub-list for field type_name

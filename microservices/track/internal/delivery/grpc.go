@@ -133,3 +133,35 @@ func (s *TrackService) SearchTracks(ctx context.Context, req *trackProto.Query) 
 	}
 	return model.TrackListFromUsecaseToProto(tracks), nil
 }
+
+func (s *TrackService) GetMostLikedTracks(ctx context.Context, req *trackProto.UserID) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.GetMostLikedTracks(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromUsecaseToProto(tracks), nil
+}
+
+func (s *TrackService) GetMostRecentTracks(ctx context.Context, req *trackProto.UserID) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.GetMostRecentTracks(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromUsecaseToProto(tracks), nil
+}
+
+func (s *TrackService) GetMostListenedLastMonthTracks(ctx context.Context, req *trackProto.UserID) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.GetMostListenedLastMonthTracks(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromUsecaseToProto(tracks), nil
+}
+
+func (s *TrackService) GetMostLikedLastWeekTracks(ctx context.Context, req *trackProto.UserID) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.GetMostLikedLastWeekTracks(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromUsecaseToProto(tracks), nil
+}

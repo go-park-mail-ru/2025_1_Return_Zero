@@ -516,3 +516,38 @@ func (h *TrackHandler) SearchTracks(w http.ResponseWriter, r *http.Request) {
 	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
 	json.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
 }
+
+// GetSelectionTracks godoc
+// @Summary Get selection tracks
+// @Description Get a list of tracks by a specific selection
+// @Tags tracks
+// @Accept json
+// @Produce json
+// @Param selection path string true "Selection (most-recent, most-liked, most-liked-last-week, most-listened-last-month, top-chart)"
+// @Success 200 {object} delivery.APIResponse{body=[]delivery.Track} "List of tracks"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid selection"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Router /tracks/selection/{selection} [get]
+func (h *TrackHandler) GetSelectionTracks(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	logger := loggerPkg.LoggerFromContext(ctx)
+
+	vars := mux.Vars(r)
+	selection := vars["selection"]
+
+	if selection == "" {
+		logger.Warn("attempt to get selection tracks for empty selection")
+		json.WriteErrorResponse(w, http.StatusBadRequest, "selection is empty", nil)
+		return
+	}
+
+	usecaseTracks, err := h.usecase.GetSelectionTracks(ctx, selection)
+	if err != nil {
+		logger.Error("failed to get selection tracks", zap.Error(err))
+		json.WriteErrorResponse(w, errorStatus.ErrorStatus(err), err.Error(), nil)
+		return
+	}
+
+	tracks := model.TracksFromUsecaseToDelivery(usecaseTracks)
+	json.WriteSuccessResponse(w, http.StatusOK, tracks, nil)
+}

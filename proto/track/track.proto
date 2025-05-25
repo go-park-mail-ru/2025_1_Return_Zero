@@ -21,6 +21,10 @@ service TrackService {
     rpc LikeTrack(LikeRequest) returns (google.protobuf.Empty);
     rpc SearchTracks(Query) returns (TrackList);
     rpc GetFavoriteTracks(FavoriteRequest) returns (TrackList);
+    rpc GetMostLikedTracks(UserID) returns (TrackList);
+    rpc GetMostLikedLastWeekTracks(UserID) returns (TrackList);
+    rpc GetMostListenedLastMonthTracks(UserID) returns (TrackList);
+    rpc GetMostRecentTracks(UserID) returns (TrackList);
 }
 
 message Query {

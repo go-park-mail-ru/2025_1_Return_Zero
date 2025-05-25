@@ -24,6 +24,10 @@ type Repository interface {
 	UnlikeTrack(ctx context.Context, likeRequest *repoModel.LikeRequest) error
 	GetFavoriteTracks(ctx context.Context, favoriteRequest *repoModel.FavoriteRequest) ([]*repoModel.Track, error)
 	SearchTracks(ctx context.Context, query string, userID int64) ([]*repoModel.Track, error)
+	GetMostLikedTracks(ctx context.Context, userID int64) ([]*repoModel.Track, error)
+	GetMostRecentTracks(ctx context.Context, userID int64) ([]*repoModel.Track, error)
+	GetMostListenedLastMonthTracks(ctx context.Context, userID int64) ([]*repoModel.Track, error)
+	GetMostLikedLastWeekTracks(ctx context.Context, userID int64) ([]*repoModel.Track, error)
 }
 
 type S3Repository interface {

@@ -41,6 +41,7 @@ var (
 	ErrPlaylistTrackDuplicate       = errors.New("track already in playlist")
 	ErrCreateRoomNotAllDataProvided = errors.New("not all data provided")
 	ErrRoomIDRequired               = errors.New("room id is required")
+	ErrInvalidSelection             = errors.New("invalid selection")
 )
 
 func HandleAlbumGRPCError(err error) error {

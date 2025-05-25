@@ -33,6 +33,10 @@ type TrackServiceClient interface {
 	LikeTrack(ctx context.Context, in *LikeRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	SearchTracks(ctx context.Context, in *Query, opts ...grpc.CallOption) (*TrackList, error)
 	GetFavoriteTracks(ctx context.Context, in *FavoriteRequest, opts ...grpc.CallOption) (*TrackList, error)
+	GetMostLikedTracks(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*TrackList, error)
+	GetMostLikedLastWeekTracks(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*TrackList, error)
+	GetMostListenedLastMonthTracks(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*TrackList, error)
+	GetMostRecentTracks(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*TrackList, error)
 }
 
 type trackServiceClient struct {
@@ -169,6 +173,42 @@ func (c *trackServiceClient) GetFavoriteTracks(ctx context.Context, in *Favorite
 	return out, nil
 }
 
+func (c *trackServiceClient) GetMostLikedTracks(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*TrackList, error) {
+	out := new(TrackList)
+	err := c.cc.Invoke(ctx, "/track.TrackService/GetMostLikedTracks", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *trackServiceClient) GetMostLikedLastWeekTracks(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*TrackList, error) {
+	out := new(TrackList)
+	err := c.cc.Invoke(ctx, "/track.TrackService/GetMostLikedLastWeekTracks", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *trackServiceClient) GetMostListenedLastMonthTracks(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*TrackList, error) {
+	out := new(TrackList)
+	err := c.cc.Invoke(ctx, "/track.TrackService/GetMostListenedLastMonthTracks", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *trackServiceClient) GetMostRecentTracks(ctx context.Context, in *UserID, opts ...grpc.CallOption) (*TrackList, error) {
+	out := new(TrackList)
+	err := c.cc.Invoke(ctx, "/track.TrackService/GetMostRecentTracks", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TrackServiceServer is the server API for TrackService service.
 // All implementations must embed UnimplementedTrackServiceServer
 // for forward compatibility
@@ -187,6 +227,10 @@ type TrackServiceServer interface {
 	LikeTrack(context.Context, *LikeRequest) (*emptypb.Empty, error)
 	SearchTracks(context.Context, *Query) (*TrackList, error)
 	GetFavoriteTracks(context.Context, *FavoriteRequest) (*TrackList, error)
+	GetMostLikedTracks(context.Context, *UserID) (*TrackList, error)
+	GetMostLikedLastWeekTracks(context.Context, *UserID) (*TrackList, error)
+	GetMostListenedLastMonthTracks(context.Context, *UserID) (*TrackList, error)
+	GetMostRecentTracks(context.Context, *UserID) (*TrackList, error)
 	mustEmbedUnimplementedTrackServiceServer()
 }
 
@@ -235,6 +279,18 @@ func (UnimplementedTrackServiceServer) SearchTracks(context.Context, *Query) (*T
 }
 func (UnimplementedTrackServiceServer) GetFavoriteTracks(context.Context, *FavoriteRequest) (*TrackList, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFavoriteTracks not implemented")
+}
+func (UnimplementedTrackServiceServer) GetMostLikedTracks(context.Context, *UserID) (*TrackList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMostLikedTracks not implemented")
+}
+func (UnimplementedTrackServiceServer) GetMostLikedLastWeekTracks(context.Context, *UserID) (*TrackList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMostLikedLastWeekTracks not implemented")
+}
+func (UnimplementedTrackServiceServer) GetMostListenedLastMonthTracks(context.Context, *UserID) (*TrackList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMostListenedLastMonthTracks not implemented")
+}
+func (UnimplementedTrackServiceServer) GetMostRecentTracks(context.Context, *UserID) (*TrackList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMostRecentTracks not implemented")
 }
 func (UnimplementedTrackServiceServer) mustEmbedUnimplementedTrackServiceServer() {}
 
@@ -501,6 +557,78 @@ func _TrackService_GetFavoriteTracks_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TrackService_GetMostLikedTracks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TrackServiceServer).GetMostLikedTracks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/track.TrackService/GetMostLikedTracks",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TrackServiceServer).GetMostLikedTracks(ctx, req.(*UserID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TrackService_GetMostLikedLastWeekTracks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TrackServiceServer).GetMostLikedLastWeekTracks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/track.TrackService/GetMostLikedLastWeekTracks",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TrackServiceServer).GetMostLikedLastWeekTracks(ctx, req.(*UserID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TrackService_GetMostListenedLastMonthTracks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TrackServiceServer).GetMostListenedLastMonthTracks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/track.TrackService/GetMostListenedLastMonthTracks",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TrackServiceServer).GetMostListenedLastMonthTracks(ctx, req.(*UserID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TrackService_GetMostRecentTracks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserID)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TrackServiceServer).GetMostRecentTracks(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/track.TrackService/GetMostRecentTracks",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TrackServiceServer).GetMostRecentTracks(ctx, req.(*UserID))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TrackService_ServiceDesc is the grpc.ServiceDesc for TrackService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -563,6 +691,22 @@ var TrackService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetFavoriteTracks",
 			Handler:    _TrackService_GetFavoriteTracks_Handler,
+		},
+		{
+			MethodName: "GetMostLikedTracks",
+			Handler:    _TrackService_GetMostLikedTracks_Handler,
+		},
+		{
+			MethodName: "GetMostLikedLastWeekTracks",
+			Handler:    _TrackService_GetMostLikedLastWeekTracks_Handler,
+		},
+		{
+			MethodName: "GetMostListenedLastMonthTracks",
+			Handler:    _TrackService_GetMostListenedLastMonthTracks_Handler,
+		},
+		{
+			MethodName: "GetMostRecentTracks",
+			Handler:    _TrackService_GetMostRecentTracks_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

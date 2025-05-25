@@ -131,6 +131,66 @@ func (mr *MockRepositoryMockRecorder) GetMinutesListenedByUserID(ctx, userID any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMinutesListenedByUserID", reflect.TypeOf((*MockRepository)(nil).GetMinutesListenedByUserID), ctx, userID)
 }
 
+// GetMostLikedLastWeekTracks mocks base method.
+func (m *MockRepository) GetMostLikedLastWeekTracks(ctx context.Context, userID int64) ([]*repository.Track, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMostLikedLastWeekTracks", ctx, userID)
+	ret0, _ := ret[0].([]*repository.Track)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostLikedLastWeekTracks indicates an expected call of GetMostLikedLastWeekTracks.
+func (mr *MockRepositoryMockRecorder) GetMostLikedLastWeekTracks(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostLikedLastWeekTracks", reflect.TypeOf((*MockRepository)(nil).GetMostLikedLastWeekTracks), ctx, userID)
+}
+
+// GetMostLikedTracks mocks base method.
+func (m *MockRepository) GetMostLikedTracks(ctx context.Context, userID int64) ([]*repository.Track, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMostLikedTracks", ctx, userID)
+	ret0, _ := ret[0].([]*repository.Track)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostLikedTracks indicates an expected call of GetMostLikedTracks.
+func (mr *MockRepositoryMockRecorder) GetMostLikedTracks(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostLikedTracks", reflect.TypeOf((*MockRepository)(nil).GetMostLikedTracks), ctx, userID)
+}
+
+// GetMostListenedLastMonthTracks mocks base method.
+func (m *MockRepository) GetMostListenedLastMonthTracks(ctx context.Context, userID int64) ([]*repository.Track, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMostListenedLastMonthTracks", ctx, userID)
+	ret0, _ := ret[0].([]*repository.Track)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostListenedLastMonthTracks indicates an expected call of GetMostListenedLastMonthTracks.
+func (mr *MockRepositoryMockRecorder) GetMostListenedLastMonthTracks(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostListenedLastMonthTracks", reflect.TypeOf((*MockRepository)(nil).GetMostListenedLastMonthTracks), ctx, userID)
+}
+
+// GetMostRecentTracks mocks base method.
+func (m *MockRepository) GetMostRecentTracks(ctx context.Context, userID int64) ([]*repository.Track, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMostRecentTracks", ctx, userID)
+	ret0, _ := ret[0].([]*repository.Track)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostRecentTracks indicates an expected call of GetMostRecentTracks.
+func (mr *MockRepositoryMockRecorder) GetMostRecentTracks(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostRecentTracks", reflect.TypeOf((*MockRepository)(nil).GetMostRecentTracks), ctx, userID)
+}
+
 // GetStreamByID mocks base method.
 func (m *MockRepository) GetStreamByID(ctx context.Context, streamID int64) (*repository.TrackStream, error) {
 	m.ctrl.T.Helper()
