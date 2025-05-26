@@ -2343,6 +2343,65 @@ const docTemplate = `{
                 }
             }
         },
+        "/selection/{selection}": {
+            "get": {
+                "description": "Get a list of tracks by a specific selection",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tracks"
+                ],
+                "summary": "Get selection tracks",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Selection (most-recent, most-liked, most-liked-last-week, most-listened-last-month, top-chart)",
+                        "name": "selection",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of tracks",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Track"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid selection",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/streams/{id}": {
             "put": {
                 "description": "updates listening duration at the end of stream",
@@ -2533,65 +2592,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad request - invalid query",
-                        "schema": {
-                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/tracks/selection/{selection}": {
-            "get": {
-                "description": "Get a list of tracks by a specific selection",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tracks"
-                ],
-                "summary": "Get selection tracks",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Selection (most-recent, most-liked, most-liked-last-week, most-listened-last-month, top-chart)",
-                        "name": "selection",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of tracks",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/delivery.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "body": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/delivery.Track"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request - invalid selection",
                         "schema": {
                             "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
                         }

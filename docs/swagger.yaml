@@ -1932,6 +1932,43 @@ paths:
       summary: Get playlists available for adding a track
       tags:
       - playlists
+  /selection/{selection}:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of tracks by a specific selection
+      parameters:
+      - description: Selection (most-recent, most-liked, most-liked-last-week, most-listened-last-month,
+          top-chart)
+        in: path
+        name: selection
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of tracks
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Track'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid selection
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      summary: Get selection tracks
+      tags:
+      - tracks
   /streams/{id}:
     put:
       description: updates listening duration at the end of stream
@@ -2176,43 +2213,6 @@ paths:
           schema:
             $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
       summary: Search tracks
-      tags:
-      - tracks
-  /tracks/selection/{selection}:
-    get:
-      consumes:
-      - application/json
-      description: Get a list of tracks by a specific selection
-      parameters:
-      - description: Selection (most-recent, most-liked, most-liked-last-week, most-listened-last-month,
-          top-chart)
-        in: path
-        name: selection
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: List of tracks
-          schema:
-            allOf:
-            - $ref: '#/definitions/delivery.APIResponse'
-            - properties:
-                body:
-                  items:
-                    $ref: '#/definitions/delivery.Track'
-                  type: array
-              type: object
-        "400":
-          description: Bad request - invalid selection
-          schema:
-            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
-      summary: Get selection tracks
       tags:
       - tracks
   /user/{username}:

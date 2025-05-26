@@ -527,7 +527,7 @@ func (h *TrackHandler) SearchTracks(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {object} delivery.APIResponse{body=[]delivery.Track} "List of tracks"
 // @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid selection"
 // @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
-// @Router /tracks/selection/{selection} [get]
+// @Router /selection/{selection} [get]
 func (h *TrackHandler) GetSelectionTracks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	logger := loggerPkg.LoggerFromContext(ctx)
