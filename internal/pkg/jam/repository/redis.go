@@ -291,7 +291,6 @@ func (r *jamRedisRepository) MarkUserAsReady(ctx context.Context, roomID string,
 		isLoaded, _ := redis.Bool(redis.DoContext(conn, ctx, "SISMEMBER", "jam:"+roomID+":loaded", u))
 		loadedMap[u] = isLoaded
 	}
-
 	payload, err := json.Marshal(repository.JamMessage{
 		Type:   "ready",
 		Loaded: loadedMap,
