@@ -35,3 +35,17 @@ type AlbumLikeRequest struct {
 	UserID  int64
 	IsLike  bool
 }
+
+type CreateTrackRequest struct {
+	Title    string
+	Track    []byte
+}
+
+type CreateAlbumRequest struct {
+	ArtistsIDs []int64
+	Type       string
+	Title      string
+	Image      []byte
+	Tracks     []*CreateTrackRequest
+	LabelID    int64
+}

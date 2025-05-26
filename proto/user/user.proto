@@ -17,6 +17,35 @@ service UserService {
     rpc GetUserPrivacyByID(UserID) returns (PrivacySettings);
     rpc GetUserAvatarURL(FileKey) returns (AvatarUrl);
     rpc UploadUserAvatar(AvatarImage) returns (FileKey);
+    rpc GetLabelIDByUserID(UserID) returns (LabelID);
+    rpc UpdateUsersLabelID(RequestUpdateUserLabelID) returns (Nothing);
+    rpc ChecksUsersByUsernames(Usernames) returns (Nothing);
+    rpc GetUsersByLabelID(LabelID) returns (Usernames);
+    rpc RemoveUsersLabelID(RequestRemoveUserLabelID) returns (Nothing);
+}
+
+message RequestRemoveUserLabelID {
+    repeated string usernames = 1;
+    int64 label_id = 2;
+}
+
+message UsersToFront {
+    repeated UserFront users = 1;
+}
+
+message Usernames {
+    repeated string usernames = 1;
+}
+
+message RequestUpdateUserLabelID {
+    repeated string usernames = 1;
+    int64 label_id = 2;
+}
+
+message Label {
+    string name = 1;
+    repeated string usernames = 2;
+    int64 id = 3;
 }
 
 message AvatarImage {
@@ -57,9 +86,14 @@ message UserFront {
     string email = 2;
     string avatar = 3;
     int64 id = 4;
+    int64 label_id = 5;
 }
 
 message UserID {
+    int64 id = 1;
+}
+
+message LabelID {
     int64 id = 1;
 }
 

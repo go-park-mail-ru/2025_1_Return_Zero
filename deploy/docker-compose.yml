@@ -5,8 +5,8 @@
 services:
   postgres:
     build:
-      context: .
-      dockerfile: ./images/postgres/Dockerfile
+      context: ./images/postgres
+      dockerfile: Dockerfile
     restart: always
     container_name: postgres
     environment:
@@ -15,11 +15,15 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_HOST: ${POSTGRES_HOST}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
     ports:
       - '${POSTGRES_PORT}:${POSTGRES_PORT}'
     volumes:
       - 'pgdata:/var/lib/postgresql/data'
       - './_postgres:/docker-entrypoint-initdb.d'
+      - '../db/setup:/db/setup'
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
     tty: true
 
   redis:
@@ -42,8 +46,8 @@ services:
     container_name: ReturnZeroAPI
     environment:
       POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: postgres
       S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
@@ -80,10 +84,15 @@ services:
       dockerfile: deploy/images/artist/Dockerfile
     environment:
       POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: postgres
+      S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_REGION: ${S3_REGION}
+      S3_ENDPOINT: ${S3_ENDPOINT}
     container_name: artist-grpc
     restart: always
     depends_on:
@@ -98,11 +107,12 @@ services:
       dockerfile: deploy/images/track/Dockerfile
     environment:
       POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: postgres
       S3_TRACKS_BUCKET: ${S3_TRACKS_BUCKET}
+      S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY}
       S3_SECRET_KEY: ${S3_SECRET_KEY}
       S3_REGION: ${S3_REGION}
@@ -121,10 +131,15 @@ services:
       dockerfile: deploy/images/album/Dockerfile
     environment:
       POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: postgres
+      S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
+      S3_REGION: ${S3_REGION}
+      S3_ENDPOINT: ${S3_ENDPOINT}
     container_name: album-grpc
     restart: always
     depends_on:
@@ -154,8 +169,8 @@ services:
       dockerfile: deploy/images/user/Dockerfile
     environment:
       POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: postgres
       S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
@@ -177,8 +192,8 @@ services:
       dockerfile: deploy/images/playlist/Dockerfile
     environment:
       POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: postgres
       S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
@@ -228,8 +243,6 @@ services:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USERNAME}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
       GF_USERS_ALLOW_SIGN_UP: false
-    # volumes:
-    #   - ./images/grafana/grafana.ini:/etc/grafana/grafana.ini
     ports:
       - '3000:3000'
     depends_on:

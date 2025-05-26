@@ -17,6 +17,26 @@ service AlbumService {
 	rpc LikeAlbum(LikeRequest) returns (google.protobuf.Empty);
 	rpc GetFavoriteAlbums(FiltersWithUserID) returns (AlbumList);
 	rpc SearchAlbums(Query) returns (AlbumList);
+	rpc CreateAlbum(CreateAlbumRequest) returns (AlbumIDAndURL);
+	rpc DeleteAlbum(AlbumID) returns (google.protobuf.Empty);
+	rpc GetAlbumsLabelID(FiltersWithLabelID) returns (AlbumList);
+}
+
+message AlbumIDAndURL {
+	int64 id = 1;
+	string url = 2;
+}
+
+message FiltersWithLabelID {
+	Filters filters = 1;
+	int64 label_id = 2;
+}
+
+message CreateAlbumRequest {
+	string title = 1;
+	AlbumType type = 2;
+	bytes image = 3;
+	int64 label_id = 4;
 }
 
 message Query {

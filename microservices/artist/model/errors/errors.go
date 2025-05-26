@@ -41,6 +41,41 @@ func NewBadRequestError(format string, args ...interface{}) error {
 	}
 }
 
+func NewEmptyS3KeyError(format string, args ...interface{}) error {
+	return &ArtistError{
+		Code:    codes.InvalidArgument,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
+func NewUnsupportedImageFormatError(format string, args ...interface{}) error {
+	return &ArtistError{
+		Code:    codes.InvalidArgument,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
+func NewFailedToUploadAvatarError(format string, args ...interface{}) error {
+	return &ArtistError{
+		Code:    codes.Internal,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
+func NewConflictError(format string, args ...interface{}) error {
+	return &ArtistError{
+		Code:    codes.AlreadyExists,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
+func NewForbiddenError(format string, args ...interface{}) error {
+	return &ArtistError{
+		Code:    codes.PermissionDenied,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
 var (
 	ErrArtistNotFound = NewNotFoundError("artist not found")
 )

@@ -160,3 +160,62 @@ func FavoriteRequestFromUsecaseToRepository(favoriteRequest *usecaseModel.Favori
 		Filters:       FiltersFromUsecaseToRepository(favoriteRequest.Filters),
 	}
 }
+
+func TracksIDWithAlbumIDFromProtoToUsecase(tracksIDWithAlbumID []*trackProto.TrackLoad) []*usecaseModel.TrackLoad {
+	var tracks []*usecaseModel.TrackLoad
+	for _, track := range tracksIDWithAlbumID {
+		tracks = append(tracks, &usecaseModel.TrackLoad{
+			Title:    track.Title,
+			File:     track.File,
+		})
+	}
+	return tracks
+}
+
+func TrackLoadFromUsecaseToRepository(track *usecaseModel.TrackLoad) *repoModel.TrackLoad {
+	return &repoModel.TrackLoad{
+		Title:    track.Title,
+		File:     track.File,
+		Position: track.Position,
+	}
+}
+
+func TrackLoadListFromUsecaseToRepository(tracks []*usecaseModel.TrackLoad) []*repoModel.TrackLoad {
+	var repoTracks []*repoModel.TrackLoad
+	for _, track := range tracks {
+		repoTracks = append(repoTracks, TrackLoadFromUsecaseToRepository(track))
+	}
+	return repoTracks
+}
+
+func TrackListFromUsecaseToRepository(tracks []*usecaseModel.Track) []*repoModel.Track {
+	repoTracks := make([]*repoModel.Track, len(tracks))
+	for i, track := range tracks {
+		repoTracks[i] = &repoModel.Track{
+			ID:         track.ID,
+			Title:      track.Title,
+			Thumbnail:  track.Thumbnail,
+			Duration:   track.Duration,
+			AlbumID:    track.AlbumID,
+			IsFavorite: track.IsFavorite,
+		}
+	}
+	return repoTracks
+}
+
+func TracksListWithAlbumIDFromProtoToUsecase(tracksIDWithAlbumID *trackProto.TracksListWithAlbumID) *usecaseModel.TracksListWithAlbumID {
+	tracks := TracksIDWithAlbumIDFromProtoToUsecase(tracksIDWithAlbumID.Tracks)
+	return &usecaseModel.TracksListWithAlbumID{
+		Tracks:  tracks,
+		AlbumID: tracksIDWithAlbumID.AlbumId.Id,
+		Cover:   tracksIDWithAlbumID.Cover,
+	}
+}
+
+func TrackIdsListFromUsecaseToProto(trackIDs []int64) *trackProto.TrackIdsList {
+	protoTrackIDs := make([]*trackProto.TrackID, len(trackIDs))
+	for i, id := range trackIDs {
+		protoTrackIDs[i] = &trackProto.TrackID{Id: id}
+	}
+	return &trackProto.TrackIdsList{Ids: protoTrackIDs}
+}

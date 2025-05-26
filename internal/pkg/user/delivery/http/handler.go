@@ -51,10 +51,15 @@ func loginToUsecaseModel(user *deliveryModel.LoginData) *usecaseModel.User {
 }
 
 func toUserToFront(user *usecaseModel.User) *deliveryModel.UserToFront {
+	isLabel := false
+	if user.LabelID > 0 {
+		isLabel = true
+	}
 	return &deliveryModel.UserToFront{
 		Username: user.Username,
 		Email:    user.Email,
 		Avatar:   user.AvatarUrl,
+		IsLabel:  isLabel,
 	}
 }
 

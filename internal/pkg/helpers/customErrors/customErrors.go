@@ -39,6 +39,9 @@ var (
 	ErrPlaylistDuplicate            = errors.New("playlist with this title by you already exists")
 	ErrPlaylistTrackNotFound        = errors.New("track not found in playlist")
 	ErrPlaylistTrackDuplicate       = errors.New("track already in playlist")
+	ErrLableExist                   = errors.New("label already exist")
+	ErrUnsupportedImageFormatError = errors.New("unsupported image format")
+	ErrFailedToUploadAlbumImage = errors.New("failed to upload album image")
 	ErrCreateRoomNotAllDataProvided = errors.New("not all data provided")
 	ErrRoomIDRequired               = errors.New("room id is required")
 	ErrInvalidSelection             = errors.New("invalid selection")
@@ -161,16 +164,7 @@ func HandleAuthGRPCError(err error) error {
 
 	switch st.Code() {
 	case codes.Unavailable:
-		switch st.Message() {
-		case "failed to create session":
-			return ErrCreateSession
-		case "failed to delete session":
-			return ErrDeleteSession
-		case "failed to get session":
-			return ErrGetSession
-		default:
-			return errors.New("internal server error: " + st.Message())
-		}
+		return ErrGetSession
 	default:
 		return err
 	}

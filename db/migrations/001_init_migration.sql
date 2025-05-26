@@ -1,5 +1,4 @@
 -- Write your migrate up statements here
-
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
 -- user microservice
@@ -309,9 +308,9 @@ GROUP BY
 CREATE UNIQUE INDEX artist_stats_artist_id_idx ON artist_stats (artist_id);
 
 
-SELECT cron.schedule('refresh_artist_stats', '0 * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY artist_stats');
-SELECT cron.schedule('refresh_album_stats', '0 * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY album_stats');
-SELECT cron.schedule('refresh_track_stats', '0 * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY track_stats');
+SELECT cron.schedule('refresh_artist_stats', '* * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY artist_stats');
+SELECT cron.schedule('refresh_album_stats', '* * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY album_stats');
+SELECT cron.schedule('refresh_track_stats', '* * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY track_stats');
 
 ---- create above / drop below ----
 

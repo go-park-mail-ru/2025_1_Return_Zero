@@ -145,3 +145,45 @@ func (s *ArtistService) SearchArtists(ctx context.Context, req *artistProto.Quer
 	}
 	return model.ArtistListFromUsecaseToProto(artists), nil
 }
+
+func (s *ArtistService) CreateArtist(ctx context.Context, req *artistProto.ArtistLoad) (*artistProto.Artist, error) {
+	artist, err := s.artistUsecase.CreateArtist(ctx, model.ArtistLoadFromProtoToUsecase(req))
+	if err != nil {
+		return nil, err
+	}
+	return model.ArtistFromUsecaseToProto(artist), nil
+}
+
+func (s *ArtistService) EditArtist(ctx context.Context, req *artistProto.ArtistEdit) (*artistProto.Artist, error) {
+	artist, err := s.artistUsecase.EditArtist(ctx, model.ArtistEditFromProtoToUsecase(req))
+	if err != nil {
+		return nil, err
+	}
+	return model.ArtistFromUsecaseToProto(artist), nil
+}
+
+func (s *ArtistService) GetArtistsLabelID(ctx context.Context, req *artistProto.FiltersWithLabelID) (*artistProto.ArtistList, error) {
+	artists, err := s.artistUsecase.GetArtistsLabelID(ctx, model.ArtistFiltersFromProtoToUsecase(req.Filters), req.LabelId)
+	if err != nil {
+		return nil, err
+	}
+	return model.ArtistListFromUsecaseToProto(artists), nil
+}
+
+func (s *ArtistService) DeleteArtist(ctx context.Context, req *artistProto.ArtistDelete) (*emptypb.Empty, error) {
+	err := s.artistUsecase.DeleteArtist(ctx, model.ArtistDeleteFromProtoToUsecase(req))
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}
+
+
+func (s *ArtistService) ConnectArtists(ctx context.Context, req *artistProto.ArtistsIDWithAlbumID) (*emptypb.Empty, error) {
+	artistsID, albumID, tracksID := model.ArtistsIDWithAlbumIDFromProtoToUsecase(req)
+	err := s.artistUsecase.ConnectArtists(ctx, artistsID, albumID, tracksID)
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}

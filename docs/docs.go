@@ -336,6 +336,699 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/label": {
+            "put": {
+                "security": [
+                    {
+                        "AdminAuth": []
+                    }
+                ],
+                "description": "Updates a label by adding or removing users. Only accessible by administrators.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Update a label",
+                "parameters": [
+                    {
+                        "description": "Label update information containing labelID, users to add, and users to remove",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.EditLabelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Label edited successfully",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.Message"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - admin access required",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "AdminAuth": []
+                    }
+                ],
+                "description": "Creates a new label in the system. Only accessible by administrators.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Create a new label",
+                "parameters": [
+                    {
+                        "description": "Label information",
+                        "name": "label",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.Label"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created label",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.Label"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid input",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - admin access required",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/label/album": {
+            "post": {
+                "security": [
+                    {
+                        "LabelAuth": []
+                    }
+                ],
+                "description": "Creates a new album with tracks. Only accessible by label members.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Create a new album",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Album title (max 100 characters)",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Album type (album, single, ep, compilation)",
+                        "name": "type",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated list of artist IDs",
+                        "name": "artists_ids",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Album cover image",
+                        "name": "thumbnail",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Array of track files",
+                        "name": "tracks[]",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Array of track titles corresponding to tracks[]",
+                        "name": "track_titles[]",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created album ID",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.SuccessCreateAlbum"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - user not in label",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIForbiddenErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "LabelAuth": []
+                    },
+                    {
+                        "AdminAuth": []
+                    }
+                ],
+                "description": "Removes an album from the label. Accessible by label members for their own label or administrators for any label.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Delete an album",
+                "parameters": [
+                    {
+                        "description": "Album deletion request containing labelID and albumID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.DeleteAlbumRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Album deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.Message"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid input or label ID mismatch",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - user not in label",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/label/albums": {
+            "get": {
+                "security": [
+                    {
+                        "LabelAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of albums associated with the user's label with optional pagination.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Get albums by label ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Offset (default: 0)",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit (default: 10, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of albums in the label",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Album"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid pagination parameters",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - user not in label",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIForbiddenErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/label/artist": {
+            "put": {
+                "security": [
+                    {
+                        "LabelAuth": []
+                    }
+                ],
+                "description": "Updates an artist's information (name and/or image). Only accessible by label members.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Edit an existing artist",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Artist ID to edit",
+                        "name": "artist_id",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "New artist name (required if thumbnail is not provided)",
+                        "name": "new_title",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "file",
+                        "description": "New artist profile image (required if new_title is not provided, max 6MB)",
+                        "name": "thumbnail",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated artist",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.Artist"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - user not in label",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIForbiddenErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "LabelAuth": []
+                    }
+                ],
+                "description": "Creates a new artist associated with the label. Only accessible by label members.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Create a new artist",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Artist name",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Artist profile image (max 6MB)",
+                        "name": "thumbnail",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created artist",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.Artist"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - user not in label",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIForbiddenErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "LabelAuth": []
+                    }
+                ],
+                "description": "Removes an artist from the label. Only accessible by label members.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Delete an artist",
+                "parameters": [
+                    {
+                        "description": "Artist deletion request containing title",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/delivery.DeleteArtistRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Artist deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.DeleteArtistRequest"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid input",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - user not in label",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIForbiddenErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/label/artists": {
+            "get": {
+                "security": [
+                    {
+                        "LabelAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of artists associated with the user's label with optional pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Get artists in a label",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Offset (default: 0)",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit (default: 10, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of artists in the label",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/delivery.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "body": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/delivery.Artist"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid pagination parameters",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIBadRequestErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIUnauthorizedErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - user not in label",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIForbiddenErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.APIInternalServerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/label/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "AdminAuth": []
+                    }
+                ],
+                "description": "Retrieves a label by its ID. Only accessible by administrators.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "label"
+                ],
+                "summary": "Get label by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Label ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Label information",
+                        "schema": {
+                            "$ref": "#/definitions/delivery.Label"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request - invalid label ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - admin access required",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/artists": {
             "get": {
                 "description": "Get a list of artists with optional pagination filters",
@@ -2951,6 +3644,62 @@ const docTemplate = `{
                 }
             }
         },
+        "delivery.DeleteAlbumRequest": {
+            "type": "object",
+            "properties": {
+                "album_id": {
+                    "type": "integer"
+                },
+                "label_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "delivery.DeleteArtistRequest": {
+            "type": "object",
+            "properties": {
+                "artist_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "delivery.EditLabelRequest": {
+            "type": "object",
+            "properties": {
+                "label_id": {
+                    "type": "integer"
+                },
+                "to_add": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "to_remove": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "delivery.Label": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "label_name": {
+                    "type": "string"
+                },
+                "usernames": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "delivery.LoginData": {
             "description": "User login data. Either username or email must be provided along with required password (4-25 characters)",
             "type": "object",
@@ -3103,6 +3852,15 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "delivery.SuccessCreateAlbum": {
+            "type": "object",
+            "properties": {
+                "album_id": {
                     "type": "integer",
                     "example": 1
                 }
@@ -3280,6 +4038,9 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "is_label": {
+                    "type": "boolean"
                 },
                 "username": {
                     "type": "string"

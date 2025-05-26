@@ -34,6 +34,11 @@ import (
 	trackUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/usecase"
 	userHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/delivery/http"
 	userUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/usecase"
+
+	labelHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/label/delivery/http"
+	labelRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/label/repository"
+	labelUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/label/usecase"
+
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -104,10 +109,14 @@ func main() {
 	authClient := authProto.NewAuthServiceClient(clients.AuthClient)
 	userClient := userProto.NewUserServiceClient(clients.UserClient)
 
+	labelRepository := labelRepository.NewLabelPostgresRepository(postgresConn)
+	labelUsecase := labelUsecase.NewLabelUsecase(labelRepository, userClient, artistClient, albumClient, trackClient)
+	labelHandler := labelHttp.NewLabelHandler(labelUsecase, cfg)
+
 	r.Use(middleware.LoggerMiddleware(logger))
 	r.Use(middleware.RequestId)
 	r.Use(middleware.AccessLog)
-	r.Use(middleware.Auth(&authClient))
+	r.Use(middleware.Auth(&authClient, &userClient))
 	r.Use(middleware.CorsMiddleware(cfg.Cors))
 	// r.Use(middleware.CSRFMiddleware(cfg.CSRF))
 	r.Use(middleware.MetricsMiddleware(metrics))
@@ -160,15 +169,29 @@ func main() {
 	r.HandleFunc("/api/v1/user/me/avatar", userHandler.UploadAvatar).Methods("POST")
 	r.HandleFunc("/api/v1/user/me", userHandler.ChangeUserData).Methods("PUT")
 	r.HandleFunc("/api/v1/user/me", userHandler.DeleteUser).Methods("DELETE")
-	r.HandleFunc("/api/v1/user/{username}", userHandler.GetUserData).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username:[a-zA-Z0-9_]+}", userHandler.GetUserData).Methods("GET")
 	r.HandleFunc("/api/v1/user/me/history", trackHandler.GetLastListenedTracks).Methods("GET")
-	r.HandleFunc("/api/v1/user/{username}/artists", artistHandler.GetFavoriteArtists).Methods("GET")
-	r.HandleFunc("/api/v1/user/{username}/tracks", trackHandler.GetFavoriteTracks).Methods("GET")
-	r.HandleFunc("/api/v1/user/{username}/playlists", playlistHandler.GetProfilePlaylists).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username:[a-zA-Z0-9_]+}/artists", artistHandler.GetFavoriteArtists).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username:[a-zA-Z0-9_]+}/tracks", trackHandler.GetFavoriteTracks).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username:[a-zA-Z0-9_]+}/playlists", playlistHandler.GetProfilePlaylists).Methods("GET")
 	r.HandleFunc("/api/v1/user/me/albums", albumHandler.GetFavoriteAlbums).Methods("GET")
+
+	r.HandleFunc("/api/v1/label", labelHandler.CreateLabel).Methods("POST")
+	r.HandleFunc("/api/v1/label", labelHandler.UpdateLabel).Methods("PUT")
+	r.HandleFunc("/api/v1/label/{id:[0-9]+}", labelHandler.GetLabel).Methods("GET")
+
+	r.HandleFunc("/api/v1/label/artist", labelHandler.CreateArtist).Methods("POST")
+	r.HandleFunc("/api/v1/label/artist", labelHandler.EditArtist).Methods("PUT")
+	r.HandleFunc("/api/v1/label/artists", labelHandler.GetArtists).Methods("GET")
+	r.HandleFunc("/api/v1/label/artist", labelHandler.DeleteArtist).Methods("DELETE")
+
+	r.HandleFunc("/api/v1/label/album", labelHandler.CreateAlbum).Methods("POST")
+	r.HandleFunc("/api/v1/label/album", labelHandler.DeleteAlbum).Methods("DELETE")
+	r.HandleFunc("/api/v1/label/albums", labelHandler.GetAlbumsByLabelID).Methods("GET")
 
 	r.HandleFunc("/api/v1/jams", jamHandler.CreateRoom).Methods("POST")
 	r.HandleFunc("/api/v1/jams/{id}", jamHandler.WSHandler).Methods("GET")
+
 	r.Handle("/api/v1/metrics", promhttp.Handler())
 
 	srv := &http.Server{

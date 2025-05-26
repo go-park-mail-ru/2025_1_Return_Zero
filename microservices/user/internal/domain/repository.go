@@ -17,6 +17,12 @@ type Repository interface {
 	ChangeUserPrivacySettings(ctx context.Context, username string, privacySettings *repoModel.PrivacySettings) error
 	GetUserPrivacy(ctx context.Context, id int64) (*repoModel.PrivacySettings, error)
 	GetFullUserData(ctx context.Context, username string) (*repoModel.UserFullData, error)
+	GetLabelIDByUserID(ctx context.Context, userID int64) (int64, error)
+	UpdateUsersLabel(ctx context.Context, labelID int64, usernames []string) error
+	CheckLabelNameUnique(ctx context.Context, name string) (bool, error)
+	CheckUsersByUsernames(ctx context.Context, usernames []string) error
+	GetUsersByLabelID(ctx context.Context, labelID int64) ([]string, error)
+	RemoveUsersFromLabel(ctx context.Context, labelID int64, usernames []string) error
 }
 
 type S3Repository interface {

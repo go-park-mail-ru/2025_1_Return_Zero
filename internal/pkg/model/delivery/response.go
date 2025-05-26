@@ -61,3 +61,8 @@ type APINotFoundErrorResponse struct {
 	Status int    `json:"status" example:"404" description:"HTTP status code"`
 	Error  string `json:"error" example:"Not found" description:"Error message"`
 }
+
+type SuccessCreateAlbum struct {
+	AlbumID int64  `json:"album_id" example:"1" description:"ID of the created album"`
+}
+

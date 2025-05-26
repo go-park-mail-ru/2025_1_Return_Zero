@@ -6,3 +6,11 @@ VALUES (
   (SELECT id FROM "user" WHERE username = 'admin'),
   false, false, false, false, false, false
 );
+
+---- create above / drop below ----
+
+DELETE FROM "user_settings"
+WHERE user_id = (SELECT id FROM "user" WHERE username = 'admin');
+
+DELETE FROM "user"
+WHERE username = 'admin';

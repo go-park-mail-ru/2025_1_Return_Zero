@@ -185,6 +185,42 @@ definitions:
       avatar_url:
         type: string
     type: object
+  delivery.DeleteAlbumRequest:
+    properties:
+      album_id:
+        type: integer
+      label_id:
+        type: integer
+    type: object
+  delivery.DeleteArtistRequest:
+    properties:
+      artist_id:
+        type: integer
+    type: object
+  delivery.EditLabelRequest:
+    properties:
+      label_id:
+        type: integer
+      to_add:
+        items:
+          type: string
+        type: array
+      to_remove:
+        items:
+          type: string
+        type: array
+    type: object
+  delivery.Label:
+    properties:
+      id:
+        type: integer
+      label_name:
+        type: string
+      usernames:
+        items:
+          type: string
+        type: array
+    type: object
   delivery.LoginData:
     description: User login data. Either username or email must be provided along
       with required password (4-25 characters)
@@ -289,6 +325,12 @@ definitions:
     description: An id of a track stream
     properties:
       id:
+        example: 1
+        type: integer
+    type: object
+  delivery.SuccessCreateAlbum:
+    properties:
+      album_id:
         example: 1
         type: integer
     type: object
@@ -412,6 +454,8 @@ definitions:
         type: string
       email:
         type: string
+      is_label:
+        type: boolean
       username:
         type: string
     type: object
@@ -620,6 +664,454 @@ paths:
       summary: Search albums
       tags:
       - albums
+  /api/v1/label:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new label in the system. Only accessible by administrators.
+      parameters:
+      - description: Label information
+        in: body
+        name: label
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.Label'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created label
+          schema:
+            $ref: '#/definitions/delivery.Label'
+        "400":
+          description: Bad request - invalid input
+          schema:
+            type: string
+        "401":
+          description: Unauthorized - admin access required
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - AdminAuth: []
+      summary: Create a new label
+      tags:
+      - label
+    put:
+      consumes:
+      - application/json
+      description: Updates a label by adding or removing users. Only accessible by
+        administrators.
+      parameters:
+      - description: Label update information containing labelID, users to add, and
+          users to remove
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.EditLabelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Label edited successfully
+          schema:
+            $ref: '#/definitions/delivery.Message'
+        "400":
+          description: Bad request - invalid input
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized - admin access required
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      security:
+      - AdminAuth: []
+      summary: Update a label
+      tags:
+      - label
+  /api/v1/label/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a label by its ID. Only accessible by administrators.
+      parameters:
+      - description: Label ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Label information
+          schema:
+            $ref: '#/definitions/delivery.Label'
+        "400":
+          description: Bad request - invalid label ID
+          schema:
+            type: string
+        "401":
+          description: Unauthorized - admin access required
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - AdminAuth: []
+      summary: Get label by ID
+      tags:
+      - label
+  /api/v1/label/album:
+    delete:
+      consumes:
+      - application/json
+      description: Removes an album from the label. Accessible by label members for
+        their own label or administrators for any label.
+      parameters:
+      - description: Album deletion request containing labelID and albumID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.DeleteAlbumRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Album deleted successfully
+          schema:
+            $ref: '#/definitions/delivery.Message'
+        "400":
+          description: Bad request - invalid input or label ID mismatch
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "403":
+          description: Forbidden - user not in label
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - LabelAuth: []
+      - AdminAuth: []
+      summary: Delete an album
+      tags:
+      - label
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new album with tracks. Only accessible by label members.
+      parameters:
+      - description: Album title (max 100 characters)
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Album type (album, single, ep, compilation)
+        in: formData
+        name: type
+        required: true
+        type: string
+      - description: Comma-separated list of artist IDs
+        in: formData
+        name: artists_ids
+        required: true
+        type: string
+      - description: Album cover image
+        in: formData
+        name: thumbnail
+        required: true
+        type: file
+      - description: Array of track files
+        in: formData
+        name: tracks[]
+        required: true
+        type: file
+      - collectionFormat: csv
+        description: Array of track titles corresponding to tracks[]
+        in: formData
+        items:
+          type: string
+        name: track_titles[]
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created album ID
+          schema:
+            $ref: '#/definitions/delivery.SuccessCreateAlbum'
+        "400":
+          description: Bad request - invalid input
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "403":
+          description: Forbidden - user not in label
+          schema:
+            $ref: '#/definitions/delivery.APIForbiddenErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      security:
+      - LabelAuth: []
+      summary: Create a new album
+      tags:
+      - label
+  /api/v1/label/albums:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of albums associated with the user's label with
+        optional pagination.
+      parameters:
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of albums in the label
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Album'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid pagination parameters
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "403":
+          description: Forbidden - user not in label
+          schema:
+            $ref: '#/definitions/delivery.APIForbiddenErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      security:
+      - LabelAuth: []
+      summary: Get albums by label ID
+      tags:
+      - label
+  /api/v1/label/artist:
+    delete:
+      consumes:
+      - application/json
+      description: Removes an artist from the label. Only accessible by label members.
+      parameters:
+      - description: Artist deletion request containing title
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/delivery.DeleteArtistRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Artist deleted successfully
+          schema:
+            $ref: '#/definitions/delivery.DeleteArtistRequest'
+        "400":
+          description: Bad request - invalid input
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "403":
+          description: Forbidden - user not in label
+          schema:
+            $ref: '#/definitions/delivery.APIForbiddenErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      security:
+      - LabelAuth: []
+      summary: Delete an artist
+      tags:
+      - label
+    post:
+      consumes:
+      - multipart/form-data
+      description: Creates a new artist associated with the label. Only accessible
+        by label members.
+      parameters:
+      - description: Artist name
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Artist profile image (max 6MB)
+        in: formData
+        name: thumbnail
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created artist
+          schema:
+            $ref: '#/definitions/delivery.Artist'
+        "400":
+          description: Bad request - invalid input
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "403":
+          description: Forbidden - user not in label
+          schema:
+            $ref: '#/definitions/delivery.APIForbiddenErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      security:
+      - LabelAuth: []
+      summary: Create a new artist
+      tags:
+      - label
+    put:
+      consumes:
+      - multipart/form-data
+      description: Updates an artist's information (name and/or image). Only accessible
+        by label members.
+      parameters:
+      - description: Artist ID to edit
+        in: formData
+        name: artist_id
+        required: true
+        type: string
+      - description: New artist name (required if thumbnail is not provided)
+        in: formData
+        name: new_title
+        type: string
+      - description: New artist profile image (required if new_title is not provided,
+          max 6MB)
+        in: formData
+        name: thumbnail
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated artist
+          schema:
+            $ref: '#/definitions/delivery.Artist'
+        "400":
+          description: Bad request - invalid input
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "403":
+          description: Forbidden - user not in label
+          schema:
+            $ref: '#/definitions/delivery.APIForbiddenErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      security:
+      - LabelAuth: []
+      summary: Edit an existing artist
+      tags:
+      - label
+  /api/v1/label/artists:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of artists associated with the user's label with
+        optional pagination
+      parameters:
+      - description: 'Offset (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      - description: 'Limit (default: 10, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of artists in the label
+          schema:
+            allOf:
+            - $ref: '#/definitions/delivery.APIResponse'
+            - properties:
+                body:
+                  items:
+                    $ref: '#/definitions/delivery.Artist'
+                  type: array
+              type: object
+        "400":
+          description: Bad request - invalid pagination parameters
+          schema:
+            $ref: '#/definitions/delivery.APIBadRequestErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/delivery.APIUnauthorizedErrorResponse'
+        "403":
+          description: Forbidden - user not in label
+          schema:
+            $ref: '#/definitions/delivery.APIForbiddenErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/delivery.APIInternalServerErrorResponse'
+      security:
+      - LabelAuth: []
+      summary: Get artists in a label
+      tags:
+      - label
   /artists:
     get:
       consumes:
