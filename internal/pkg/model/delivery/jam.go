@@ -13,7 +13,7 @@ type CreateJamResponse struct {
 type JamMessage struct {
 	Type       string            `json:"type"`
 	TrackID    string            `json:"track_id,omitempty"`
-	Position   int64             `json:"position,omitempty"`
+	Position   int64             `json:"position"`
 	Paused     bool              `json:"paused,omitempty"`
 	HostID     string            `json:"host_id,omitempty"`
 	UserID     string            `json:"user_id,omitempty"`

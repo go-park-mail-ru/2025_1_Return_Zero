@@ -145,6 +145,7 @@ func (u *Usecase) HandleClientMessage(ctx context.Context, roomID string, userID
 		if err != nil {
 			return err
 		}
+		u.jamRepository.CheckAllReadyAndPlay(ctx, roomID)
 	case "client:ready":
 		if isHost {
 			return nil
