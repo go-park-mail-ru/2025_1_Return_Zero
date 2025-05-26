@@ -23,6 +23,10 @@ service TrackService {
     rpc GetFavoriteTracks(FavoriteRequest) returns (TrackList);
     rpc AddTracksToAlbum(TracksListWithAlbumID) returns (TrackIdsList);
     rpc DeleteTracksByAlbumID(AlbumID) returns (google.protobuf.Empty);
+    rpc GetMostLikedTracks(UserID) returns (TrackList);
+    rpc GetMostLikedLastWeekTracks(UserID) returns (TrackList);
+    rpc GetMostListenedLastMonthTracks(UserID) returns (TrackList);
+    rpc GetMostRecentTracks(UserID) returns (TrackList);
 }
 
 message TrackIdsList {

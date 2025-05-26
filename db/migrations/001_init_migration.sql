@@ -270,7 +270,7 @@ CREATE MATERIALIZED VIEW album_stats AS
 SELECT 
     a.id AS album_id,
     COUNT(DISTINCT abs.user_id) AS listeners_count,
-    COUNT(DISTINCT fa.user_id) AS favorites_count
+    COUNT(DISTINCT fa.user_id) AS favorites_count,
 FROM 
     album a
     LEFT JOIN album_stream abs ON a.id = abs.album_id

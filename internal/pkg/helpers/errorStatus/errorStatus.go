@@ -21,7 +21,6 @@ var mapErrorStatus = map[error]int{
 	customErrors.ErrCreateSession: http.StatusInternalServerError,
 	customErrors.ErrGetSession:    http.StatusUnauthorized,
 	customErrors.ErrDeleteSession: http.StatusInternalServerError,
-
 	customErrors.ErrInvalidOffset:            http.StatusBadRequest,
 	customErrors.ErrInvalidLimit:             http.StatusBadRequest,
 	customErrors.ErrPasswordRequired:         http.StatusBadRequest,
@@ -38,7 +37,9 @@ var mapErrorStatus = map[error]int{
 	customErrors.ErrPlaylistImageNotUploaded: http.StatusBadRequest,
 	customErrors.ErrPlaylistBadRequest:       http.StatusBadRequest,
 	customErrors.ErrPlaylistUnauthorized:     http.StatusUnauthorized,
-
+  customErrors.ErrCreateRoomNotAllDataProvided: http.StatusBadRequest,
+	customErrors.ErrRoomIDRequired:               http.StatusBadRequest,
+	customErrors.ErrInvalidSelection:             http.StatusBadRequest,
 	customErrors.ErrLableExist: http.StatusBadRequest,
 }
 

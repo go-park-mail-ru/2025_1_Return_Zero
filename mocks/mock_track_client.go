@@ -163,6 +163,86 @@ func (mr *MockTrackServiceClientMockRecorder) GetMinutesListenedByUserID(ctx, in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMinutesListenedByUserID", reflect.TypeOf((*MockTrackServiceClient)(nil).GetMinutesListenedByUserID), varargs...)
 }
 
+// GetMostLikedLastWeekTracks mocks base method.
+func (m *MockTrackServiceClient) GetMostLikedLastWeekTracks(ctx context.Context, in *track.UserID, opts ...grpc.CallOption) (*track.TrackList, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetMostLikedLastWeekTracks", varargs...)
+	ret0, _ := ret[0].(*track.TrackList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostLikedLastWeekTracks indicates an expected call of GetMostLikedLastWeekTracks.
+func (mr *MockTrackServiceClientMockRecorder) GetMostLikedLastWeekTracks(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostLikedLastWeekTracks", reflect.TypeOf((*MockTrackServiceClient)(nil).GetMostLikedLastWeekTracks), varargs...)
+}
+
+// GetMostLikedTracks mocks base method.
+func (m *MockTrackServiceClient) GetMostLikedTracks(ctx context.Context, in *track.UserID, opts ...grpc.CallOption) (*track.TrackList, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetMostLikedTracks", varargs...)
+	ret0, _ := ret[0].(*track.TrackList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostLikedTracks indicates an expected call of GetMostLikedTracks.
+func (mr *MockTrackServiceClientMockRecorder) GetMostLikedTracks(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostLikedTracks", reflect.TypeOf((*MockTrackServiceClient)(nil).GetMostLikedTracks), varargs...)
+}
+
+// GetMostListenedLastMonthTracks mocks base method.
+func (m *MockTrackServiceClient) GetMostListenedLastMonthTracks(ctx context.Context, in *track.UserID, opts ...grpc.CallOption) (*track.TrackList, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetMostListenedLastMonthTracks", varargs...)
+	ret0, _ := ret[0].(*track.TrackList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostListenedLastMonthTracks indicates an expected call of GetMostListenedLastMonthTracks.
+func (mr *MockTrackServiceClientMockRecorder) GetMostListenedLastMonthTracks(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostListenedLastMonthTracks", reflect.TypeOf((*MockTrackServiceClient)(nil).GetMostListenedLastMonthTracks), varargs...)
+}
+
+// GetMostRecentTracks mocks base method.
+func (m *MockTrackServiceClient) GetMostRecentTracks(ctx context.Context, in *track.UserID, opts ...grpc.CallOption) (*track.TrackList, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetMostRecentTracks", varargs...)
+	ret0, _ := ret[0].(*track.TrackList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostRecentTracks indicates an expected call of GetMostRecentTracks.
+func (mr *MockTrackServiceClientMockRecorder) GetMostRecentTracks(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostRecentTracks", reflect.TypeOf((*MockTrackServiceClient)(nil).GetMostRecentTracks), varargs...)
+}
+
 // GetTrackByID mocks base method.
 func (m *MockTrackServiceClient) GetTrackByID(ctx context.Context, in *track.TrackIDWithUserID, opts ...grpc.CallOption) (*track.TrackDetailed, error) {
 	m.ctrl.T.Helper()
@@ -435,6 +515,66 @@ func (m *MockTrackServiceServer) GetMinutesListenedByUserID(arg0 context.Context
 func (mr *MockTrackServiceServerMockRecorder) GetMinutesListenedByUserID(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMinutesListenedByUserID", reflect.TypeOf((*MockTrackServiceServer)(nil).GetMinutesListenedByUserID), arg0, arg1)
+}
+
+// GetMostLikedLastWeekTracks mocks base method.
+func (m *MockTrackServiceServer) GetMostLikedLastWeekTracks(arg0 context.Context, arg1 *track.UserID) (*track.TrackList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMostLikedLastWeekTracks", arg0, arg1)
+	ret0, _ := ret[0].(*track.TrackList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostLikedLastWeekTracks indicates an expected call of GetMostLikedLastWeekTracks.
+func (mr *MockTrackServiceServerMockRecorder) GetMostLikedLastWeekTracks(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostLikedLastWeekTracks", reflect.TypeOf((*MockTrackServiceServer)(nil).GetMostLikedLastWeekTracks), arg0, arg1)
+}
+
+// GetMostLikedTracks mocks base method.
+func (m *MockTrackServiceServer) GetMostLikedTracks(arg0 context.Context, arg1 *track.UserID) (*track.TrackList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMostLikedTracks", arg0, arg1)
+	ret0, _ := ret[0].(*track.TrackList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostLikedTracks indicates an expected call of GetMostLikedTracks.
+func (mr *MockTrackServiceServerMockRecorder) GetMostLikedTracks(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostLikedTracks", reflect.TypeOf((*MockTrackServiceServer)(nil).GetMostLikedTracks), arg0, arg1)
+}
+
+// GetMostListenedLastMonthTracks mocks base method.
+func (m *MockTrackServiceServer) GetMostListenedLastMonthTracks(arg0 context.Context, arg1 *track.UserID) (*track.TrackList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMostListenedLastMonthTracks", arg0, arg1)
+	ret0, _ := ret[0].(*track.TrackList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostListenedLastMonthTracks indicates an expected call of GetMostListenedLastMonthTracks.
+func (mr *MockTrackServiceServerMockRecorder) GetMostListenedLastMonthTracks(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostListenedLastMonthTracks", reflect.TypeOf((*MockTrackServiceServer)(nil).GetMostListenedLastMonthTracks), arg0, arg1)
+}
+
+// GetMostRecentTracks mocks base method.
+func (m *MockTrackServiceServer) GetMostRecentTracks(arg0 context.Context, arg1 *track.UserID) (*track.TrackList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMostRecentTracks", arg0, arg1)
+	ret0, _ := ret[0].(*track.TrackList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostRecentTracks indicates an expected call of GetMostRecentTracks.
+func (mr *MockTrackServiceServerMockRecorder) GetMostRecentTracks(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostRecentTracks", reflect.TypeOf((*MockTrackServiceServer)(nil).GetMostRecentTracks), arg0, arg1)
 }
 
 // GetTrackByID mocks base method.

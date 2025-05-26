@@ -969,4 +969,64 @@ func TracksIdsFromUsecaseToProtoArtist(trackIDs []int64) *artistProto.TrackIDLis
 		trackIds = append(trackIds, &artistProto.TrackID{Id: id})
 	}
 	return &artistProto.TrackIDList{Ids: trackIds}
+
+// //////////////////////////////////// JAM ////////////////////////////////////
+
+func CreateJamResponseFromUsecaseToDelivery(usecaseCreateJam *usecase.CreateJamResponse) *delivery.CreateJamResponse {
+	return &delivery.CreateJamResponse{
+		RoomID: usecaseCreateJam.RoomID,
+		HostID: usecaseCreateJam.HostID,
+	}
+}
+
+func CreateJamRequestFromDeliveryToUsecase(deliveryCreateJam *delivery.CreateJamRequest, userID string) *usecase.CreateJamRequest {
+	return &usecase.CreateJamRequest{
+		UserID:   userID,
+		TrackID:  deliveryCreateJam.TrackID,
+		Position: deliveryCreateJam.Position,
+	}
+}
+
+func JamMessageFromUsecaseToDelivery(usecaseJamMessage *usecase.JamMessage) *delivery.JamMessage {
+	return &delivery.JamMessage{
+		Type:       usecaseJamMessage.Type,
+		TrackID:    usecaseJamMessage.TrackID,
+		Position:   usecaseJamMessage.Position,
+		Paused:     usecaseJamMessage.Paused,
+		Users:      usecaseJamMessage.Users,
+		HostID:     usecaseJamMessage.HostID,
+		Loaded:     usecaseJamMessage.Loaded,
+		UserID:     usecaseJamMessage.UserID,
+		UserImages: usecaseJamMessage.UserImages,
+		UserNames:  usecaseJamMessage.UserNames,
+	}
+}
+
+func JamMessageFromRepositoryToUsecase(repoJamMessage *repository.JamMessage) *usecase.JamMessage {
+	return &usecase.JamMessage{
+		Type:       repoJamMessage.Type,
+		TrackID:    repoJamMessage.TrackID,
+		Position:   repoJamMessage.Position,
+		Paused:     repoJamMessage.Paused,
+		Users:      repoJamMessage.Users,
+		HostID:     repoJamMessage.HostID,
+		Loaded:     repoJamMessage.Loaded,
+		UserID:     repoJamMessage.UserID,
+		UserImages: repoJamMessage.UserImages,
+		UserNames:  repoJamMessage.UserNames,
+	}
+}
+
+func JamMessageFromDeliveryToUsecase(deliveryJamMessage *delivery.JamMessage) *usecase.JamMessage {
+	return &usecase.JamMessage{
+		Type:       deliveryJamMessage.Type,
+		TrackID:    deliveryJamMessage.TrackID,
+		Position:   deliveryJamMessage.Position,
+		Paused:     deliveryJamMessage.Paused,
+		Users:      deliveryJamMessage.Users,
+		HostID:     deliveryJamMessage.HostID,
+		Loaded:     deliveryJamMessage.Loaded,
+		UserImages: deliveryJamMessage.UserImages,
+		UserNames:  deliveryJamMessage.UserNames,
+	}
 }

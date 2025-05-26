@@ -270,4 +270,35 @@ func (u *TrackUsecase) AddTracksToAlbum(ctx context.Context, tracksList *usecase
 
 func (u *TrackUsecase) DeleteTracksByAlbumID(ctx context.Context, albumID int64) error {
 	return u.trackRepo.DeleteTracksByAlbumID(ctx, albumID)
+
+func (u *TrackUsecase) GetMostLikedTracks(ctx context.Context, userID int64) ([]*usecaseModel.Track, error) {
+	repoTracks, err := u.trackRepo.GetMostLikedTracks(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
+}
+
+func (u *TrackUsecase) GetMostRecentTracks(ctx context.Context, userID int64) ([]*usecaseModel.Track, error) {
+	repoTracks, err := u.trackRepo.GetMostRecentTracks(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
+}
+
+func (u *TrackUsecase) GetMostListenedLastMonthTracks(ctx context.Context, userID int64) ([]*usecaseModel.Track, error) {
+	repoTracks, err := u.trackRepo.GetMostListenedLastMonthTracks(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
+}
+
+func (u *TrackUsecase) GetMostLikedLastWeekTracks(ctx context.Context, userID int64) ([]*usecaseModel.Track, error) {
+	repoTracks, err := u.trackRepo.GetMostLikedLastWeekTracks(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromRepositoryToUsecase(repoTracks), nil
 }

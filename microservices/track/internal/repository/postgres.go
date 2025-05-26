@@ -148,6 +148,40 @@ const (
 	DeleteTracksByAlbumIDQuery = `
 		DELETE FROM track
 		WHERE album_id = $1
+`
+	GetMostLikedTracksQuery = `
+		SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id, (ft.user_id IS NOT NULL) AS is_favorite
+		FROM track t
+		LEFT JOIN track_stats ts ON t.id = ts.track_id
+		LEFT JOIN favorite_track ft ON t.id = ft.track_id AND ft.user_id = $1
+		ORDER BY ts.favorites_count DESC, t.id DESC
+		LIMIT 20
+	`
+
+	GetMostRecentTracksQuery = `
+		SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id, (ft.user_id IS NOT NULL) AS is_favorite
+		FROM track t
+		LEFT JOIN favorite_track ft ON t.id = ft.track_id AND ft.user_id = $1
+		ORDER BY t.created_at DESC, t.id DESC
+		LIMIT 20
+	`
+
+	GetMostListenedLastMonthTracksQuery = `
+		SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id, (ft.user_id IS NOT NULL) AS is_favorite
+		FROM track t
+		LEFT JOIN track_stats ts ON t.id = ts.track_id
+		LEFT JOIN favorite_track ft ON t.id = ft.track_id AND ft.user_id = $1
+		ORDER BY ts.listeners_count_last_month DESC, t.id DESC
+		LIMIT 20
+	`
+
+	GetMostLikedLastWeekTracksQuery = `
+		SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id, (ft.user_id IS NOT NULL) AS is_favorite
+		FROM track t
+		LEFT JOIN track_stats ts ON t.id = ts.track_id
+		LEFT JOIN favorite_track ft ON t.id = ft.track_id AND ft.user_id = $1
+		ORDER BY ts.favorites_count_last_week DESC, t.id DESC
+		LIMIT 20
 	`
 )
 
@@ -849,4 +883,139 @@ func (r *TrackPostgresRepository) DeleteTracksByAlbumID(ctx context.Context, alb
 	r.metrics.DatabaseDuration.WithLabelValues("DeleteTracksByAlbumID").Observe(duration)
 
 	return nil
+}
+func (r *TrackPostgresRepository) GetMostLikedTracks(ctx context.Context, userID int64) ([]*repoModel.Track, error) {
+	start := time.Now()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting most liked tracks from db", zap.Int64("userID", userID), zap.String("query", GetMostLikedTracksQuery))
+	rows, err := r.db.Query(GetMostLikedTracksQuery, userID)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetMostLikedTracks").Inc()
+		logger.Error("failed to get most liked tracks", zap.Error(err))
+		return nil, trackErrors.NewInternalError("failed to get most liked tracks: %v", err)
+	}
+	defer rows.Close()
+
+	tracks := make([]*repoModel.Track, 0)
+	for rows.Next() {
+		var track repoModel.Track
+		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID, &track.IsFavorite)
+		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetMostLikedTracks").Inc()
+			logger.Error("failed to scan track", zap.Error(err))
+			return nil, trackErrors.NewInternalError("failed to scan track: %v", err)
+		}
+		tracks = append(tracks, &track)
+	}
+
+	if err := rows.Err(); err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetMostLikedTracks").Inc()
+		logger.Error("failed to get most liked tracks", zap.Error(err))
+		return nil, trackErrors.NewInternalError("failed to get most liked tracks: %v", err)
+	}
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetMostLikedTracks").Observe(duration)
+	return tracks, nil
+}
+
+func (r *TrackPostgresRepository) GetMostRecentTracks(ctx context.Context, userID int64) ([]*repoModel.Track, error) {
+	start := time.Now()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting most recent tracks from db", zap.Int64("userID", userID), zap.String("query", GetMostRecentTracksQuery))
+	rows, err := r.db.Query(GetMostRecentTracksQuery, userID)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetMostRecentTracks").Inc()
+		logger.Error("failed to get most recent tracks", zap.Error(err))
+		return nil, trackErrors.NewInternalError("failed to get most recent tracks: %v", err)
+	}
+	defer rows.Close()
+
+	tracks := make([]*repoModel.Track, 0)
+	for rows.Next() {
+		var track repoModel.Track
+		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID, &track.IsFavorite)
+		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetMostRecentTracks").Inc()
+			logger.Error("failed to scan track", zap.Error(err))
+			return nil, trackErrors.NewInternalError("failed to scan track: %v", err)
+		}
+		tracks = append(tracks, &track)
+	}
+
+	if err := rows.Err(); err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetMostRecentTracks").Inc()
+		logger.Error("failed to get most recent tracks", zap.Error(err))
+		return nil, trackErrors.NewInternalError("failed to get most recent tracks: %v", err)
+	}
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetMostRecentTracks").Observe(duration)
+	return tracks, nil
+}
+
+func (r *TrackPostgresRepository) GetMostListenedLastMonthTracks(ctx context.Context, userID int64) ([]*repoModel.Track, error) {
+	start := time.Now()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting most listened last month tracks from db", zap.Int64("userID", userID), zap.String("query", GetMostListenedLastMonthTracksQuery))
+	rows, err := r.db.Query(GetMostListenedLastMonthTracksQuery, userID)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetMostListenedLastMonthTracks").Inc()
+		logger.Error("failed to get most listened last month tracks", zap.Error(err))
+		return nil, trackErrors.NewInternalError("failed to get most listened last month tracks: %v", err)
+	}
+	defer rows.Close()
+
+	tracks := make([]*repoModel.Track, 0)
+	for rows.Next() {
+		var track repoModel.Track
+		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID, &track.IsFavorite)
+		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetMostListenedLastMonthTracks").Inc()
+			logger.Error("failed to scan track", zap.Error(err))
+			return nil, trackErrors.NewInternalError("failed to scan track: %v", err)
+		}
+		tracks = append(tracks, &track)
+	}
+
+	if err := rows.Err(); err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetMostListenedLastMonthTracks").Inc()
+		logger.Error("failed to get most listened last month tracks", zap.Error(err))
+		return nil, trackErrors.NewInternalError("failed to get most listened last month tracks: %v", err)
+	}
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetMostListenedLastMonthTracks").Observe(duration)
+	return tracks, nil
+}
+
+func (r *TrackPostgresRepository) GetMostLikedLastWeekTracks(ctx context.Context, userID int64) ([]*repoModel.Track, error) {
+	start := time.Now()
+	logger := loggerPkg.LoggerFromContext(ctx)
+	logger.Info("Requesting most liked last week tracks from db", zap.Int64("userID", userID), zap.String("query", GetMostLikedLastWeekTracksQuery))
+	rows, err := r.db.Query(GetMostLikedLastWeekTracksQuery, userID)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetMostLikedLastWeekTracks").Inc()
+		logger.Error("failed to get most liked last week tracks", zap.Error(err))
+		return nil, trackErrors.NewInternalError("failed to get most liked last week tracks: %v", err)
+	}
+	defer rows.Close()
+
+	tracks := make([]*repoModel.Track, 0)
+	for rows.Next() {
+		var track repoModel.Track
+		err := rows.Scan(&track.ID, &track.Title, &track.Thumbnail, &track.Duration, &track.AlbumID, &track.IsFavorite)
+		if err != nil {
+			r.metrics.DatabaseErrors.WithLabelValues("GetMostLikedLastWeekTracks").Inc()
+			logger.Error("failed to scan track", zap.Error(err))
+			return nil, trackErrors.NewInternalError("failed to scan track: %v", err)
+		}
+		tracks = append(tracks, &track)
+	}
+
+	if err := rows.Err(); err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("GetMostLikedLastWeekTracks").Inc()
+		logger.Error("failed to get most liked last week tracks", zap.Error(err))
+		return nil, trackErrors.NewInternalError("failed to get most liked last week tracks: %v", err)
+	}
+	duration := time.Since(start).Seconds()
+	r.metrics.DatabaseDuration.WithLabelValues("GetMostLikedLastWeekTracks").Observe(duration)
+	return tracks, nil
 }

@@ -26,6 +26,10 @@ type Repository interface {
 	SearchTracks(ctx context.Context, query string, userID int64) ([]*repoModel.Track, error)
 	AddTracksToAlbum(ctx context.Context, tracksList []*repoModel.Track) ([]int64, error)
 	DeleteTracksByAlbumID(ctx context.Context, albumID int64) error
+	GetMostLikedTracks(ctx context.Context, userID int64) ([]*repoModel.Track, error)
+	GetMostRecentTracks(ctx context.Context, userID int64) ([]*repoModel.Track, error)
+	GetMostListenedLastMonthTracks(ctx context.Context, userID int64) ([]*repoModel.Track, error)
+	GetMostLikedLastWeekTracks(ctx context.Context, userID int64) ([]*repoModel.Track, error)
 }
 
 type S3Repository interface {
