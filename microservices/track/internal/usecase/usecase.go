@@ -270,6 +270,7 @@ func (u *TrackUsecase) AddTracksToAlbum(ctx context.Context, tracksList *usecase
 
 func (u *TrackUsecase) DeleteTracksByAlbumID(ctx context.Context, albumID int64) error {
 	return u.trackRepo.DeleteTracksByAlbumID(ctx, albumID)
+}
 
 func (u *TrackUsecase) GetMostLikedTracks(ctx context.Context, userID int64) ([]*usecaseModel.Track, error) {
 	repoTracks, err := u.trackRepo.GetMostLikedTracks(ctx, userID)

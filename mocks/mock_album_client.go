@@ -43,6 +43,26 @@ func (m *MockAlbumServiceClient) EXPECT() *MockAlbumServiceClientMockRecorder {
 	return m.recorder
 }
 
+// CreateAlbum mocks base method.
+func (m *MockAlbumServiceClient) CreateAlbum(ctx context.Context, in *album.CreateAlbumRequest, opts ...grpc.CallOption) (*album.AlbumIDAndURL, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateAlbum", varargs...)
+	ret0, _ := ret[0].(*album.AlbumIDAndURL)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateAlbum indicates an expected call of CreateAlbum.
+func (mr *MockAlbumServiceClientMockRecorder) CreateAlbum(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAlbum", reflect.TypeOf((*MockAlbumServiceClient)(nil).CreateAlbum), varargs...)
+}
+
 // CreateStream mocks base method.
 func (m *MockAlbumServiceClient) CreateStream(ctx context.Context, in *album.AlbumStreamCreateData, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	m.ctrl.T.Helper()
@@ -61,6 +81,26 @@ func (mr *MockAlbumServiceClientMockRecorder) CreateStream(ctx, in any, opts ...
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStream", reflect.TypeOf((*MockAlbumServiceClient)(nil).CreateStream), varargs...)
+}
+
+// DeleteAlbum mocks base method.
+func (m *MockAlbumServiceClient) DeleteAlbum(ctx context.Context, in *album.AlbumID, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteAlbum", varargs...)
+	ret0, _ := ret[0].(*emptypb.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAlbum indicates an expected call of DeleteAlbum.
+func (mr *MockAlbumServiceClientMockRecorder) DeleteAlbum(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAlbum", reflect.TypeOf((*MockAlbumServiceClient)(nil).DeleteAlbum), varargs...)
 }
 
 // GetAlbumByID mocks base method.
@@ -141,6 +181,26 @@ func (mr *MockAlbumServiceClientMockRecorder) GetAlbumsByIDs(ctx, in any, opts .
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAlbumsByIDs", reflect.TypeOf((*MockAlbumServiceClient)(nil).GetAlbumsByIDs), varargs...)
+}
+
+// GetAlbumsLabelID mocks base method.
+func (m *MockAlbumServiceClient) GetAlbumsLabelID(ctx context.Context, in *album.FiltersWithLabelID, opts ...grpc.CallOption) (*album.AlbumList, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetAlbumsLabelID", varargs...)
+	ret0, _ := ret[0].(*album.AlbumList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAlbumsLabelID indicates an expected call of GetAlbumsLabelID.
+func (mr *MockAlbumServiceClientMockRecorder) GetAlbumsLabelID(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAlbumsLabelID", reflect.TypeOf((*MockAlbumServiceClient)(nil).GetAlbumsLabelID), varargs...)
 }
 
 // GetAllAlbums mocks base method.
@@ -247,6 +307,21 @@ func (m *MockAlbumServiceServer) EXPECT() *MockAlbumServiceServerMockRecorder {
 	return m.recorder
 }
 
+// CreateAlbum mocks base method.
+func (m *MockAlbumServiceServer) CreateAlbum(arg0 context.Context, arg1 *album.CreateAlbumRequest) (*album.AlbumIDAndURL, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateAlbum", arg0, arg1)
+	ret0, _ := ret[0].(*album.AlbumIDAndURL)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateAlbum indicates an expected call of CreateAlbum.
+func (mr *MockAlbumServiceServerMockRecorder) CreateAlbum(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateAlbum", reflect.TypeOf((*MockAlbumServiceServer)(nil).CreateAlbum), arg0, arg1)
+}
+
 // CreateStream mocks base method.
 func (m *MockAlbumServiceServer) CreateStream(arg0 context.Context, arg1 *album.AlbumStreamCreateData) (*emptypb.Empty, error) {
 	m.ctrl.T.Helper()
@@ -260,6 +335,21 @@ func (m *MockAlbumServiceServer) CreateStream(arg0 context.Context, arg1 *album.
 func (mr *MockAlbumServiceServerMockRecorder) CreateStream(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStream", reflect.TypeOf((*MockAlbumServiceServer)(nil).CreateStream), arg0, arg1)
+}
+
+// DeleteAlbum mocks base method.
+func (m *MockAlbumServiceServer) DeleteAlbum(arg0 context.Context, arg1 *album.AlbumID) (*emptypb.Empty, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAlbum", arg0, arg1)
+	ret0, _ := ret[0].(*emptypb.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteAlbum indicates an expected call of DeleteAlbum.
+func (mr *MockAlbumServiceServerMockRecorder) DeleteAlbum(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAlbum", reflect.TypeOf((*MockAlbumServiceServer)(nil).DeleteAlbum), arg0, arg1)
 }
 
 // GetAlbumByID mocks base method.
@@ -320,6 +410,21 @@ func (m *MockAlbumServiceServer) GetAlbumsByIDs(arg0 context.Context, arg1 *albu
 func (mr *MockAlbumServiceServerMockRecorder) GetAlbumsByIDs(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAlbumsByIDs", reflect.TypeOf((*MockAlbumServiceServer)(nil).GetAlbumsByIDs), arg0, arg1)
+}
+
+// GetAlbumsLabelID mocks base method.
+func (m *MockAlbumServiceServer) GetAlbumsLabelID(arg0 context.Context, arg1 *album.FiltersWithLabelID) (*album.AlbumList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAlbumsLabelID", arg0, arg1)
+	ret0, _ := ret[0].(*album.AlbumList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAlbumsLabelID indicates an expected call of GetAlbumsLabelID.
+func (mr *MockAlbumServiceServerMockRecorder) GetAlbumsLabelID(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAlbumsLabelID", reflect.TypeOf((*MockAlbumServiceServer)(nil).GetAlbumsLabelID), arg0, arg1)
 }
 
 // GetAllAlbums mocks base method.

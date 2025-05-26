@@ -43,6 +43,46 @@ func (m *MockArtistServiceClient) EXPECT() *MockArtistServiceClientMockRecorder 
 	return m.recorder
 }
 
+// ConnectArtists mocks base method.
+func (m *MockArtistServiceClient) ConnectArtists(ctx context.Context, in *artist.ArtistsIDWithAlbumID, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ConnectArtists", varargs...)
+	ret0, _ := ret[0].(*emptypb.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConnectArtists indicates an expected call of ConnectArtists.
+func (mr *MockArtistServiceClientMockRecorder) ConnectArtists(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConnectArtists", reflect.TypeOf((*MockArtistServiceClient)(nil).ConnectArtists), varargs...)
+}
+
+// CreateArtist mocks base method.
+func (m *MockArtistServiceClient) CreateArtist(ctx context.Context, in *artist.ArtistLoad, opts ...grpc.CallOption) (*artist.Artist, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "CreateArtist", varargs...)
+	ret0, _ := ret[0].(*artist.Artist)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateArtist indicates an expected call of CreateArtist.
+func (mr *MockArtistServiceClientMockRecorder) CreateArtist(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArtist", reflect.TypeOf((*MockArtistServiceClient)(nil).CreateArtist), varargs...)
+}
+
 // CreateStreamsByArtistIDs mocks base method.
 func (m *MockArtistServiceClient) CreateStreamsByArtistIDs(ctx context.Context, in *artist.ArtistStreamCreateDataList, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	m.ctrl.T.Helper()
@@ -61,6 +101,46 @@ func (mr *MockArtistServiceClientMockRecorder) CreateStreamsByArtistIDs(ctx, in 
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStreamsByArtistIDs", reflect.TypeOf((*MockArtistServiceClient)(nil).CreateStreamsByArtistIDs), varargs...)
+}
+
+// DeleteArtist mocks base method.
+func (m *MockArtistServiceClient) DeleteArtist(ctx context.Context, in *artist.ArtistDelete, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteArtist", varargs...)
+	ret0, _ := ret[0].(*emptypb.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteArtist indicates an expected call of DeleteArtist.
+func (mr *MockArtistServiceClientMockRecorder) DeleteArtist(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteArtist", reflect.TypeOf((*MockArtistServiceClient)(nil).DeleteArtist), varargs...)
+}
+
+// EditArtist mocks base method.
+func (m *MockArtistServiceClient) EditArtist(ctx context.Context, in *artist.ArtistEdit, opts ...grpc.CallOption) (*artist.Artist, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "EditArtist", varargs...)
+	ret0, _ := ret[0].(*artist.Artist)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EditArtist indicates an expected call of EditArtist.
+func (mr *MockArtistServiceClientMockRecorder) EditArtist(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EditArtist", reflect.TypeOf((*MockArtistServiceClient)(nil).EditArtist), varargs...)
 }
 
 // GetAlbumIDsByArtistID mocks base method.
@@ -223,6 +303,26 @@ func (mr *MockArtistServiceClientMockRecorder) GetArtistsByTrackIDs(ctx, in any,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtistsByTrackIDs", reflect.TypeOf((*MockArtistServiceClient)(nil).GetArtistsByTrackIDs), varargs...)
 }
 
+// GetArtistsLabelID mocks base method.
+func (m *MockArtistServiceClient) GetArtistsLabelID(ctx context.Context, in *artist.FiltersWithLabelID, opts ...grpc.CallOption) (*artist.ArtistList, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetArtistsLabelID", varargs...)
+	ret0, _ := ret[0].(*artist.ArtistList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArtistsLabelID indicates an expected call of GetArtistsLabelID.
+func (mr *MockArtistServiceClientMockRecorder) GetArtistsLabelID(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtistsLabelID", reflect.TypeOf((*MockArtistServiceClient)(nil).GetArtistsLabelID), varargs...)
+}
+
 // GetArtistsListenedByUserID mocks base method.
 func (m *MockArtistServiceClient) GetArtistsListenedByUserID(ctx context.Context, in *artist.UserID, opts ...grpc.CallOption) (*artist.ArtistListened, error) {
 	m.ctrl.T.Helper()
@@ -347,6 +447,36 @@ func (m *MockArtistServiceServer) EXPECT() *MockArtistServiceServerMockRecorder 
 	return m.recorder
 }
 
+// ConnectArtists mocks base method.
+func (m *MockArtistServiceServer) ConnectArtists(arg0 context.Context, arg1 *artist.ArtistsIDWithAlbumID) (*emptypb.Empty, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConnectArtists", arg0, arg1)
+	ret0, _ := ret[0].(*emptypb.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConnectArtists indicates an expected call of ConnectArtists.
+func (mr *MockArtistServiceServerMockRecorder) ConnectArtists(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConnectArtists", reflect.TypeOf((*MockArtistServiceServer)(nil).ConnectArtists), arg0, arg1)
+}
+
+// CreateArtist mocks base method.
+func (m *MockArtistServiceServer) CreateArtist(arg0 context.Context, arg1 *artist.ArtistLoad) (*artist.Artist, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateArtist", arg0, arg1)
+	ret0, _ := ret[0].(*artist.Artist)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateArtist indicates an expected call of CreateArtist.
+func (mr *MockArtistServiceServerMockRecorder) CreateArtist(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArtist", reflect.TypeOf((*MockArtistServiceServer)(nil).CreateArtist), arg0, arg1)
+}
+
 // CreateStreamsByArtistIDs mocks base method.
 func (m *MockArtistServiceServer) CreateStreamsByArtistIDs(arg0 context.Context, arg1 *artist.ArtistStreamCreateDataList) (*emptypb.Empty, error) {
 	m.ctrl.T.Helper()
@@ -360,6 +490,36 @@ func (m *MockArtistServiceServer) CreateStreamsByArtistIDs(arg0 context.Context,
 func (mr *MockArtistServiceServerMockRecorder) CreateStreamsByArtistIDs(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStreamsByArtistIDs", reflect.TypeOf((*MockArtistServiceServer)(nil).CreateStreamsByArtistIDs), arg0, arg1)
+}
+
+// DeleteArtist mocks base method.
+func (m *MockArtistServiceServer) DeleteArtist(arg0 context.Context, arg1 *artist.ArtistDelete) (*emptypb.Empty, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteArtist", arg0, arg1)
+	ret0, _ := ret[0].(*emptypb.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteArtist indicates an expected call of DeleteArtist.
+func (mr *MockArtistServiceServerMockRecorder) DeleteArtist(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteArtist", reflect.TypeOf((*MockArtistServiceServer)(nil).DeleteArtist), arg0, arg1)
+}
+
+// EditArtist mocks base method.
+func (m *MockArtistServiceServer) EditArtist(arg0 context.Context, arg1 *artist.ArtistEdit) (*artist.Artist, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EditArtist", arg0, arg1)
+	ret0, _ := ret[0].(*artist.Artist)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EditArtist indicates an expected call of EditArtist.
+func (mr *MockArtistServiceServerMockRecorder) EditArtist(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EditArtist", reflect.TypeOf((*MockArtistServiceServer)(nil).EditArtist), arg0, arg1)
 }
 
 // GetAlbumIDsByArtistID mocks base method.
@@ -480,6 +640,21 @@ func (m *MockArtistServiceServer) GetArtistsByTrackIDs(arg0 context.Context, arg
 func (mr *MockArtistServiceServerMockRecorder) GetArtistsByTrackIDs(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtistsByTrackIDs", reflect.TypeOf((*MockArtistServiceServer)(nil).GetArtistsByTrackIDs), arg0, arg1)
+}
+
+// GetArtistsLabelID mocks base method.
+func (m *MockArtistServiceServer) GetArtistsLabelID(arg0 context.Context, arg1 *artist.FiltersWithLabelID) (*artist.ArtistList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArtistsLabelID", arg0, arg1)
+	ret0, _ := ret[0].(*artist.ArtistList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArtistsLabelID indicates an expected call of GetArtistsLabelID.
+func (mr *MockArtistServiceServerMockRecorder) GetArtistsLabelID(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtistsLabelID", reflect.TypeOf((*MockArtistServiceServer)(nil).GetArtistsLabelID), arg0, arg1)
 }
 
 // GetArtistsListenedByUserID mocks base method.

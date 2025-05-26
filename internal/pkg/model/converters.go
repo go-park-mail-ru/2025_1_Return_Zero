@@ -969,6 +969,7 @@ func TracksIdsFromUsecaseToProtoArtist(trackIDs []int64) *artistProto.TrackIDLis
 		trackIds = append(trackIds, &artistProto.TrackID{Id: id})
 	}
 	return &artistProto.TrackIDList{Ids: trackIds}
+}
 
 // //////////////////////////////////// JAM ////////////////////////////////////
 

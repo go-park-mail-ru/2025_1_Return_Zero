@@ -156,6 +156,7 @@ func (s *TrackService) DeleteTracksByAlbumID(ctx context.Context, req *trackProt
 		return nil, err
 	}
 	return &emptypb.Empty{}, nil
+}
 
 func (s *TrackService) GetMostLikedTracks(ctx context.Context, req *trackProto.UserID) (*trackProto.TrackList, error) {
 	tracks, err := s.trackUsecase.GetMostLikedTracks(ctx, req.Id)

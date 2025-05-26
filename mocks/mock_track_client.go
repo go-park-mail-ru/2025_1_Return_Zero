@@ -43,6 +43,26 @@ func (m *MockTrackServiceClient) EXPECT() *MockTrackServiceClientMockRecorder {
 	return m.recorder
 }
 
+// AddTracksToAlbum mocks base method.
+func (m *MockTrackServiceClient) AddTracksToAlbum(ctx context.Context, in *track.TracksListWithAlbumID, opts ...grpc.CallOption) (*track.TrackIdsList, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "AddTracksToAlbum", varargs...)
+	ret0, _ := ret[0].(*track.TrackIdsList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddTracksToAlbum indicates an expected call of AddTracksToAlbum.
+func (mr *MockTrackServiceClientMockRecorder) AddTracksToAlbum(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTracksToAlbum", reflect.TypeOf((*MockTrackServiceClient)(nil).AddTracksToAlbum), varargs...)
+}
+
 // CreateStream mocks base method.
 func (m *MockTrackServiceClient) CreateStream(ctx context.Context, in *track.TrackStreamCreateData, opts ...grpc.CallOption) (*track.StreamID, error) {
 	m.ctrl.T.Helper()
@@ -61,6 +81,26 @@ func (mr *MockTrackServiceClientMockRecorder) CreateStream(ctx, in any, opts ...
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStream", reflect.TypeOf((*MockTrackServiceClient)(nil).CreateStream), varargs...)
+}
+
+// DeleteTracksByAlbumID mocks base method.
+func (m *MockTrackServiceClient) DeleteTracksByAlbumID(ctx context.Context, in *track.AlbumID, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteTracksByAlbumID", varargs...)
+	ret0, _ := ret[0].(*emptypb.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteTracksByAlbumID indicates an expected call of DeleteTracksByAlbumID.
+func (mr *MockTrackServiceClientMockRecorder) DeleteTracksByAlbumID(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTracksByAlbumID", reflect.TypeOf((*MockTrackServiceClient)(nil).DeleteTracksByAlbumID), varargs...)
 }
 
 // GetAlbumIDByTrackID mocks base method.
@@ -427,6 +467,21 @@ func (m *MockTrackServiceServer) EXPECT() *MockTrackServiceServerMockRecorder {
 	return m.recorder
 }
 
+// AddTracksToAlbum mocks base method.
+func (m *MockTrackServiceServer) AddTracksToAlbum(arg0 context.Context, arg1 *track.TracksListWithAlbumID) (*track.TrackIdsList, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddTracksToAlbum", arg0, arg1)
+	ret0, _ := ret[0].(*track.TrackIdsList)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddTracksToAlbum indicates an expected call of AddTracksToAlbum.
+func (mr *MockTrackServiceServerMockRecorder) AddTracksToAlbum(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTracksToAlbum", reflect.TypeOf((*MockTrackServiceServer)(nil).AddTracksToAlbum), arg0, arg1)
+}
+
 // CreateStream mocks base method.
 func (m *MockTrackServiceServer) CreateStream(arg0 context.Context, arg1 *track.TrackStreamCreateData) (*track.StreamID, error) {
 	m.ctrl.T.Helper()
@@ -440,6 +495,21 @@ func (m *MockTrackServiceServer) CreateStream(arg0 context.Context, arg1 *track.
 func (mr *MockTrackServiceServerMockRecorder) CreateStream(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStream", reflect.TypeOf((*MockTrackServiceServer)(nil).CreateStream), arg0, arg1)
+}
+
+// DeleteTracksByAlbumID mocks base method.
+func (m *MockTrackServiceServer) DeleteTracksByAlbumID(arg0 context.Context, arg1 *track.AlbumID) (*emptypb.Empty, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteTracksByAlbumID", arg0, arg1)
+	ret0, _ := ret[0].(*emptypb.Empty)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteTracksByAlbumID indicates an expected call of DeleteTracksByAlbumID.
+func (mr *MockTrackServiceServerMockRecorder) DeleteTracksByAlbumID(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTracksByAlbumID", reflect.TypeOf((*MockTrackServiceServer)(nil).DeleteTracksByAlbumID), arg0, arg1)
 }
 
 // GetAlbumIDByTrackID mocks base method.
