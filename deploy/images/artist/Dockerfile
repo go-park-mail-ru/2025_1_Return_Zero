@@ -27,6 +27,8 @@ COPY ./config.yaml ./config.yaml
 
 COPY ./.env ./.env
 
+RUN cat ./.env
+
 RUN go build -o main microservices/artist/cmd/main.go
 
 FROM alpine:latest
@@ -36,6 +38,8 @@ WORKDIR /app
 COPY --from=builder /app/main .
 
 COPY --from=builder /app/config.yaml . 
+
+RUN cat ./.env
 
 COPY --from=builder /app/.env .
 
