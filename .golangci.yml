@@ -16,6 +16,7 @@ linters:
     - staticcheck
     - unused
     - revive
+    
   settings:
     govet:
       enable-all: true
@@ -49,7 +50,8 @@ formatters:
     - gofmt
   settings:
     goimports:
-      local-prefixes: github.com/go-park-mail-ru/2025_1_Return_Zero
+      local-prefixes:
+        - github.com/go-park-mail-ru/2025_1_Return_Zero
     gofmt:
       simplify: true
 
