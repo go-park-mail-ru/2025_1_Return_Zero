@@ -39,12 +39,13 @@ func TestCreateUser(t *testing.T) {
 		Password: "password123",
 	}
 
-	mock.ExpectQuery("SELECT 1").WithArgs(regData.Username, regData.Email).WillReturnError(sql.ErrNoRows)
+	mock.ExpectPrepare("INSERT INTO \"user\"")
 
-	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
-	mock.ExpectQuery("INSERT INTO").WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).WillReturnRows(rows)
+	mock.ExpectPrepare("SELECT 1").ExpectQuery().WithArgs(regData.Username, regData.Email).WillReturnError(sql.ErrNoRows)
 
-	mock.ExpectExec("INSERT INTO").WithArgs(1).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectQuery("INSERT INTO \"user\"").WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+
+	mock.ExpectPrepare("INSERT INTO \"user_settings\"").ExpectExec().WithArgs(1).WillReturnResult(sqlmock.NewResult(1, 1))
 
 	user, err := repo.CreateUser(ctx, regData)
 
@@ -67,8 +68,10 @@ func TestCreateUserAlreadyExists(t *testing.T) {
 		Password: "password123",
 	}
 
+	mock.ExpectPrepare("INSERT INTO \"user\"")
+
 	rows := sqlmock.NewRows([]string{"1"}).AddRow(1)
-	mock.ExpectQuery("SELECT 1").WithArgs(regData.Username, regData.Email).WillReturnRows(rows)
+	mock.ExpectPrepare("SELECT 1").ExpectQuery().WithArgs(regData.Username, regData.Email).WillReturnRows(rows)
 
 	user, err := repo.CreateUser(ctx, regData)
 
@@ -89,9 +92,10 @@ func TestCreateUserFailureDuplicateUser(t *testing.T) {
 		Password: "password123",
 	}
 
-	// Simulate user already exists
+	mock.ExpectPrepare("INSERT INTO \"user\"")
+
 	rows := sqlmock.NewRows([]string{"1"}).AddRow(1)
-	mock.ExpectQuery("SELECT 1").WithArgs(regData.Username, regData.Email).WillReturnRows(rows)
+	mock.ExpectPrepare("SELECT 1").ExpectQuery().WithArgs(regData.Username, regData.Email).WillReturnRows(rows)
 
 	user, err := repo.CreateUser(ctx, regData)
 
@@ -117,12 +121,12 @@ func TestLoginUser(t *testing.T) {
 	combined := append(salt, hash...)
 	passwordHash := base64.StdEncoding.EncodeToString(combined)
 
-	rows := sqlmock.NewRows([]string{"id", "username", "email", "password_hash", "thumbnail_url"}).
-		AddRow(1, "testuser", "test@example.com", passwordHash, "avatar.jpg")
+	rows := sqlmock.NewRows([]string{"id", "username", "email", "password_hash", "thumbnail_url", "label_id"}).
+		AddRow(1, "testuser", "test@example.com", passwordHash, "avatar.jpg", nil)
 
 	lowerUsername := strings.ToLower(loginData.Username)
-	mock.ExpectQuery("SELECT id, username, email, password_hash, thumbnail_url").
-		WithArgs(lowerUsername, loginData.Email).
+	mock.ExpectPrepare("SELECT id, username, email, password_hash, thumbnail_url, label_id").
+		ExpectQuery().WithArgs(lowerUsername, loginData.Email).
 		WillReturnRows(rows)
 
 	user, err := repo.LoginUser(ctx, loginData)
@@ -147,9 +151,8 @@ func TestLoginUserFailure(t *testing.T) {
 		Password: "password123",
 	}
 
-	// Simulate user not found
-	mock.ExpectQuery("SELECT id, username, email, password_hash, thumbnail_url").
-		WithArgs(loginData.Username, loginData.Email).
+	mock.ExpectPrepare("SELECT id, username, email, password_hash, thumbnail_url, label_id").
+		ExpectQuery().WithArgs(loginData.Username, loginData.Email).
 		WillReturnError(sql.ErrNoRows)
 
 	user, err := repo.LoginUser(ctx, loginData)
@@ -170,8 +173,8 @@ func TestGetUserByID(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "username", "email", "thumbnail_url"}).
 		AddRow(userID, "testuser", "test@example.com", "avatar.jpg")
 
-	mock.ExpectQuery("SELECT id, username, email, thumbnail_url").
-		WithArgs(userID).
+	mock.ExpectPrepare("SELECT id, username, email, thumbnail_url").
+		ExpectQuery().WithArgs(userID).
 		WillReturnRows(rows)
 
 	user, err := repo.GetUserByID(ctx, userID)
@@ -192,8 +195,8 @@ func TestGetUserByIDFailure(t *testing.T) {
 
 	userID := int64(999)
 
-	mock.ExpectQuery("SELECT id, username, email, thumbnail_url").
-		WithArgs(userID).
+	mock.ExpectPrepare("SELECT id, username, email, thumbnail_url").
+		ExpectQuery().WithArgs(userID).
 		WillReturnError(sql.ErrNoRows)
 
 	user, err := repo.GetUserByID(ctx, userID)
@@ -214,8 +217,8 @@ func TestGetIDByUsername(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(expectedID)
 
-	mock.ExpectQuery("SELECT id").
-		WithArgs(username).
+	mock.ExpectPrepare("SELECT id").
+		ExpectQuery().WithArgs(username).
 		WillReturnRows(rows)
 
 	id, err := repo.GetIDByUsername(ctx, username)
@@ -242,8 +245,8 @@ func TestGetUserPrivacy(t *testing.T) {
 		"is_public_artists_listened",
 	}).AddRow(true, false, true, false, true, false)
 
-	mock.ExpectQuery("SELECT is_public_playlists, is_public_minutes_listened").
-		WithArgs(userID).
+	mock.ExpectPrepare("SELECT is_public_playlists, is_public_minutes_listened").
+		ExpectQuery().WithArgs(userID).
 		WillReturnRows(rows)
 
 	privacy, err := repo.GetUserPrivacy(ctx, userID)
@@ -266,8 +269,8 @@ func TestGetUserPrivacyFailure(t *testing.T) {
 
 	userID := int64(999)
 
-	mock.ExpectQuery("SELECT is_public_playlists").
-		WithArgs(userID).
+	mock.ExpectPrepare("SELECT is_public_playlists").
+		ExpectQuery().WithArgs(userID).
 		WillReturnError(sql.ErrNoRows)
 
 	privacy, err := repo.GetUserPrivacy(ctx, userID)
@@ -286,8 +289,8 @@ func TestUploadAvatar(t *testing.T) {
 	avatarURL := "new-avatar.jpg"
 	userID := int64(1)
 
-	mock.ExpectExec("UPDATE \"user\"").
-		WithArgs(avatarURL, userID).
+	mock.ExpectPrepare("UPDATE").
+		ExpectExec().WithArgs(avatarURL, userID).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 
 	err := repo.UploadAvatar(ctx, avatarURL, userID)
@@ -305,8 +308,8 @@ func TestUploadAvatarFailure(t *testing.T) {
 	avatarURL := "avatar.jpg"
 	userID := int64(999)
 
-	mock.ExpectExec("UPDATE \"user\"").
-		WithArgs(avatarURL, userID).
+	mock.ExpectPrepare("UPDATE").
+		ExpectExec().WithArgs(avatarURL, userID).
 		WillReturnError(sql.ErrNoRows)
 
 	err := repo.UploadAvatar(ctx, avatarURL, userID)
@@ -333,8 +336,10 @@ func TestChangeUserPrivacySettings(t *testing.T) {
 		IsPublicArtistsListened: false,
 	}
 
+	mock.ExpectPrepare("UPDATE \"user_settings\"")
+
 	idRows := sqlmock.NewRows([]string{"id"}).AddRow(userID)
-	mock.ExpectQuery("SELECT id").WithArgs(username).WillReturnRows(idRows)
+	mock.ExpectPrepare("SELECT id").ExpectQuery().WithArgs(username).WillReturnRows(idRows)
 
 	mock.ExpectExec("UPDATE \"user_settings\"").
 		WithArgs(
@@ -371,8 +376,10 @@ func TestChangeUserPrivacySettingsFailure(t *testing.T) {
 		IsPublicArtistsListened: false,
 	}
 
-	mock.ExpectQuery("SELECT id").
-		WithArgs(username).
+	mock.ExpectPrepare("UPDATE \"user_settings\"")
+
+	mock.ExpectPrepare("SELECT id").
+		ExpectQuery().WithArgs(username).
 		WillReturnError(sql.ErrNoRows)
 
 	err := repo.ChangeUserPrivacySettings(ctx, username, privacy)
@@ -391,7 +398,7 @@ func TestGetFullUserData(t *testing.T) {
 	userID := int64(1)
 
 	idRows := sqlmock.NewRows([]string{"id"}).AddRow(userID)
-	mock.ExpectQuery("SELECT id").WithArgs(username).WillReturnRows(idRows)
+	mock.ExpectPrepare("SELECT id").ExpectQuery().WithArgs(username).WillReturnRows(idRows)
 
 	privacyRows := sqlmock.NewRows([]string{
 		"is_public_playlists",
@@ -401,14 +408,14 @@ func TestGetFullUserData(t *testing.T) {
 		"is_public_favorite_tracks",
 		"is_public_artists_listened",
 	}).AddRow(true, false, true, false, true, false)
-	mock.ExpectQuery("SELECT is_public_playlists").
-		WithArgs(userID).
+	mock.ExpectPrepare("SELECT is_public_playlists").
+		ExpectQuery().WithArgs(userID).
 		WillReturnRows(privacyRows)
 
 	userRows := sqlmock.NewRows([]string{"id", "username", "email", "thumbnail_url"}).
 		AddRow(userID, "testuser", "test@example.com", "avatar.jpg")
-	mock.ExpectQuery("SELECT id, username, email, thumbnail_url").
-		WithArgs(userID).
+	mock.ExpectPrepare("SELECT id, username, email, thumbnail_url").
+		ExpectQuery().WithArgs(userID).
 		WillReturnRows(userRows)
 
 	userData, err := repo.GetFullUserData(ctx, username)
@@ -435,8 +442,8 @@ func TestGetFullUserDataFailure(t *testing.T) {
 
 	username := "nonexistentuser"
 
-	mock.ExpectQuery("SELECT id").
-		WithArgs(username).
+	mock.ExpectPrepare("SELECT id").
+		ExpectQuery().WithArgs(username).
 		WillReturnError(sql.ErrNoRows)
 
 	userData, err := repo.GetFullUserData(ctx, username)
@@ -458,8 +465,10 @@ func TestDeleteUser(t *testing.T) {
 		Password: "password123",
 	}
 
+	mock.ExpectPrepare("DELETE FROM")
+
 	idRows := sqlmock.NewRows([]string{"id"}).AddRow(1)
-	mock.ExpectQuery("SELECT id").WithArgs(userDelete.Username).WillReturnRows(idRows)
+	mock.ExpectPrepare("SELECT id").ExpectQuery().WithArgs(userDelete.Username).WillReturnRows(idRows)
 
 	salt := make([]byte, 8)
 	hash := argon2.IDKey([]byte(userDelete.Password), salt, 1, 64*1024, 4, 32)
@@ -467,7 +476,7 @@ func TestDeleteUser(t *testing.T) {
 	passwordHash := base64.StdEncoding.EncodeToString(combined)
 
 	passRows := sqlmock.NewRows([]string{"password_hash"}).AddRow(passwordHash)
-	mock.ExpectQuery("SELECT password_hash").WithArgs(1).WillReturnRows(passRows)
+	mock.ExpectPrepare("SELECT password_hash").ExpectQuery().WithArgs(1).WillReturnRows(passRows)
 
 	mock.ExpectExec("DELETE FROM").
 		WithArgs(userDelete.Username, userDelete.Email).
@@ -491,7 +500,8 @@ func TestDeleteUserFailureUserNotFound(t *testing.T) {
 		Password: "password123",
 	}
 
-	mock.ExpectQuery("SELECT id").WithArgs(userDelete.Username).WillReturnError(sql.ErrNoRows)
+	mock.ExpectPrepare("DELETE FROM \"user\"")
+	mock.ExpectPrepare("SELECT id").ExpectQuery().WithArgs(userDelete.Username).WillReturnError(sql.ErrNoRows)
 
 	err := repo.DeleteUser(ctx, userDelete)
 
@@ -511,12 +521,14 @@ func TestDeleteUserFailureWrongPassword(t *testing.T) {
 		Password: "wrongpassword",
 	}
 
+	mock.ExpectPrepare("DELETE FROM \"user\"")
+
 	idRows := sqlmock.NewRows([]string{"id"}).AddRow(1)
-	mock.ExpectQuery("SELECT id").WithArgs(userDelete.Username).WillReturnRows(idRows)
+	mock.ExpectPrepare("SELECT id").ExpectQuery().WithArgs(userDelete.Username).WillReturnRows(idRows)
 
 	correctPasswordHash := "differentPasswordHash"
 	passRows := sqlmock.NewRows([]string{"password_hash"}).AddRow(correctPasswordHash)
-	mock.ExpectQuery("SELECT password_hash").WithArgs(1).WillReturnRows(passRows)
+	mock.ExpectPrepare("SELECT password_hash").ExpectQuery().WithArgs(1).WillReturnRows(passRows)
 
 	err := repo.DeleteUser(ctx, userDelete)
 
@@ -546,33 +558,33 @@ func TestChangeUserData(t *testing.T) {
 	passwordHash := base64.StdEncoding.EncodeToString(combined)
 
 	idRows := sqlmock.NewRows([]string{"id"}).AddRow(userID)
-	mock.ExpectQuery("SELECT id").WithArgs(username).WillReturnRows(idRows)
+	mock.ExpectPrepare("SELECT id").ExpectQuery().WithArgs(username).WillReturnRows(idRows)
 
-	mock.ExpectQuery("SELECT 1").WithArgs(strings.ToLower(changeData.NewUsername), userID).WillReturnError(sql.ErrNoRows)
+	mock.ExpectPrepare("UPDATE \"user\" SET username")
 
-	mock.ExpectExec("UPDATE \"user\"").
-		WithArgs(strings.ToLower(changeData.NewUsername), userID).
-		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectPrepare("SELECT 1").ExpectQuery().WithArgs(strings.ToLower(changeData.NewUsername)).WillReturnError(sql.ErrNoRows)
 
-	mock.ExpectQuery("SELECT 1").WithArgs(changeData.NewEmail, userID).WillReturnError(sql.ErrNoRows)
+	mock.ExpectExec("UPDATE \"user\" SET username").WithArgs(strings.ToLower(changeData.NewUsername), userID).WillReturnResult(sqlmock.NewResult(0, 1))
 
-	mock.ExpectExec("UPDATE \"user\"").
-		WithArgs(changeData.NewEmail, userID).
-		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectPrepare("UPDATE \"user\" SET email")
+
+	mock.ExpectPrepare("SELECT 1").ExpectQuery().WithArgs(changeData.NewEmail).WillReturnError(sql.ErrNoRows)
+
+	mock.ExpectExec("UPDATE \"user\" SET email").WithArgs(changeData.NewEmail, userID).WillReturnResult(sqlmock.NewResult(0, 1))
+
+	mock.ExpectPrepare("UPDATE \"user\" SET password_hash")
 
 	passRows := sqlmock.NewRows([]string{"password_hash"}).AddRow(passwordHash)
-	mock.ExpectQuery("SELECT password_hash").WithArgs(userID).WillReturnRows(passRows)
+	mock.ExpectPrepare("SELECT password_hash").ExpectQuery().WithArgs(userID).WillReturnRows(passRows)
 
-	mock.ExpectExec("UPDATE \"user\"").
-		WithArgs(sqlmock.AnyArg(), userID).
-		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectExec("UPDATE \"user\" SET password_hash").WithArgs(sqlmock.AnyArg(), userID).WillReturnResult(sqlmock.NewResult(0, 1))
 
 	err := repo.ChangeUserData(ctx, username, changeData)
 
 	assert.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 
-	mock.ExpectQuery("SELECT id").WithArgs("nonexistent").WillReturnError(sql.ErrNoRows)
+	mock.ExpectPrepare("SELECT id").ExpectQuery().WithArgs("nonexistent").WillReturnError(sql.ErrNoRows)
 	err = repo.ChangeUserData(ctx, "nonexistent", changeData)
 	assert.Error(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
@@ -592,11 +604,13 @@ func TestChangeUserDataFailureUsernameExists(t *testing.T) {
 	}
 
 	idRows := sqlmock.NewRows([]string{"id"}).AddRow(userID)
-	mock.ExpectQuery("SELECT id").WithArgs(username).WillReturnRows(idRows)
+	mock.ExpectPrepare("SELECT id").ExpectQuery().WithArgs(username).WillReturnRows(idRows)
+
+	mock.ExpectPrepare("UPDATE \"user\" SET username")
 
 	rows := sqlmock.NewRows([]string{"1"}).AddRow(1)
-	mock.ExpectQuery("SELECT 1").
-		WithArgs(strings.ToLower(changeData.NewUsername), userID).
+	mock.ExpectPrepare("SELECT 1").
+		ExpectQuery().WithArgs(strings.ToLower(changeData.NewUsername)).
 		WillReturnRows(rows)
 
 	err := repo.ChangeUserData(ctx, username, changeData)
@@ -619,7 +633,9 @@ func TestChangeUserDataFailureWrongPassword(t *testing.T) {
 	}
 
 	idRows := sqlmock.NewRows([]string{"id"}).AddRow(userID)
-	mock.ExpectQuery("SELECT id").WithArgs(username).WillReturnRows(idRows)
+	mock.ExpectPrepare("SELECT id").ExpectQuery().WithArgs(username).WillReturnRows(idRows)
+
+	mock.ExpectPrepare("UPDATE \"user\" SET password_hash")
 
 	salt := make([]byte, 8)
 	hash := argon2.IDKey([]byte("correctpassword"), salt, 1, 64*1024, 4, 32)
@@ -627,7 +643,7 @@ func TestChangeUserDataFailureWrongPassword(t *testing.T) {
 	passwordHash := base64.StdEncoding.EncodeToString(combined)
 
 	passRows := sqlmock.NewRows([]string{"password_hash"}).AddRow(passwordHash)
-	mock.ExpectQuery("SELECT password_hash").WithArgs(userID).WillReturnRows(passRows)
+	mock.ExpectPrepare("SELECT password_hash").ExpectQuery().WithArgs(userID).WillReturnRows(passRows)
 
 	err := repo.ChangeUserData(ctx, username, changeData)
 
@@ -654,14 +670,14 @@ func TestChangeUserDataOnlyPassword(t *testing.T) {
 	passwordHash := base64.StdEncoding.EncodeToString(combined)
 
 	idRows := sqlmock.NewRows([]string{"id"}).AddRow(userID)
-	mock.ExpectQuery("SELECT id").WithArgs(username).WillReturnRows(idRows)
+	mock.ExpectPrepare("SELECT id").ExpectQuery().WithArgs(username).WillReturnRows(idRows)
+
+	mock.ExpectPrepare("UPDATE \"user\" SET password_hash")
 
 	passRows := sqlmock.NewRows([]string{"password_hash"}).AddRow(passwordHash)
-	mock.ExpectQuery("SELECT password_hash").WithArgs(userID).WillReturnRows(passRows)
+	mock.ExpectPrepare("SELECT password_hash").ExpectQuery().WithArgs(userID).WillReturnRows(passRows)
 
-	mock.ExpectExec("UPDATE \"user\"").
-		WithArgs(sqlmock.AnyArg(), userID).
-		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectExec("UPDATE \"user\" SET password_hash").WithArgs(sqlmock.AnyArg(), userID).WillReturnResult(sqlmock.NewResult(0, 1))
 
 	err := repo.ChangeUserData(ctx, username, changeData)
 
@@ -678,34 +694,26 @@ func TestChangeUserDataOnlyEmail(t *testing.T) {
 	username := "testuser"
 	userID := int64(1)
 
-	// Изменяем только email
 	changeData := &repoModel.ChangeUserData{
 		Password: "oldpass",
 		NewEmail: "newemail@example.com",
 	}
 
-	salt := make([]byte, 8)
-	hash := argon2.IDKey([]byte(changeData.Password), salt, 1, 64*1024, 4, 32)
-	combined := append(salt, hash...)
-	passwordHash := base64.StdEncoding.EncodeToString(combined)
-
 	idRows := sqlmock.NewRows([]string{"id"}).AddRow(userID)
-	mock.ExpectQuery("SELECT id").WithArgs(username).WillReturnRows(idRows)
+	mock.ExpectPrepare("SELECT id").ExpectQuery().WithArgs(username).WillReturnRows(idRows)
 
-	mock.ExpectQuery("SELECT 1").
-		WithArgs(changeData.NewEmail, userID).
+	mock.ExpectPrepare("UPDATE \"user\" SET email")
+
+	mock.ExpectPrepare("SELECT 1").
+		ExpectQuery().WithArgs(changeData.NewEmail).
 		WillReturnError(sql.ErrNoRows)
 
-	mock.ExpectExec("UPDATE \"user\"").
-		WithArgs(changeData.NewEmail, userID).
-		WillReturnResult(sqlmock.NewResult(0, 1))
-
-	passRows := sqlmock.NewRows([]string{"password_hash"}).AddRow(passwordHash)
-	mock.ExpectQuery("SELECT password_hash").WithArgs(userID).WillReturnRows(passRows)
+	mock.ExpectExec("UPDATE \"user\" SET email").WithArgs(changeData.NewEmail, userID).WillReturnResult(sqlmock.NewResult(0, 1))
 
 	err := repo.ChangeUserData(ctx, username, changeData)
 
 	assert.NoError(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
 func TestChangeUserDataOnlyUsername(t *testing.T) {
@@ -722,26 +730,19 @@ func TestChangeUserDataOnlyUsername(t *testing.T) {
 		NewUsername: "newusername",
 	}
 
-	salt := make([]byte, 8)
-	hash := argon2.IDKey([]byte(changeData.Password), salt, 1, 64*1024, 4, 32)
-	combined := append(salt, hash...)
-	passwordHash := base64.StdEncoding.EncodeToString(combined)
-
 	idRows := sqlmock.NewRows([]string{"id"}).AddRow(userID)
-	mock.ExpectQuery("SELECT id").WithArgs(username).WillReturnRows(idRows)
+	mock.ExpectPrepare("SELECT id").ExpectQuery().WithArgs(username).WillReturnRows(idRows)
 
-	mock.ExpectQuery("SELECT 1").
-		WithArgs(changeData.NewUsername, userID).
+	mock.ExpectPrepare("UPDATE \"user\" SET username")
+
+	mock.ExpectPrepare("SELECT 1").
+		ExpectQuery().WithArgs(changeData.NewUsername).
 		WillReturnError(sql.ErrNoRows)
 
-	mock.ExpectExec("UPDATE \"user\"").
-		WithArgs(changeData.NewUsername, userID).
-		WillReturnResult(sqlmock.NewResult(0, 1))
-
-	passRows := sqlmock.NewRows([]string{"password_hash"}).AddRow(passwordHash)
-	mock.ExpectQuery("SELECT password_hash").WithArgs(userID).WillReturnRows(passRows)
+	mock.ExpectExec("UPDATE \"user\" SET username").WithArgs(changeData.NewUsername, userID).WillReturnResult(sqlmock.NewResult(0, 1))
 
 	err := repo.ChangeUserData(ctx, username, changeData)
 
 	assert.NoError(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
 }

@@ -234,7 +234,7 @@ func (r *PlaylistPostgresRepository) GetCombinedPlaylistsByUserID(ctx context.Co
 	defer stmt.Close()
 
 	var playlists repoModel.PlaylistList
-	rows, err := r.db.QueryContext(ctx, GetPlaylistsByUserIDQuery, userID)
+	rows, err := stmt.QueryContext(ctx, userID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetCombinedPlaylistsByUserID").Inc()
 		logger.Error("Failed to get playlists by user id", zap.Error(err))

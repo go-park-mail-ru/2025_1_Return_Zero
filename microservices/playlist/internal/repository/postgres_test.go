@@ -36,6 +36,7 @@ func TestGetPlaylistByID(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(playlistID).
 		WillReturnRows(rows)
@@ -59,6 +60,7 @@ func TestGetPlaylistByIDNotFound(t *testing.T) {
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(playlistID).
 		WillReturnError(sql.ErrNoRows)
@@ -85,6 +87,7 @@ func TestCreatePlaylist(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
+	mock.ExpectPrepare("INSERT INTO playlist")
 	mock.ExpectQuery("INSERT INTO playlist").
 		WithArgs(request.Title, request.UserID, request.Thumbnail, request.IsPublic).
 		WillReturnRows(rows)
@@ -92,6 +95,7 @@ func TestCreatePlaylist(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "New Playlist", 1, "thumbnail.jpg", true)
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(int64(1)).
 		WillReturnRows(playlistRows)
@@ -120,6 +124,7 @@ func TestCreatePlaylistDuplicate(t *testing.T) {
 		IsPublic:  true,
 	}
 
+	mock.ExpectPrepare("INSERT INTO playlist")
 	mock.ExpectQuery("INSERT INTO playlist").
 		WithArgs(request.Title, request.UserID, request.Thumbnail, request.IsPublic).
 		WillReturnError(stderrors.New("duplicate key value violates unique constraint"))
@@ -143,6 +148,7 @@ func TestGetCombinedPlaylistsByUserID(t *testing.T) {
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg").
 		AddRow(2, "Playlist 2", 2, "thumbnail2.jpg")
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(userID).
 		WillReturnRows(rows)
@@ -170,6 +176,7 @@ func TestGetCombinedPlaylistsByUserIDError(t *testing.T) {
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(userID).
 		WillReturnError(stderrors.New("db error"))
@@ -191,6 +198,7 @@ func TestTrackExistsInPlaylist(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(playlistID, trackID).
 		WillReturnRows(rows)
@@ -210,6 +218,7 @@ func TestTrackExistsInPlaylistError(t *testing.T) {
 	playlistID := int64(1)
 	trackID := int64(2)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(playlistID, trackID).
 		WillReturnError(stderrors.New("db error"))
@@ -235,12 +244,15 @@ func TestAddTrackToPlaylist(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("INSERT INTO playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(false)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnRows(existsRows)
@@ -266,6 +278,8 @@ func TestAddTrackToPlaylistGetPlaylistError(t *testing.T) {
 		UserID:     1,
 	}
 
+	mock.ExpectPrepare("INSERT INTO playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnError(stderrors.New("db error"))
@@ -290,10 +304,13 @@ func TestAddTrackToPlaylistTrackExistsError(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("INSERT INTO playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnError(stderrors.New("db error"))
@@ -318,12 +335,15 @@ func TestAddTrackToPlaylistInsertError(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("INSERT INTO playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(false)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnRows(existsRows)
@@ -352,6 +372,8 @@ func TestAddTrackToPlaylistPermissionDenied(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("INSERT INTO playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
@@ -377,12 +399,15 @@ func TestAddTrackToPlaylistDuplicate(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("INSERT INTO playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnRows(existsRows)
@@ -408,12 +433,15 @@ func TestRemoveTrackFromPlaylist(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("DELETE FROM playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnRows(existsRows)
@@ -439,6 +467,8 @@ func TestRemoveTrackFromPlaylistGetPlaylistError(t *testing.T) {
 		UserID:     1,
 	}
 
+	mock.ExpectPrepare("DELETE FROM playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnError(stderrors.New("db error"))
@@ -463,6 +493,8 @@ func TestRemoveTrackFromPlaylistPermissionDenied(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("DELETE FROM playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
@@ -488,12 +520,15 @@ func TestRemoveTrackFromPlaylistTrackNotFound(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("DELETE FROM playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(false)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnRows(existsRows)
@@ -519,10 +554,13 @@ func TestRemoveTrackFromPlaylistTrackExistsError(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("DELETE FROM playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnError(stderrors.New("db error"))
@@ -547,12 +585,15 @@ func TestRemoveTrackFromPlaylistDeleteError(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("DELETE FROM playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnRows(existsRows)
@@ -581,6 +622,7 @@ func TestGetPlaylistTrackIds(t *testing.T) {
 		AddRow(2).
 		AddRow(3)
 
+	mock.ExpectPrepare("SELECT track_id")
 	mock.ExpectQuery("SELECT track_id").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(rows)
@@ -604,6 +646,7 @@ func TestGetPlaylistTrackIdsError(t *testing.T) {
 		PlaylistID: 1,
 	}
 
+	mock.ExpectPrepare("SELECT track_id")
 	mock.ExpectQuery("SELECT track_id").
 		WithArgs(request.PlaylistID).
 		WillReturnError(stderrors.New("db error"))
@@ -629,6 +672,7 @@ func TestUpdatePlaylistWithThumbnail(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.Thumbnail, request.UserID).
 		WillReturnRows(rows)
@@ -636,6 +680,7 @@ func TestUpdatePlaylistWithThumbnail(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Updated Playlist", 1, "new_thumbnail.jpg", true)
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(int64(1)).
 		WillReturnRows(playlistRows)
@@ -662,6 +707,7 @@ func TestUpdatePlaylistWithThumbnailError(t *testing.T) {
 		UserID:     1,
 	}
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.Thumbnail, request.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -687,6 +733,7 @@ func TestUpdatePlaylistWithoutThumbnail(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.UserID).
 		WillReturnRows(rows)
@@ -694,6 +741,7 @@ func TestUpdatePlaylistWithoutThumbnail(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Updated Playlist", 1, "existing_thumbnail.jpg", true)
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(int64(1)).
 		WillReturnRows(playlistRows)
@@ -720,6 +768,7 @@ func TestUpdatePlaylistWithoutThumbnailError(t *testing.T) {
 		UserID:     1,
 	}
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -741,6 +790,7 @@ func TestRemovePlaylist(t *testing.T) {
 		UserID:     1,
 	}
 
+	mock.ExpectPrepare("DELETE FROM playlist")
 	mock.ExpectExec("DELETE FROM playlist").
 		WithArgs(request.PlaylistID, request.UserID).
 		WillReturnResult(sqlmock.NewResult(0, 1))
@@ -761,6 +811,7 @@ func TestRemovePlaylistError(t *testing.T) {
 		UserID:     1,
 	}
 
+	mock.ExpectPrepare("DELETE FROM playlist")
 	mock.ExpectExec("DELETE FROM playlist").
 		WithArgs(request.PlaylistID, request.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -785,6 +836,7 @@ func TestGetPlaylistsToAdd(t *testing.T) {
 		AddRow(1, "Playlist 1", 2, "thumbnail1.jpg", true).
 		AddRow(2, "Playlist 2", 2, "thumbnail2.jpg", false)
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(request.TrackID, request.UserID).
 		WillReturnRows(rows)
@@ -813,6 +865,7 @@ func TestGetPlaylistsToAddError(t *testing.T) {
 		UserID:  2,
 	}
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(request.TrackID, request.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -837,6 +890,7 @@ func TestGetPlaylistsToAddScanError(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_included"}).
 		AddRow(1, "Playlist 1", 2, "thumbnail1.jpg", "invalid_bool")
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(request.TrackID, request.UserID).
 		WillReturnRows(rows)
@@ -858,6 +912,7 @@ func TestUpdatePlaylistsPublisityByUserID(t *testing.T) {
 		IsPublic: true,
 	}
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectExec("UPDATE playlist").
 		WithArgs(request.UserID, request.IsPublic).
 		WillReturnResult(sqlmock.NewResult(0, 3))
@@ -878,6 +933,7 @@ func TestUpdatePlaylistsPublisityByUserIDError(t *testing.T) {
 		IsPublic: true,
 	}
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectExec("UPDATE playlist").
 		WithArgs(request.UserID, request.IsPublic).
 		WillReturnError(stderrors.New("db error"))
@@ -898,6 +954,7 @@ func TestCheckExistsPlaylistAndNotDifferentUser(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(playlistID, userID).
 		WillReturnRows(rows)
@@ -917,6 +974,7 @@ func TestCheckExistsPlaylistAndNotDifferentUserError(t *testing.T) {
 	playlistID := int64(1)
 	userID := int64(2)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(playlistID, userID).
 		WillReturnError(stderrors.New("db error"))
@@ -940,6 +998,8 @@ func TestLikePlaylist(t *testing.T) {
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("INSERT INTO favorite_playlist")
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.UserID).
 		WillReturnRows(existsRows)
@@ -964,6 +1024,8 @@ func TestLikePlaylistCheckExistsError(t *testing.T) {
 		UserID:     2,
 	}
 
+	mock.ExpectPrepare("INSERT INTO favorite_playlist")
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -986,6 +1048,8 @@ func TestLikePlaylistInsertError(t *testing.T) {
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("INSERT INTO favorite_playlist")
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.UserID).
 		WillReturnRows(existsRows)
@@ -1010,6 +1074,7 @@ func TestUnlikePlaylist(t *testing.T) {
 		UserID:     2,
 	}
 
+	mock.ExpectPrepare("DELETE FROM favorite_playlist")
 	mock.ExpectExec("DELETE FROM favorite_playlist").
 		WithArgs(request.UserID, request.PlaylistID).
 		WillReturnResult(sqlmock.NewResult(0, 1))
@@ -1030,6 +1095,7 @@ func TestUnlikePlaylistError(t *testing.T) {
 		UserID:     2,
 	}
 
+	mock.ExpectPrepare("DELETE FROM favorite_playlist")
 	mock.ExpectExec("DELETE FROM favorite_playlist").
 		WithArgs(request.UserID, request.PlaylistID).
 		WillReturnError(stderrors.New("db error"))
@@ -1051,6 +1117,7 @@ func TestGetPlaylistWithIsLikedByID(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_liked"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(playlistID, userID).
 		WillReturnRows(rows)
@@ -1075,6 +1142,7 @@ func TestGetPlaylistWithIsLikedByIDError(t *testing.T) {
 	playlistID := int64(1)
 	userID := int64(2)
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(playlistID, userID).
 		WillReturnError(stderrors.New("db error"))
@@ -1099,6 +1167,7 @@ func TestGetProfilePlaylists(t *testing.T) {
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg").
 		AddRow(2, "Playlist 2", 1, "thumbnail2.jpg")
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(request.UserID).
 		WillReturnRows(rows)
@@ -1128,6 +1197,7 @@ func TestGetProfilePlaylistsError(t *testing.T) {
 		UserID: 1,
 	}
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(request.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -1151,6 +1221,7 @@ func TestGetProfilePlaylistsScanError(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url"}).
 		AddRow("invalid_id", "Playlist 1", 1, "thumbnail1.jpg")
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(request.UserID).
 		WillReturnRows(rows)
@@ -1176,6 +1247,7 @@ func TestSearchPlaylists(t *testing.T) {
 		AddRow(1, "Test Playlist", 1, "thumbnail1.jpg").
 		AddRow(2, "Playlist Test", 2, "thumbnail2.jpg")
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url").
 		WithArgs("test:* & playlist:*", request.UserID, request.Query).
 		WillReturnRows(rows)
@@ -1204,6 +1276,7 @@ func TestSearchPlaylistsError(t *testing.T) {
 		UserID: 1,
 	}
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url").
 		WithArgs("test:* & playlist:*", request.UserID, request.Query).
 		WillReturnError(stderrors.New("db error"))
@@ -1228,6 +1301,7 @@ func TestSearchPlaylistsScanError(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url"}).
 		AddRow("invalid_id", "Test Playlist", 1, "thumbnail1.jpg")
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url").
 		WithArgs("test:* & playlist:*", request.UserID, request.Query).
 		WillReturnRows(rows)
@@ -1253,10 +1327,12 @@ func TestCreatePlaylistGetPlaylistError(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
+	mock.ExpectPrepare("INSERT INTO playlist")
 	mock.ExpectQuery("INSERT INTO playlist").
 		WithArgs(request.Title, request.UserID, request.Thumbnail, request.IsPublic).
 		WillReturnRows(rows)
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(int64(1)).
 		WillReturnError(stderrors.New("db error"))
@@ -1282,10 +1358,12 @@ func TestUpdatePlaylistGetPlaylistError(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.Thumbnail, request.UserID).
 		WillReturnRows(rows)
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(int64(1)).
 		WillReturnError(stderrors.New("db error"))

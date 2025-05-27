@@ -44,6 +44,7 @@ func TestGetAllTracks(t *testing.T) {
 		AddRow(1, "Track 1", "thumbnail1.jpg", 200, 1, true).
 		AddRow(2, "Track 2", "thumbnail2.jpg", 200, 1, false)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs(filters.Pagination.Limit, filters.Pagination.Offset, userID).
 		WillReturnRows(rows)
@@ -81,6 +82,7 @@ func TestGetAllTracksError(t *testing.T) {
 	}
 	userID := int64(1)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs(filters.Pagination.Limit, filters.Pagination.Offset, userID).
 		WillReturnError(stderrors.New("db error"))
@@ -102,6 +104,7 @@ func TestGetTrackByID(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "thumbnail_url", "duration", "album_id", "file_url", "is_favorite"}).
 		AddRow(1, "Track 1", "thumbnail1.jpg", 200, 1, "file_key.mp3", true)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id, t.file_url")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id, t.file_url").
 		WithArgs(trackID, userID).
 		WillReturnRows(rows)
@@ -128,6 +131,7 @@ func TestGetTrackByIDNotFound(t *testing.T) {
 	trackID := int64(1)
 	userID := int64(1)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id, t.file_url")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id, t.file_url").
 		WithArgs(trackID, userID).
 		WillReturnError(sql.ErrNoRows)
@@ -152,6 +156,7 @@ func TestCreateStream(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
+	mock.ExpectPrepare("INSERT INTO track_stream")
 	mock.ExpectQuery("INSERT INTO track_stream").
 		WithArgs(createData.TrackID, createData.UserID).
 		WillReturnRows(rows)
@@ -173,6 +178,7 @@ func TestCreateStreamError(t *testing.T) {
 		UserID:  1,
 	}
 
+	mock.ExpectPrepare("INSERT INTO track_stream")
 	mock.ExpectQuery("INSERT INTO track_stream").
 		WithArgs(createData.TrackID, createData.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -193,6 +199,7 @@ func TestGetStreamByID(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "user_id", "track_id", "duration"}).
 		AddRow(1, 1, 1, 200)
 
+	mock.ExpectPrepare("SELECT id, user_id, track_id, duration")
 	mock.ExpectQuery("SELECT id, user_id, track_id, duration").
 		WithArgs(streamID).
 		WillReturnRows(rows)
@@ -215,6 +222,7 @@ func TestGetStreamByIDNotFound(t *testing.T) {
 	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	streamID := int64(1)
 
+	mock.ExpectPrepare("SELECT id, user_id, track_id, duration")
 	mock.ExpectQuery("SELECT id, user_id, track_id, duration").
 		WithArgs(streamID).
 		WillReturnError(sql.ErrNoRows)
@@ -237,6 +245,7 @@ func TestUpdateStreamDuration(t *testing.T) {
 		Duration: 200,
 	}
 
+	mock.ExpectPrepare("UPDATE track_stream")
 	mock.ExpectExec("UPDATE track_stream").
 		WithArgs(updateData.Duration, updateData.StreamID).
 		WillReturnResult(sqlmock.NewResult(0, 1))
@@ -256,6 +265,7 @@ func TestUpdateStreamDurationNotFound(t *testing.T) {
 		Duration: 180,
 	}
 
+	mock.ExpectPrepare("UPDATE track_stream")
 	mock.ExpectExec("UPDATE track_stream").
 		WithArgs(updateData.Duration, updateData.StreamID).
 		WillReturnResult(sqlmock.NewResult(0, 0))
@@ -283,6 +293,7 @@ func TestGetStreamsByUserID(t *testing.T) {
 		AddRow(1, 1, 1, 200).
 		AddRow(2, 1, 2, 200)
 
+	mock.ExpectPrepare("WITH latest_streams AS")
 	mock.ExpectQuery("WITH latest_streams AS").
 		WithArgs(userID, filters.Pagination.Limit, filters.Pagination.Offset).
 		WillReturnRows(rows)
@@ -315,6 +326,7 @@ func TestGetStreamsByUserIDError(t *testing.T) {
 		},
 	}
 
+	mock.ExpectPrepare("WITH latest_streams AS")
 	mock.ExpectQuery("WITH latest_streams AS").
 		WithArgs(userID, filters.Pagination.Limit, filters.Pagination.Offset).
 		WillReturnError(stderrors.New("db error"))
@@ -337,6 +349,7 @@ func TestGetTracksByIDs(t *testing.T) {
 		AddRow(1, "Track 1", "thumbnail1.jpg", 200, 1, true).
 		AddRow(2, "Track 2", "thumbnail2.jpg", 200, 1, false)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs(pq.Array(trackIDs), userID).
 		WillReturnRows(rows)
@@ -360,6 +373,7 @@ func TestGetTracksByIDsError(t *testing.T) {
 	trackIDs := []int64{1, 2}
 	userID := int64(1)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs(pq.Array(trackIDs), userID).
 		WillReturnError(stderrors.New("db error"))
@@ -388,6 +402,7 @@ func TestGetTracksByIDsFiltered(t *testing.T) {
 		AddRow(1, "Track 1", "thumbnail1.jpg", 200, 1, true).
 		AddRow(2, "Track 2", "thumbnail2.jpg", 200, 1, false)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs(pq.Array(trackIDs), filters.Pagination.Limit, filters.Pagination.Offset, userID).
 		WillReturnRows(rows)
@@ -417,6 +432,7 @@ func TestGetTracksByIDsFilteredError(t *testing.T) {
 	}
 	userID := int64(1)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs(pq.Array(trackIDs), filters.Pagination.Limit, filters.Pagination.Offset, userID).
 		WillReturnError(stderrors.New("db error"))
@@ -436,6 +452,7 @@ func TestGetAlbumIDByTrackID(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"album_id"}).AddRow(1)
 
+	mock.ExpectPrepare("SELECT album_id")
 	mock.ExpectQuery("SELECT album_id").
 		WithArgs(trackID).
 		WillReturnRows(rows)
@@ -454,6 +471,7 @@ func TestGetAlbumIDByTrackIDError(t *testing.T) {
 	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	trackID := int64(1)
 
+	mock.ExpectPrepare("SELECT album_id")
 	mock.ExpectQuery("SELECT album_id").
 		WithArgs(trackID).
 		WillReturnError(stderrors.New("db error"))
@@ -476,6 +494,7 @@ func TestGetTracksByAlbumID(t *testing.T) {
 		AddRow(1, "Track 1", "thumbnail1.jpg", 200, 1, true).
 		AddRow(2, "Track 2", "thumbnail2.jpg", 200, 1, false)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs(albumID, userID).
 		WillReturnRows(rows)
@@ -499,6 +518,7 @@ func TestGetTracksByAlbumIDError(t *testing.T) {
 	albumID := int64(1)
 	userID := int64(1)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs(albumID, userID).
 		WillReturnError(stderrors.New("db error"))
@@ -518,6 +538,7 @@ func TestGetMinutesListenedByUserID(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"minutes"}).AddRow(1)
 
+	mock.ExpectPrepare("SELECT COALESCE")
 	mock.ExpectQuery("SELECT COALESCE").
 		WithArgs(userID).
 		WillReturnRows(rows)
@@ -536,6 +557,7 @@ func TestGetMinutesListenedByUserIDError(t *testing.T) {
 	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
 
+	mock.ExpectPrepare("SELECT COALESCE")
 	mock.ExpectQuery("SELECT COALESCE").
 		WithArgs(userID).
 		WillReturnError(stderrors.New("db error"))
@@ -555,6 +577,7 @@ func TestGetTracksListenedByUserID(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"count"}).AddRow(1)
 
+	mock.ExpectPrepare("SELECT COUNT")
 	mock.ExpectQuery("SELECT COUNT").
 		WithArgs(userID).
 		WillReturnRows(rows)
@@ -573,6 +596,7 @@ func TestGetTracksListenedByUserIDError(t *testing.T) {
 	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
 
+	mock.ExpectPrepare("SELECT COUNT")
 	mock.ExpectQuery("SELECT COUNT").
 		WithArgs(userID).
 		WillReturnError(stderrors.New("db error"))
@@ -592,6 +616,7 @@ func TestCheckTrackExists(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(trackID).
 		WillReturnRows(rows)
@@ -610,6 +635,7 @@ func TestCheckTrackExistsError(t *testing.T) {
 	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
 	trackID := int64(1)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(trackID).
 		WillReturnError(stderrors.New("db error"))
@@ -630,6 +656,7 @@ func TestLikeTrack(t *testing.T) {
 		UserID:  1,
 	}
 
+	mock.ExpectPrepare("INSERT INTO favorite_track")
 	mock.ExpectExec("INSERT INTO favorite_track").
 		WithArgs(likeRequest.TrackID, likeRequest.UserID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
@@ -649,6 +676,7 @@ func TestLikeTrackError(t *testing.T) {
 		UserID:  1,
 	}
 
+	mock.ExpectPrepare("INSERT INTO favorite_track")
 	mock.ExpectExec("INSERT INTO favorite_track").
 		WithArgs(likeRequest.TrackID, likeRequest.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -668,6 +696,7 @@ func TestUnlikeTrack(t *testing.T) {
 		UserID:  1,
 	}
 
+	mock.ExpectPrepare("DELETE FROM favorite_track")
 	mock.ExpectExec("DELETE FROM favorite_track").
 		WithArgs(likeRequest.TrackID, likeRequest.UserID).
 		WillReturnResult(sqlmock.NewResult(0, 1))
@@ -687,6 +716,7 @@ func TestUnlikeTrackError(t *testing.T) {
 		UserID:  1,
 	}
 
+	mock.ExpectPrepare("DELETE FROM favorite_track")
 	mock.ExpectExec("DELETE FROM favorite_track").
 		WithArgs(likeRequest.TrackID, likeRequest.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -716,6 +746,7 @@ func TestGetFavoriteTracks(t *testing.T) {
 		AddRow(1, "Track 1", "thumbnail1.jpg", 200, 1, true).
 		AddRow(2, "Track 2", "thumbnail2.jpg", 200, 1, false)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs(favoriteRequest.RequestUserID, favoriteRequest.ProfileUserID, favoriteRequest.Filters.Pagination.Limit, favoriteRequest.Filters.Pagination.Offset).
 		WillReturnRows(rows)
@@ -747,6 +778,7 @@ func TestGetFavoriteTracksError(t *testing.T) {
 		},
 	}
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs(favoriteRequest.RequestUserID, favoriteRequest.ProfileUserID, favoriteRequest.Filters.Pagination.Limit, favoriteRequest.Filters.Pagination.Offset).
 		WillReturnError(stderrors.New("db error"))
@@ -769,6 +801,7 @@ func TestSearchTracks(t *testing.T) {
 		AddRow(1, "Test Track", "thumbnail1.jpg", 200, 1, true).
 		AddRow(2, "Track Test", "thumbnail2.jpg", 200, 1, false)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs("test:* & track:*", userID, query).
 		WillReturnRows(rows)
@@ -792,6 +825,7 @@ func TestSearchTracksError(t *testing.T) {
 	query := "test track"
 	userID := int64(1)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs("test:* & track:*", userID, query).
 		WillReturnError(stderrors.New("db error"))
@@ -813,6 +847,7 @@ func TestGetTracksByIDsScanError(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "thumbnail_url", "duration", "album_id", "is_favorite"}).
 		AddRow(1, "Track 1", "thumbnail1.jpg", "invalid_duration", 1, true)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs(pq.Array(trackIDs), userID).
 		WillReturnRows(rows)
@@ -840,6 +875,7 @@ func TestGetTracksByIDsFilteredScanError(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "thumbnail_url", "duration", "album_id", "is_favorite"}).
 		AddRow(1, "Track 1", "thumbnail1.jpg", "invalid_duration", 1, true)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs(pq.Array(trackIDs), filters.Pagination.Limit, filters.Pagination.Offset, userID).
 		WillReturnRows(rows)
@@ -866,6 +902,7 @@ func TestGetAllTracksScanError(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "thumbnail_url", "duration", "album_id", "is_favorite"}).
 		AddRow(1, "Track 1", "thumbnail1.jpg", "invalid_duration", 1, true)
 
+	mock.ExpectPrepare("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id")
 	mock.ExpectQuery("SELECT t.id, t.title, t.thumbnail_url, t.duration, t.album_id").
 		WithArgs(filters.Pagination.Limit, filters.Pagination.Offset, userID).
 		WillReturnRows(rows)
@@ -892,6 +929,7 @@ func TestGetStreamsByUserIDScanError(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "user_id", "track_id", "duration"}).
 		AddRow(1, 1, 1, "invalid_duration")
 
+	mock.ExpectPrepare("WITH latest_streams AS")
 	mock.ExpectQuery("WITH latest_streams AS").
 		WithArgs(userID, filters.Pagination.Limit, filters.Pagination.Offset).
 		WillReturnRows(rows)

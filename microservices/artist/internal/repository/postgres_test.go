@@ -44,7 +44,8 @@ func TestGetAllArtists(t *testing.T) {
 		AddRow(1, "Artist 1", "Description 1", "thumbnail1.jpg", true).
 		AddRow(2, "Artist 2", "Description 2", "thumbnail2.jpg", false)
 
-	mock.ExpectQuery("SELECT artist.id, artist.title, artist.description, artist.thumbnail_url").
+	mock.ExpectPrepare("SELECT artist.id, artist.title, artist.description, artist.thumbnail_url").
+		ExpectQuery().
 		WithArgs(filters.Pagination.Limit, filters.Pagination.Offset, userID).
 		WillReturnRows(rows)
 
@@ -79,7 +80,8 @@ func TestGetAllArtistsError(t *testing.T) {
 	}
 	userID := int64(1)
 
-	mock.ExpectQuery("SELECT artist.id, artist.title, artist.description, artist.thumbnail_url").
+	mock.ExpectPrepare("SELECT artist.id, artist.title, artist.description, artist.thumbnail_url").
+		ExpectQuery().
 		WithArgs(filters.Pagination.Limit, filters.Pagination.Offset, userID).
 		WillReturnError(stderrors.New("db error"))
 
@@ -100,7 +102,8 @@ func TestGetArtistByID(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "description", "thumbnail_url", "is_favorite"}).
 		AddRow(1, "Artist 1", "Description 1", "thumbnail1.jpg", true)
 
-	mock.ExpectQuery("SELECT artist.id, artist.title, artist.description, artist.thumbnail_url").
+	mock.ExpectPrepare("SELECT artist.id, artist.title, artist.description, artist.thumbnail_url").
+		ExpectQuery().
 		WithArgs(artistID, userID).
 		WillReturnRows(rows)
 
@@ -124,7 +127,8 @@ func TestGetArtistByIDNotFound(t *testing.T) {
 	artistID := int64(1)
 	userID := int64(1)
 
-	mock.ExpectQuery("SELECT artist.id, artist.title, artist.description, artist.thumbnail_url").
+	mock.ExpectPrepare("SELECT artist.id, artist.title, artist.description, artist.thumbnail_url").
+		ExpectQuery().
 		WithArgs(artistID, userID).
 		WillReturnError(sql.ErrNoRows)
 
@@ -145,7 +149,8 @@ func TestGetArtistTitleByID(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"title"}).AddRow("Artist 1")
 
-	mock.ExpectQuery("SELECT title").
+	mock.ExpectPrepare("SELECT title").
+		ExpectQuery().
 		WithArgs(artistID).
 		WillReturnRows(rows)
 
@@ -163,7 +168,8 @@ func TestGetArtistTitleByIDNotFound(t *testing.T) {
 	repo := NewArtistPostgresRepository(db, metrics.NewMockMetrics())
 	artistID := int64(1)
 
-	mock.ExpectQuery("SELECT title").
+	mock.ExpectPrepare("SELECT title").
+		ExpectQuery().
 		WithArgs(artistID).
 		WillReturnError(sql.ErrNoRows)
 
@@ -186,7 +192,8 @@ func TestGetArtistsByTrackID(t *testing.T) {
 		AddRow(1, "Artist 1", "main").
 		AddRow(2, "Artist 2", "featured")
 
-	mock.ExpectQuery("SELECT a.id, a.title, ta.role").
+	mock.ExpectPrepare("SELECT a.id, a.title, ta.role").
+		ExpectQuery().
 		WithArgs(trackID).
 		WillReturnRows(rows)
 
@@ -215,7 +222,8 @@ func TestGetArtistsByTrackIDs(t *testing.T) {
 		AddRow(2, "Artist 2", "featured", 1).
 		AddRow(3, "Artist 3", "main", 2)
 
-	mock.ExpectQuery("SELECT a.id, a.title, ta.role, ta.track_id").
+	mock.ExpectPrepare("SELECT a.id, a.title, ta.role, ta.track_id").
+		ExpectQuery().
 		WithArgs(pq.Array(trackIDs)).
 		WillReturnRows(rows)
 
@@ -250,7 +258,8 @@ func TestGetArtistStats(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"listeners_count", "favorites_count"}).
 		AddRow(100, 50)
 
-	mock.ExpectQuery("SELECT listeners_count, favorites_count").
+	mock.ExpectPrepare("SELECT listeners_count, favorites_count").
+		ExpectQuery().
 		WithArgs(artistID).
 		WillReturnRows(rows)
 
@@ -273,7 +282,8 @@ func TestGetArtistsByAlbumID(t *testing.T) {
 		AddRow(1, "Artist 1").
 		AddRow(2, "Artist 2")
 
-	mock.ExpectQuery("SELECT a.id, a.title").
+	mock.ExpectPrepare("SELECT a.id, a.title").
+		ExpectQuery().
 		WithArgs(albumID).
 		WillReturnRows(rows)
 
@@ -300,7 +310,8 @@ func TestGetArtistsByAlbumIDs(t *testing.T) {
 		AddRow(2, "Artist 2", 1).
 		AddRow(3, "Artist 3", 2)
 
-	mock.ExpectQuery("SELECT a.id, a.title, aa.album_id").
+	mock.ExpectPrepare("SELECT a.id, a.title, aa.album_id").
+		ExpectQuery().
 		WithArgs(pq.Array(albumIDs)).
 		WillReturnRows(rows)
 
@@ -333,7 +344,8 @@ func TestGetAlbumIDsByArtistID(t *testing.T) {
 		AddRow(1).
 		AddRow(2)
 
-	mock.ExpectQuery("SELECT album_id").
+	mock.ExpectPrepare("SELECT album_id").
+		ExpectQuery().
 		WithArgs(artistID).
 		WillReturnRows(rows)
 
@@ -357,7 +369,8 @@ func TestGetTrackIDsByArtistID(t *testing.T) {
 		AddRow(1).
 		AddRow(2)
 
-	mock.ExpectQuery("SELECT track_id").
+	mock.ExpectPrepare("SELECT track_id").
+		ExpectQuery().
 		WithArgs(artistID).
 		WillReturnRows(rows)
 
@@ -381,8 +394,9 @@ func TestCreateStreamsByArtistIDs(t *testing.T) {
 	}
 
 	mock.ExpectBegin()
-	mock.ExpectExec("INSERT INTO artist_stream").
-		WithArgs(int64(1), int64(1), int64(2), int64(1)).
+	mock.ExpectPrepare("INSERT INTO artist_stream").
+		ExpectExec().
+		WithArgs(pq.Array(data.ArtistIDs), data.UserID).
 		WillReturnResult(sqlmock.NewResult(1, 2))
 	mock.ExpectCommit()
 
@@ -416,7 +430,8 @@ func TestGetArtistsListenedByUserID(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"count"}).
 		AddRow(5)
 
-	mock.ExpectQuery("SELECT COUNT").
+	mock.ExpectPrepare("SELECT COUNT").
+		ExpectQuery().
 		WithArgs(userID).
 		WillReturnRows(rows)
 
@@ -437,7 +452,8 @@ func TestLikeArtist(t *testing.T) {
 		UserID:   1,
 	}
 
-	mock.ExpectExec("INSERT INTO favorite_artist").
+	mock.ExpectPrepare("INSERT INTO favorite_artist").
+		ExpectExec().
 		WithArgs(request.ArtistID, request.UserID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -456,7 +472,8 @@ func TestUnlikeArtist(t *testing.T) {
 		UserID:   1,
 	}
 
-	mock.ExpectExec("DELETE FROM favorite_artist").
+	mock.ExpectPrepare("DELETE FROM favorite_artist").
+		ExpectExec().
 		WithArgs(request.ArtistID, request.UserID).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 
@@ -475,7 +492,8 @@ func TestCheckArtistExists(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"exists"}).
 		AddRow(true)
 
-	mock.ExpectQuery("SELECT EXISTS").
+	mock.ExpectPrepare("SELECT EXISTS").
+		ExpectQuery().
 		WithArgs(artistID).
 		WillReturnRows(rows)
 
@@ -503,7 +521,8 @@ func TestGetFavoriteArtists(t *testing.T) {
 		AddRow(1, "Artist 1", "Description 1", "thumbnail1.jpg").
 		AddRow(2, "Artist 2", "Description 2", "thumbnail2.jpg")
 
-	mock.ExpectQuery("SELECT artist.id, artist.title, artist.description, artist.thumbnail_url").
+	mock.ExpectPrepare("SELECT artist.id, artist.title, artist.description, artist.thumbnail_url").
+		ExpectQuery().
 		WithArgs(userID, filters.Pagination.Limit, filters.Pagination.Offset).
 		WillReturnRows(rows)
 
@@ -537,7 +556,8 @@ func TestSearchArtists(t *testing.T) {
 		AddRow(1, "Test Artist", "Description 1", "thumbnail1.jpg").
 		AddRow(2, "Artist Test", "Description 2", "thumbnail2.jpg")
 
-	mock.ExpectQuery("SELECT a.id, a.title, a.description, a.thumbnail_url").
+	mock.ExpectPrepare("SELECT a.id, a.title, a.description, a.thumbnail_url").
+		ExpectQuery().
 		WithArgs("test:* & artist:*", userID, query).
 		WillReturnRows(rows)
 

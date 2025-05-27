@@ -45,7 +45,8 @@ func TestGetAllAlbums(t *testing.T) {
 		AddRow(1, "Album 1", "album", "url1", time.Now(), true).
 		AddRow(2, "Album 2", "album", "url2", time.Now(), false)
 
-	mock.ExpectQuery("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+	mock.ExpectPrepare("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+		ExpectQuery().
 		WithArgs(filters.Pagination.Limit, filters.Pagination.Offset, userID).
 		WillReturnRows(rows)
 
@@ -74,7 +75,8 @@ func TestGetAlbumByID(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "type", "thumbnail_url", "release_date", "is_favorite"}).
 		AddRow(albumID, "Test Album", "album", "thumbnail_url", releaseDate, true)
 
-	mock.ExpectQuery("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+	mock.ExpectPrepare("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+		ExpectQuery().
 		WithArgs(albumID, userID).
 		WillReturnRows(rows)
 
@@ -97,7 +99,8 @@ func TestGetAlbumByIDNotFound(t *testing.T) {
 	albumID := int64(999)
 	userID := int64(1)
 
-	mock.ExpectQuery("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+	mock.ExpectPrepare("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+		ExpectQuery().
 		WithArgs(albumID, userID).
 		WillReturnError(sql.ErrNoRows)
 
@@ -117,7 +120,8 @@ func TestGetAlbumTitleByID(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"title"}).
 		AddRow("Test Album")
 
-	mock.ExpectQuery("SELECT title").
+	mock.ExpectPrepare("SELECT title").
+		ExpectQuery().
 		WithArgs(albumID).
 		WillReturnRows(rows)
 
@@ -135,7 +139,8 @@ func TestGetAlbumTitleByIDNotFound(t *testing.T) {
 
 	albumID := int64(999)
 
-	mock.ExpectQuery("SELECT title").
+	mock.ExpectPrepare("SELECT title").
+		ExpectQuery().
 		WithArgs(albumID).
 		WillReturnError(sql.ErrNoRows)
 
@@ -156,7 +161,8 @@ func TestGetAlbumTitleByIDs(t *testing.T) {
 		AddRow(1, "Album 1").
 		AddRow(2, "Album 2")
 
-	mock.ExpectQuery("SELECT id, title").
+	mock.ExpectPrepare("SELECT id, title").
+		ExpectQuery().
 		WithArgs(pq.Array(albumIDs)).
 		WillReturnRows(rows)
 
@@ -182,7 +188,8 @@ func TestGetAlbumsByIDs(t *testing.T) {
 		AddRow(1, "Album 1", "album", "url1", releaseDate, true).
 		AddRow(2, "Album 2", "album", "url2", releaseDate, false)
 
-	mock.ExpectQuery("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+	mock.ExpectPrepare("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+		ExpectQuery().
 		WithArgs(pq.Array(albumIDs), userID).
 		WillReturnRows(rows)
 
@@ -207,7 +214,8 @@ func TestCreateStream(t *testing.T) {
 	albumID := int64(1)
 	userID := int64(1)
 
-	mock.ExpectExec("INSERT INTO album_stream").
+	mock.ExpectPrepare("INSERT INTO album_stream").
+		ExpectExec().
 		WithArgs(albumID, userID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -227,7 +235,8 @@ func TestCheckAlbumExists(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"exists"}).
 		AddRow(true)
 
-	mock.ExpectQuery("SELECT EXISTS").
+	mock.ExpectPrepare("SELECT EXISTS").
+		ExpectQuery().
 		WithArgs(albumID).
 		WillReturnRows(rows)
 
@@ -248,7 +257,8 @@ func TestLikeAlbum(t *testing.T) {
 		UserID:  1,
 	}
 
-	mock.ExpectExec("INSERT INTO favorite_album").
+	mock.ExpectPrepare("INSERT INTO favorite_album").
+		ExpectExec().
 		WithArgs(request.AlbumID, request.UserID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
@@ -268,7 +278,8 @@ func TestUnlikeAlbum(t *testing.T) {
 		UserID:  1,
 	}
 
-	mock.ExpectExec("DELETE FROM favorite_album").
+	mock.ExpectPrepare("DELETE FROM favorite_album").
+		ExpectExec().
 		WithArgs(request.AlbumID, request.UserID).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 
@@ -296,7 +307,8 @@ func TestGetFavoriteAlbums(t *testing.T) {
 		AddRow(1, "Album 1", "album", "url1", releaseDate).
 		AddRow(2, "Album 2", "album", "url2", releaseDate)
 
-	mock.ExpectQuery("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+	mock.ExpectPrepare("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+		ExpectQuery().
 		WithArgs(userID, filters.Pagination.Limit, filters.Pagination.Offset).
 		WillReturnRows(rows)
 
@@ -326,7 +338,8 @@ func TestSearchAlbums(t *testing.T) {
 		AddRow(1, "Test Album", "album", "url1", releaseDate, true).
 		AddRow(2, "Another Test", "album", "url2", releaseDate, false)
 
-	mock.ExpectQuery("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+	mock.ExpectPrepare("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+		ExpectQuery().
 		WithArgs("test:*", userID, query).
 		WillReturnRows(rows)
 
@@ -355,7 +368,8 @@ func TestSearchAlbumsMultipleWords(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "type", "thumbnail_url", "release_date", "is_favorite"}).
 		AddRow(1, "Test Album", "album", "url1", releaseDate, true)
 
-	mock.ExpectQuery("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+	mock.ExpectPrepare("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+		ExpectQuery().
 		WithArgs("test:* & album:*", userID, query).
 		WillReturnRows(rows)
 
@@ -383,7 +397,8 @@ func TestGetAllAlbumsError(t *testing.T) {
 	userID := int64(1)
 
 	expectedErr := errors.New("database error")
-	mock.ExpectQuery("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+	mock.ExpectPrepare("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+		ExpectQuery().
 		WithArgs(filters.Pagination.Limit, filters.Pagination.Offset, userID).
 		WillReturnError(expectedErr)
 
@@ -402,7 +417,8 @@ func TestGetAlbumsByIDsError(t *testing.T) {
 	userID := int64(1)
 
 	expectedErr := errors.New("database error")
-	mock.ExpectQuery("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+	mock.ExpectPrepare("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+		ExpectQuery().
 		WithArgs(pq.Array(albumIDs), userID).
 		WillReturnError(expectedErr)
 
@@ -421,7 +437,8 @@ func TestCreateStreamError(t *testing.T) {
 	userID := int64(1)
 
 	expectedErr := errors.New("database error")
-	mock.ExpectExec("INSERT INTO album_stream").
+	mock.ExpectPrepare("INSERT INTO album_stream").
+		ExpectExec().
 		WithArgs(albumID, userID).
 		WillReturnError(expectedErr)
 
@@ -439,7 +456,8 @@ func TestCheckAlbumExistsError(t *testing.T) {
 	albumID := int64(1)
 
 	expectedErr := errors.New("database error")
-	mock.ExpectQuery("SELECT EXISTS").
+	mock.ExpectPrepare("SELECT EXISTS").
+		ExpectQuery().
 		WithArgs(albumID).
 		WillReturnError(expectedErr)
 
