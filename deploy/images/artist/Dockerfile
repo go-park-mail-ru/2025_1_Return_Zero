@@ -39,9 +39,9 @@ COPY --from=builder /app/main .
 
 COPY --from=builder /app/config.yaml . 
 
-RUN cat ./.env
-
 COPY --from=builder /app/.env .
+
+RUN cat ./.env
 
 EXPOSE 5001
 
