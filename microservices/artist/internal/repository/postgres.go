@@ -147,25 +147,25 @@ const (
 	CheckArtistNameExist = `
 		SELECT 1 
 		FROM artist
-		WHERE title = $1
+		WHERE id = $1
 	`
 
 	UpdateArtistNameQuery = `
 		UPDATE artist
 		SET title = $1
-		WHERE title = $2
+		WHERE id = $2
 	`
 
-	GetArtistByTitleQuery = `
+	GetArtistByIdWithoutUserQuery = `
 		SELECT id, title, description, thumbnail_url
 		FROM artist
-		WHERE title = $1
+		WHERE id = $1
 	`
 
 	UpdateArtistAvatarQuery = `
 		UPDATE artist
 		SET thumbnail_url = $1
-		WHERE title = $2
+		WHERE id = $2
 	`
 
 	GetArtistLabelIdByIDQuery = `
@@ -889,9 +889,9 @@ func (r *artistPostgresRepository) CreateArtist(ctx context.Context, artist *rep
 	return artist, nil
 }
 
-func (r *artistPostgresRepository) CheckArtistNameExist(ctx context.Context, name string) (bool, error) {
+func (r *artistPostgresRepository) CheckArtistNameExist(ctx context.Context, id int64) (bool, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
-	logger.Info("Checking if artist name exists", zap.String("name", name))
+	logger.Info("Checking if artist name exists", zap.Int64("id", id))
 	stmt, err := r.db.PrepareContext(ctx, CheckArtistNameExist)
 	if err != nil {
 		logger.Error("failed to prepare statement", zap.Error(err))
@@ -904,7 +904,7 @@ func (r *artistPostgresRepository) CheckArtistNameExist(ctx context.Context, nam
 	}()
 
 	var exists bool
-	err = stmt.QueryRowContext(ctx, name).Scan(&exists)
+	err = stmt.QueryRowContext(ctx, id).Scan(&exists)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, nil
@@ -916,9 +916,9 @@ func (r *artistPostgresRepository) CheckArtistNameExist(ctx context.Context, nam
 	return exists, nil
 }
 
-func (r *artistPostgresRepository) ChangeArtistTitle(ctx context.Context, newTitle, Title string) error {
+func (r *artistPostgresRepository) ChangeArtistTitle(ctx context.Context, newTitle string, id int64) error {
 	logger := loggerPkg.LoggerFromContext(ctx)
-	logger.Info("Changing artist title", zap.String("name", Title))
+	logger.Info("Changing artist title", zap.Int64("id", id))
 	stmt, err := r.db.PrepareContext(ctx, UpdateArtistNameQuery)
 	if err != nil {
 		logger.Error("failed to prepare statement", zap.Error(err))
@@ -930,7 +930,7 @@ func (r *artistPostgresRepository) ChangeArtistTitle(ctx context.Context, newTit
 		}
 	}()
 
-	_, err = stmt.ExecContext(ctx, newTitle, Title)
+	_, err = stmt.ExecContext(ctx, newTitle, id)
 	if err != nil {
 		logger.Error("failed to change artist title", zap.Error(err))
 		return err
@@ -938,10 +938,10 @@ func (r *artistPostgresRepository) ChangeArtistTitle(ctx context.Context, newTit
 	return nil
 }
 
-func (r *artistPostgresRepository) GetArtistByTitle(ctx context.Context, title string) (*repoModel.Artist, error) {
+func (r *artistPostgresRepository) GetArtistByIDWithoutUser(ctx context.Context, id int64) (*repoModel.Artist, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
-	logger.Info("Requesting artist by title from db", zap.String("title", title))
-	stmt, err := r.db.PrepareContext(ctx, GetArtistByTitleQuery)
+	logger.Info("Requesting artist by id from db", zap.Int64("id", id))
+	stmt, err := r.db.PrepareContext(ctx, GetArtistByIdWithoutUserQuery)
 	if err != nil {
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
@@ -952,7 +952,7 @@ func (r *artistPostgresRepository) GetArtistByTitle(ctx context.Context, title s
 		}
 	}()
 
-	row := stmt.QueryRowContext(ctx, title)
+	row := stmt.QueryRowContext(ctx, id)
 
 	var artistObject repoModel.Artist
 	err = row.Scan(&artistObject.ID, &artistObject.Title, &artistObject.Description, &artistObject.Thumbnail)
@@ -969,9 +969,9 @@ func (r *artistPostgresRepository) GetArtistByTitle(ctx context.Context, title s
 	return &artistObject, nil
 }
 
-func (r *artistPostgresRepository) UploadAvatar(ctx context.Context, artistTitle string, avatarURL string) error {
+func (r *artistPostgresRepository) UploadAvatar(ctx context.Context, artistID int64, avatarURL string) error {
 	logger := loggerPkg.LoggerFromContext(ctx)
-	logger.Info("Uploading artist avatar", zap.String("artistTitle", artistTitle), zap.String("avatarURL", avatarURL))
+	logger.Info("Uploading artist avatar", zap.Int64("artistID", artistID), zap.String("avatarURL", avatarURL))
 	stmt, err := r.db.PrepareContext(ctx, UpdateArtistAvatarQuery)
 	if err != nil {
 		logger.Error("failed to prepare statement", zap.Error(err))
@@ -983,7 +983,7 @@ func (r *artistPostgresRepository) UploadAvatar(ctx context.Context, artistTitle
 		}
 	}()
 
-	_, err = stmt.ExecContext(ctx, avatarURL, artistTitle)
+	_, err = stmt.ExecContext(ctx, avatarURL, artistID)
 	if err != nil {
 		logger.Error("failed to upload artist avatar", zap.Error(err))
 		return err

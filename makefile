@@ -47,4 +47,7 @@ clean:
 build:
 	go build -o bin/server cmd/main.go
 
-.PHONY: server build swag clean run test mock-all
+easyjson:
+	easyjson -all internal/pkg/model/delivery
+
+.PHONY: server build swag clean run test mock-all easyjson

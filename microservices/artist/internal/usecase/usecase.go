@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	domain "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/internal/domain"
 	model "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/model"
@@ -163,13 +162,6 @@ func (u *artistUsecase) SearchArtists(ctx context.Context, query string, userID 
 
 func (u *artistUsecase) CreateArtist(ctx context.Context, artist *usecaseModel.ArtistLoad) (*usecaseModel.Artist, error) {
 	artistLoad := model.ArtistLoadFromUsecaseToRepository(artist)
-	isTitleExist, err := u.artistRepo.CheckArtistNameExist(ctx, artistLoad.Title)
-	if err != nil {
-		return nil, err
-	}
-	if isTitleExist {
-		return nil, artistErrors.NewConflictError("artist with this name already exists")
-	}
 	avatarURL, err := u.s3Repo.UploadArtistAvatar(ctx, artistLoad.Title, artist.Image)
 	if err != nil {
 		return nil, err
@@ -184,16 +176,8 @@ func (u *artistUsecase) CreateArtist(ctx context.Context, artist *usecaseModel.A
 	return createdArtistUsecase, nil
 }
 
-func (u *artistUsecase) GetArtistByTitle(ctx context.Context, username string) (*usecaseModel.Artist, error) {
-	repoArtist, err := u.artistRepo.GetArtistByTitle(ctx, username)
-	if err != nil {
-		return nil, err
-	}
-	return model.ArtistFromRepositoryToUsecase(repoArtist), nil
-}
-
-func (u *artistUsecase) UploadAvatar(ctx context.Context, artistTitle string, avatar string) error {
-	err := u.artistRepo.UploadAvatar(ctx, artistTitle, avatar)
+func (u *artistUsecase) UploadAvatar(ctx context.Context, artistID int64, avatar string) error {
+	err := u.artistRepo.UploadAvatar(ctx, artistID, avatar)
 	if err != nil {
 		return err
 	}
@@ -215,22 +199,14 @@ func (u *artistUsecase) EditArtist(ctx context.Context, artist *usecaseModel.Art
 	artistEdit := model.ArtistEditFromUsecaseToRepository(artist)
 	var artistTitle string
 	if artistEdit.NewTitle != "" {
-		isNameExist, err := u.artistRepo.CheckArtistNameExist(ctx, artistEdit.NewTitle)
-		fmt.Println("isNameExist", isNameExist)
-		if err != nil {
-			return nil, err
-		}
-		if isNameExist {
-			return nil, artistErrors.NewConflictError("artist with this name already exists")
-		}
-		isArtistExist, err := u.artistRepo.CheckArtistNameExist(ctx, artistName)
+		isArtistExist, err := u.artistRepo.CheckArtistNameExist(ctx, artist.ArtistID)
 		if err != nil {
 			return nil, err
 		}
 		if !isArtistExist {
 			return nil, artistErrors.NewNotFoundError("artist not found")
 		}
-		err = u.artistRepo.ChangeArtistTitle(ctx, artistEdit.NewTitle, artistName)
+		err = u.artistRepo.ChangeArtistTitle(ctx, artistEdit.NewTitle, artist.ArtistID)
 		if err != nil {
 			return nil, err
 		}
@@ -243,15 +219,17 @@ func (u *artistUsecase) EditArtist(ctx context.Context, artist *usecaseModel.Art
 		if err != nil {
 			return nil, err
 		}
-		err = u.UploadAvatar(ctx, artistTitle, avatarURL)
+		err = u.UploadAvatar(ctx, artist.ArtistID, avatarURL)
 		if err != nil {
 			return nil, err
 		}
 	}
-	artistUsecase, err := u.GetArtistByTitle(ctx, artistTitle)
+	artistRepo, err := u.artistRepo.GetArtistByIDWithoutUser(ctx, artist.ArtistID)
 	if err != nil {
 		return nil, err
 	}
+	artistUsecase := model.ArtistFromRepositoryToUsecase(artistRepo)
+	artistUsecase.LabelID = artist.LabelID
 	return artistUsecase, nil
 }
 

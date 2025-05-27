@@ -25,10 +25,10 @@ type Repository interface {
 	GetFavoriteArtists(ctx context.Context, filters *repoModel.Filters, userID int64) ([]*repoModel.Artist, error)
 	SearchArtists(ctx context.Context, query string, userID int64) ([]*repoModel.Artist, error)
 	CreateArtist(ctx context.Context, artist *repoModel.Artist) (*repoModel.Artist, error)
-	CheckArtistNameExist(ctx context.Context, name string) (bool, error)
-	ChangeArtistTitle(ctx context.Context, newTitle, Title string) error
-	GetArtistByTitle(ctx context.Context, title string) (*repoModel.Artist, error)
-	UploadAvatar(ctx context.Context, artistTitle string, avatarURL string) error
+	CheckArtistNameExist(ctx context.Context, id int64) (bool, error)
+	ChangeArtistTitle(ctx context.Context, newTitle string, id int64) error
+	GetArtistByIDWithoutUser(ctx context.Context, id int64) (*repoModel.Artist, error)
+	UploadAvatar(ctx context.Context, artistID int64, avatarURL string) error
 	GetArtistLabelID(ctx context.Context, artistID int64) (int64, error)
 	GetArtistsLabelID(ctx context.Context, filters *repoModel.Filters, labelID int64) ([]*repoModel.Artist, error)
 	DeleteArtist(ctx context.Context, artistID int64) error
