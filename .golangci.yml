@@ -5,6 +5,7 @@ run:
   tests: true
   exclude-files:
     - \.pb\.go$
+    - _test\.go$
 
 output:
   formats: colored-line-number
