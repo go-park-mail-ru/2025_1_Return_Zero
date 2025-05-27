@@ -31,7 +31,6 @@ linters:
     goconst:
       min-len: 2
       min-occurrences: 3
-      ignore-tests: true
     gocyclo:
       min-complexity: 15
     gofmt:
@@ -46,9 +45,7 @@ linters:
       confidence: 0.8
       severity: warning
       rules:
-        - name: exported-function
-        - name: exported-type
-        - name: exported-var
+        - name: exported
         - name: package-comments
         - name: comment-spacings
 
