@@ -52,6 +52,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Create .env file
+        run: |
+          echo '${{ secrets.ENV_FILE }}' > .env
+
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
@@ -71,7 +75,6 @@ jobs:
           file: ./deploy/images/artist/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/artist-service:latest
-          build-args: ENV_FILE_B64=${{ base64(secrets.ENV_FILE) }}
 
       - name: Build and push album service
         uses: docker/build-push-action@v3
@@ -80,7 +83,6 @@ jobs:
           file: ./deploy/images/album/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/album-service:latest
-          build-args: ENV_FILE_B64=${{ base64(secrets.ENV_FILE) }}
 
       - name: Build and push track service
         uses: docker/build-push-action@v3
@@ -89,7 +91,6 @@ jobs:
           file: ./deploy/images/track/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/track-service:latest
-          build-args: ENV_FILE_B64=${{ base64(secrets.ENV_FILE) }}
 
       - name: Build and push auth service
         uses: docker/build-push-action@v3
@@ -98,7 +99,6 @@ jobs:
           file: ./deploy/images/auth/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/auth-service:latest
-          build-args: ENV_FILE_B64=${{ base64(secrets.ENV_FILE) }}
 
       - name: Build and push user service
         uses: docker/build-push-action@v3
@@ -107,7 +107,6 @@ jobs:
           file: ./deploy/images/user/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/user-service:latest
-          build-args: ENV_FILE_B64=${{ base64(secrets.ENV_FILE) }}
 
       - name: Build and push playlist service
         uses: docker/build-push-action@v3
@@ -116,7 +115,6 @@ jobs:
           file: ./deploy/images/playlist/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/playlist-service:latest
-          build-args: ENV_FILE_B64=${{ base64(secrets.ENV_FILE) }}
 
       - name: Build and push api
         uses: docker/build-push-action@v3
@@ -125,7 +123,6 @@ jobs:
           file: ./deploy/images/api/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/api:latest
-          build-args: ENV_FILE_B64=${{ base64(secrets.ENV_FILE) }}
 
       - name: Build and push postgres
         uses: docker/build-push-action@v3
