@@ -1,7 +1,7 @@
 # Build stage
 FROM golang:1.24-alpine AS builder
 
-ARG ENV_FILE
+ARG ENV_FILE_B64
 
 WORKDIR /app
 
@@ -27,7 +27,7 @@ COPY ./microservices/metrics ./microservices/metrics
 
 COPY ./config.yaml ./config.yaml
 
-RUN echo "$ENV_FILE" > .env
+RUN echo "$ENV_FILE_B64" | base64 -d > .env
 
 RUN go build -o main microservices/artist/cmd/main.go
 
