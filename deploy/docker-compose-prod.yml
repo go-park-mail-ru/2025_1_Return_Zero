@@ -36,24 +36,9 @@ services:
     tty: true
 
   go-api:
-    build:
-      context: ..
-      dockerfile: deploy/images/api/Dockerfile
+    image: derletzte256/api:latest
     container_name: ReturnZeroAPI
     environment:
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: postgres
-      S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
-      S3_TRACKS_BUCKET: ${S3_TRACKS_BUCKET}
-      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
-      S3_SECRET_KEY: ${S3_SECRET_KEY}
-      S3_REGION: ${S3_REGION}
-      S3_ENDPOINT: ${S3_ENDPOINT}
-      REDIS_HOST: redis
-      REDIS_PORT: ${REDIS_PORT}
       ARTIST_SERVICE_HOST: artist-grpc
       ALBUM_SERVICE_HOST: album-grpc
       TRACK_SERVICE_HOST: track-grpc
@@ -76,17 +61,6 @@ services:
 
   artist-grpc:
     image: derletzte256/artist-service:latest
-    environment:
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: postgres
-      S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
-      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
-      S3_SECRET_KEY: ${S3_SECRET_KEY}
-      S3_REGION: ${S3_REGION}
-      S3_ENDPOINT: ${S3_ENDPOINT}
     container_name: artist-grpc
     restart: always
     depends_on:
@@ -96,21 +70,7 @@ services:
     tty: true
 
   track-grpc:
-    build:
-      context: ..
-      dockerfile: deploy/images/track/Dockerfile
-    environment:
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: postgres
-      S3_TRACKS_BUCKET: ${S3_TRACKS_BUCKET}
-      S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
-      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
-      S3_SECRET_KEY: ${S3_SECRET_KEY}
-      S3_REGION: ${S3_REGION}
-      S3_ENDPOINT: ${S3_ENDPOINT}
+    image: derletzte256/track-service:latest
     container_name: track-grpc
     restart: always
     depends_on:
@@ -120,20 +80,7 @@ services:
     tty: true
 
   album-grpc:
-    build:
-      context: ..
-      dockerfile: deploy/images/album/Dockerfile
-    environment:
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: postgres
-      S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
-      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
-      S3_SECRET_KEY: ${S3_SECRET_KEY}
-      S3_REGION: ${S3_REGION}
-      S3_ENDPOINT: ${S3_ENDPOINT}
+    image: derletzte256/album-service:latest
     container_name: album-grpc
     restart: always
     depends_on:
@@ -143,9 +90,7 @@ services:
     tty: true
     
   auth-grpc:
-    build:
-      context: ..
-      dockerfile: deploy/images/auth/Dockerfile
+    image: derletzte256/auth-service:latest
     environment:
       REDIS_PORT: ${REDIS_PORT}
       REDIS_HOST: redis
@@ -158,20 +103,7 @@ services:
     tty: true
 
   user-grpc:
-    build:
-      context: ..
-      dockerfile: deploy/images/user/Dockerfile
-    environment:
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: postgres
-      S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
-      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
-      S3_SECRET_KEY: ${S3_SECRET_KEY}
-      S3_REGION: ${S3_REGION}
-      S3_ENDPOINT: ${S3_ENDPOINT}
+    image: derletzte256/user-service:latest
     container_name: user-grpc
     restart: always
     depends_on:
@@ -181,20 +113,7 @@ services:
     tty: true
 
   playlist-grpc:
-    build:
-      context: ..
-      dockerfile: deploy/images/playlist/Dockerfile
-    environment:
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_HOST: postgres
-      S3_IMAGES_BUCKET: ${S3_IMAGES_BUCKET}
-      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
-      S3_SECRET_KEY: ${S3_SECRET_KEY}
-      S3_REGION: ${S3_REGION}
-      S3_ENDPOINT: ${S3_ENDPOINT}
+    image: derletzte256/playlist-service:latest
     container_name: playlist-grpc
     restart: always
     depends_on:
@@ -257,6 +176,15 @@ services:
     ports:
       - "9100:9100"
     tty: true
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      - --interval 30
 
 volumes:
   pgdata:
