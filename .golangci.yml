@@ -1,103 +1,42 @@
 run:
+  concurrency: 8
   timeout: 20m
-  go: "1.24"
-  modules-download-mode: readonly
+  issues-exit-code: 1
+  tests: true
+  exclude-files:
+    - \.pb\.go$
+
+output:
+  formats: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
 
 linters-settings:
   govet:
-    check-shadowing: true
-  gocyclo:
-    min-complexity: 25
-  maligned:
-    suggest-new: true
+    shadow: true
   dupl:
     threshold: 100
   goconst:
-    min-len: 2
-    min-occurrences: 2
-  misspell:
-    locale: US
-  lll:
-    line-length: 140
-  goimports:
-    local-prefixes: github.com/golangci/golangci-lint
-  gocritic:
-    enabled-tags:
-      - diagnostic
-      - experimental
-      - opinionated
-      - performance
-      - style
-    disabled-checks:
-      - dupImport
-      - ifElseChain
-      - octalLiteral
-      - whyNoLint
-      - wrapperFunc
+    min-len:         2
+    min-occurrences: 3
 
 linters:
   disable-all: true
   enable:
-    - bodyclose
-    - deadcode
-    - dogsled
     - errcheck
-    - exportloopref
-    - exhaustive
-    - gochecknoinits
     - goconst
-    - gocritic
-    - gocyclo
-    - gofmt
     - goimports
-    - gomnd
-    - goprintffuncname
-    - gosec
-    - gosimple
     - govet
     - ineffassign
-    - lll
-    - misspell
-    - nakedret
-    - noctx
-    - nolintlint
-    - rowserrcheck
+    - gosimple
     - staticcheck
-    - structcheck
-    - stylecheck
     - typecheck
-    - unconvert
-    - unparam
+    - revive
     - unused
-    - varcheck
-    - whitespace
 
 issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gomnd
-        - goconst
-        - gocyclo
-        - errcheck
-        - dupl
-        - gosec
-
-    - linters:
-        - gocritic
-      text: "unnecessaryDefer:"
-
   exclude-use-default: false
-
-  exclude-case-sensitive: false
-
-  include:
-    - EXC0002
-
-  max-issues-per-linter: 0
-
-  max-same-issues: 0
-
-  new: false
-
-  fix: false
+  exclude:
+    - exported func .* returns unexported type .*, which can be annoying to use
+    - should have a package comment
+    - don't use an underscore in package name
