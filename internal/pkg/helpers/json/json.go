@@ -29,7 +29,6 @@ func ReadJSON(w http.ResponseWriter, r *http.Request, v interface{}) error {
 
 	unmarshaler, ok := v.(easyjson.Unmarshaler)
 	if ok {
-		fmt.Println("Using easyjson unmarshaler")
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			return errors.New("failed to read request body")
@@ -59,7 +58,6 @@ func WriteJSON(w http.ResponseWriter, status int, data interface{}, headers http
 
 	marshaler, ok := data.(easyjson.Marshaler)
 	if ok {
-		fmt.Println("Using easyjson marshaler")
 		var buf bytes.Buffer
 		if _, err := easyjson.MarshalToWriter(marshaler, &buf); err != nil {
 			logger.Error("failed to marshal JSON (easyjson)")
