@@ -43,4 +43,32 @@ jobs:
           version: latest
           args: --timeout=20m --config=./.golangci.yml
 
-        
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up env file
+        run: |
+          echo ${{ secrets.ENV_FILE }} > .env
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Set up qemu
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push artist service
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./deploy/images/artist/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/artist-service:latest
