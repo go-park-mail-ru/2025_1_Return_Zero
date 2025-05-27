@@ -1,42 +1,43 @@
-version: "2"
-
 run:
   concurrency: 8
   timeout: 20m
   issues-exit-code: 1
   tests: false
-
+  exclude-files:
+    - \.pb\.go$
+ 
+output:
+  formats: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  print-line-number: true
+ 
+linters-settings:
+  govet:
+    shadow: true
+  dupl:
+    threshold: 100
+  goconst:
+    min-len:         2
+    min-occurrences: 3
+ 
 linters:
+  disable-all: true
   enable:
     - errcheck
     - goconst
+    - goimports
     - govet
     - ineffassign
+    - gosimple
     - staticcheck
+    - typecheck
     - unused
-    
-  settings:
-    govet:
-      enable-all: false
-      enable:
-        - shadow
-    dupl:
-      threshold: 100
-    goconst:
-      min-len: 2
-      min-occurrences: 3
-
-formatters:
-  enable:
-    - goimports
-    - gofmt
-  settings:
-    goimports:
-      local-prefixes:
-        - github.com/go-park-mail-ru/2025_1_Return_Zero
-    gofmt:
-      simplify: true
-
+ 
 issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
+  exclude-use-default: false
+  exclude:
+    - exported func .* returns unexported type .*, which can be annoying to use
+    - should have a package comment
+    - don't use an underscore in package name
+    - exported type .* should have comment or be unexported
