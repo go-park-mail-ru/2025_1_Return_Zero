@@ -52,3 +52,4 @@ prometheus:
   user_port: 9095
   api_port: 9096
   playlist_port: 9097
+  
