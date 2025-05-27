@@ -20,7 +20,6 @@ services:
     volumes:
       - 'pgdata:/var/lib/postgresql/data'
       - './_postgres:/docker-entrypoint-initdb.d'
-    command: postgres -c config_file=/etc/postgresql/postgresql.conf
     tty: true
 
   redis:
