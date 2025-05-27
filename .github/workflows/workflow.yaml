@@ -122,15 +122,7 @@ jobs:
           context: .
           file: ./deploy/images/api/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/api:latest  
-
-      - name: Build and push redis
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: ./deploy/images/redis/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/redis:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/api:latest 
 
       - name: Build and push postgres
         uses: docker/build-push-action@v3
