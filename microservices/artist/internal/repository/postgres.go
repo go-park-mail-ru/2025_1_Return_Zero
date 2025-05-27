@@ -222,14 +222,22 @@ func (r *artistPostgresRepository) GetAllArtists(ctx context.Context, filters *r
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 	rows, err := stmt.QueryContext(ctx, filters.Pagination.Limit, filters.Pagination.Offset, userID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetAllArtitst").Inc()
 		logger.Error("failed to get all artists", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get all artists: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	artists := make([]*repoModel.Artist, 0)
 	for rows.Next() {
@@ -259,7 +267,11 @@ func (r *artistPostgresRepository) GetArtistByID(ctx context.Context, id int64, 
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 	row := stmt.QueryRowContext(ctx, id, userID)
 
 	var artistObject repoModel.Artist
@@ -293,7 +305,11 @@ func (r *artistPostgresRepository) GetArtistTitleByID(ctx context.Context, id in
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return "", artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	row := stmt.QueryRowContext(ctx, id)
 
@@ -323,14 +339,22 @@ func (r *artistPostgresRepository) GetArtistsByTrackID(ctx context.Context, id i
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 	rows, err := stmt.QueryContext(ctx, id)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByTrackID").Inc()
 		logger.Error("failed to get artists by track id", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get artists by track id: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	artists := make([]*repoModel.ArtistWithRole, 0)
 	for rows.Next() {
@@ -358,14 +382,22 @@ func (r *artistPostgresRepository) GetArtistsByTrackIDs(ctx context.Context, tra
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 	rows, err := stmt.QueryContext(ctx, pq.Array(trackIDs))
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByTrackIDs").Inc()
 		logger.Error("failed to get artists by track ids", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get artists by track ids: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	artists := make(map[int64][]*repoModel.ArtistWithRole)
 	for rows.Next() {
@@ -394,7 +426,11 @@ func (r *artistPostgresRepository) GetArtistStats(ctx context.Context, id int64)
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 	row := stmt.QueryRowContext(ctx, id)
 
 	var stats repoModel.ArtistStats
@@ -419,14 +455,22 @@ func (r *artistPostgresRepository) GetArtistsByAlbumID(ctx context.Context, albu
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 	rows, err := stmt.QueryContext(ctx, albumID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByAlbumID").Inc()
 		logger.Error("failed to get artists by album id", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get artists by album id: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	artists := make([]*repoModel.ArtistWithTitle, 0)
 	for rows.Next() {
@@ -454,14 +498,22 @@ func (r *artistPostgresRepository) GetArtistsByAlbumIDs(ctx context.Context, alb
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 	rows, err := stmt.QueryContext(ctx, pq.Array(albumIDs))
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsByAlbumIDs").Inc()
 		logger.Error("failed to get artists by album ids", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get artists by album ids: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	artists := make(map[int64][]*repoModel.ArtistWithTitle)
 	for rows.Next() {
@@ -490,14 +542,22 @@ func (r *artistPostgresRepository) GetAlbumIDsByArtistID(ctx context.Context, id
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 	rows, err := stmt.QueryContext(ctx, id)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetAlbumIDsByArtistID").Inc()
 		logger.Error("failed to get album ids by artist id", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get album ids by artist id: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	albumIDs := make([]int64, 0)
 	for rows.Next() {
@@ -525,14 +585,22 @@ func (r *artistPostgresRepository) GetTrackIDsByArtistID(ctx context.Context, id
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 	rows, err := stmt.QueryContext(ctx, id)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetTrackIDsByArtistID").Inc()
 		logger.Error("failed to get track ids by artist id", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get track ids by artist id: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	trackIDs := make([]int64, 0)
 	for rows.Next() {
@@ -566,7 +634,11 @@ func (r *artistPostgresRepository) CreateStreamsByArtistIDs(ctx context.Context,
 		logger.Error("failed to begin transaction", zap.Error(err))
 		return artistErrors.NewInternalError("failed to begin transaction: %v", err)
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			logger.Error("failed to rollback transaction", zap.Error(err))
+		}
+	}()
 
 	query := `INSERT INTO artist_stream (artist_id, user_id) 
               SELECT unnest($1::bigint[]), $2`
@@ -577,7 +649,11 @@ func (r *artistPostgresRepository) CreateStreamsByArtistIDs(ctx context.Context,
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, pq.Array(data.ArtistIDs), data.UserID)
 	if err != nil {
@@ -606,7 +682,11 @@ func (r *artistPostgresRepository) GetArtistsListenedByUserID(ctx context.Contex
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return 0, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	row := stmt.QueryRowContext(ctx, userID)
 
@@ -630,7 +710,11 @@ func (r *artistPostgresRepository) CheckArtistExists(ctx context.Context, id int
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return false, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 	row := stmt.QueryRowContext(ctx, id)
 
 	var exists bool
@@ -652,7 +736,11 @@ func (r *artistPostgresRepository) LikeArtist(ctx context.Context, request *repo
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, request.ArtistID, request.UserID)
 	if err != nil {
@@ -671,7 +759,11 @@ func (r *artistPostgresRepository) UnlikeArtist(ctx context.Context, request *re
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, request.ArtistID, request.UserID)
 	if err != nil {
@@ -690,14 +782,22 @@ func (r *artistPostgresRepository) GetFavoriteArtists(ctx context.Context, filte
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	rows, err := stmt.QueryContext(ctx, userID, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
 		logger.Error("failed to get favorite artists", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get favorite artists: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	var artists []*repoModel.Artist
 	for rows.Next() {
@@ -724,7 +824,11 @@ func (r *artistPostgresRepository) SearchArtists(ctx context.Context, query stri
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	words := strings.Fields(query)
 	for i, word := range words {
@@ -737,7 +841,11 @@ func (r *artistPostgresRepository) SearchArtists(ctx context.Context, query stri
 		logger.Error("failed to search artists", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to search artists: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	var artists []*repoModel.Artist
 	for rows.Next() {
@@ -762,7 +870,11 @@ func (r *artistPostgresRepository) CreateArtist(ctx context.Context, artist *rep
 		r.metrics.DatabaseErrors.WithLabelValues("CreateArtist").Inc()
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	var artistID int64
 	err = stmt.QueryRowContext(ctx, artist.Title, artist.Thumbnail, artist.LabelID).Scan(&artistID)
@@ -785,7 +897,11 @@ func (r *artistPostgresRepository) CheckArtistNameExist(ctx context.Context, nam
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return false, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	var exists bool
 	err = stmt.QueryRowContext(ctx, name).Scan(&exists)
@@ -808,7 +924,11 @@ func (r *artistPostgresRepository) ChangeArtistTitle(ctx context.Context, newTit
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, newTitle, Title)
 	if err != nil {
@@ -826,7 +946,11 @@ func (r *artistPostgresRepository) GetArtistByTitle(ctx context.Context, title s
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	row := stmt.QueryRowContext(ctx, title)
 
@@ -853,7 +977,11 @@ func (r *artistPostgresRepository) UploadAvatar(ctx context.Context, artistTitle
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, avatarURL, artistTitle)
 	if err != nil {
@@ -871,7 +999,11 @@ func (r *artistPostgresRepository) GetArtistLabelID(ctx context.Context, artistI
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return 0, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	row := stmt.QueryRowContext(ctx, artistID)
 
@@ -899,14 +1031,22 @@ func (r *artistPostgresRepository) GetArtistsLabelID(ctx context.Context, filter
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 	rows, err := stmt.QueryContext(ctx, filters.Pagination.Limit, filters.Pagination.Offset, labelID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("GetArtistsLabelID").Inc()
 		logger.Error("failed to get all artists", zap.Error(err))
 		return nil, artistErrors.NewInternalError("failed to get all artists: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	artists := make([]*repoModel.Artist, 0)
 	for rows.Next() {
@@ -937,7 +1077,11 @@ func (r *artistPostgresRepository) DeleteArtist(ctx context.Context, artistID in
 		logger.Error("failed to delete artist", zap.Error(err))
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, artistID)
 	if err != nil {
@@ -965,7 +1109,11 @@ func (r *artistPostgresRepository) AddArtistsToAlbum(ctx context.Context, artist
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, pq.Array(artistsIDs), albumID)
 	if err != nil {
@@ -994,7 +1142,11 @@ func (r *artistPostgresRepository) AddArtistsToTracks(ctx context.Context, artis
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return artistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, pq.Array(artistsIDs), pq.Array(trackIDs))
 	if err != nil {

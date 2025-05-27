@@ -30,7 +30,11 @@ func main() {
 		logger.Error("Error creating logger:", zap.Error(err))
 		return
 	}
-	defer logger.Sync()
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			logger.Error("Error syncing logger:", zap.Error(err))
+		}
+	}()
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		logger.Error("Error loading config:", zap.Error(err))
@@ -43,7 +47,11 @@ func main() {
 		logger.Error("Can't start artist service:", zap.Error(err))
 		return
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	reg := prometheus.NewRegistry()
 	metrics := metrics.NewMetrics(reg, "artist_service")
@@ -59,7 +67,11 @@ func main() {
 		logger.Error("Error connecting to postgres:", zap.Error(err))
 		return
 	}
-	defer postgresPool.Close()
+	defer func() {
+		if err := postgresPool.Close(); err != nil {
+			logger.Error("Error closing Postgres:", zap.Error(err))
+		}
+	}()
 
 	fmt.Println("config ", cfg.S3.S3ImagesBucket)
 	s3, err := s3.InitS3(cfg.S3)

@@ -49,7 +49,11 @@ func (r *labelPostgresRepository) CreateLabel(ctx context.Context, name string) 
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return -1, err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	var labelID int64
 	err = stmt.QueryRowContext(ctx, name).Scan(&labelID)
@@ -74,7 +78,11 @@ func (r *labelPostgresRepository) GetLabel(ctx context.Context, labelID int64) (
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	var label repoModel.Label
 	err = stmt.QueryRowContext(ctx, labelID).Scan(&label.Name)
@@ -98,7 +106,11 @@ func (r *labelPostgresRepository) CheckIsLabelUnique(ctx context.Context, labelN
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return false, err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	var exist bool
 	err = stmt.QueryRowContext(ctx, labelName).Scan(&exist)

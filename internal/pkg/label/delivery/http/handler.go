@@ -504,7 +504,11 @@ func (h *LabelHandler) CreateAlbum(w http.ResponseWriter, r *http.Request) {
 			json.WriteErrorResponse(w, http.StatusBadRequest, "failed to open track file", nil)
 			return
 		}
-		defer file.Close()
+		defer func() {
+			if err := file.Close(); err != nil {
+				logger.Error("failed to close track file", zap.Error(err))
+			}
+		}()
 
 		track.Track, err = io.ReadAll(file)
 		if err != nil {

@@ -67,14 +67,22 @@ func main() {
 	}
 
 	redisPool := redis.NewRedisPool(cfg.Redis)
-	defer redisPool.Close()
+	defer func() {
+		if err := redisPool.Close(); err != nil {
+			logger.Error("Error closing Redis:", zap.Error(err))
+		}
+	}()
 
 	postgresConn, err := postgres.ConnectPostgres(cfg.Postgres)
 	if err != nil {
 		logger.Error("Error connecting to Postgres:", zap.Error(err))
 		return
 	}
-	defer postgresConn.Close()
+	defer func() {
+		if err := postgresConn.Close(); err != nil {
+			logger.Error("Error closing Postgres:", zap.Error(err))
+		}
+	}()
 
 	r := mux.NewRouter()
 	logger.Info("Server starting on port %s...", zap.String("port", fmt.Sprintf(":%d", cfg.Port)))
@@ -211,6 +219,10 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	srv.Shutdown(ctx)
+	err = srv.Shutdown(ctx)
+	if err != nil {
+		logger.Error("Error shutting down server:", zap.Error(err))
+		os.Exit(1)
+	}
 	logger.Info("Composer server stopped")
 }

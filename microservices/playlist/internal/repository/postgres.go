@@ -164,7 +164,11 @@ func (r *PlaylistPostgresRepository) GetPlaylistByID(ctx context.Context, id int
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var playlist repoModel.Playlist
 	err = stmt.QueryRowContext(ctx, id).Scan(&playlist.ID, &playlist.Title, &playlist.UserID, &playlist.Thumbnail, &playlist.IsPublic)
@@ -195,7 +199,11 @@ func (r *PlaylistPostgresRepository) CreatePlaylist(ctx context.Context, playlis
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var id int64
 	err = stmt.QueryRowContext(ctx, playlistCreateRequest.Title, playlistCreateRequest.UserID, playlistCreateRequest.Thumbnail, playlistCreateRequest.IsPublic).Scan(&id)
@@ -231,7 +239,11 @@ func (r *PlaylistPostgresRepository) GetCombinedPlaylistsByUserID(ctx context.Co
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var playlists repoModel.PlaylistList
 	rows, err := stmt.QueryContext(ctx, userID)
@@ -240,7 +252,11 @@ func (r *PlaylistPostgresRepository) GetCombinedPlaylistsByUserID(ctx context.Co
 		logger.Error("Failed to get playlists by user id", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to get playlists by user id: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	for rows.Next() {
 		var playlist repoModel.Playlist
@@ -269,7 +285,11 @@ func (r *PlaylistPostgresRepository) TrackExistsInPlaylist(ctx context.Context, 
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return false, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var exists bool
 	err = stmt.QueryRowContext(ctx, playlistID, trackID).Scan(&exists)
@@ -296,7 +316,11 @@ func (r *PlaylistPostgresRepository) AddTrackToPlaylist(ctx context.Context, req
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	playlist, err := r.GetPlaylistByID(ctx, request.PlaylistID)
 	if err != nil {
@@ -344,7 +368,11 @@ func (r *PlaylistPostgresRepository) RemoveTrackFromPlaylist(ctx context.Context
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	playlist, err := r.GetPlaylistByID(ctx, request.PlaylistID)
 	if err != nil {
@@ -393,7 +421,11 @@ func (r *PlaylistPostgresRepository) GetPlaylistTrackIds(ctx context.Context, re
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var trackIds []int64
 	rows, err := stmt.QueryContext(ctx, request.PlaylistID)
@@ -402,7 +434,11 @@ func (r *PlaylistPostgresRepository) GetPlaylistTrackIds(ctx context.Context, re
 		logger.Error("Failed to get playlist track ids", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to get playlist track ids: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	for rows.Next() {
 		var trackId int64
@@ -441,7 +477,11 @@ func (r *PlaylistPostgresRepository) UpdatePlaylist(ctx context.Context, request
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var id int64
 	if request.Thumbnail != "" {
@@ -484,7 +524,11 @@ func (r *PlaylistPostgresRepository) RemovePlaylist(ctx context.Context, request
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, request.PlaylistID, request.UserID)
 	if err != nil {
@@ -510,7 +554,11 @@ func (r *PlaylistPostgresRepository) GetPlaylistsToAdd(ctx context.Context, requ
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var response repoModel.GetPlaylistsToAddResponse
 	rows, err := stmt.QueryContext(ctx, request.TrackID, request.UserID)
@@ -519,7 +567,11 @@ func (r *PlaylistPostgresRepository) GetPlaylistsToAdd(ctx context.Context, requ
 		logger.Error("Failed to get playlists to add track to", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to get playlists to add track to: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	for rows.Next() {
 		var playlist repoModel.Playlist
@@ -562,7 +614,11 @@ func (r *PlaylistPostgresRepository) UpdatePlaylistsPublisityByUserID(ctx contex
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, request.UserID, request.IsPublic)
 	if err != nil {
@@ -588,7 +644,11 @@ func (r *PlaylistPostgresRepository) CheckExistsPlaylistAndNotDifferentUser(ctx 
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return false, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var exists bool
 	err = stmt.QueryRowContext(ctx, playlistID, userID).Scan(&exists)
@@ -615,7 +675,11 @@ func (r *PlaylistPostgresRepository) LikePlaylist(ctx context.Context, request *
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	exists, err := r.CheckExistsPlaylistAndNotDifferentUser(ctx, request.PlaylistID, request.UserID)
 	if err != nil {
@@ -653,7 +717,11 @@ func (r *PlaylistPostgresRepository) UnlikePlaylist(ctx context.Context, request
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, request.UserID, request.PlaylistID)
 	if err != nil {
@@ -679,7 +747,11 @@ func (r *PlaylistPostgresRepository) GetPlaylistWithIsLikedByID(ctx context.Cont
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var playlist repoModel.Playlist
 	var isLiked sql.NullBool
@@ -710,7 +782,11 @@ func (r *PlaylistPostgresRepository) GetProfilePlaylists(ctx context.Context, re
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var playlists repoModel.GetProfilePlaylistsResponse
 	rows, err := stmt.QueryContext(ctx, request.UserID)
@@ -719,7 +795,11 @@ func (r *PlaylistPostgresRepository) GetProfilePlaylists(ctx context.Context, re
 		logger.Error("Failed to get profile playlists", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to get profile playlists: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	for rows.Next() {
 		var playlist repoModel.Playlist
@@ -756,7 +836,11 @@ func (r *PlaylistPostgresRepository) SearchPlaylists(ctx context.Context, reques
 		logger.Error("Failed to prepare statement", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	words := strings.Fields(request.Query)
 	for i, word := range words {
@@ -771,7 +855,11 @@ func (r *PlaylistPostgresRepository) SearchPlaylists(ctx context.Context, reques
 		logger.Error("Failed to search playlists", zap.Error(err))
 		return nil, playlistErrors.NewInternalError("failed to search playlists: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	for rows.Next() {
 		var playlist repoModel.Playlist

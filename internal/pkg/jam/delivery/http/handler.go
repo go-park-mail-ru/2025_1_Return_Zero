@@ -116,21 +116,33 @@ func (h *JamHandler) WSHandler(w http.ResponseWriter, r *http.Request) {
 	usecaseResponse, err := h.usecase.JoinJam(ctx, &usecaseRequest)
 	if err != nil {
 		logger.Error("failed to join jam", zap.Error(err))
-		wsConn.WriteJSON(delivery.JamMessage{
+		err = wsConn.WriteJSON(delivery.JamMessage{
 			Type:  "error",
 			Error: err.Error(),
 		})
-		wsConn.Close()
+		if err != nil {
+			logger.Error("failed to write error message to websocket", zap.Error(err))
+		}
+		err = wsConn.Close()
+		if err != nil {
+			logger.Error("failed to close websocket", zap.Error(err))
+		}
 		return
 	}
 
 	response := model.JamMessageFromUsecaseToDelivery(usecaseResponse)
-	wsConn.WriteJSON(response)
+	err = wsConn.WriteJSON(response)
+	if err != nil {
+		logger.Error("failed to write response to websocket", zap.Error(err))
+	}
 
 	messageChan, err := h.usecase.SubscribeToJamMessages(ctx, roomID)
 	if err != nil {
 		logger.Error("failed to subscribe to jam messages", zap.Error(err))
-		wsConn.Close()
+		err = wsConn.Close()
+		if err != nil {
+			logger.Error("failed to close websocket", zap.Error(err))
+		}
 		return
 	}
 

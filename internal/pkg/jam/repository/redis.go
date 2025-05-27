@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
+	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/jam"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type jamRedisRepository struct {
@@ -27,12 +29,17 @@ func NewJamRedisRepository(redisPool *redis.Pool) jam.Repository {
 }
 
 func (r *jamRedisRepository) CreateJam(ctx context.Context, request *repository.CreateJamRequest) (*repository.CreateJamResponse, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	jamID := uuid.New().String()
 	conn, err := r.getConn()
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	_, err = redis.DoContext(conn, ctx, "SET", "jam:"+jamID+":host", request.UserID)
 	if err != nil {
@@ -54,11 +61,16 @@ func (r *jamRedisRepository) CreateJam(ctx context.Context, request *repository.
 }
 
 func (r *jamRedisRepository) AddUser(ctx context.Context, roomID string, userID string) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	conn, err := r.getConn()
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	_, err = redis.DoContext(conn, ctx, "SADD", "jam:"+roomID+":users", userID)
 	if err != nil {
@@ -86,11 +98,16 @@ func (r *jamRedisRepository) AddUser(ctx context.Context, roomID string, userID 
 }
 
 func (r *jamRedisRepository) PauseJam(ctx context.Context, roomID string) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	conn, err := r.getConn()
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	_, err = redis.DoContext(conn, ctx, "HSET", "jam:"+roomID+":track", "paused", true)
 	if err != nil {
@@ -113,11 +130,16 @@ func (r *jamRedisRepository) PauseJam(ctx context.Context, roomID string) error 
 }
 
 func (r *jamRedisRepository) GetInitialJamData(ctx context.Context, roomID string) (*repository.JamMessage, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	conn, err := r.getConn()
 	if err != nil {
 		return nil, err
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	track, err := redis.StringMap(redis.DoContext(conn, ctx, "HGETALL", "jam:"+roomID+":track"))
 	if err != nil {
@@ -184,11 +206,16 @@ func (r *jamRedisRepository) GetInitialJamData(ctx context.Context, roomID strin
 }
 
 func (r *jamRedisRepository) GetHostID(ctx context.Context, roomID string) (string, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	conn, err := r.getConn()
 	if err != nil {
 		return "", err
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	hostID, err := redis.String(redis.DoContext(conn, ctx, "GET", "jam:"+roomID+":host"))
 	if err != nil {
@@ -198,11 +225,16 @@ func (r *jamRedisRepository) GetHostID(ctx context.Context, roomID string) (stri
 }
 
 func (r *jamRedisRepository) CheckAllReadyAndPlay(ctx context.Context, roomID string) {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	conn, err := r.getConn()
 	if err != nil {
 		return
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	total, _ := redis.Int(redis.DoContext(conn, ctx, "SCARD", "jam:"+roomID+":users"))
 	loaded, _ := redis.Int(redis.DoContext(conn, ctx, "SCARD", "jam:"+roomID+":loaded"))
@@ -222,11 +254,16 @@ func (r *jamRedisRepository) CheckAllReadyAndPlay(ctx context.Context, roomID st
 }
 
 func (r *jamRedisRepository) LoadTrack(ctx context.Context, roomID string, trackID string) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	conn, err := r.getConn()
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	_, err = redis.DoContext(conn, ctx, "HMSET", "jam:"+roomID+":track", "id", trackID, "position", 0, "paused", 1)
 	if err != nil {
@@ -270,11 +307,16 @@ func (r *jamRedisRepository) LoadTrack(ctx context.Context, roomID string, track
 }
 
 func (r *jamRedisRepository) MarkUserAsReady(ctx context.Context, roomID string, userID string) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	conn, err := r.getConn()
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	_, err = redis.DoContext(conn, ctx, "SADD", "jam:"+roomID+":loaded", userID)
 	if err != nil {
@@ -308,11 +350,16 @@ func (r *jamRedisRepository) MarkUserAsReady(ctx context.Context, roomID string,
 }
 
 func (r *jamRedisRepository) RemoveUser(ctx context.Context, roomID string, userID string) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	conn, err := r.getConn()
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	_, err = redis.DoContext(conn, ctx, "SREM", "jam:"+roomID+":users", userID)
 	if err != nil {
@@ -341,11 +388,16 @@ func (r *jamRedisRepository) RemoveUser(ctx context.Context, roomID string, user
 }
 
 func (r *jamRedisRepository) RemoveJam(ctx context.Context, roomID string) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	conn, err := r.getConn()
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	users, _ := redis.Strings(redis.DoContext(conn, ctx, "SMEMBERS", "jam:"+roomID+":users"))
 	hostID, _ := redis.String(redis.DoContext(conn, ctx, "GET", "jam:"+roomID+":host"))
@@ -359,7 +411,10 @@ func (r *jamRedisRepository) RemoveJam(ctx context.Context, roomID string) error
 	}
 
 	for userID := range allUserIDs {
-		redis.DoContext(conn, ctx, "DEL", "jam:"+roomID+":userinfo:"+userID)
+		_, err = redis.DoContext(conn, ctx, "DEL", "jam:"+roomID+":userinfo:"+userID)
+		if err != nil {
+			return err
+		}
 	}
 
 	_, err = redis.DoContext(conn, ctx, "DEL", "jam:"+roomID+":host")
@@ -403,11 +458,16 @@ func (r *jamRedisRepository) RemoveJam(ctx context.Context, roomID string) error
 }
 
 func (r *jamRedisRepository) ExistsRoom(ctx context.Context, roomID string) (bool, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	conn, err := r.getConn()
 	if err != nil {
 		return false, err
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	exists, err := redis.Bool(redis.DoContext(conn, ctx, "EXISTS", "jam:"+roomID+":host"))
 	if err != nil {
@@ -417,11 +477,16 @@ func (r *jamRedisRepository) ExistsRoom(ctx context.Context, roomID string) (boo
 }
 
 func (r *jamRedisRepository) SeekJam(ctx context.Context, roomID string, position int64) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	conn, err := r.getConn()
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	_, err = redis.DoContext(conn, ctx, "HSET", "jam:"+roomID+":track", "position", position)
 	if err != nil {
@@ -445,11 +510,16 @@ func (r *jamRedisRepository) SeekJam(ctx context.Context, roomID string, positio
 }
 
 func (r *jamRedisRepository) StoreUserInfo(ctx context.Context, roomID string, userID string, username string, avatarURL string) error {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	conn, err := r.getConn()
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	_, err = redis.DoContext(conn, ctx, "HMSET", "jam:"+roomID+":userinfo:"+userID,
 		"username", username,
@@ -463,11 +533,16 @@ func (r *jamRedisRepository) StoreUserInfo(ctx context.Context, roomID string, u
 }
 
 func (r *jamRedisRepository) GetUserInfo(ctx context.Context, roomID string, userID string) (string, string, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	conn, err := r.getConn()
 	if err != nil {
 		return "", "", err
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	userInfo, err := redis.StringMap(redis.DoContext(conn, ctx, "HGETALL", "jam:"+roomID+":userinfo:"+userID))
 	if err != nil {
@@ -481,6 +556,7 @@ func (r *jamRedisRepository) GetUserInfo(ctx context.Context, roomID string, use
 }
 
 func (r *jamRedisRepository) SubscribeToJamMessages(ctx context.Context, roomID string) (<-chan []byte, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
 	conn, err := r.getConn()
 	if err != nil {
 		return nil, err
@@ -489,16 +565,23 @@ func (r *jamRedisRepository) SubscribeToJamMessages(ctx context.Context, roomID 
 	pubSub := redis.PubSubConn{Conn: conn}
 	err = pubSub.Subscribe("jam:" + roomID + ":pubsub")
 	if err != nil {
-		conn.Close()
 		return nil, err
 	}
 
 	messageChan := make(chan []byte, 100)
 
 	go func() {
-		defer conn.Close()
+		defer func() {
+			if err := conn.Close(); err != nil {
+				logger.Error("Error closing connection:", zap.Error(err))
+			}
+		}()
 		defer close(messageChan)
-		defer pubSub.Unsubscribe()
+		defer func() {
+			if err := pubSub.Unsubscribe(); err != nil {
+				logger.Error("Error unsubscribing from jam messages:", zap.Error(err))
+			}
+		}()
 
 		for {
 			select {

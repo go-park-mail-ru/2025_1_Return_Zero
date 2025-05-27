@@ -206,7 +206,11 @@ func (r *userPostgresRepository) getPassword(ctx context.Context, id int64) (str
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return "", err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	row := stmt.QueryRowContext(ctx, id)
 	var storedHash string
@@ -244,7 +248,11 @@ func (r *userPostgresRepository) CheckUserExist(ctx context.Context, lowerUserna
 		return false, err
 	}
 
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 	var exists bool
 	err = stmt.QueryRowContext(ctx, lowerUsername, email).Scan(&exists)
 	if err != nil && err != sql.ErrNoRows {
@@ -264,7 +272,11 @@ func (r *userPostgresRepository) CreateUserSettings(ctx context.Context, userID 
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, userID)
 	if err != nil {
@@ -288,7 +300,11 @@ func (r *userPostgresRepository) CreateUser(ctx context.Context, regData *repoMo
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	lowerUsername := strings.ToLower(regData.Username)
 	logger.Info("Creating new user", zap.String("username: ", lowerUsername))
@@ -354,7 +370,11 @@ func (r *userPostgresRepository) LoginUser(ctx context.Context, logData *repoMod
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var storedHash string
 	lowerUsername := strings.ToLower(logData.Username)
@@ -399,7 +419,11 @@ func (r *userPostgresRepository) GetUserByID(ctx context.Context, ID int64) (*re
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	row := stmt.QueryRowContext(ctx, ID)
 	var userRepo repoModel.User
@@ -429,7 +453,11 @@ func (r *userPostgresRepository) UploadAvatar(ctx context.Context, avatarUrl str
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, avatarUrl, ID)
 	if err != nil {
@@ -453,7 +481,11 @@ func (r *userPostgresRepository) GetIDByUsername(ctx context.Context, username s
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return 0, err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	lowerUsername := strings.ToLower(username)
 	row := stmt.QueryRowContext(ctx, lowerUsername)
@@ -484,7 +516,11 @@ func (r *userPostgresRepository) DeleteUser(ctx context.Context, userRepo *repoM
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	id, err := r.GetIDByUsername(ctx, userRepo.Username)
 	if err != nil {
@@ -524,7 +560,11 @@ func (r *userPostgresRepository) CheckIsUsernameUnique(ctx context.Context, user
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return false, err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var exists bool
 	err = stmt.QueryRowContext(ctx, username).Scan(&exists)
@@ -546,7 +586,11 @@ func (r *userPostgresRepository) changeUsername(ctx context.Context, id int64, n
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	isExist, err := r.CheckIsUsernameUnique(ctx, newLowerUsername)
 	if err != nil {
@@ -582,7 +626,11 @@ func (r *userPostgresRepository) CheckIsEmailUnique(ctx context.Context, email s
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return false, err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var exists bool
 	err = stmt.QueryRowContext(ctx, email).Scan(&exists)
@@ -603,7 +651,11 @@ func (r *userPostgresRepository) changeEmail(ctx context.Context, id int64, newE
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	isExist, err := r.CheckIsEmailUnique(ctx, newEmail)
 	if err != nil {
@@ -639,7 +691,11 @@ func (r *userPostgresRepository) сhangePassword(ctx context.Context, password s
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	storedHash, err := r.getPassword(ctx, id)
 	if err != nil {
@@ -721,7 +777,11 @@ func (r *userPostgresRepository) ChangeUserPrivacySettings(ctx context.Context, 
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	id, err := r.GetIDByUsername(ctx, username)
 	if err != nil {
@@ -759,7 +819,11 @@ func (r *userPostgresRepository) GetUserPrivacy(ctx context.Context, id int64) (
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	row := stmt.QueryRowContext(ctx, id)
 	var privacySettings repoModel.PrivacySettings
@@ -826,7 +890,11 @@ func (r *userPostgresRepository) GetLabelIDByUserID(ctx context.Context, userID 
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return 0, err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	row := stmt.QueryRowContext(ctx, userID)
 	var labelID sql.NullInt64
@@ -864,7 +932,11 @@ func (r *userPostgresRepository) CheckUsersByUsernames(ctx context.Context, user
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	lowerUsernames := make([]string, len(usernames))
 	for i, username := range usernames {
@@ -904,7 +976,11 @@ func (r *userPostgresRepository) UpdateUsersLabel(ctx context.Context, labelID i
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	lowerUsernames := make([]string, len(usernames))
 	for i, username := range usernames {
@@ -946,7 +1022,11 @@ func (r *userPostgresRepository) CheckLabelNameUnique(ctx context.Context, name 
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return false, err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var exists bool
 	err = stmt.QueryRowContext(ctx, name).Scan(&exists)
@@ -967,7 +1047,11 @@ func (r *userPostgresRepository) UpdateLabel(ctx context.Context, newName string
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, newName, labelID)
 	if err != nil {
@@ -992,7 +1076,11 @@ func (r *userPostgresRepository) GetLabelById(ctx context.Context, labelID int64
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return "", err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	row := stmt.QueryRowContext(ctx, labelID)
 	var labelName string
@@ -1023,7 +1111,11 @@ func (r *userPostgresRepository) GetUsersByLabelID(ctx context.Context, labelID 
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	rows, err := stmt.QueryContext(ctx, labelID)
 	if err != nil {
@@ -1031,7 +1123,11 @@ func (r *userPostgresRepository) GetUsersByLabelID(ctx context.Context, labelID 
 		logger.Error("failed to get users by label ID", zap.Error(err))
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	var users []string
 	for rows.Next() {
@@ -1061,7 +1157,11 @@ func (r *userPostgresRepository) RemoveUsersFromLabel(ctx context.Context, label
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return err
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	lowerUsernames := make([]string, len(usernames))
 	for i, username := range usernames {

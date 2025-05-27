@@ -136,7 +136,11 @@ func (r *albumPostgresRepository) GetAllAlbums(ctx context.Context, filters *rep
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, albumErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	rows, err := stmt.QueryContext(ctx, filters.Pagination.Limit, filters.Pagination.Offset, userID)
 	if err != nil {
@@ -144,7 +148,11 @@ func (r *albumPostgresRepository) GetAllAlbums(ctx context.Context, filters *rep
 		logger.Error("failed to get all albums", zap.Error(err))
 		return nil, albumErrors.NewInternalError("failed to get all albums: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	albums := make([]*repoModel.Album, 0)
 	for rows.Next() {
@@ -179,7 +187,11 @@ func (r *albumPostgresRepository) GetAlbumByID(ctx context.Context, id int64, us
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, albumErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	row := stmt.QueryRowContext(ctx, id, userID)
 
@@ -210,7 +222,11 @@ func (r *albumPostgresRepository) GetAlbumTitleByIDs(ctx context.Context, ids []
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, albumErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	rows, err := stmt.QueryContext(ctx, pq.Array(ids))
 	if err != nil {
@@ -218,7 +234,11 @@ func (r *albumPostgresRepository) GetAlbumTitleByIDs(ctx context.Context, ids []
 		logger.Error("failed to get album title by ids", zap.Error(err))
 		return nil, albumErrors.NewInternalError("failed to get album title by ids: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	albums := make(map[int64]string)
 	for rows.Next() {
@@ -254,7 +274,11 @@ func (r *albumPostgresRepository) GetAlbumTitleByID(ctx context.Context, id int6
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return "", albumErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	row := stmt.QueryRowContext(ctx, id)
 
@@ -285,7 +309,11 @@ func (r *albumPostgresRepository) GetAlbumsByIDs(ctx context.Context, ids []int6
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, albumErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	rows, err := stmt.QueryContext(ctx, pq.Array(ids), userID)
 	if err != nil {
@@ -293,7 +321,11 @@ func (r *albumPostgresRepository) GetAlbumsByIDs(ctx context.Context, ids []int6
 		logger.Error("failed to get albums by ids", zap.Error(err))
 		return nil, albumErrors.NewInternalError("failed to get albums by ids: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	var albums []*repoModel.Album
 	for rows.Next() {
@@ -327,7 +359,11 @@ func (r *albumPostgresRepository) CreateStream(ctx context.Context, albumID int6
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return albumErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, albumID, userID)
 	if err != nil {
@@ -386,7 +422,11 @@ func (r *albumPostgresRepository) UnlikeAlbum(ctx context.Context, request *repo
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return albumErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, request.AlbumID, request.UserID)
 	if err != nil {
@@ -406,13 +446,21 @@ func (r *albumPostgresRepository) GetFavoriteAlbums(ctx context.Context, filters
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, albumErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 	rows, err := stmt.QueryContext(ctx, userID, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
 		logger.Error("failed to get favorite albums", zap.Error(err))
 		return nil, albumErrors.NewInternalError("failed to get favorite albums: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	var albums []*repoModel.Album
 	for rows.Next() {
@@ -454,7 +502,11 @@ func (r *albumPostgresRepository) SearchAlbums(ctx context.Context, query string
 		logger.Error("failed to search albums", zap.Error(err))
 		return nil, albumErrors.NewInternalError("failed to search albums: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	var albums []*repoModel.Album
 	for rows.Next() {
@@ -485,7 +537,11 @@ func (r *albumPostgresRepository) CreateAlbum(ctx context.Context, album *repoMo
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return 0, albumErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 	var albumID int64
 	err = stmt.QueryRowContext(ctx, album.Title, album.Type, album.Thumbnail, album.LabelID).Scan(&albumID)
 	if err != nil {
@@ -507,7 +563,11 @@ func (r *albumPostgresRepository) DeleteAlbum(ctx context.Context, albumID int64
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return albumErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, albumID)
 	if err != nil {
@@ -530,7 +590,11 @@ func (r *albumPostgresRepository) GetAlbumsLabelID(ctx context.Context, filters 
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, albumErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("failed to close statement", zap.Error(err))
+		}
+	}()
 
 	rows, err := stmt.QueryContext(ctx, labelID, filters.Pagination.Limit, filters.Pagination.Offset)
 	if err != nil {
@@ -538,7 +602,11 @@ func (r *albumPostgresRepository) GetAlbumsLabelID(ctx context.Context, filters 
 		logger.Error("failed to get all albums", zap.Error(err))
 		return nil, albumErrors.NewInternalError("failed to get all albums: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("failed to close rows", zap.Error(err))
+		}
+	}()
 
 	albums := make([]*repoModel.Album, 0)
 	for rows.Next() {

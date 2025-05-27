@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	stderrors "errors"
+	"fmt"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -28,7 +29,11 @@ func setupTest(t *testing.T) (*sql.DB, sqlmock.Sqlmock, context.Context) {
 
 func TestGetPlaylistByID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
@@ -55,7 +60,11 @@ func TestGetPlaylistByID(t *testing.T) {
 
 func TestGetPlaylistByIDNotFound(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
@@ -75,7 +84,11 @@ func TestGetPlaylistByIDNotFound(t *testing.T) {
 
 func TestCreatePlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.CreatePlaylistRequest{
@@ -114,7 +127,11 @@ func TestCreatePlaylist(t *testing.T) {
 
 func TestCreatePlaylistDuplicate(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.CreatePlaylistRequest{
@@ -139,7 +156,11 @@ func TestCreatePlaylistDuplicate(t *testing.T) {
 
 func TestGetCombinedPlaylistsByUserID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
@@ -171,7 +192,11 @@ func TestGetCombinedPlaylistsByUserID(t *testing.T) {
 
 func TestGetCombinedPlaylistsByUserIDError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
@@ -190,7 +215,11 @@ func TestGetCombinedPlaylistsByUserIDError(t *testing.T) {
 
 func TestTrackExistsInPlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
@@ -212,7 +241,11 @@ func TestTrackExistsInPlaylist(t *testing.T) {
 
 func TestTrackExistsInPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
@@ -232,7 +265,11 @@ func TestTrackExistsInPlaylistError(t *testing.T) {
 
 func TestAddTrackToPlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
@@ -269,7 +306,11 @@ func TestAddTrackToPlaylist(t *testing.T) {
 
 func TestAddTrackToPlaylistGetPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
@@ -292,7 +333,11 @@ func TestAddTrackToPlaylistGetPlaylistError(t *testing.T) {
 
 func TestAddTrackToPlaylistTrackExistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
@@ -323,7 +368,11 @@ func TestAddTrackToPlaylistTrackExistsError(t *testing.T) {
 
 func TestAddTrackToPlaylistInsertError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
@@ -360,7 +409,11 @@ func TestAddTrackToPlaylistInsertError(t *testing.T) {
 
 func TestAddTrackToPlaylistPermissionDenied(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
@@ -387,7 +440,11 @@ func TestAddTrackToPlaylistPermissionDenied(t *testing.T) {
 
 func TestAddTrackToPlaylistDuplicate(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
@@ -421,7 +478,11 @@ func TestAddTrackToPlaylistDuplicate(t *testing.T) {
 
 func TestRemoveTrackFromPlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
@@ -458,7 +519,11 @@ func TestRemoveTrackFromPlaylist(t *testing.T) {
 
 func TestRemoveTrackFromPlaylistGetPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
@@ -481,7 +546,11 @@ func TestRemoveTrackFromPlaylistGetPlaylistError(t *testing.T) {
 
 func TestRemoveTrackFromPlaylistPermissionDenied(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
@@ -508,7 +577,11 @@ func TestRemoveTrackFromPlaylistPermissionDenied(t *testing.T) {
 
 func TestRemoveTrackFromPlaylistTrackNotFound(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
@@ -542,7 +615,11 @@ func TestRemoveTrackFromPlaylistTrackNotFound(t *testing.T) {
 
 func TestRemoveTrackFromPlaylistTrackExistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
@@ -573,7 +650,11 @@ func TestRemoveTrackFromPlaylistTrackExistsError(t *testing.T) {
 
 func TestRemoveTrackFromPlaylistDeleteError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
@@ -610,7 +691,11 @@ func TestRemoveTrackFromPlaylistDeleteError(t *testing.T) {
 
 func TestGetPlaylistTrackIds(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistTrackIdsRequest{
@@ -639,7 +724,11 @@ func TestGetPlaylistTrackIds(t *testing.T) {
 
 func TestGetPlaylistTrackIdsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistTrackIdsRequest{
@@ -660,7 +749,11 @@ func TestGetPlaylistTrackIdsError(t *testing.T) {
 
 func TestUpdatePlaylistWithThumbnail(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{
@@ -697,7 +790,11 @@ func TestUpdatePlaylistWithThumbnail(t *testing.T) {
 
 func TestUpdatePlaylistWithThumbnailError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{
@@ -721,7 +818,11 @@ func TestUpdatePlaylistWithThumbnailError(t *testing.T) {
 
 func TestUpdatePlaylistWithoutThumbnail(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{
@@ -758,7 +859,11 @@ func TestUpdatePlaylistWithoutThumbnail(t *testing.T) {
 
 func TestUpdatePlaylistWithoutThumbnailError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{
@@ -782,7 +887,11 @@ func TestUpdatePlaylistWithoutThumbnailError(t *testing.T) {
 
 func TestRemovePlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemovePlaylistRequest{
@@ -803,7 +912,11 @@ func TestRemovePlaylist(t *testing.T) {
 
 func TestRemovePlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemovePlaylistRequest{
@@ -824,7 +937,11 @@ func TestRemovePlaylistError(t *testing.T) {
 
 func TestGetPlaylistsToAdd(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistsToAddRequest{
@@ -857,7 +974,11 @@ func TestGetPlaylistsToAdd(t *testing.T) {
 
 func TestGetPlaylistsToAddError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistsToAddRequest{
@@ -879,7 +1000,11 @@ func TestGetPlaylistsToAddError(t *testing.T) {
 
 func TestGetPlaylistsToAddScanError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistsToAddRequest{
@@ -904,7 +1029,11 @@ func TestGetPlaylistsToAddScanError(t *testing.T) {
 
 func TestUpdatePlaylistsPublisityByUserID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistsPublisityByUserIDRequest{
@@ -925,7 +1054,11 @@ func TestUpdatePlaylistsPublisityByUserID(t *testing.T) {
 
 func TestUpdatePlaylistsPublisityByUserIDError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistsPublisityByUserIDRequest{
@@ -946,7 +1079,11 @@ func TestUpdatePlaylistsPublisityByUserIDError(t *testing.T) {
 
 func TestCheckExistsPlaylistAndNotDifferentUser(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
@@ -968,7 +1105,11 @@ func TestCheckExistsPlaylistAndNotDifferentUser(t *testing.T) {
 
 func TestCheckExistsPlaylistAndNotDifferentUserError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
@@ -988,7 +1129,11 @@ func TestCheckExistsPlaylistAndNotDifferentUserError(t *testing.T) {
 
 func TestLikePlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
@@ -1016,7 +1161,11 @@ func TestLikePlaylist(t *testing.T) {
 
 func TestLikePlaylistCheckExistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
@@ -1038,7 +1187,11 @@ func TestLikePlaylistCheckExistsError(t *testing.T) {
 
 func TestLikePlaylistInsertError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
@@ -1066,7 +1219,11 @@ func TestLikePlaylistInsertError(t *testing.T) {
 
 func TestUnlikePlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
@@ -1087,7 +1244,11 @@ func TestUnlikePlaylist(t *testing.T) {
 
 func TestUnlikePlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
@@ -1108,7 +1269,11 @@ func TestUnlikePlaylistError(t *testing.T) {
 
 func TestGetPlaylistWithIsLikedByID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
@@ -1136,7 +1301,11 @@ func TestGetPlaylistWithIsLikedByID(t *testing.T) {
 
 func TestGetPlaylistWithIsLikedByIDError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
@@ -1156,7 +1325,11 @@ func TestGetPlaylistWithIsLikedByIDError(t *testing.T) {
 
 func TestGetProfilePlaylists(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetProfilePlaylistsRequest{
@@ -1190,7 +1363,11 @@ func TestGetProfilePlaylists(t *testing.T) {
 
 func TestGetProfilePlaylistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetProfilePlaylistsRequest{
@@ -1211,7 +1388,11 @@ func TestGetProfilePlaylistsError(t *testing.T) {
 
 func TestGetProfilePlaylistsScanError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetProfilePlaylistsRequest{
@@ -1235,7 +1416,11 @@ func TestGetProfilePlaylistsScanError(t *testing.T) {
 
 func TestSearchPlaylists(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.SearchPlaylistsRequest{
@@ -1268,7 +1453,11 @@ func TestSearchPlaylists(t *testing.T) {
 
 func TestSearchPlaylistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.SearchPlaylistsRequest{
@@ -1290,7 +1479,11 @@ func TestSearchPlaylistsError(t *testing.T) {
 
 func TestSearchPlaylistsScanError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.SearchPlaylistsRequest{
@@ -1315,7 +1508,11 @@ func TestSearchPlaylistsScanError(t *testing.T) {
 
 func TestCreatePlaylistGetPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.CreatePlaylistRequest{
@@ -1346,7 +1543,11 @@ func TestCreatePlaylistGetPlaylistError(t *testing.T) {
 
 func TestUpdatePlaylistGetPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{

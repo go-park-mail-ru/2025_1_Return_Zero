@@ -274,7 +274,11 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		json.WriteErrorResponse(w, http.StatusBadRequest, "failed to get file from form", nil)
 		return
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			logger.Error("failed to close file", zap.Error(err))
+		}
+	}()
 
 	if fileHeader.Size > maxUploadSize {
 		logger.Error("file size exceeds limit", zap.Error(err))

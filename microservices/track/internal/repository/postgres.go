@@ -206,7 +206,11 @@ func (r *TrackPostgresRepository) GetAllTracks(ctx context.Context, filters *rep
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	rows, err := stmt.QueryContext(ctx, filters.Pagination.Limit, filters.Pagination.Offset, userID)
 	if err != nil {
@@ -214,7 +218,11 @@ func (r *TrackPostgresRepository) GetAllTracks(ctx context.Context, filters *rep
 		logger.Error("failed to get all tracks", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to get all tracks: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	tracks := make([]*repoModel.Track, 0)
 	for rows.Next() {
@@ -277,7 +285,11 @@ func (r *TrackPostgresRepository) CreateStream(ctx context.Context, createData *
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return 0, trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var streamID int64
 	err = stmt.QueryRowContext(ctx, createData.TrackID, createData.UserID).Scan(&streamID)
@@ -302,7 +314,11 @@ func (r *TrackPostgresRepository) GetStreamByID(ctx context.Context, id int64) (
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var stream repoModel.TrackStream
 	err = stmt.QueryRowContext(ctx, id).Scan(&stream.ID, &stream.UserID, &stream.TrackID, &stream.Duration)
@@ -331,7 +347,11 @@ func (r *TrackPostgresRepository) UpdateStreamDuration(ctx context.Context, ende
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	result, err := stmt.ExecContext(ctx, endedStream.Duration, endedStream.StreamID)
 	if err != nil {
@@ -368,7 +388,11 @@ func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	rows, err := stmt.QueryContext(ctx, userID, filters.Pagination.Limit, filters.Pagination.Offset)
 
@@ -377,7 +401,11 @@ func (r *TrackPostgresRepository) GetStreamsByUserID(ctx context.Context, userID
 		logger.Error("failed to get streams by user id", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to get streams by user id: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	streams := make([]*repoModel.TrackStream, 0)
 	for rows.Next() {
@@ -412,7 +440,11 @@ func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int6
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	rows, err := stmt.QueryContext(ctx, pq.Array(ids), userID)
 	if err != nil {
@@ -420,7 +452,11 @@ func (r *TrackPostgresRepository) GetTracksByIDs(ctx context.Context, ids []int6
 		logger.Error("failed to get tracks by ids", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to get tracks by ids: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	tracks := make(map[int64]*repoModel.Track)
 	for rows.Next() {
@@ -470,7 +506,11 @@ func (r *TrackPostgresRepository) GetTracksByIDsFiltered(ctx context.Context, id
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	rows, err := stmt.QueryContext(ctx, pq.Array(ids), filters.Pagination.Limit, filters.Pagination.Offset, userID)
 	if err != nil {
@@ -478,7 +518,11 @@ func (r *TrackPostgresRepository) GetTracksByIDsFiltered(ctx context.Context, id
 		logger.Error("failed to get tracks by ids", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to get tracks by ids: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	tracks := make([]*repoModel.Track, 0)
 	for rows.Next() {
@@ -513,7 +557,11 @@ func (r *TrackPostgresRepository) GetAlbumIDByTrackID(ctx context.Context, id in
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return 0, trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var albumID int64
 	err = stmt.QueryRowContext(ctx, id).Scan(&albumID)
@@ -538,7 +586,11 @@ func (r *TrackPostgresRepository) GetTracksByAlbumID(ctx context.Context, id int
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	rows, err := stmt.QueryContext(ctx, id, userID)
 	if err != nil {
@@ -546,7 +598,11 @@ func (r *TrackPostgresRepository) GetTracksByAlbumID(ctx context.Context, id int
 		logger.Error("failed to get tracks by album id", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to get tracks by album id: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	tracks := make([]*repoModel.Track, 0)
 	for rows.Next() {
@@ -575,7 +631,11 @@ func (r *TrackPostgresRepository) GetMinutesListenedByUserID(ctx context.Context
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return 0, trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var minutesListened int64
 	err = stmt.QueryRowContext(ctx, userID).Scan(&minutesListened)
@@ -600,7 +660,11 @@ func (r *TrackPostgresRepository) GetTracksListenedByUserID(ctx context.Context,
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return 0, trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var tracksListened int64
 	err = stmt.QueryRowContext(ctx, userID).Scan(&tracksListened)
@@ -626,7 +690,11 @@ func (r *TrackPostgresRepository) CheckTrackExists(ctx context.Context, trackID 
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return false, trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	var exists bool
 	err = stmt.QueryRowContext(ctx, trackID).Scan(&exists)
@@ -652,7 +720,11 @@ func (r *TrackPostgresRepository) LikeTrack(ctx context.Context, likeRequest *re
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, likeRequest.TrackID, likeRequest.UserID)
 	if err != nil {
@@ -677,7 +749,11 @@ func (r *TrackPostgresRepository) UnlikeTrack(ctx context.Context, likeRequest *
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, likeRequest.TrackID, likeRequest.UserID)
 	if err != nil {
@@ -702,7 +778,11 @@ func (r *TrackPostgresRepository) GetFavoriteTracks(ctx context.Context, favorit
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	rows, err := stmt.QueryContext(ctx, favoriteRequest.RequestUserID, favoriteRequest.ProfileUserID, favoriteRequest.Filters.Pagination.Limit, favoriteRequest.Filters.Pagination.Offset)
 	if err != nil {
@@ -710,7 +790,11 @@ func (r *TrackPostgresRepository) GetFavoriteTracks(ctx context.Context, favorit
 		logger.Error("failed to get favorite tracks", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to get favorite tracks: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	tracks := make([]*repoModel.Track, 0)
 	for rows.Next() {
@@ -746,7 +830,11 @@ func (r *TrackPostgresRepository) SearchTracks(ctx context.Context, query string
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	words := strings.Fields(query)
 	for i, word := range words {
@@ -760,7 +848,11 @@ func (r *TrackPostgresRepository) SearchTracks(ctx context.Context, query string
 		logger.Error("failed to search tracks", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to search tracks: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	var tracks []*repoModel.Track
 	for rows.Next() {
@@ -820,18 +912,28 @@ func (r *TrackPostgresRepository) AddTracksToAlbum(ctx context.Context, tracksLi
 
 	rows, err := tx.QueryContext(ctx, stmt, valueArgs...)
 	if err != nil {
-		tx.Rollback()
+		err = tx.Rollback()
+		if err != nil {
+			logger.Error("failed to rollback transaction", zap.Error(err))
+		}
 		r.metrics.DatabaseErrors.WithLabelValues("AddTracksToAlbum").Inc()
 		logger.Error("failed to insert tracks", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to insert tracks: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	var trackIDs []int64
 	for rows.Next() {
 		var id int64
 		if err := rows.Scan(&id); err != nil {
-			tx.Rollback()
+			err = tx.Rollback()
+			if err != nil {
+				logger.Error("failed to rollback transaction", zap.Error(err))
+			}
 			r.metrics.DatabaseErrors.WithLabelValues("AddTracksToAlbum").Inc()
 			logger.Error("failed to scan track id", zap.Error(err))
 			return nil, trackErrors.NewInternalError("failed to scan track id: %v", err)
@@ -840,7 +942,10 @@ func (r *TrackPostgresRepository) AddTracksToAlbum(ctx context.Context, tracksLi
 	}
 
 	if err = rows.Err(); err != nil {
-		tx.Rollback()
+		err = tx.Rollback()
+		if err != nil {
+			logger.Error("failed to rollback transaction", zap.Error(err))
+		}
 		r.metrics.DatabaseErrors.WithLabelValues("AddTracksToAlbum").Inc()
 		logger.Error("failed to iterate over result rows", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to iterate over result rows: %v", err)
@@ -870,7 +975,11 @@ func (r *TrackPostgresRepository) DeleteTracksByAlbumID(ctx context.Context, alb
 		logger.Error("failed to prepare statement", zap.Error(err))
 		return trackErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
 
 	_, err = stmt.ExecContext(ctx, albumID)
 	if err != nil {
@@ -894,7 +1003,11 @@ func (r *TrackPostgresRepository) GetMostLikedTracks(ctx context.Context, userID
 		logger.Error("failed to get most liked tracks", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to get most liked tracks: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	tracks := make([]*repoModel.Track, 0)
 	for rows.Next() {
@@ -928,7 +1041,11 @@ func (r *TrackPostgresRepository) GetMostRecentTracks(ctx context.Context, userI
 		logger.Error("failed to get most recent tracks", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to get most recent tracks: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	tracks := make([]*repoModel.Track, 0)
 	for rows.Next() {
@@ -962,7 +1079,11 @@ func (r *TrackPostgresRepository) GetMostListenedLastMonthTracks(ctx context.Con
 		logger.Error("failed to get most listened last month tracks", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to get most listened last month tracks: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	tracks := make([]*repoModel.Track, 0)
 	for rows.Next() {
@@ -996,7 +1117,11 @@ func (r *TrackPostgresRepository) GetMostLikedLastWeekTracks(ctx context.Context
 		logger.Error("failed to get most liked last week tracks", zap.Error(err))
 		return nil, trackErrors.NewInternalError("failed to get most liked last week tracks: %v", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			logger.Error("Error closing rows:", zap.Error(err))
+		}
+	}()
 
 	tracks := make([]*repoModel.Track, 0)
 	for rows.Next() {

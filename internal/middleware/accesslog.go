@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
+	"go.uber.org/zap"
 )
 
 type statusResponseWriter struct {
@@ -30,7 +31,11 @@ func (w *statusResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 func AccessLog(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger := logger.LoggerFromContext(r.Context())
-		defer logger.Sync()
+		defer func() {
+			if err := logger.Sync(); err != nil {
+				logger.Error("failed to sync logger", zap.Error(err))
+			}
+		}()
 
 		if websocketRequest := r.Header.Get("Upgrade"); websocketRequest == "websocket" {
 			next.ServeHTTP(w, r)
