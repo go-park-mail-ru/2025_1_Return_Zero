@@ -75,9 +75,7 @@ services:
       - user-grpc
 
   artist-grpc:
-    build:
-      context: ..
-      dockerfile: deploy/images/artist/Dockerfile
+    image: derletzte256/artist-service:latest
     environment:
       POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_USER: ${POSTGRES_USER}

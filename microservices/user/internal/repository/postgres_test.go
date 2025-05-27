@@ -41,8 +41,17 @@ func setupTest(t *testing.T) (*sql.DB, sqlmock.Sqlmock, context.Context) {
 	db, mock, err := sqlmock.New()
 	require.NoError(t, err)
 
-	logger := zap.NewNop().Sugar()
-	ctx := loggerPkg.LoggerToContext(context.Background(), logger)
+	// Create a test logger that doesn't sync to stderr to avoid sync errors in tests
+	config := zap.NewDevelopmentConfig()
+	config.OutputPaths = []string{"stdout"}
+	config.ErrorOutputPaths = []string{"stderr"}
+	logger, err := config.Build()
+	if err != nil {
+		// Fallback to NewNop if config fails
+		logger = zap.NewNop()
+	}
+
+	ctx := loggerPkg.LoggerToContext(context.Background(), logger.Sugar())
 
 	return db, mock, ctx
 }
