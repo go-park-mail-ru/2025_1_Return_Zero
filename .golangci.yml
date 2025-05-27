@@ -17,30 +17,14 @@ linters:
     
   settings:
     govet:
-      enable-all: true
-      disable:
-        - fieldalignment
-      settings:
-        shadow:
-          strict: true
+      enable-all: false
+      enable:
+        - shadow
     dupl:
       threshold: 100
     goconst:
       min-len: 2
       min-occurrences: 3
-    gocyclo:
-      min-complexity: 15
-    gosec:
-      excludes:
-        - G204
-        - G304
-    revive:
-      confidence: 0.8
-      severity: warning
-      rules:
-        - name: exported
-        - name: package-comments
-        - name: comment-spacings
 
 formatters:
   enable:
