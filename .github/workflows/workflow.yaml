@@ -42,6 +42,7 @@ jobs:
         with:
           version: latest
           args: --timeout=20m --config=./.golangci.yml
+          skip-cache: true
 
   build:
     runs-on: ubuntu-latest
