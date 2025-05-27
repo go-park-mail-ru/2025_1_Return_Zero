@@ -36,9 +36,7 @@ services:
     tty: true
 
   go-api:
-    build:
-      context: ..
-      dockerfile: deploy/images/api/Dockerfile
+    image: derletzte256/api:latest
     container_name: ReturnZeroAPI
     environment:
       ARTIST_SERVICE_HOST: artist-grpc

@@ -1,6 +1,8 @@
 # Build stage
 FROM golang:1.24-alpine AS builder
 
+ARG ENV_FILE
+
 WORKDIR /app
 
 COPY go.mod go.sum ./
@@ -25,7 +27,7 @@ COPY ./microservices/metrics ./microservices/metrics
 
 COPY ./config.yaml ./config.yaml
 
-COPY ./.env ./.env
+RUN echo "$ENV_FILE" > .env
 
 RUN go build -o main microservices/user/cmd/main.go
 
