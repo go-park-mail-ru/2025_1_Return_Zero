@@ -17,41 +17,41 @@ linters:
     - staticcheck
     - unused
     - revive
+  
+  settings:
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+      settings:
+        shadow:
+          strict: true
+    dupl:
+      threshold: 100
+    goconst:
+      min-len: 2
+      min-occurrences: 3
+      ignore-tests: true
+    gocyclo:
+      min-complexity: 15
+    gofmt:
+      simplify: true
+    goimports:
+      local-prefixes: github.com/go-park-mail-ru/2025_1_Return_Zero
+    gosec:
+      excludes:
+        - G204
+        - G304
+    revive:
+      confidence: 0.8
+      severity: warning
+      rules:
+        - name: exported-function
+        - name: exported-type
+        - name: exported-var
+        - name: package-comments
+        - name: comment-spacings
 
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
-
-settings:
-  govet:
-    enable-all: true
-    disable:
-      - fieldalignment
-    settings:
-      shadow:
-        strict: true
-  dupl:
-    threshold: 100
-  goconst:
-    min-len: 2
-    min-occurrences: 3
-    ignore-tests: true
-  gocyclo:
-    min-complexity: 15
-  gofmt:
-    simplify: true
-  goimports:
-    local-prefixes: github.com/go-park-mail-ru/2025_1_Return_Zero
-  gosec:
-    excludes:
-      - G204
-      - G304
-  revive:
-    confidence: 0.8
-    severity: warning
-    rules:
-      - name: exported-function
-      - name: exported-type
-      - name: exported-var
-      - name: package-comments
-      - name: comment-spacings
