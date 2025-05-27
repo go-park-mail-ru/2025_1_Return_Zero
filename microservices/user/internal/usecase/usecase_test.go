@@ -16,6 +16,23 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	mockUserID           = 1
+	mockUsername         = "testuser"
+	mockEmail            = "test@example.com"
+	mockPassword         = "password123"
+	mockNewUsername      = "newuser"
+	mockNewEmail         = "new@example.com"
+	mockNewPassword      = "newpass"
+	mockOldPassword      = "oldpass"
+	mockExistingUsername = "existinguser"
+	mockExistingEmail    = "existing@example.com"
+	mockWrongUsername    = "wronguser"
+	mockWrongPassword    = "wrongpass"
+	mockAvatarURL        = "avatar.jpg"
+	mockDefaultAvatar    = "default_avatar.png"
+)
+
 func setupTest(t *testing.T) (*mock_domain.MockRepository, context.Context) {
 	ctrl := gomock.NewController(t)
 	mockRepo := mock_domain.NewMockRepository(ctrl)
@@ -33,16 +50,16 @@ func TestCreateUser(t *testing.T) {
 	usecase := NewUserUsecase(mockRepo, mockS3Repo)
 
 	registerData := &usecaseModel.RegisterData{
-		Username: "testuser",
-		Email:    "test@example.com",
-		Password: "password123",
+		Username: mockUsername,
+		Email:    mockEmail,
+		Password: mockPassword,
 	}
 
 	expectedUser := &repoModel.User{
-		ID:        1,
-		Username:  "testuser",
-		Email:     "test@example.com",
-		Thumbnail: "default_avatar.png",
+		ID:        mockUserID,
+		Username:  mockUsername,
+		Email:     mockEmail,
+		Thumbnail: mockDefaultAvatar,
 	}
 
 	mockRepo.EXPECT().CreateUser(ctx, gomock.Any()).Return(expectedUser, nil)
@@ -62,9 +79,9 @@ func TestCreateUserError(t *testing.T) {
 	usecase := NewUserUsecase(mockRepo, mockS3Repo)
 
 	registerData := &usecaseModel.RegisterData{
-		Username: "existinguser",
-		Email:    "existing@example.com",
-		Password: "password123",
+		Username: mockExistingUsername,
+		Email:    mockExistingEmail,
+		Password: mockPassword,
 	}
 
 	expectedErr := userErrors.ErrUserExist
@@ -85,15 +102,15 @@ func TestLoginUser(t *testing.T) {
 	usecase := NewUserUsecase(mockRepo, mockS3Repo)
 
 	loginData := &usecaseModel.LoginData{
-		Username: "testuser",
-		Password: "password123",
+		Username: mockUsername,
+		Password: mockPassword,
 	}
 
 	expectedUser := &repoModel.User{
-		ID:        1,
-		Username:  "testuser",
-		Email:     "test@example.com",
-		Thumbnail: "avatar.jpg",
+		ID:        mockUserID,
+		Username:  mockUsername,
+		Email:     mockEmail,
+		Thumbnail: mockAvatarURL,
 	}
 
 	mockRepo.EXPECT().LoginUser(ctx, gomock.Any()).Return(expectedUser, nil)
@@ -112,8 +129,8 @@ func TestLoginUserError(t *testing.T) {
 	usecase := NewUserUsecase(mockRepo, mockS3Repo)
 
 	loginData := &usecaseModel.LoginData{
-		Username: "wronguser",
-		Password: "wrongpass",
+		Username: mockWrongUsername,
+		Password: mockWrongPassword,
 	}
 
 	expectedErr := userErrors.ErrUserNotFound
@@ -133,13 +150,13 @@ func TestGetUserByID(t *testing.T) {
 
 	usecase := NewUserUsecase(mockRepo, mockS3Repo)
 
-	userID := int64(1)
+	userID := int64(mockUserID)
 
 	expectedUser := &repoModel.User{
 		ID:        userID,
-		Username:  "testuser",
-		Email:     "test@example.com",
-		Thumbnail: "avatar.jpg",
+		Username:  mockUsername,
+		Email:     mockEmail,
+		Thumbnail: mockAvatarURL,
 	}
 
 	mockRepo.EXPECT().GetUserByID(ctx, userID).Return(expectedUser, nil)
@@ -158,8 +175,8 @@ func TestGetIDByUsername(t *testing.T) {
 
 	usecase := NewUserUsecase(mockRepo, mockS3Repo)
 
-	username := "testuser"
-	expectedID := int64(1)
+	username := mockUsername
+	expectedID := int64(mockUserID)
 
 	mockRepo.EXPECT().GetIDByUsername(ctx, username).Return(expectedID, nil)
 
@@ -175,7 +192,7 @@ func TestGetUserPrivacySettings(t *testing.T) {
 
 	usecase := NewUserUsecase(mockRepo, mockS3Repo)
 
-	userID := int64(1)
+	userID := int64(mockUserID)
 
 	expectedPrivacy := &repoModel.PrivacySettings{
 		IsPublicPlaylists:       true,
@@ -205,12 +222,12 @@ func TestChangeUserData(t *testing.T) {
 
 	usecase := NewUserUsecase(mockRepo, mockS3Repo)
 
-	username := "testuser"
+	username := mockUsername
 	changeData := &usecaseModel.ChangeUserData{
-		Password:    "oldpass",
-		NewUsername: "newuser",
-		NewEmail:    "new@example.com",
-		NewPassword: "newpass",
+		Password:    mockOldPassword,
+		NewUsername: mockNewUsername,
+		NewEmail:    mockNewEmail,
+		NewPassword: mockNewPassword,
 	}
 
 	mockRepo.EXPECT().ChangeUserData(ctx, username, gomock.Any()).Return(nil)
@@ -227,9 +244,9 @@ func TestDeleteUser(t *testing.T) {
 	usecase := NewUserUsecase(mockRepo, mockS3Repo)
 
 	deleteData := &usecaseModel.UserDelete{
-		Username: "testuser",
-		Email:    "test@example.com",
-		Password: "password123",
+		Username: mockUsername,
+		Email:    mockEmail,
+		Password: mockPassword,
 	}
 
 	mockRepo.EXPECT().DeleteUser(ctx, gomock.Any()).Return(nil)
@@ -245,7 +262,7 @@ func TestGetFullUserData(t *testing.T) {
 
 	usecase := NewUserUsecase(mockRepo, mockS3Repo)
 
-	username := "testuser"
+	username := mockUsername
 
 	privacySettings := &repoModel.PrivacySettings{
 		IsPublicPlaylists:       true,
@@ -258,8 +275,8 @@ func TestGetFullUserData(t *testing.T) {
 
 	expectedUserData := &repoModel.UserFullData{
 		Username:  username,
-		Email:     "test@example.com",
-		Thumbnail: "avatar.jpg",
+		Email:     mockEmail,
+		Thumbnail: mockAvatarURL,
 		Privacy:   privacySettings,
 	}
 
@@ -280,8 +297,8 @@ func TestUploadAvatar(t *testing.T) {
 
 	usecase := NewUserUsecase(mockRepo, mockS3Repo)
 
-	avatarURL := "avatar.jpg"
-	userID := int64(1)
+	avatarURL := mockAvatarURL
+	userID := int64(mockUserID)
 
 	mockRepo.EXPECT().UploadAvatar(ctx, avatarURL, userID).Return(nil)
 
