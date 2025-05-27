@@ -181,6 +181,9 @@ services:
     image: containrrr/watchtower:latest
     container_name: watchtower
     restart: always
+    environment:
+      WATCHTOWER_ROLLING_RESTART: true
+      WATCHTOWER_CLEANUP: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command:
