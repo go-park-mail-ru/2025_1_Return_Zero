@@ -3,11 +3,6 @@ ifneq (,$(wildcard ../.env))
 	export
 endif
 
-ifneq (,$(wildcard .env))
-	include .env
-	export
-endif
-
 # deploy
 deploy:
 	docker compose up -d --build
