@@ -1,25 +1,65 @@
+version: "2"
+
 run:
   concurrency: 8
   timeout: 20m
   issues-exit-code: 1
   tests: false
-  exclude-files:
-    - \.pb\.go$
+  skip-dirs:
+    - vendor
+    - third_party
+  skip-files:
+    - ".*\\.pb\\.go$"
+    - ".*_generated\\.go$"
 
 output:
-  formats: colored-line-number
+  formats:
+    - format: colored-line-number
+      path: stdout
   print-issued-lines: true
   print-linter-name: true
-  print-line-number: true
+  sort-results: true
 
 linters-settings:
   govet:
     shadow: true
+    enable-all: true
   dupl:
     threshold: 100
   goconst:
-    min-len:         2
+    min-len: 2
     min-occurrences: 3
+    ignore-tests: true
+  gocyclo:
+    min-complexity: 15
+  gofmt:
+    simplify: true
+  goimports:
+    local-prefixes: github.com/go-park-mail-ru/2025_1_Return_Zero
+  gosec:
+    excludes:
+      - G204
+      - G304t
+  revive:
+    min-confidence: 0.8
+    rules:
+      - name: exported
+        disabled: true
+      - name: package-comments
+        disabled: true
+      - name: var-naming
+        disabled: true
+  staticcheck:
+    checks: ["all"]
+  unused:
+    check-exported: false
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  misspell:
+    locale: US
+  lll:
+    line-length: 120
 
 linters:
   disable-all: true
@@ -33,11 +73,47 @@ linters:
     - staticcheck
     - typecheck
     - unused
+    - revive
 
 issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: false
   exclude-use-default: false
-  exclude:
-    - exported func .* returns unexported type .*, which can be annoying to use
-    - should have a package comment
-    - don't use an underscore in package name
-    - exported type .* should have comment or be unexported
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - dupl
+        - gosec
+        - lll
+    - text: "exported func .* returns unexported type .*, which can be annoying to use"
+      linters:
+        - revive
+    - text: "should have a package comment"
+      linters:
+        - revive
+    - text: "don't use an underscore in package name"
+      linters:
+        - revive
+    - text: "exported type .* should have comment or be unexported"
+      linters:
+        - revive
+    - text: "shadow: declaration of \"err\" shadows declaration"
+      linters:
+        - govet
+    - text: "shadow: declaration of \"ctx\" shadows declaration"
+      linters:
+        - govet
+
+severity:
+  default-severity: error
+  case-sensitive: false
+  rules:
+    - linters:
+        - revive
+      severity: warning
+    - linters:
+        - misspell
+      severity: warning
