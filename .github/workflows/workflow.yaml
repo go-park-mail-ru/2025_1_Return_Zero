@@ -54,7 +54,7 @@ jobs:
 
       - name: Set up env file
         run: |
-          echo ${{ secrets.ENV_FILE }} > .env
+          echo "${{ secrets.ENV_FILE }}" > .env
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
