@@ -132,7 +132,7 @@ services:
       - '443:443'
     volumes:
       - '/etc/ssl:/etc/ssl'
-      - '../../dist:/usr/share/nginx/static'   
+      - '../dist:/usr/share/nginx/static'   
     depends_on:
       - go-api
     tty: true

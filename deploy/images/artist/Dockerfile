@@ -27,8 +27,6 @@ COPY ./config.yaml ./config.yaml
 
 COPY ./.env ./.env
 
-RUN cat ./.env
-
 RUN go build -o main microservices/artist/cmd/main.go
 
 FROM alpine:latest
@@ -40,8 +38,6 @@ COPY --from=builder /app/main .
 COPY --from=builder /app/config.yaml . 
 
 COPY --from=builder /app/.env .
-
-RUN cat ./.env
 
 EXPOSE 5001
 
