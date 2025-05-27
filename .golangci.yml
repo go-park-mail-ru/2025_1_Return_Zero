@@ -10,14 +10,12 @@ linters:
   enable:
     - errcheck
     - goconst
-    - goimports
     - govet
     - ineffassign
     - gosimple
     - staticcheck
     - unused
     - revive
-  
   settings:
     govet:
       enable-all: true
@@ -33,10 +31,6 @@ linters:
       min-occurrences: 3
     gocyclo:
       min-complexity: 15
-    gofmt:
-      simplify: true
-    goimports:
-      local-prefixes: github.com/go-park-mail-ru/2025_1_Return_Zero
     gosec:
       excludes:
         - G204
@@ -48,6 +42,16 @@ linters:
         - name: exported
         - name: package-comments
         - name: comment-spacings
+
+formatters:
+  enable:
+    - goimports
+    - gofmt
+  settings:
+    goimports:
+      local-prefixes: github.com/go-park-mail-ru/2025_1_Return_Zero
+    gofmt:
+      simplify: true
 
 issues:
   max-issues-per-linter: 0
