@@ -56,6 +56,9 @@ jobs:
         run: |
           echo '${{ secrets.ENV_FILE }}' > .env
 
+      - name: Print .env file
+        run: cat .env
+
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
