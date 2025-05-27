@@ -70,7 +70,6 @@ linters:
     - ineffassign
     - gosimple
     - staticcheck
-    - typecheck
     - unused
     - revive
 
