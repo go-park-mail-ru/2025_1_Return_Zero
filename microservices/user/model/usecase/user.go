@@ -50,8 +50,7 @@ type UserFullData struct {
 }
 
 type CreateLabelRequest struct {
-	Name   string
-
+	Name string
 }
 
 type Label struct {

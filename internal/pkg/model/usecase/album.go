@@ -37,8 +37,8 @@ type AlbumLikeRequest struct {
 }
 
 type CreateTrackRequest struct {
-	Title    string
-	Track    []byte
+	Title string
+	Track []byte
 }
 
 type CreateAlbumRequest struct {

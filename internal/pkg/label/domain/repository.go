@@ -13,5 +13,4 @@ type Repository interface {
 }
 
 type S3Repository interface {
-	
 }

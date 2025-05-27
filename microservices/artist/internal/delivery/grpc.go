@@ -178,7 +178,6 @@ func (s *ArtistService) DeleteArtist(ctx context.Context, req *artistProto.Artis
 	return &emptypb.Empty{}, nil
 }
 
-
 func (s *ArtistService) ConnectArtists(ctx context.Context, req *artistProto.ArtistsIDWithAlbumID) (*emptypb.Empty, error) {
 	artistsID, albumID, tracksID := model.ArtistsIDWithAlbumIDFromProtoToUsecase(req)
 	err := s.artistUsecase.ConnectArtists(ctx, artistsID, albumID, tracksID)

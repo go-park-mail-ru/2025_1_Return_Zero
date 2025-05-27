@@ -22,31 +22,31 @@ func setupTest(t *testing.T) (*mock_domain.MockRepository, context.Context) {
 }
 
 func TestCreateSession(t *testing.T) {
-    mockRepo, ctx := setupTest(t)
-    usecase := NewAuthUsecase(mockRepo)
-    
-    userID := int64(1)
-    expectedSessionID := "test-session-id"
-    
-    mockRepo.EXPECT().CreateSession(ctx, userID).Return(expectedSessionID, nil)
-    
-    sessionID, err := usecase.CreateSession(ctx, userID)
-    
-    assert.NoError(t, err)
-    assert.Equal(t, expectedSessionID, sessionID)
+	mockRepo, ctx := setupTest(t)
+	usecase := NewAuthUsecase(mockRepo)
+
+	userID := int64(1)
+	expectedSessionID := "test-session-id"
+
+	mockRepo.EXPECT().CreateSession(ctx, userID).Return(expectedSessionID, nil)
+
+	sessionID, err := usecase.CreateSession(ctx, userID)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expectedSessionID, sessionID)
 }
 
 func TestGetSession(t *testing.T) {
-    mockRepo, ctx := setupTest(t)
-    usecase := NewAuthUsecase(mockRepo)
-    
-    sessionID := "test-session-id"
-    expectedUserID := int64(1)
-    
-    mockRepo.EXPECT().GetSession(ctx, sessionID).Return(expectedUserID, nil)
-    
-    userID, err := usecase.GetSession(ctx, sessionID)
-    
-    assert.NoError(t, err)
-    assert.Equal(t, expectedUserID, userID)
+	mockRepo, ctx := setupTest(t)
+	usecase := NewAuthUsecase(mockRepo)
+
+	sessionID := "test-session-id"
+	expectedUserID := int64(1)
+
+	mockRepo.EXPECT().GetSession(ctx, sessionID).Return(expectedUserID, nil)
+
+	userID, err := usecase.GetSession(ctx, sessionID)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expectedUserID, userID)
 }

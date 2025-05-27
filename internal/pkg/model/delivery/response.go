@@ -63,6 +63,5 @@ type APINotFoundErrorResponse struct {
 }
 
 type SuccessCreateAlbum struct {
-	AlbumID int64  `json:"album_id" example:"1" description:"ID of the created album"`
+	AlbumID int64 `json:"album_id" example:"1" description:"ID of the created album"`
 }
-

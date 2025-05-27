@@ -165,8 +165,8 @@ func TracksIDWithAlbumIDFromProtoToUsecase(tracksIDWithAlbumID []*trackProto.Tra
 	var tracks []*usecaseModel.TrackLoad
 	for _, track := range tracksIDWithAlbumID {
 		tracks = append(tracks, &usecaseModel.TrackLoad{
-			Title:    track.Title,
-			File:     track.File,
+			Title: track.Title,
+			File:  track.File,
 		})
 	}
 	return tracks

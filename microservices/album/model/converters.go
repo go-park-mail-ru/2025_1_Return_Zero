@@ -165,18 +165,18 @@ func AlbumTypeFromProtoToUsecase(albumType albumProto.AlbumType) usecaseModel.Al
 
 func AlbumRequestFromProtoToUsecase(albumRequest *albumProto.CreateAlbumRequest) *usecaseModel.CreateAlbumRequest {
 	return &usecaseModel.CreateAlbumRequest{
-		Type:       AlbumTypeFromProtoToUsecase(albumRequest.Type),
-		Title:      albumRequest.Title,
-		Image:      albumRequest.Image,
-		LabelID:    albumRequest.LabelId,
+		Type:    AlbumTypeFromProtoToUsecase(albumRequest.Type),
+		Title:   albumRequest.Title,
+		Image:   albumRequest.Image,
+		LabelID: albumRequest.LabelId,
 	}
 }
 
 func AlbumRequestFromUsecaseToRepository(albumRequest *usecaseModel.CreateAlbumRequest) *repoModel.CreateAlbumRequest {
 	return &repoModel.CreateAlbumRequest{
-		Type:       repoModel.AlbumType(albumRequest.Type),
-		Title:      albumRequest.Title,
-		Image:      albumRequest.Image,
-		LabelID:    albumRequest.LabelID,
+		Type:    repoModel.AlbumType(albumRequest.Type),
+		Title:   albumRequest.Title,
+		Image:   albumRequest.Image,
+		LabelID: albumRequest.LabelID,
 	}
 }

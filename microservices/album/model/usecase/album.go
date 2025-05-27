@@ -55,8 +55,8 @@ type LikeRequest struct {
 }
 
 type CreateAlbumRequest struct {
-	Title      string
-	Type       AlbumType
-	Image      []byte
-	LabelID    int64
+	Title   string
+	Type    AlbumType
+	Image   []byte
+	LabelID int64
 }
