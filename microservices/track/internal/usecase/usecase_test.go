@@ -1086,3 +1086,171 @@ func TestDeleteTracksByAlbumID(t *testing.T) {
 	err := u.DeleteTracksByAlbumID(ctx, albumID)
 	require.NoError(t, err)
 }
+
+func TestGetMostLikedTracks(t *testing.T) {
+	mockRepo, mockS3Repo, ctx := setupTest(t)
+	u := NewTrackUsecase(mockRepo, mockS3Repo)
+
+	userID := int64(1)
+
+	repoTracks := []*repository.Track{
+		{
+			ID:         1,
+			Title:      "Most Liked Track",
+			Thumbnail:  "thumbnail1.jpg",
+			Duration:   200,
+			AlbumID:    1,
+			IsFavorite: true,
+		},
+	}
+
+	mockRepo.EXPECT().GetMostLikedTracks(ctx, userID).Return(repoTracks, nil)
+
+	tracks, err := u.GetMostLikedTracks(ctx, userID)
+	require.NoError(t, err)
+	require.Len(t, tracks, 1)
+
+	assert.Equal(t, int64(1), tracks[0].ID)
+	assert.Equal(t, "Most Liked Track", tracks[0].Title)
+}
+
+func TestGetMostLikedTracksError(t *testing.T) {
+	mockRepo, mockS3Repo, ctx := setupTest(t)
+	u := NewTrackUsecase(mockRepo, mockS3Repo)
+
+	userID := int64(1)
+	expectedErr := errors.New("database error")
+
+	mockRepo.EXPECT().GetMostLikedTracks(ctx, userID).Return(nil, expectedErr)
+
+	tracks, err := u.GetMostLikedTracks(ctx, userID)
+	assert.Error(t, err)
+	assert.Equal(t, expectedErr, err)
+	assert.Nil(t, tracks)
+}
+
+func TestGetMostRecentTracks(t *testing.T) {
+	mockRepo, mockS3Repo, ctx := setupTest(t)
+	u := NewTrackUsecase(mockRepo, mockS3Repo)
+
+	userID := int64(1)
+
+	repoTracks := []*repository.Track{
+		{
+			ID:         1,
+			Title:      "Recent Track",
+			Thumbnail:  "thumbnail1.jpg",
+			Duration:   200,
+			AlbumID:    1,
+			IsFavorite: true,
+		},
+	}
+
+	mockRepo.EXPECT().GetMostRecentTracks(ctx, userID).Return(repoTracks, nil)
+
+	tracks, err := u.GetMostRecentTracks(ctx, userID)
+	require.NoError(t, err)
+	require.Len(t, tracks, 1)
+
+	assert.Equal(t, int64(1), tracks[0].ID)
+	assert.Equal(t, "Recent Track", tracks[0].Title)
+}
+
+func TestGetMostRecentTracksError(t *testing.T) {
+	mockRepo, mockS3Repo, ctx := setupTest(t)
+	u := NewTrackUsecase(mockRepo, mockS3Repo)
+
+	userID := int64(1)
+	expectedErr := errors.New("database error")
+
+	mockRepo.EXPECT().GetMostRecentTracks(ctx, userID).Return(nil, expectedErr)
+
+	tracks, err := u.GetMostRecentTracks(ctx, userID)
+	assert.Error(t, err)
+	assert.Equal(t, expectedErr, err)
+	assert.Nil(t, tracks)
+}
+
+func TestGetMostListenedLastMonthTracks(t *testing.T) {
+	mockRepo, mockS3Repo, ctx := setupTest(t)
+	u := NewTrackUsecase(mockRepo, mockS3Repo)
+
+	userID := int64(1)
+
+	repoTracks := []*repository.Track{
+		{
+			ID:         1,
+			Title:      "Most Listened Last Month Track",
+			Thumbnail:  "thumbnail1.jpg",
+			Duration:   200,
+			AlbumID:    1,
+			IsFavorite: true,
+		},
+	}
+
+	mockRepo.EXPECT().GetMostListenedLastMonthTracks(ctx, userID).Return(repoTracks, nil)
+
+	tracks, err := u.GetMostListenedLastMonthTracks(ctx, userID)
+	require.NoError(t, err)
+	require.Len(t, tracks, 1)
+
+	assert.Equal(t, int64(1), tracks[0].ID)
+	assert.Equal(t, "Most Listened Last Month Track", tracks[0].Title)
+}
+
+func TestGetMostListenedLastMonthTracksError(t *testing.T) {
+	mockRepo, mockS3Repo, ctx := setupTest(t)
+	u := NewTrackUsecase(mockRepo, mockS3Repo)
+
+	userID := int64(1)
+	expectedErr := errors.New("database error")
+
+	mockRepo.EXPECT().GetMostListenedLastMonthTracks(ctx, userID).Return(nil, expectedErr)
+
+	tracks, err := u.GetMostListenedLastMonthTracks(ctx, userID)
+	assert.Error(t, err)
+	assert.Equal(t, expectedErr, err)
+	assert.Nil(t, tracks)
+}
+
+func TestGetMostLikedLastWeekTracks(t *testing.T) {
+	mockRepo, mockS3Repo, ctx := setupTest(t)
+	u := NewTrackUsecase(mockRepo, mockS3Repo)
+
+	userID := int64(1)
+
+	repoTracks := []*repository.Track{
+		{
+			ID:         1,
+			Title:      "Most Liked Last Week Track",
+			Thumbnail:  "thumbnail1.jpg",
+			Duration:   200,
+			AlbumID:    1,
+			IsFavorite: true,
+		},
+	}
+
+	mockRepo.EXPECT().GetMostLikedLastWeekTracks(ctx, userID).Return(repoTracks, nil)
+
+	tracks, err := u.GetMostLikedLastWeekTracks(ctx, userID)
+	require.NoError(t, err)
+	require.Len(t, tracks, 1)
+
+	assert.Equal(t, int64(1), tracks[0].ID)
+	assert.Equal(t, "Most Liked Last Week Track", tracks[0].Title)
+}
+
+func TestGetMostLikedLastWeekTracksError(t *testing.T) {
+	mockRepo, mockS3Repo, ctx := setupTest(t)
+	u := NewTrackUsecase(mockRepo, mockS3Repo)
+
+	userID := int64(1)
+	expectedErr := errors.New("database error")
+
+	mockRepo.EXPECT().GetMostLikedLastWeekTracks(ctx, userID).Return(nil, expectedErr)
+
+	tracks, err := u.GetMostLikedLastWeekTracks(ctx, userID)
+	assert.Error(t, err)
+	assert.Equal(t, expectedErr, err)
+	assert.Nil(t, tracks)
+}
