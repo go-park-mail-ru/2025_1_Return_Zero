@@ -552,9 +552,9 @@ func (r *albumPostgresRepository) CreateAlbum(ctx context.Context, album *repoMo
 	}
 
 	_, err = r.db.ExecContext(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY album_stats")
-    if err != nil {
-        logger.Warn("failed to refresh album_stats view, album may not be visible for up to 1 minute", zap.Error(err))
-    }
+	if err != nil {
+		logger.Warn("failed to refresh album_stats view, album may not be visible for up to 1 minute", zap.Error(err))
+	}
 
 	r.metrics.DatabaseDuration.WithLabelValues("CreateAlbum").Observe(time.Since(start).Seconds())
 	logger.Info("Album created successfully", zap.Int64("albumID", albumID))

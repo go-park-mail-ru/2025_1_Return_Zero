@@ -939,3 +939,124 @@ func TestGetStreamsByUserIDScanError(t *testing.T) {
 	assert.Nil(t, streams)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
+
+func TestAddTracksToAlbum(t *testing.T) {
+    db, mock, ctx := setupTest(t)
+    defer db.Close()
+
+    repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
+    albumID := int64(1)
+    
+    tracks := []*repoModel.Track{
+        {
+            Title:     "Track 1",
+            Thumbnail: "thumbnail1.jpg",
+            Duration:  200,
+            AlbumID:   albumID,
+        },
+        {
+            Title:     "Track 2",
+            Thumbnail: "thumbnail2.jpg",
+            Duration:  180,
+            AlbumID:   albumID,
+        },
+    }
+
+    mock.ExpectBegin()
+    
+    mock.ExpectQuery("INSERT INTO track").
+        WithArgs(
+            tracks[0].Title, tracks[0].Thumbnail, tracks[0].Duration, tracks[0].AlbumID, "Track 1.mp3", 1,
+            tracks[1].Title, tracks[1].Thumbnail, tracks[1].Duration, tracks[1].AlbumID, "Track 2.mp3", 2,
+        ).
+        WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1).AddRow(2))
+    
+    mock.ExpectCommit()
+    
+    mock.ExpectExec("REFRESH MATERIALIZED VIEW CONCURRENTLY track_stats").
+        WillReturnResult(sqlmock.NewResult(0, 0))
+
+    trackIDs, err := repo.AddTracksToAlbum(ctx, tracks)
+    assert.NoError(t, err)
+    assert.Len(t, trackIDs, 2)
+    assert.Equal(t, int64(1), trackIDs[0])
+    assert.Equal(t, int64(2), trackIDs[1])
+
+    assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestAddTracksToAlbumError(t *testing.T) {
+	db, mock, ctx := setupTest(t)
+	defer db.Close()
+
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
+	albumID := int64(1)
+
+	tracks := []*repoModel.Track{
+		{
+			Title:     "Track 1",
+			Thumbnail: "thumbnail1.jpg",
+			Duration:  200,
+			AlbumID:   albumID,
+		},
+		{
+			Title:     "Track 2",
+			Thumbnail: "thumbnail2.jpg",
+			Duration:  180,
+			AlbumID:   albumID,
+		},
+	}
+
+	mock.ExpectBegin()
+	
+	mock.ExpectQuery("INSERT INTO track").
+		WithArgs(
+			tracks[0].Title, tracks[0].Thumbnail, tracks[0].Duration, tracks[0].AlbumID, "Track 1.mp3", 1,
+			tracks[1].Title, tracks[1].Thumbnail, tracks[1].Duration, tracks[1].AlbumID, "Track 2.mp3", 2,
+		).
+		WillReturnError(stderrors.New("db error"))
+	
+	mock.ExpectRollback()
+
+	trackIDs, err := repo.AddTracksToAlbum(ctx, tracks)
+	assert.Error(t, err)
+	assert.Nil(t, trackIDs)
+
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteTracksByAlbumID(t *testing.T) {
+    db, mock, ctx := setupTest(t)
+    defer db.Close()
+
+    repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
+    albumID := int64(1)
+
+    mock.ExpectPrepare("DELETE FROM track")
+    mock.ExpectExec("DELETE FROM track").
+        WithArgs(albumID).
+        WillReturnResult(sqlmock.NewResult(0, 2))
+
+    err := repo.DeleteTracksByAlbumID(ctx, albumID)
+    assert.NoError(t, err)
+
+    assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestDeleteTracksByAlbumIDError(t *testing.T) {
+	db, mock, ctx := setupTest(t)
+	defer db.Close()
+
+	repo := NewTrackPostgresRepository(db, metrics.NewMockMetrics())
+	albumID := int64(1)
+
+	mock.ExpectPrepare("DELETE FROM track")
+	mock.ExpectExec("DELETE FROM track").
+		WithArgs(albumID).
+		WillReturnError(stderrors.New("db error"))
+
+	err := repo.DeleteTracksByAlbumID(ctx, albumID)
+	assert.Error(t, err)
+
+	assert.NoError(t, mock.ExpectationsWereMet())
+}

@@ -887,9 +887,9 @@ func (r *artistPostgresRepository) CreateArtist(ctx context.Context, artist *rep
 	duration := time.Since(start).Seconds()
 
 	_, err = r.db.ExecContext(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY artist_stats")
-    if err != nil {
-        logger.Warn("failed to refresh artist_stats view, artist may not be visible for up to 1 minute", zap.Error(err))
-    }
+	if err != nil {
+		logger.Warn("failed to refresh artist_stats view, artist may not be visible for up to 1 minute", zap.Error(err))
+	}
 
 	r.metrics.DatabaseDuration.WithLabelValues("CreateArtist").Observe(duration)
 	return artist, nil
