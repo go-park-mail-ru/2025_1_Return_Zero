@@ -10,6 +10,7 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/config"
 	albumProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/album"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/postgres"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/init/s3"
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/album/internal/delivery"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/album/internal/repository"
@@ -28,7 +29,11 @@ func main() {
 		logger.Error("Error creating logger:", zap.Error(err))
 		return
 	}
-	defer logger.Sync()
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			logger.Error("Error syncing logger:", zap.Error(err))
+		}
+	}()
 	cfg, err := config.LoadConfig()
 	if err != nil {
 		logger.Error("Error loading config:", zap.Error(err))
@@ -41,7 +46,11 @@ func main() {
 		logger.Error("Can't start album service:", zap.Error(err))
 		return
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	reg := prometheus.NewRegistry()
 	metrics := metrics.NewMetrics(reg, "album_service")
@@ -50,6 +59,8 @@ func main() {
 
 	server := grpc.NewServer(
 		grpc.UnaryInterceptor(accessInterceptor.UnaryServerInterceptor()),
+		grpc.MaxRecvMsgSize(500*1024*1024), // 500 MB
+		grpc.MaxSendMsgSize(500*1024*1024), // 500 MB
 	)
 
 	postgresPool, err := postgres.ConnectPostgres(cfg.Postgres)
@@ -57,7 +68,18 @@ func main() {
 		logger.Error("Error connecting to postgres:", zap.Error(err))
 		return
 	}
-	defer postgresPool.Close()
+	defer func() {
+		if err := postgresPool.Close(); err != nil {
+			logger.Error("Error closing postgres pool:", zap.Error(err))
+		}
+	}()
+
+	fmt.Println("config ", cfg.S3.S3ImagesBucket)
+	s3, err := s3.InitS3(cfg.S3)
+	if err != nil {
+		logger.Error("Error initializing S3:", zap.Error(err))
+		return
+	}
 
 	go func() {
 		http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
@@ -69,7 +91,8 @@ func main() {
 	}()
 
 	albumRepository := repository.NewAlbumPostgresRepository(postgresPool, metrics)
-	albumUsecase := usecase.NewAlbumUsecase(albumRepository)
+	s3Repository := repository.NewS3Repository(s3, cfg.S3.S3ImagesBucket, metrics)
+	albumUsecase := usecase.NewAlbumUsecase(albumRepository, s3Repository)
 	albumService := delivery.NewAlbumService(albumUsecase)
 	albumProto.RegisterAlbumServiceServer(server, albumService)
 

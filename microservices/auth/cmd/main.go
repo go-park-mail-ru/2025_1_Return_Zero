@@ -29,7 +29,11 @@ func main() {
 		logger.Error("Error creating logger:", zap.Error(err))
 		return
 	}
-	defer logger.Sync()
+	defer func() {
+		if err := logger.Sync(); err != nil {
+			logger.Error("Error syncing logger:", zap.Error(err))
+		}
+	}()
 
 	cfg, err := config.LoadConfig()
 	if err != nil {
@@ -43,7 +47,11 @@ func main() {
 		logger.Error("Can't start auth service:", zap.Error(err))
 		return
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	reg := prometheus.NewRegistry()
 	metrics := metrics.NewMetrics(reg, "auth_service")
@@ -55,7 +63,11 @@ func main() {
 	)
 
 	redisPool := redis.NewRedisPool(cfg.Redis)
-	defer redisPool.Close()
+	defer func() {
+		if err := redisPool.Close(); err != nil {
+			logger.Error("Error closing Redis:", zap.Error(err))
+		}
+	}()
 
 	go func() {
 		http.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))

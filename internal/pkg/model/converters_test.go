@@ -12,9 +12,47 @@ import (
 	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
+)
+
+// Mock constants for testing
+const (
+	mockUserID      = int64(1)
+	mockArtistID    = int64(1)
+	mockAlbumID     = int64(1)
+	mockTrackID     = int64(1)
+	mockPlaylistID  = int64(1)
+	mockStreamID    = int64(1)
+	mockUserID2     = int64(2)
+	mockArtistID2   = int64(2)
+	mockAlbumID2    = int64(2)
+	mockTrackID2    = int64(2)
+	mockPlaylistID2 = int64(2)
+	mockTrackID3    = int64(3)
+	mockUserID777   = int64(777)
+	mockUserID12345 = int64(12345)
+	mockUsername1   = "user1"
+
+	mockUsername  = "testuser"
+	mockEmail     = "test@example.com"
+	mockPassword  = "password123"
+	mockAvatarURL = "avatar.jpg"
+	mockSessionID = "test-session-id"
+
+	mockAlbumTitle    = "Album Title"
+	mockArtistTitle   = "Artist Title"
+	mockTrackTitle    = "Track Title"
+	mockPlaylistTitle = "Playlist Title"
+
+	mockThumbnail   = "thumbnail.jpg"
+	mockFileURL     = "http://example.com/track.mp3"
+	mockNewUsername = "newuser"
+	mockNewEmail    = "new@example.com"
+	mockNewPassword = "newpass"
+	mockOldPassword = "oldpass"
 )
 
 func TestPaginationFromDeliveryToUsecase(t *testing.T) {
@@ -194,8 +232,8 @@ func TestAlbumLikeRequestFromUsecaseToProto(t *testing.T) {
 
 func TestAlbumLikeRequestFromDeliveryToUsecase(t *testing.T) {
 	isLike := true
-	userID := int64(1)
-	albumID := int64(1)
+	userID := mockUserID
+	albumID := mockAlbumID
 
 	ucLikeRequest := model.AlbumLikeRequestFromDeliveryToUsecase(isLike, userID, albumID)
 
@@ -371,7 +409,7 @@ func TestArtistWithRoleListFromProtoToUsecase(t *testing.T) {
 }
 
 func TestUserIDFromUsecaseToProtoArtist(t *testing.T) {
-	userID := int64(1)
+	userID := mockUserID
 	protoUserID := model.UserIDFromUsecaseToProtoArtist(userID)
 	assert.Equal(t, userID, protoUserID.Id)
 }
@@ -398,8 +436,8 @@ func TestArtistLikeRequestFromUsecaseToProto(t *testing.T) {
 
 func TestArtistLikeRequestFromDeliveryToUsecase(t *testing.T) {
 	isLike := false
-	userID := int64(1)
-	artistID := int64(1)
+	userID := mockUserID
+	artistID := mockArtistID
 
 	ucLikeRequest := model.ArtistLikeRequestFromDeliveryToUsecase(isLike, userID, artistID)
 
@@ -620,8 +658,8 @@ func TestTrackLikeRequestFromUsecaseToProto(t *testing.T) {
 
 func TestTrackLikeRequestFromDeliveryToUsecase(t *testing.T) {
 	isLike := false
-	userID := int64(1)
-	trackID := int64(1)
+	userID := mockUserID
+	trackID := mockTrackID
 
 	ucLikeRequest := model.TrackLikeRequestFromDeliveryToUsecase(isLike, userID, trackID)
 
@@ -631,7 +669,7 @@ func TestTrackLikeRequestFromDeliveryToUsecase(t *testing.T) {
 }
 
 func TestUserIDFromUsecaseToProtoTrack(t *testing.T) {
-	userID := int64(1)
+	userID := mockUserID
 	protoUserID := model.UserIDFromUsecaseToProtoTrack(userID)
 	assert.Equal(t, userID, protoUserID.Id)
 }
@@ -666,8 +704,8 @@ func TestTrackStreamUpdateDataFromDeliveryToUsecase(t *testing.T) {
 	deliveryTrackStream := &delivery.TrackStreamUpdateData{
 		Duration: 1,
 	}
-	userID := int64(1)
-	streamID := int64(1)
+	userID := mockUserID
+	streamID := mockStreamID
 
 	ucTrackStream := model.TrackStreamUpdateDataFromDeliveryToUsecase(deliveryTrackStream, userID, streamID)
 
@@ -712,7 +750,7 @@ func TestArtistIdsFromUsecaseToArtistProto(t *testing.T) {
 }
 
 func TestArtistStreamCreateDataListFromUsecaseToProto(t *testing.T) {
-	userID := int64(1)
+	userID := mockUserID
 	artistIDs := []int64{1, 2, 3}
 
 	protoArtistStreamCreateDataList := model.ArtistStreamCreateDataListFromUsecaseToProto(userID, artistIDs)
@@ -747,9 +785,9 @@ func TestUserFullDataUsecaseToDelivery(t *testing.T) {
 	}
 
 	ucUserFullData := &usecase.UserFullData{
-		Username:   "testuser",
-		Email:      "test@example.com",
-		AvatarUrl:  "avatar.jpg",
+		Username:   mockUsername,
+		Email:      mockEmail,
+		AvatarUrl:  mockAvatarURL,
 		Privacy:    ucPrivacy,
 		Statistics: ucStatistics,
 	}
@@ -932,7 +970,7 @@ func TestPlaylistFromUsecaseToDelivery(t *testing.T) {
 }
 
 func TestPlaylistFromProtoToUsecase(t *testing.T) {
-	username := "user1"
+	username := mockUsername1
 	protoPlaylist := &playlistProto.Playlist{
 		Id:        1,
 		Title:     "Playlist 1",
@@ -948,7 +986,7 @@ func TestPlaylistFromProtoToUsecase(t *testing.T) {
 }
 
 func TestPlaylistsFromProtoToUsecase(t *testing.T) {
-	username := "user1"
+	username := mockUsername1
 	protoPlaylists := []*playlistProto.Playlist{
 		{
 			Id:        1,
@@ -976,7 +1014,7 @@ func TestPlaylistsFromProtoToUsecase(t *testing.T) {
 }
 
 func TestPlaylistWithIsLikedFromProtoToUsecase(t *testing.T) {
-	username := "user1"
+	username := mockUsername1
 	protoPlaylist := &playlistProto.Playlist{
 		Id:        1,
 		Title:     "Playlist 1",
@@ -1018,8 +1056,8 @@ func TestPlaylistWithIsLikedFromUsecaseToDelivery(t *testing.T) {
 }
 
 func TestLikePlaylistRequestFromDeliveryToUsecase(t *testing.T) {
-	userID := int64(1)
-	playlistID := int64(2)
+	userID := mockUserID
+	playlistID := mockPlaylistID2
 	isLike := true
 
 	ucLikeRequest := model.LikePlaylistRequestFromDeliveryToUsecase(userID, playlistID, isLike)
@@ -1044,8 +1082,8 @@ func TestLikePlaylistRequestFromUsecaseToProto(t *testing.T) {
 }
 
 func TestGetPlaylistsToAddRequestFromDeliveryToUsecase(t *testing.T) {
-	trackID := int64(1)
-	userID := int64(2)
+	trackID := mockTrackID
+	userID := mockUserID2
 
 	ucGetRequest := model.GetPlaylistsToAddRequestFromDeliveryToUsecase(trackID, userID)
 
@@ -1066,7 +1104,7 @@ func TestGetPlaylistsToAddRequestFromUsecaseToProto(t *testing.T) {
 }
 
 func TestSessionIDFromProtoToUsecase(t *testing.T) {
-	sessionID := "test-session-id"
+	sessionID := mockSessionID
 	protoSessionID := &authProto.SessionID{
 		SessionId: sessionID,
 	}
@@ -1077,7 +1115,7 @@ func TestSessionIDFromProtoToUsecase(t *testing.T) {
 }
 
 func TestUserIDFromProtoToUsecase(t *testing.T) {
-	userID := int64(12345)
+	userID := mockUserID12345
 	protoUserID := &authProto.UserID{
 		Id: userID,
 	}
@@ -1088,7 +1126,7 @@ func TestUserIDFromProtoToUsecase(t *testing.T) {
 }
 
 func TestSessionIDFromUsecaseToProto(t *testing.T) {
-	sessionID := "test-session-id"
+	sessionID := mockSessionID
 
 	protoSessionID := model.SessionIDFromUsecaseToProto(sessionID)
 
@@ -1096,7 +1134,7 @@ func TestSessionIDFromUsecaseToProto(t *testing.T) {
 }
 
 func TestUserIDFromUsecaseToProto(t *testing.T) {
-	userID := int64(12345)
+	userID := mockUserID12345
 
 	protoUserID := model.UserIDFromUsecaseToProto(userID)
 
@@ -1106,9 +1144,9 @@ func TestUserIDFromUsecaseToProto(t *testing.T) {
 // Tests for remaining User-related converters
 func TestRegisterDataFromUsecaseToProto(t *testing.T) {
 	ucUser := &usecase.User{
-		Username: "testuser",
-		Email:    "test@example.com",
-		Password: "password123",
+		Username: mockUsername,
+		Email:    mockEmail,
+		Password: mockPassword,
 	}
 
 	protoRegisterData := model.RegisterDataFromUsecaseToProto(ucUser)
@@ -1121,9 +1159,9 @@ func TestRegisterDataFromUsecaseToProto(t *testing.T) {
 func TestUserFromProtoToUsecase(t *testing.T) {
 	protoUser := &userProto.UserFront{
 		Id:       123,
-		Username: "testuser",
-		Email:    "test@example.com",
-		Avatar:   "avatar.jpg",
+		Username: mockUsername,
+		Email:    mockEmail,
+		Avatar:   mockAvatarURL,
 	}
 
 	ucUser := model.UserFromProtoToUsecase(protoUser)
@@ -1135,7 +1173,7 @@ func TestUserFromProtoToUsecase(t *testing.T) {
 }
 
 func TestUserIDFromUsecaseToProtoUser(t *testing.T) {
-	userID := int64(12345)
+	userID := mockUserID12345
 
 	protoUserID := model.UserIDFromUsecaseToProtoUser(userID)
 
@@ -1143,7 +1181,7 @@ func TestUserIDFromUsecaseToProtoUser(t *testing.T) {
 }
 
 func TestUserIDFromProtoToUsecaseUser(t *testing.T) {
-	userID := int64(12345)
+	userID := mockUserID12345
 	protoUserID := &userProto.UserID{
 		Id: userID,
 	}
@@ -1155,9 +1193,9 @@ func TestUserIDFromProtoToUsecaseUser(t *testing.T) {
 
 func TestLoginDataFromUsecaseToProto(t *testing.T) {
 	ucUser := &usecase.User{
-		Username: "testuser",
-		Email:    "test@example.com",
-		Password: "password123",
+		Username: mockUsername,
+		Email:    mockEmail,
+		Password: mockPassword,
 	}
 
 	protoLoginData := model.LoginDataFromUsecaseToProto(ucUser)
@@ -1168,8 +1206,8 @@ func TestLoginDataFromUsecaseToProto(t *testing.T) {
 }
 
 func TestAvatarDataFromUsecaseToProto(t *testing.T) {
-	fileURL := "avatar.jpg"
-	userID := int64(12345)
+	fileURL := mockAvatarURL
+	userID := mockUserID12345
 
 	protoAvatarData := model.AvatarDataFromUsecaseToProto(fileURL, userID)
 
@@ -1179,9 +1217,9 @@ func TestAvatarDataFromUsecaseToProto(t *testing.T) {
 
 func TestDeleteUserFromUsecaseToProto(t *testing.T) {
 	ucUser := &usecase.User{
-		Username: "testuser",
-		Email:    "test@example.com",
-		Password: "password123",
+		Username: mockUsername,
+		Email:    mockEmail,
+		Password: mockPassword,
 	}
 
 	protoUserDelete := model.DeleteUserFromUsecaseToProto(ucUser)
@@ -1192,7 +1230,7 @@ func TestDeleteUserFromUsecaseToProto(t *testing.T) {
 }
 
 func TestUsernameFromUsecaseToProto(t *testing.T) {
-	username := "testuser"
+	username := mockUsername
 
 	protoUsername := model.UsernameFromUsecaseToProto(username)
 
@@ -1201,7 +1239,7 @@ func TestUsernameFromUsecaseToProto(t *testing.T) {
 
 func TestPrivacyFromProtoToUsecase(t *testing.T) {
 	protoPrivacy := &userProto.PrivacySettings{
-		Username:                "testuser",
+		Username:                mockUsername,
 		IsPublicPlaylists:       true,
 		IsPublicMinutesListened: false,
 		IsPublicFavoriteArtists: true,
@@ -1222,7 +1260,7 @@ func TestPrivacyFromProtoToUsecase(t *testing.T) {
 
 func TestUserFullDataFromProtoToUsecase(t *testing.T) {
 	protoPrivacy := &userProto.PrivacySettings{
-		Username:                "testuser",
+		Username:                mockUsername,
 		IsPublicPlaylists:       true,
 		IsPublicMinutesListened: false,
 		IsPublicFavoriteArtists: true,
@@ -1232,9 +1270,9 @@ func TestUserFullDataFromProtoToUsecase(t *testing.T) {
 	}
 
 	protoUserFullData := &userProto.UserFullData{
-		Username: "testuser",
-		Email:    "test@example.com",
-		Avatar:   "avatar.jpg",
+		Username: mockUsername,
+		Email:    mockEmail,
+		Avatar:   mockAvatarURL,
 		Privacy:  protoPrivacy,
 	}
 
@@ -1253,7 +1291,7 @@ func TestUserFullDataFromProtoToUsecase(t *testing.T) {
 }
 
 func TestPrivacyFromUsecaseToProto(t *testing.T) {
-	username := "testuser"
+	username := mockUsername
 	ucPrivacy := &usecase.UserPrivacy{
 		IsPublicPlaylists:       true,
 		IsPublicMinutesListened: false,
@@ -1275,12 +1313,12 @@ func TestPrivacyFromUsecaseToProto(t *testing.T) {
 }
 
 func TestChangeUserDataFromUsecaseToProto(t *testing.T) {
-	username := "testuser"
+	username := mockUsername
 	ucUserChangeSettings := &usecase.UserChangeSettings{
-		Password:    "oldpass",
-		NewUsername: "newuser",
-		NewEmail:    "new@example.com",
-		NewPassword: "newpass",
+		Password:    mockOldPassword,
+		NewUsername: mockNewUsername,
+		NewEmail:    mockNewEmail,
+		NewPassword: mockNewPassword,
 	}
 
 	protoChangeUserData := model.ChangeUserDataFromUsecaseToProto(username, ucUserChangeSettings)
@@ -1293,7 +1331,7 @@ func TestChangeUserDataFromUsecaseToProto(t *testing.T) {
 }
 
 func TestFileKeyFromUsecaseToProto(t *testing.T) {
-	avatarURL := "avatar.jpg"
+	avatarURL := mockAvatarURL
 
 	protoFileKey := model.FileKeyFromUsecaseToProto(avatarURL)
 
@@ -1301,7 +1339,7 @@ func TestFileKeyFromUsecaseToProto(t *testing.T) {
 }
 
 func TestAvatarUrlFromProtoToUsecase(t *testing.T) {
-	avatarURL := "avatar.jpg"
+	avatarURL := mockAvatarURL
 	protoAvatarURL := &userProto.AvatarUrl{
 		Url: avatarURL,
 	}
@@ -1312,7 +1350,7 @@ func TestAvatarUrlFromProtoToUsecase(t *testing.T) {
 }
 
 func TestAvatarImageFromUsecaseToProto(t *testing.T) {
-	username := "testuser"
+	username := mockUsername
 	image := []byte("image-data")
 
 	protoAvatarImage := model.AvatarImageFromUsecaseToProto(username, image)
@@ -1334,7 +1372,7 @@ func TestFileKeyFromProtoToUsecase(t *testing.T) {
 
 func TestUpdatePlaylistsPublisityByUserIDRequestFromUsecaseToProto(t *testing.T) {
 	isPublic := true
-	userID := int64(1)
+	userID := mockUserID
 
 	protoRequest := model.UpdatePlaylistsPublisityByUserIDRequestFromUsecaseToProto(isPublic, userID)
 
@@ -1343,7 +1381,7 @@ func TestUpdatePlaylistsPublisityByUserIDRequestFromUsecaseToProto(t *testing.T)
 }
 
 func TestUploadPlaylistThumbnailRequestFromUsecaseToProto(t *testing.T) {
-	title := "Playlist Title"
+	title := mockPlaylistTitle
 	thumbnail := []byte("thumbnail-data")
 
 	protoRequest := model.UploadPlaylistThumbnailRequestFromUsecaseToProto(title, thumbnail)
@@ -1354,10 +1392,10 @@ func TestUploadPlaylistThumbnailRequestFromUsecaseToProto(t *testing.T) {
 
 func TestCreatePlaylistRequestFromUsecaseToProto(t *testing.T) {
 	ucRequest := &usecase.CreatePlaylistRequest{
-		Title:  "Playlist Title",
-		UserID: 1,
+		Title:  mockPlaylistTitle,
+		UserID: mockUserID,
 	}
-	thumbnail := "thumbnail.jpg"
+	thumbnail := mockThumbnail
 	isPublic := true
 
 	protoRequest := model.CreatePlaylistRequestFromUsecaseToProto(ucRequest, thumbnail, isPublic)
@@ -1370,10 +1408,10 @@ func TestCreatePlaylistRequestFromUsecaseToProto(t *testing.T) {
 
 func TestCreatePlaylistRequestFromDeliveryToUsecase(t *testing.T) {
 	deliveryRequest := &delivery.CreatePlaylistRequest{
-		Title:     "Playlist Title",
-		Thumbnail: []byte("thumbnail.jpg"),
+		Title:     mockPlaylistTitle,
+		Thumbnail: []byte(mockThumbnail),
 	}
-	userID := int64(1)
+	userID := mockUserID
 
 	ucRequest := model.CreatePlaylistRequestFromDeliveryToUsecase(deliveryRequest, userID)
 
@@ -1384,10 +1422,10 @@ func TestCreatePlaylistRequestFromDeliveryToUsecase(t *testing.T) {
 
 func TestAddTrackToPlaylistRequestFromDeliveryToUsecase(t *testing.T) {
 	deliveryRequest := &delivery.AddTrackToPlaylistRequest{
-		TrackID: 1,
+		TrackID: mockTrackID,
 	}
-	userID := int64(2)
-	playlistID := int64(3)
+	userID := mockUserID2
+	playlistID := mockTrackID3
 
 	ucRequest := model.AddTrackToPlaylistRequestFromDeliveryToUsecase(deliveryRequest, userID, playlistID)
 
@@ -1397,9 +1435,9 @@ func TestAddTrackToPlaylistRequestFromDeliveryToUsecase(t *testing.T) {
 }
 
 func TestRemoveTrackFromPlaylistRequestFromDeliveryToUsecase(t *testing.T) {
-	trackID := int64(1)
-	userID := int64(2)
-	playlistID := int64(3)
+	trackID := mockTrackID
+	userID := mockUserID2
+	playlistID := mockTrackID3
 
 	ucRequest := model.RemoveTrackFromPlaylistRequestFromDeliveryToUsecase(trackID, userID, playlistID)
 
@@ -1410,9 +1448,9 @@ func TestRemoveTrackFromPlaylistRequestFromDeliveryToUsecase(t *testing.T) {
 
 func TestAddTrackToPlaylistRequestFromUsecaseToProto(t *testing.T) {
 	ucRequest := &usecase.AddTrackToPlaylistRequest{
-		UserID:     1,
-		PlaylistID: 2,
-		TrackID:    3,
+		UserID:     mockUserID,
+		PlaylistID: mockPlaylistID2,
+		TrackID:    mockTrackID3,
 	}
 
 	protoRequest := model.AddTrackToPlaylistRequestFromUsecaseToProto(ucRequest)
@@ -1424,9 +1462,9 @@ func TestAddTrackToPlaylistRequestFromUsecaseToProto(t *testing.T) {
 
 func TestRemoveTrackFromPlaylistRequestFromUsecaseToProto(t *testing.T) {
 	ucRequest := &usecase.RemoveTrackFromPlaylistRequest{
-		UserID:     1,
-		PlaylistID: 2,
-		TrackID:    3,
+		UserID:     mockUserID,
+		PlaylistID: mockPlaylistID2,
+		TrackID:    mockTrackID3,
 	}
 
 	protoRequest := model.RemoveTrackFromPlaylistRequestFromUsecaseToProto(ucRequest)
@@ -1438,8 +1476,8 @@ func TestRemoveTrackFromPlaylistRequestFromUsecaseToProto(t *testing.T) {
 
 func TestUpdatePlaylistRequestFromUsecaseToProto(t *testing.T) {
 	ucRequest := &usecase.UpdatePlaylistRequest{
-		UserID:     1,
-		PlaylistID: 2,
+		UserID:     mockUserID,
+		PlaylistID: mockPlaylistID2,
 		Title:      "Updated Title",
 	}
 	thumbnail := "updated-thumbnail.jpg"
@@ -1457,8 +1495,8 @@ func TestUpdatePlaylistRequestFromDeliveryToUsecase(t *testing.T) {
 		Title:     "Updated Title",
 		Thumbnail: []byte("updated-thumbnail.jpg"),
 	}
-	userID := int64(1)
-	playlistID := int64(2)
+	userID := mockUserID
+	playlistID := mockPlaylistID2
 
 	ucRequest := model.UpdatePlaylistRequestFromDeliveryToUsecase(deliveryRequest, userID, playlistID)
 
@@ -1470,8 +1508,8 @@ func TestUpdatePlaylistRequestFromDeliveryToUsecase(t *testing.T) {
 
 func TestRemovePlaylistRequestFromUsecaseToProto(t *testing.T) {
 	ucRequest := &usecase.RemovePlaylistRequest{
-		UserID:     1,
-		PlaylistID: 2,
+		UserID:     mockUserID,
+		PlaylistID: mockPlaylistID2,
 	}
 
 	protoRequest := model.RemovePlaylistRequestFromUsecaseToProto(ucRequest)
@@ -1481,8 +1519,8 @@ func TestRemovePlaylistRequestFromUsecaseToProto(t *testing.T) {
 }
 
 func TestRemovePlaylistRequestFromDeliveryToUsecase(t *testing.T) {
-	playlistID := int64(1)
-	userID := int64(2)
+	playlistID := mockPlaylistID
+	userID := mockUserID2
 
 	ucRequest := model.RemovePlaylistRequestFromDeliveryToUsecase(playlistID, userID)
 
@@ -1491,14 +1529,14 @@ func TestRemovePlaylistRequestFromDeliveryToUsecase(t *testing.T) {
 }
 
 func TestGetPlaylistsToAddResponseFromProtoToUsecase(t *testing.T) {
-	username := "testuser"
+	username := mockUsername
 	protoPlaylist1 := &playlistProto.Playlist{
-		Id:        1,
+		Id:        mockPlaylistID,
 		Title:     "Playlist 1",
 		Thumbnail: "thumbnail1.jpg",
 	}
 	protoPlaylist2 := &playlistProto.Playlist{
-		Id:        2,
+		Id:        mockPlaylistID2,
 		Title:     "Playlist 2",
 		Thumbnail: "thumbnail2.jpg",
 	}
@@ -1537,13 +1575,13 @@ func TestGetPlaylistsToAddResponseFromProtoToUsecase(t *testing.T) {
 
 func TestPlaylistsWithIsIncludedTrackFromUsecaseToDelivery(t *testing.T) {
 	ucPlaylist1 := usecase.Playlist{
-		ID:        1,
+		ID:        mockPlaylistID,
 		Title:     "Playlist 1",
 		Thumbnail: "thumbnail1.jpg",
 		Username:  "user1",
 	}
 	ucPlaylist2 := usecase.Playlist{
-		ID:        2,
+		ID:        mockPlaylistID2,
 		Title:     "Playlist 2",
 		Thumbnail: "thumbnail2.jpg",
 		Username:  "user2",
@@ -1605,10 +1643,10 @@ func TestAlbumFromProtoToUsecaseEdgeCases(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			protoAlbum := &albumProto.Album{
-				Id:          1,
+				Id:          mockAlbumID,
 				Title:       "Test Album",
 				Type:        tt.protoAlbumType,
-				Thumbnail:   "thumbnail.jpg",
+				Thumbnail:   mockThumbnail,
 				ReleaseDate: timestamppb.New(time.Date(2022, 3, 3, 0, 0, 0, 0, time.UTC)),
 				IsFavorite:  true,
 			}
@@ -1623,4 +1661,421 @@ func TestAlbumFromProtoToUsecaseEdgeCases(t *testing.T) {
 			assert.Equal(t, protoAlbum.IsFavorite, ucAlbum.IsLiked)
 		})
 	}
+}
+
+func TestTrackRequestFromDeliveryToUsecase(t *testing.T) {
+	deliveryTrack := &delivery.CreateTrackRequest{
+		Title: mockTrackTitle,
+		Track: []byte("track-data"),
+	}
+
+	ucTrack := model.TrackRequestFromDeliveryToUsecase(deliveryTrack)
+
+	assert.Equal(t, deliveryTrack.Title, ucTrack.Title)
+	assert.Equal(t, deliveryTrack.Track, ucTrack.Track)
+}
+
+func TestNewAlbumFromDeliveryToUsecase(t *testing.T) {
+	deliveryTracks := []*delivery.CreateTrackRequest{
+		{
+			Title: "Track 1",
+			Track: []byte("track1-data"),
+		},
+		{
+			Title: "Track 2",
+			Track: []byte("track2-data"),
+		},
+	}
+
+	deliveryAlbum := &delivery.CreateAlbumRequest{
+		Title:      mockAlbumTitle,
+		Image:      []byte("album-image"),
+		Type:       "album",
+		LabelID:    1,
+		Tracks:     deliveryTracks,
+		ArtistsIDs: []int64{1, 2},
+	}
+
+	ucAlbum := model.NewAlbumFromDeliveryToUsecase(deliveryAlbum)
+
+	assert.Equal(t, deliveryAlbum.Title, ucAlbum.Title)
+	assert.Equal(t, deliveryAlbum.Image, ucAlbum.Image)
+	assert.Equal(t, deliveryAlbum.Type, ucAlbum.Type)
+	assert.Equal(t, deliveryAlbum.LabelID, ucAlbum.LabelID)
+	assert.Equal(t, deliveryAlbum.ArtistsIDs, ucAlbum.ArtistsIDs)
+	assert.Len(t, ucAlbum.Tracks, 2)
+	assert.Equal(t, deliveryTracks[0].Title, ucAlbum.Tracks[0].Title)
+	assert.Equal(t, deliveryTracks[0].Track, ucAlbum.Tracks[0].Track)
+	assert.Equal(t, deliveryTracks[1].Title, ucAlbum.Tracks[1].Title)
+	assert.Equal(t, deliveryTracks[1].Track, ucAlbum.Tracks[1].Track)
+}
+
+func TestAlbumTypeConverter(t *testing.T) {
+	tests := []struct {
+		name      string
+		albumType string
+		expected  delivery.AlbumType
+	}{
+		{
+			name:      "AlbumTypeAlbum",
+			albumType: string(usecase.AlbumTypeAlbum),
+			expected:  delivery.AlbumTypeAlbum,
+		},
+		{
+			name:      "AlbumTypeEP",
+			albumType: string(usecase.AlbumTypeEP),
+			expected:  delivery.AlbumTypeEP,
+		},
+		{
+			name:      "AlbumTypeSingle",
+			albumType: string(usecase.AlbumTypeSingle),
+			expected:  delivery.AlbumTypeSingle,
+		},
+		{
+			name:      "AlbumTypeCompilation",
+			albumType: string(usecase.AlbumTypeCompilation),
+			expected:  delivery.AlbumTypeCompilation,
+		},
+		{
+			name:      "Unknown type defaults to AlbumTypeAlbum",
+			albumType: "unknown",
+			expected:  delivery.AlbumTypeAlbum,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := model.AlbumTypeConverter(tt.albumType)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestArtistLoadFromUsecaseToProto(t *testing.T) {
+	ucArtist := &usecase.ArtistLoad{
+		Title:   mockArtistTitle,
+		Image:   []byte("artist-image"),
+		LabelID: 123,
+	}
+
+	protoArtist := model.ArtistLoadFromUsecaseToProto(ucArtist)
+
+	assert.Equal(t, ucArtist.Title, protoArtist.Title)
+	assert.Equal(t, ucArtist.Image, protoArtist.Image)
+	assert.Equal(t, ucArtist.LabelID, protoArtist.LabelId)
+}
+
+func TestArtistLoadFromDeliveryToUsecase(t *testing.T) {
+	deliveryArtist := &delivery.CreateArtistRequest{
+		Title:   mockArtistTitle,
+		Image:   []byte("artist-image"),
+		LabelID: 123,
+	}
+
+	ucArtist := model.ArtistLoadFromDeliveryToUsecase(deliveryArtist)
+
+	assert.Equal(t, deliveryArtist.Title, ucArtist.Title)
+	assert.Equal(t, deliveryArtist.Image, ucArtist.Image)
+	assert.Equal(t, deliveryArtist.LabelID, ucArtist.LabelID)
+}
+
+func TestArtistDeleteFromDeliveryToUsecase(t *testing.T) {
+	deleteArtist := &delivery.DeleteArtistRequest{
+		ArtistID: mockArtistID,
+	}
+
+	ucArtistDelete := model.ArtistDeleteFromDeliveryToUsecase(deleteArtist)
+
+	assert.Equal(t, deleteArtist.ArtistID, ucArtistDelete.ArtistID)
+}
+
+func TestLabelIDFromUsecaseToProto(t *testing.T) {
+	labelID := int64(123)
+
+	protoLabelID := model.LabelIDFromUsecaseToProto(labelID)
+
+	assert.Equal(t, labelID, protoLabelID.Id)
+}
+
+func TestLabelIDFromProtoToUsecase(t *testing.T) {
+	protoLabelID := &userProto.LabelID{
+		Id: 123,
+	}
+
+	labelID := model.LabelIDFromProtoToUsecase(protoLabelID)
+
+	assert.Equal(t, protoLabelID.Id, labelID)
+}
+
+func TestLabelFromUsecaseToProto(t *testing.T) {
+	ucLabel := &usecase.Label{
+		Id:      123,
+		Name:    "Test Label",
+		Members: []string{"user1", "user2"},
+	}
+
+	protoLabel := model.LabelFromUsecaseToProto(ucLabel)
+
+	assert.Equal(t, ucLabel.Id, protoLabel.Id)
+	assert.Equal(t, ucLabel.Name, protoLabel.Name)
+	assert.Equal(t, ucLabel.Members, protoLabel.Usernames)
+}
+
+func TestLabelFromProtoToUsecase(t *testing.T) {
+	protoLabel := &userProto.Label{
+		Id:        123,
+		Name:      "Test Label",
+		Usernames: []string{"user1", "user2"},
+	}
+
+	ucLabel := model.LabelFromProtoToUsecase(protoLabel)
+
+	assert.Equal(t, protoLabel.Id, ucLabel.Id)
+	assert.Equal(t, protoLabel.Name, ucLabel.Name)
+	assert.Equal(t, protoLabel.Usernames, ucLabel.Members)
+}
+
+func TestLabelFromDeliveryToUsecase(t *testing.T) {
+	deliveryLabel := &delivery.Label{
+		Id:        123,
+		LabelName: "Test Label",
+		Usernames: []string{"user1", "user2"},
+	}
+
+	ucLabel := model.LabelFromDeliveryToUsecase(deliveryLabel)
+
+	assert.Equal(t, deliveryLabel.Id, ucLabel.Id)
+	assert.Equal(t, deliveryLabel.LabelName, ucLabel.Name)
+	assert.Equal(t, deliveryLabel.Usernames, ucLabel.Members)
+}
+
+func TestLabelFromUsecaseToDelivery(t *testing.T) {
+	ucLabel := &usecase.Label{
+		Id:      123,
+		Name:    "Test Label",
+		Members: []string{"user1", "user2"},
+	}
+
+	deliveryLabel := model.LabelFromUsecaseToDelivery(ucLabel)
+
+	assert.Equal(t, ucLabel.Id, deliveryLabel.Id)
+	assert.Equal(t, ucLabel.Name, deliveryLabel.LabelName)
+	assert.Equal(t, ucLabel.Members, deliveryLabel.Usernames)
+}
+
+func TestMembersFromProtoToUsecase(t *testing.T) {
+	protoUsers := &userProto.UsersToFront{
+		Users: []*userProto.UserFront{
+			{
+				Id:       1,
+				Username: "user1",
+				Email:    "user1@example.com",
+				Avatar:   "avatar1.jpg",
+			},
+			{
+				Id:       2,
+				Username: "user2",
+				Email:    "user2@example.com",
+				Avatar:   "avatar2.jpg",
+			},
+		},
+	}
+
+	ucUsers := model.MembersFromProtoToUsecase(protoUsers)
+
+	assert.Len(t, ucUsers, 2)
+	assert.Equal(t, protoUsers.Users[0].Id, ucUsers[0].ID)
+	assert.Equal(t, protoUsers.Users[0].Username, ucUsers[0].Username)
+	assert.Equal(t, protoUsers.Users[0].Email, ucUsers[0].Email)
+	assert.Equal(t, protoUsers.Users[0].Avatar, ucUsers[0].AvatarUrl)
+	assert.Equal(t, protoUsers.Users[1].Id, ucUsers[1].ID)
+	assert.Equal(t, protoUsers.Users[1].Username, ucUsers[1].Username)
+	assert.Equal(t, protoUsers.Users[1].Email, ucUsers[1].Email)
+	assert.Equal(t, protoUsers.Users[1].Avatar, ucUsers[1].AvatarUrl)
+}
+
+func TestArtistEditFromDeliveryToUsecase(t *testing.T) {
+	editRequest := &delivery.EditArtistRequest{
+		ArtistID: mockArtistID,
+		NewTitle: "New Artist Title",
+		Image:    []byte("new-image"),
+		LabelID:  123,
+	}
+
+	ucArtistEdit := model.ArtistEditFromDeliveryToUsecase(editRequest)
+
+	assert.Equal(t, editRequest.ArtistID, ucArtistEdit.ArtistID)
+	assert.Equal(t, editRequest.NewTitle, ucArtistEdit.NewTitle)
+	assert.Equal(t, editRequest.Image, ucArtistEdit.Image)
+	assert.Equal(t, editRequest.LabelID, ucArtistEdit.LabelID)
+}
+
+func TestTrackLoadFromUsecaseToProto(t *testing.T) {
+	ucTrack := &usecase.CreateTrackRequest{
+		Title: mockTrackTitle,
+		Track: []byte("track-data"),
+	}
+
+	protoTrack := model.TrackLoadFromUsecaseToProto(ucTrack)
+
+	assert.Equal(t, ucTrack.Title, protoTrack.Title)
+	assert.Equal(t, ucTrack.Track, protoTrack.File)
+}
+
+func TestTrackListLoadFromUsecaseToProto(t *testing.T) {
+	ucTracks := []*usecase.CreateTrackRequest{
+		{
+			Title: "Track 1",
+			Track: []byte("track1-data"),
+		},
+		{
+			Title: "Track 2",
+			Track: []byte("track2-data"),
+		},
+	}
+
+	protoTracks := model.TrackListLoadFromUsecaseToProto(ucTracks)
+
+	assert.Len(t, protoTracks, 2)
+	assert.Equal(t, ucTracks[0].Title, protoTracks[0].Title)
+	assert.Equal(t, ucTracks[0].Track, protoTracks[0].File)
+	assert.Equal(t, ucTracks[1].Title, protoTracks[1].Title)
+	assert.Equal(t, ucTracks[1].Track, protoTracks[1].File)
+}
+
+func TestTracksIdsFromProtoToUsecase(t *testing.T) {
+	protoTracks := &trackProto.TrackIdsList{
+		Ids: []*trackProto.TrackID{
+			{Id: 1},
+			{Id: 2},
+			{Id: 3},
+		},
+	}
+
+	trackIds := model.TracksIdsFromProtoToUsecase(protoTracks)
+
+	assert.Len(t, trackIds, 3)
+	assert.Equal(t, protoTracks.Ids[0].Id, trackIds[0])
+	assert.Equal(t, protoTracks.Ids[1].Id, trackIds[1])
+	assert.Equal(t, protoTracks.Ids[2].Id, trackIds[2])
+}
+
+func TestTracksIdsFromUsecaseToProtoArtist(t *testing.T) {
+	trackIDs := []int64{1, 2, 3}
+
+	protoTrackIDList := model.TracksIdsFromUsecaseToProtoArtist(trackIDs)
+
+	assert.Len(t, protoTrackIDList.Ids, 3)
+	assert.Equal(t, trackIDs[0], protoTrackIDList.Ids[0].Id)
+	assert.Equal(t, trackIDs[1], protoTrackIDList.Ids[1].Id)
+	assert.Equal(t, trackIDs[2], protoTrackIDList.Ids[2].Id)
+}
+
+func TestCreateJamResponseFromUsecaseToDelivery(t *testing.T) {
+	ucCreateJam := &usecase.CreateJamResponse{
+		RoomID: "room123",
+		HostID: "host456",
+	}
+
+	deliveryCreateJam := model.CreateJamResponseFromUsecaseToDelivery(ucCreateJam)
+
+	assert.Equal(t, ucCreateJam.RoomID, deliveryCreateJam.RoomID)
+	assert.Equal(t, ucCreateJam.HostID, deliveryCreateJam.HostID)
+}
+
+func TestCreateJamRequestFromDeliveryToUsecase(t *testing.T) {
+	deliveryRequest := &delivery.CreateJamRequest{
+		TrackID:  "track123",
+		Position: 100,
+	}
+
+	ucRequest := model.CreateJamRequestFromDeliveryToUsecase(deliveryRequest, "user123")
+
+	assert.Equal(t, "user123", ucRequest.UserID)
+	assert.Equal(t, deliveryRequest.TrackID, ucRequest.TrackID)
+	assert.Equal(t, deliveryRequest.Position, ucRequest.Position)
+}
+
+func TestJamMessageFromUsecaseToDelivery(t *testing.T) {
+	ucJamMessage := &usecase.JamMessage{
+		Type:       "play",
+		TrackID:    "track123",
+		Position:   100,
+		Paused:     false,
+		UserID:     "user123",
+		HostID:     "host123",
+		Users:      []string{"user1", "user2"},
+		Loaded:     map[string]bool{"user1": true, "user2": false},
+		UserImages: map[string]string{"user1": "image1", "user2": "image2"},
+		UserNames:  map[string]string{"user1": "name1", "user2": "name2"},
+	}
+
+	deliveryJamMessage := model.JamMessageFromUsecaseToDelivery(ucJamMessage)
+
+	assert.Equal(t, ucJamMessage.Type, deliveryJamMessage.Type)
+	assert.Equal(t, ucJamMessage.TrackID, deliveryJamMessage.TrackID)
+	assert.Equal(t, ucJamMessage.Position, deliveryJamMessage.Position)
+	assert.Equal(t, ucJamMessage.Paused, deliveryJamMessage.Paused)
+	assert.Equal(t, ucJamMessage.UserID, deliveryJamMessage.UserID)
+	assert.Equal(t, ucJamMessage.HostID, deliveryJamMessage.HostID)
+	assert.Equal(t, ucJamMessage.Users, deliveryJamMessage.Users)
+	assert.Equal(t, ucJamMessage.Loaded, deliveryJamMessage.Loaded)
+	assert.Equal(t, ucJamMessage.UserImages, deliveryJamMessage.UserImages)
+	assert.Equal(t, ucJamMessage.UserNames, deliveryJamMessage.UserNames)
+}
+
+func TestJamMessageFromRepositoryToUsecase(t *testing.T) {
+	repoJamMessage := &repository.JamMessage{
+		Type:       "play",
+		TrackID:    "track123",
+		Position:   100,
+		Paused:     false,
+		UserID:     "user123",
+		HostID:     "host123",
+		Users:      []string{"user1", "user2"},
+		Loaded:     map[string]bool{"user1": true, "user2": false},
+		UserImages: map[string]string{"user1": "image1", "user2": "image2"},
+		UserNames:  map[string]string{"user1": "name1", "user2": "name2"},
+	}
+
+	ucJamMessage := model.JamMessageFromRepositoryToUsecase(repoJamMessage)
+
+	assert.Equal(t, repoJamMessage.Type, ucJamMessage.Type)
+	assert.Equal(t, repoJamMessage.TrackID, ucJamMessage.TrackID)
+	assert.Equal(t, repoJamMessage.Position, ucJamMessage.Position)
+	assert.Equal(t, repoJamMessage.Paused, ucJamMessage.Paused)
+	assert.Equal(t, repoJamMessage.UserID, ucJamMessage.UserID)
+	assert.Equal(t, repoJamMessage.HostID, ucJamMessage.HostID)
+	assert.Equal(t, repoJamMessage.Users, ucJamMessage.Users)
+	assert.Equal(t, repoJamMessage.Loaded, ucJamMessage.Loaded)
+	assert.Equal(t, repoJamMessage.UserImages, ucJamMessage.UserImages)
+	assert.Equal(t, repoJamMessage.UserNames, ucJamMessage.UserNames)
+}
+
+func TestJamMessageFromDeliveryToUsecase(t *testing.T) {
+	deliveryJamMessage := &delivery.JamMessage{
+		Type:       "play",
+		TrackID:    "track123",
+		Position:   100,
+		Paused:     false,
+		UserID:     "user123",
+		HostID:     "host123",
+		Users:      []string{"user1", "user2"},
+		Loaded:     map[string]bool{"user1": true, "user2": false},
+		UserImages: map[string]string{"user1": "image1", "user2": "image2"},
+		UserNames:  map[string]string{"user1": "name1", "user2": "name2"},
+	}
+
+	ucJamMessage := model.JamMessageFromDeliveryToUsecase(deliveryJamMessage)
+
+	assert.Equal(t, deliveryJamMessage.Type, ucJamMessage.Type)
+	assert.Equal(t, deliveryJamMessage.TrackID, ucJamMessage.TrackID)
+	assert.Equal(t, deliveryJamMessage.Position, ucJamMessage.Position)
+	assert.Equal(t, deliveryJamMessage.Paused, ucJamMessage.Paused)
+	assert.Equal(t, "", ucJamMessage.UserID)
+	assert.Equal(t, deliveryJamMessage.HostID, ucJamMessage.HostID)
+	assert.Equal(t, deliveryJamMessage.Users, ucJamMessage.Users)
+	assert.Equal(t, deliveryJamMessage.Loaded, ucJamMessage.Loaded)
+	assert.Equal(t, deliveryJamMessage.UserImages, ucJamMessage.UserImages)
+	assert.Equal(t, deliveryJamMessage.UserNames, ucJamMessage.UserNames)
 }

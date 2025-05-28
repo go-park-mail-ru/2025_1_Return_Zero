@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	stderrors "errors"
+	"fmt"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -28,7 +29,11 @@ func setupTest(t *testing.T) (*sql.DB, sqlmock.Sqlmock, context.Context) {
 
 func TestGetPlaylistByID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
@@ -36,6 +41,7 @@ func TestGetPlaylistByID(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(playlistID).
 		WillReturnRows(rows)
@@ -54,11 +60,16 @@ func TestGetPlaylistByID(t *testing.T) {
 
 func TestGetPlaylistByIDNotFound(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(playlistID).
 		WillReturnError(sql.ErrNoRows)
@@ -73,7 +84,11 @@ func TestGetPlaylistByIDNotFound(t *testing.T) {
 
 func TestCreatePlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.CreatePlaylistRequest{
@@ -85,6 +100,7 @@ func TestCreatePlaylist(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
+	mock.ExpectPrepare("INSERT INTO playlist")
 	mock.ExpectQuery("INSERT INTO playlist").
 		WithArgs(request.Title, request.UserID, request.Thumbnail, request.IsPublic).
 		WillReturnRows(rows)
@@ -92,6 +108,7 @@ func TestCreatePlaylist(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "New Playlist", 1, "thumbnail.jpg", true)
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(int64(1)).
 		WillReturnRows(playlistRows)
@@ -110,7 +127,11 @@ func TestCreatePlaylist(t *testing.T) {
 
 func TestCreatePlaylistDuplicate(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.CreatePlaylistRequest{
@@ -120,6 +141,7 @@ func TestCreatePlaylistDuplicate(t *testing.T) {
 		IsPublic:  true,
 	}
 
+	mock.ExpectPrepare("INSERT INTO playlist")
 	mock.ExpectQuery("INSERT INTO playlist").
 		WithArgs(request.Title, request.UserID, request.Thumbnail, request.IsPublic).
 		WillReturnError(stderrors.New("duplicate key value violates unique constraint"))
@@ -134,7 +156,11 @@ func TestCreatePlaylistDuplicate(t *testing.T) {
 
 func TestGetCombinedPlaylistsByUserID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
@@ -143,6 +169,7 @@ func TestGetCombinedPlaylistsByUserID(t *testing.T) {
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg").
 		AddRow(2, "Playlist 2", 2, "thumbnail2.jpg")
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(userID).
 		WillReturnRows(rows)
@@ -165,11 +192,16 @@ func TestGetCombinedPlaylistsByUserID(t *testing.T) {
 
 func TestGetCombinedPlaylistsByUserIDError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	userID := int64(1)
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(userID).
 		WillReturnError(stderrors.New("db error"))
@@ -183,7 +215,11 @@ func TestGetCombinedPlaylistsByUserIDError(t *testing.T) {
 
 func TestTrackExistsInPlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
@@ -191,6 +227,7 @@ func TestTrackExistsInPlaylist(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(playlistID, trackID).
 		WillReturnRows(rows)
@@ -204,12 +241,17 @@ func TestTrackExistsInPlaylist(t *testing.T) {
 
 func TestTrackExistsInPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
 	trackID := int64(2)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(playlistID, trackID).
 		WillReturnError(stderrors.New("db error"))
@@ -223,7 +265,11 @@ func TestTrackExistsInPlaylistError(t *testing.T) {
 
 func TestAddTrackToPlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
@@ -235,12 +281,15 @@ func TestAddTrackToPlaylist(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("INSERT INTO playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(false)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnRows(existsRows)
@@ -257,7 +306,11 @@ func TestAddTrackToPlaylist(t *testing.T) {
 
 func TestAddTrackToPlaylistGetPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
@@ -266,6 +319,8 @@ func TestAddTrackToPlaylistGetPlaylistError(t *testing.T) {
 		UserID:     1,
 	}
 
+	mock.ExpectPrepare("INSERT INTO playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnError(stderrors.New("db error"))
@@ -278,7 +333,11 @@ func TestAddTrackToPlaylistGetPlaylistError(t *testing.T) {
 
 func TestAddTrackToPlaylistTrackExistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
@@ -290,10 +349,13 @@ func TestAddTrackToPlaylistTrackExistsError(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("INSERT INTO playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnError(stderrors.New("db error"))
@@ -306,7 +368,11 @@ func TestAddTrackToPlaylistTrackExistsError(t *testing.T) {
 
 func TestAddTrackToPlaylistInsertError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
@@ -318,12 +384,15 @@ func TestAddTrackToPlaylistInsertError(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("INSERT INTO playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(false)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnRows(existsRows)
@@ -340,7 +409,11 @@ func TestAddTrackToPlaylistInsertError(t *testing.T) {
 
 func TestAddTrackToPlaylistPermissionDenied(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
@@ -352,6 +425,8 @@ func TestAddTrackToPlaylistPermissionDenied(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("INSERT INTO playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
@@ -365,7 +440,11 @@ func TestAddTrackToPlaylistPermissionDenied(t *testing.T) {
 
 func TestAddTrackToPlaylistDuplicate(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.AddTrackToPlaylistRequest{
@@ -377,12 +456,15 @@ func TestAddTrackToPlaylistDuplicate(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("INSERT INTO playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnRows(existsRows)
@@ -396,7 +478,11 @@ func TestAddTrackToPlaylistDuplicate(t *testing.T) {
 
 func TestRemoveTrackFromPlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
@@ -408,12 +494,15 @@ func TestRemoveTrackFromPlaylist(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("DELETE FROM playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnRows(existsRows)
@@ -430,7 +519,11 @@ func TestRemoveTrackFromPlaylist(t *testing.T) {
 
 func TestRemoveTrackFromPlaylistGetPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
@@ -439,6 +532,8 @@ func TestRemoveTrackFromPlaylistGetPlaylistError(t *testing.T) {
 		UserID:     1,
 	}
 
+	mock.ExpectPrepare("DELETE FROM playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnError(stderrors.New("db error"))
@@ -451,7 +546,11 @@ func TestRemoveTrackFromPlaylistGetPlaylistError(t *testing.T) {
 
 func TestRemoveTrackFromPlaylistPermissionDenied(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
@@ -463,6 +562,8 @@ func TestRemoveTrackFromPlaylistPermissionDenied(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("DELETE FROM playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
@@ -476,7 +577,11 @@ func TestRemoveTrackFromPlaylistPermissionDenied(t *testing.T) {
 
 func TestRemoveTrackFromPlaylistTrackNotFound(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
@@ -488,12 +593,15 @@ func TestRemoveTrackFromPlaylistTrackNotFound(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("DELETE FROM playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(false)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnRows(existsRows)
@@ -507,7 +615,11 @@ func TestRemoveTrackFromPlaylistTrackNotFound(t *testing.T) {
 
 func TestRemoveTrackFromPlaylistTrackExistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
@@ -519,10 +631,13 @@ func TestRemoveTrackFromPlaylistTrackExistsError(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("DELETE FROM playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnError(stderrors.New("db error"))
@@ -535,7 +650,11 @@ func TestRemoveTrackFromPlaylistTrackExistsError(t *testing.T) {
 
 func TestRemoveTrackFromPlaylistDeleteError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemoveTrackFromPlaylistRequest{
@@ -547,12 +666,15 @@ func TestRemoveTrackFromPlaylistDeleteError(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("DELETE FROM playlist_track")
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(playlistRows)
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.TrackID).
 		WillReturnRows(existsRows)
@@ -569,7 +691,11 @@ func TestRemoveTrackFromPlaylistDeleteError(t *testing.T) {
 
 func TestGetPlaylistTrackIds(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistTrackIdsRequest{
@@ -581,6 +707,7 @@ func TestGetPlaylistTrackIds(t *testing.T) {
 		AddRow(2).
 		AddRow(3)
 
+	mock.ExpectPrepare("SELECT track_id")
 	mock.ExpectQuery("SELECT track_id").
 		WithArgs(request.PlaylistID).
 		WillReturnRows(rows)
@@ -597,13 +724,18 @@ func TestGetPlaylistTrackIds(t *testing.T) {
 
 func TestGetPlaylistTrackIdsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistTrackIdsRequest{
 		PlaylistID: 1,
 	}
 
+	mock.ExpectPrepare("SELECT track_id")
 	mock.ExpectQuery("SELECT track_id").
 		WithArgs(request.PlaylistID).
 		WillReturnError(stderrors.New("db error"))
@@ -617,7 +749,11 @@ func TestGetPlaylistTrackIdsError(t *testing.T) {
 
 func TestUpdatePlaylistWithThumbnail(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{
@@ -629,6 +765,7 @@ func TestUpdatePlaylistWithThumbnail(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.Thumbnail, request.UserID).
 		WillReturnRows(rows)
@@ -636,6 +773,7 @@ func TestUpdatePlaylistWithThumbnail(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Updated Playlist", 1, "new_thumbnail.jpg", true)
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(int64(1)).
 		WillReturnRows(playlistRows)
@@ -652,7 +790,11 @@ func TestUpdatePlaylistWithThumbnail(t *testing.T) {
 
 func TestUpdatePlaylistWithThumbnailError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{
@@ -662,6 +804,7 @@ func TestUpdatePlaylistWithThumbnailError(t *testing.T) {
 		UserID:     1,
 	}
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.Thumbnail, request.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -675,7 +818,11 @@ func TestUpdatePlaylistWithThumbnailError(t *testing.T) {
 
 func TestUpdatePlaylistWithoutThumbnail(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{
@@ -687,6 +834,7 @@ func TestUpdatePlaylistWithoutThumbnail(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.UserID).
 		WillReturnRows(rows)
@@ -694,6 +842,7 @@ func TestUpdatePlaylistWithoutThumbnail(t *testing.T) {
 	playlistRows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_public"}).
 		AddRow(1, "Updated Playlist", 1, "existing_thumbnail.jpg", true)
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(int64(1)).
 		WillReturnRows(playlistRows)
@@ -710,7 +859,11 @@ func TestUpdatePlaylistWithoutThumbnail(t *testing.T) {
 
 func TestUpdatePlaylistWithoutThumbnailError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{
@@ -720,6 +873,7 @@ func TestUpdatePlaylistWithoutThumbnailError(t *testing.T) {
 		UserID:     1,
 	}
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -733,7 +887,11 @@ func TestUpdatePlaylistWithoutThumbnailError(t *testing.T) {
 
 func TestRemovePlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemovePlaylistRequest{
@@ -741,6 +899,7 @@ func TestRemovePlaylist(t *testing.T) {
 		UserID:     1,
 	}
 
+	mock.ExpectPrepare("DELETE FROM playlist")
 	mock.ExpectExec("DELETE FROM playlist").
 		WithArgs(request.PlaylistID, request.UserID).
 		WillReturnResult(sqlmock.NewResult(0, 1))
@@ -753,7 +912,11 @@ func TestRemovePlaylist(t *testing.T) {
 
 func TestRemovePlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.RemovePlaylistRequest{
@@ -761,6 +924,7 @@ func TestRemovePlaylistError(t *testing.T) {
 		UserID:     1,
 	}
 
+	mock.ExpectPrepare("DELETE FROM playlist")
 	mock.ExpectExec("DELETE FROM playlist").
 		WithArgs(request.PlaylistID, request.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -773,7 +937,11 @@ func TestRemovePlaylistError(t *testing.T) {
 
 func TestGetPlaylistsToAdd(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistsToAddRequest{
@@ -785,6 +953,7 @@ func TestGetPlaylistsToAdd(t *testing.T) {
 		AddRow(1, "Playlist 1", 2, "thumbnail1.jpg", true).
 		AddRow(2, "Playlist 2", 2, "thumbnail2.jpg", false)
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(request.TrackID, request.UserID).
 		WillReturnRows(rows)
@@ -805,7 +974,11 @@ func TestGetPlaylistsToAdd(t *testing.T) {
 
 func TestGetPlaylistsToAddError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistsToAddRequest{
@@ -813,6 +986,7 @@ func TestGetPlaylistsToAddError(t *testing.T) {
 		UserID:  2,
 	}
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(request.TrackID, request.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -826,7 +1000,11 @@ func TestGetPlaylistsToAddError(t *testing.T) {
 
 func TestGetPlaylistsToAddScanError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetPlaylistsToAddRequest{
@@ -837,6 +1015,7 @@ func TestGetPlaylistsToAddScanError(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_included"}).
 		AddRow(1, "Playlist 1", 2, "thumbnail1.jpg", "invalid_bool")
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(request.TrackID, request.UserID).
 		WillReturnRows(rows)
@@ -850,7 +1029,11 @@ func TestGetPlaylistsToAddScanError(t *testing.T) {
 
 func TestUpdatePlaylistsPublisityByUserID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistsPublisityByUserIDRequest{
@@ -858,6 +1041,7 @@ func TestUpdatePlaylistsPublisityByUserID(t *testing.T) {
 		IsPublic: true,
 	}
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectExec("UPDATE playlist").
 		WithArgs(request.UserID, request.IsPublic).
 		WillReturnResult(sqlmock.NewResult(0, 3))
@@ -870,7 +1054,11 @@ func TestUpdatePlaylistsPublisityByUserID(t *testing.T) {
 
 func TestUpdatePlaylistsPublisityByUserIDError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistsPublisityByUserIDRequest{
@@ -878,6 +1066,7 @@ func TestUpdatePlaylistsPublisityByUserIDError(t *testing.T) {
 		IsPublic: true,
 	}
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectExec("UPDATE playlist").
 		WithArgs(request.UserID, request.IsPublic).
 		WillReturnError(stderrors.New("db error"))
@@ -890,7 +1079,11 @@ func TestUpdatePlaylistsPublisityByUserIDError(t *testing.T) {
 
 func TestCheckExistsPlaylistAndNotDifferentUser(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
@@ -898,6 +1091,7 @@ func TestCheckExistsPlaylistAndNotDifferentUser(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(playlistID, userID).
 		WillReturnRows(rows)
@@ -911,12 +1105,17 @@ func TestCheckExistsPlaylistAndNotDifferentUser(t *testing.T) {
 
 func TestCheckExistsPlaylistAndNotDifferentUserError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
 	userID := int64(2)
 
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(playlistID, userID).
 		WillReturnError(stderrors.New("db error"))
@@ -930,7 +1129,11 @@ func TestCheckExistsPlaylistAndNotDifferentUserError(t *testing.T) {
 
 func TestLikePlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
@@ -940,6 +1143,8 @@ func TestLikePlaylist(t *testing.T) {
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("INSERT INTO favorite_playlist")
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.UserID).
 		WillReturnRows(existsRows)
@@ -956,7 +1161,11 @@ func TestLikePlaylist(t *testing.T) {
 
 func TestLikePlaylistCheckExistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
@@ -964,6 +1173,8 @@ func TestLikePlaylistCheckExistsError(t *testing.T) {
 		UserID:     2,
 	}
 
+	mock.ExpectPrepare("INSERT INTO favorite_playlist")
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -976,7 +1187,11 @@ func TestLikePlaylistCheckExistsError(t *testing.T) {
 
 func TestLikePlaylistInsertError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
@@ -986,6 +1201,8 @@ func TestLikePlaylistInsertError(t *testing.T) {
 
 	existsRows := sqlmock.NewRows([]string{"exists"}).AddRow(true)
 
+	mock.ExpectPrepare("INSERT INTO favorite_playlist")
+	mock.ExpectPrepare("SELECT EXISTS")
 	mock.ExpectQuery("SELECT EXISTS").
 		WithArgs(request.PlaylistID, request.UserID).
 		WillReturnRows(existsRows)
@@ -1002,7 +1219,11 @@ func TestLikePlaylistInsertError(t *testing.T) {
 
 func TestUnlikePlaylist(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
@@ -1010,6 +1231,7 @@ func TestUnlikePlaylist(t *testing.T) {
 		UserID:     2,
 	}
 
+	mock.ExpectPrepare("DELETE FROM favorite_playlist")
 	mock.ExpectExec("DELETE FROM favorite_playlist").
 		WithArgs(request.UserID, request.PlaylistID).
 		WillReturnResult(sqlmock.NewResult(0, 1))
@@ -1022,7 +1244,11 @@ func TestUnlikePlaylist(t *testing.T) {
 
 func TestUnlikePlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.LikePlaylistRequest{
@@ -1030,6 +1256,7 @@ func TestUnlikePlaylistError(t *testing.T) {
 		UserID:     2,
 	}
 
+	mock.ExpectPrepare("DELETE FROM favorite_playlist")
 	mock.ExpectExec("DELETE FROM favorite_playlist").
 		WithArgs(request.UserID, request.PlaylistID).
 		WillReturnError(stderrors.New("db error"))
@@ -1042,7 +1269,11 @@ func TestUnlikePlaylistError(t *testing.T) {
 
 func TestGetPlaylistWithIsLikedByID(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
@@ -1051,6 +1282,7 @@ func TestGetPlaylistWithIsLikedByID(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url", "is_liked"}).
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg", true)
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(playlistID, userID).
 		WillReturnRows(rows)
@@ -1069,12 +1301,17 @@ func TestGetPlaylistWithIsLikedByID(t *testing.T) {
 
 func TestGetPlaylistWithIsLikedByIDError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	playlistID := int64(1)
 	userID := int64(2)
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(playlistID, userID).
 		WillReturnError(stderrors.New("db error"))
@@ -1088,7 +1325,11 @@ func TestGetPlaylistWithIsLikedByIDError(t *testing.T) {
 
 func TestGetProfilePlaylists(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetProfilePlaylistsRequest{
@@ -1099,6 +1340,7 @@ func TestGetProfilePlaylists(t *testing.T) {
 		AddRow(1, "Playlist 1", 1, "thumbnail1.jpg").
 		AddRow(2, "Playlist 2", 1, "thumbnail2.jpg")
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(request.UserID).
 		WillReturnRows(rows)
@@ -1121,13 +1363,18 @@ func TestGetProfilePlaylists(t *testing.T) {
 
 func TestGetProfilePlaylistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetProfilePlaylistsRequest{
 		UserID: 1,
 	}
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(request.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -1141,7 +1388,11 @@ func TestGetProfilePlaylistsError(t *testing.T) {
 
 func TestGetProfilePlaylistsScanError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.GetProfilePlaylistsRequest{
@@ -1151,6 +1402,7 @@ func TestGetProfilePlaylistsScanError(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url"}).
 		AddRow("invalid_id", "Playlist 1", 1, "thumbnail1.jpg")
 
+	mock.ExpectPrepare("SELECT p.id, p.title, p.user_id, p.thumbnail_url")
 	mock.ExpectQuery("SELECT p.id, p.title, p.user_id, p.thumbnail_url").
 		WithArgs(request.UserID).
 		WillReturnRows(rows)
@@ -1164,7 +1416,11 @@ func TestGetProfilePlaylistsScanError(t *testing.T) {
 
 func TestSearchPlaylists(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.SearchPlaylistsRequest{
@@ -1176,6 +1432,7 @@ func TestSearchPlaylists(t *testing.T) {
 		AddRow(1, "Test Playlist", 1, "thumbnail1.jpg").
 		AddRow(2, "Playlist Test", 2, "thumbnail2.jpg")
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url").
 		WithArgs("test:* & playlist:*", request.UserID, request.Query).
 		WillReturnRows(rows)
@@ -1196,7 +1453,11 @@ func TestSearchPlaylists(t *testing.T) {
 
 func TestSearchPlaylistsError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.SearchPlaylistsRequest{
@@ -1204,6 +1465,7 @@ func TestSearchPlaylistsError(t *testing.T) {
 		UserID: 1,
 	}
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url").
 		WithArgs("test:* & playlist:*", request.UserID, request.Query).
 		WillReturnError(stderrors.New("db error"))
@@ -1217,7 +1479,11 @@ func TestSearchPlaylistsError(t *testing.T) {
 
 func TestSearchPlaylistsScanError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.SearchPlaylistsRequest{
@@ -1228,6 +1494,7 @@ func TestSearchPlaylistsScanError(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id", "title", "user_id", "thumbnail_url"}).
 		AddRow("invalid_id", "Test Playlist", 1, "thumbnail1.jpg")
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url").
 		WithArgs("test:* & playlist:*", request.UserID, request.Query).
 		WillReturnRows(rows)
@@ -1241,7 +1508,11 @@ func TestSearchPlaylistsScanError(t *testing.T) {
 
 func TestCreatePlaylistGetPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.CreatePlaylistRequest{
@@ -1253,10 +1524,12 @@ func TestCreatePlaylistGetPlaylistError(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
+	mock.ExpectPrepare("INSERT INTO playlist")
 	mock.ExpectQuery("INSERT INTO playlist").
 		WithArgs(request.Title, request.UserID, request.Thumbnail, request.IsPublic).
 		WillReturnRows(rows)
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(int64(1)).
 		WillReturnError(stderrors.New("db error"))
@@ -1270,7 +1543,11 @@ func TestCreatePlaylistGetPlaylistError(t *testing.T) {
 
 func TestUpdatePlaylistGetPlaylistError(t *testing.T) {
 	db, mock, ctx := setupTest(t)
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			fmt.Println("Error closing database:", zap.Error(err))
+		}
+	}()
 
 	repo := NewPlaylistPostgresRepository(db, metrics.NewMockMetrics())
 	request := &repoModel.UpdatePlaylistRequest{
@@ -1282,10 +1559,12 @@ func TestUpdatePlaylistGetPlaylistError(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.Thumbnail, request.UserID).
 		WillReturnRows(rows)
 
+	mock.ExpectPrepare("SELECT id, title, user_id, thumbnail_url, is_public")
 	mock.ExpectQuery("SELECT id, title, user_id, thumbnail_url, is_public").
 		WithArgs(int64(1)).
 		WillReturnError(stderrors.New("db error"))

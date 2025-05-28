@@ -11,6 +11,7 @@ type UserFront struct {
 	Email     string
 	Thumbnail string
 	Id        int64
+	LabelId   int64
 }
 
 type LoginData struct {
@@ -42,8 +43,18 @@ type PrivacySettings struct {
 }
 
 type UserFullData struct {
-	Username   string
-	Thumbnail  string
-	Email      string
-	Privacy    *PrivacySettings
+	Username  string
+	Thumbnail string
+	Email     string
+	Privacy   *PrivacySettings
+}
+
+type CreateLabelRequest struct {
+	Name string
+}
+
+type Label struct {
+	ID      int64
+	Name    string
+	Members []string
 }

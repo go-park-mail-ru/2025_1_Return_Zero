@@ -6,25 +6,7 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
-COPY ./gen ./gen
-
-COPY ./internal/pkg/helpers/customErrors ./internal/pkg/helpers/customErrors
-
-COPY ./internal/pkg/helpers/logger ./internal/pkg/helpers/logger
-
-COPY ./init ./init
-
-COPY ./config ./config
-
-COPY ./microservices/auth ./microservices/auth
-
-COPY ./microservices/interceptors ./microservices/interceptors
-
-COPY ./microservices/metrics ./microservices/metrics
-
-COPY ./config.yaml ./config.yaml
-
-COPY ./.env ./.env
+COPY . . 
 
 RUN go build -o main microservices/auth/cmd/main.go
 

@@ -36,12 +36,12 @@ func InitGrpc(cfg *config.Services, logger *zap.SugaredLogger) (*Clients, error)
 		logger.Fatal("Error creating artist client:", zap.Error(err))
 	}
 
-	albumClient, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.AlbumService.Host, cfg.AlbumService.Port), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithUnaryInterceptor(requestIdUnaryClientInterceptor))
+	albumClient, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.AlbumService.Host, cfg.AlbumService.Port), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithUnaryInterceptor(requestIdUnaryClientInterceptor), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(500*1024*1024), grpc.MaxCallSendMsgSize(500*1024*1024)))
 	if err != nil {
 		logger.Fatal("Error creating album client:", zap.Error(err))
 	}
 
-	trackClient, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.TrackService.Host, cfg.TrackService.Port), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithUnaryInterceptor(requestIdUnaryClientInterceptor))
+	trackClient, err := grpc.NewClient(fmt.Sprintf("%s:%d", cfg.TrackService.Host, cfg.TrackService.Port), grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithUnaryInterceptor(requestIdUnaryClientInterceptor), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(500*1024*1024), grpc.MaxCallSendMsgSize(500*1024*1024)))
 	if err != nil {
 		logger.Fatal("Error creating track client:", zap.Error(err))
 	}

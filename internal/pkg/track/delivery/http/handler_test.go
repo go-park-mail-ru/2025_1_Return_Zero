@@ -803,7 +803,7 @@ func TestTrackHandler_LikeTrack(t *testing.T) {
 			expectedBody: map[string]interface{}{
 				"status": "error",
 				"error": map[string]interface{}{
-					"message": "invalid character 'i' looking for beginning of object key string",
+					"message": "failed to unmarshal JSON: parse error: syntax error near offset 1 of '{invalid json}'",
 				},
 			},
 		},

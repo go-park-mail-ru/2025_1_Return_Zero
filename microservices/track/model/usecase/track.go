@@ -51,3 +51,15 @@ type FavoriteRequest struct {
 	RequestUserID int64
 	Filters       *TrackFilters
 }
+
+type TrackLoad struct {
+	Title    string
+	File     []byte
+	Position int64
+}
+
+type TracksListWithAlbumID struct {
+	Tracks  []*TrackLoad
+	AlbumID int64
+	Cover   []byte
+}

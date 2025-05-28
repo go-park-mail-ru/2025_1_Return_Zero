@@ -1,13 +1,16 @@
 package json
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"maps"
 	"net/http"
 
 	deliveryModel "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
+	easyjson "github.com/mailru/easyjson"
 	"go.uber.org/zap"
 )
 
@@ -24,8 +27,19 @@ func ReadJSON(w http.ResponseWriter, r *http.Request, v interface{}) error {
 	maxBytes := int64(MaxBytes)
 	r.Body = http.MaxBytesReader(w, r.Body, maxBytes)
 
-	decoder := json.NewDecoder(r.Body)
+	unmarshaler, ok := v.(easyjson.Unmarshaler)
+	if ok {
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			return errors.New("failed to read request body")
+		}
+		if err := easyjson.Unmarshal(body, unmarshaler); err != nil {
+			return fmt.Errorf("failed to unmarshal JSON: %w", err)
+		}
+		return nil
+	}
 
+	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(v); err != nil {
 		return err
 	}
@@ -39,10 +53,23 @@ func ReadJSON(w http.ResponseWriter, r *http.Request, v interface{}) error {
 
 func WriteJSON(w http.ResponseWriter, status int, data interface{}, headers http.Header) {
 	logger := zap.L().Sugar()
-	jsonData, err := json.Marshal(data)
-	if err != nil {
-		logger.Error("failed to marshal json", zap.Error(err))
-		return
+	var jsonData []byte
+	var err error
+
+	marshaler, ok := data.(easyjson.Marshaler)
+	if ok {
+		var buf bytes.Buffer
+		if _, err := easyjson.MarshalToWriter(marshaler, &buf); err != nil {
+			logger.Error("failed to marshal JSON (easyjson)")
+			return
+		}
+		jsonData = buf.Bytes()
+	} else {
+		jsonData, err = json.Marshal(data)
+		if err != nil {
+			logger.Error("failed to marshal JSON (reflect)")
+			return
+		}
 	}
 
 	maps.Copy(w.Header(), headers)

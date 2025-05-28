@@ -148,3 +148,35 @@ func LikeRequestFromUsecaseToRepository(likeRequest *usecaseModel.LikeRequest) *
 		UserID:  likeRequest.UserID,
 	}
 }
+
+func AlbumTypeFromProtoToUsecase(albumType albumProto.AlbumType) usecaseModel.AlbumType {
+	switch albumType {
+	case albumProto.AlbumType_AlbumTypeAlbum:
+		return usecaseModel.AlbumTypeAlbum
+	case albumProto.AlbumType_AlbumTypeEP:
+		return usecaseModel.AlbumTypeEP
+	case albumProto.AlbumType_AlbumTypeSingle:
+		return usecaseModel.AlbumTypeSingle
+	case albumProto.AlbumType_AlbumTypeCompilation:
+		return usecaseModel.AlbumTypeCompilation
+	}
+	return usecaseModel.AlbumTypeAlbum
+}
+
+func AlbumRequestFromProtoToUsecase(albumRequest *albumProto.CreateAlbumRequest) *usecaseModel.CreateAlbumRequest {
+	return &usecaseModel.CreateAlbumRequest{
+		Type:    AlbumTypeFromProtoToUsecase(albumRequest.Type),
+		Title:   albumRequest.Title,
+		Image:   albumRequest.Image,
+		LabelID: albumRequest.LabelId,
+	}
+}
+
+func AlbumRequestFromUsecaseToRepository(albumRequest *usecaseModel.CreateAlbumRequest) *repoModel.CreateAlbumRequest {
+	return &repoModel.CreateAlbumRequest{
+		Type:    repoModel.AlbumType(albumRequest.Type),
+		Title:   albumRequest.Title,
+		Image:   albumRequest.Image,
+		LabelID: albumRequest.LabelID,
+	}
+}

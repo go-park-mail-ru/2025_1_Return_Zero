@@ -2,9 +2,10 @@ package usecase
 
 import (
 	"context"
+
 	authProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/auth"
-	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/auth"
+	model "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 )
 
 func NewAuthUsecase(authClient *authProto.AuthServiceClient) auth.Usecase {

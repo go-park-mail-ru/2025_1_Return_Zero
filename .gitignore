@@ -1,4 +1,8 @@
 .idea
 .env
-config.yaml
 .vscode
+coverage.html
+coverage.out
+coverage.tmp
+profile.out
+coverage_percent.txt

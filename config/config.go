@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
 )
 
@@ -117,6 +118,11 @@ type Config struct {
 }
 
 func LoadConfig() (*Config, error) {
+	err := godotenv.Load()
+	if err != nil {
+		return nil, err
+	}
+
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
@@ -130,7 +136,7 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	config.Postgres.PostgresHost = os.Getenv("POSTGRES_HOST")
+	config.Postgres.PostgresHost = os.Getenv("POSTGRES_EXTERNAL_HOST")
 	config.Postgres.PostgresPort = os.Getenv("POSTGRES_PORT")
 	config.Postgres.PostgresUser = os.Getenv("POSTGRES_USER")
 	config.Postgres.PostgresPassword = os.Getenv("POSTGRES_PASSWORD")
@@ -143,7 +149,7 @@ func LoadConfig() (*Config, error) {
 	config.S3.S3TracksBucket = os.Getenv("S3_TRACKS_BUCKET")
 	config.S3.S3ImagesBucket = os.Getenv("S3_IMAGES_BUCKET")
 
-	config.Redis.RedisHost = os.Getenv("REDIS_HOST")
+	config.Redis.RedisHost = os.Getenv("REDIS_EXTERNAL_HOST")
 	config.Redis.RedisPort = os.Getenv("REDIS_PORT")
 
 	config.Services.ArtistService.Host = os.Getenv("ARTIST_SERVICE_HOST")

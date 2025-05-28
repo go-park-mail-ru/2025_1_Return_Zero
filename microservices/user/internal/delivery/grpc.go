@@ -116,3 +116,43 @@ func (s *UserService) UploadUserAvatar(ctx context.Context, req *userProto.Avata
 	}
 	return model.FileKeyFromUsecaseToProto(fileKey), nil
 }
+
+func (s *UserService) GetLabelIDByUserID(ctx context.Context, req *userProto.UserID) (*userProto.LabelID, error) {
+	labelID, err := s.userUsecase.GetLabelIDByUserID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.LabelIDFromUsecaseToProto(labelID), nil
+}
+
+func (s *UserService) UpdateUsersLabelID(ctx context.Context, req *userProto.RequestUpdateUserLabelID) (*userProto.Nothing, error) {
+	err := s.userUsecase.UpdateUsersLabelID(ctx, req.LabelId, req.Usernames)
+	if err != nil {
+		return nil, err
+	}
+	return &userProto.Nothing{Dummy: true}, nil
+}
+
+func (s *UserService) ChecksUsersByUsernames(ctx context.Context, req *userProto.Usernames) (*userProto.Nothing, error) {
+	err := s.userUsecase.CheckUsersByUsernames(ctx, req.Usernames)
+	if err != nil {
+		return nil, err
+	}
+	return &userProto.Nothing{Dummy: true}, nil
+}
+
+func (s *UserService) GetUsersByLabelID(ctx context.Context, req *userProto.LabelID) (*userProto.Usernames, error) {
+	users, err := s.userUsecase.GetUsersByLabelID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &userProto.Usernames{Usernames: users}, nil
+}
+
+func (s *UserService) RemoveUsersFromLabel(ctx context.Context, req *userProto.RequestRemoveUserLabelID) (*userProto.Nothing, error) {
+	err := s.userUsecase.RemoveUsersFromLabel(ctx, req.LabelId, req.Usernames)
+	if err != nil {
+		return nil, err
+	}
+	return &userProto.Nothing{Dummy: true}, nil
+}

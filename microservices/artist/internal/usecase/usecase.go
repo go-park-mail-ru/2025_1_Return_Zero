@@ -9,14 +9,16 @@ import (
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/artist/model/usecase"
 )
 
-func NewArtistUsecase(artistRepository domain.Repository) domain.Usecase {
+func NewArtistUsecase(artistRepository domain.Repository, s3Repo domain.S3Repository) domain.Usecase {
 	return &artistUsecase{
 		artistRepo: artistRepository,
+		s3Repo:     s3Repo,
 	}
 }
 
 type artistUsecase struct {
 	artistRepo domain.Repository
+	s3Repo     domain.S3Repository
 }
 
 func (u *artistUsecase) GetArtistByID(ctx context.Context, id int64, userID int64) (*usecaseModel.ArtistDetailed, error) {
@@ -156,4 +158,113 @@ func (u *artistUsecase) SearchArtists(ctx context.Context, query string, userID 
 		return nil, err
 	}
 	return model.ArtistListFromRepositoryToUsecase(repoArtists), nil
+}
+
+func (u *artistUsecase) CreateArtist(ctx context.Context, artist *usecaseModel.ArtistLoad) (*usecaseModel.Artist, error) {
+	artistLoad := model.ArtistLoadFromUsecaseToRepository(artist)
+	avatarURL, err := u.s3Repo.UploadArtistAvatar(ctx, artistLoad.Title, artist.Image)
+	if err != nil {
+		return nil, err
+	}
+	artistLoad.Thumbnail = avatarURL
+	createdArtist, err := u.artistRepo.CreateArtist(ctx, artistLoad)
+	if err != nil {
+		return nil, err
+	}
+
+	createdArtistUsecase := model.ArtistFromRepositoryToUsecase(createdArtist)
+	return createdArtistUsecase, nil
+}
+
+func (u *artistUsecase) UploadAvatar(ctx context.Context, artistID int64, avatar string) error {
+	err := u.artistRepo.UploadAvatar(ctx, artistID, avatar)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *artistUsecase) EditArtist(ctx context.Context, artist *usecaseModel.ArtistEdit) (*usecaseModel.Artist, error) {
+	artistLabelID, err := u.artistRepo.GetArtistLabelID(ctx, artist.ArtistID)
+	if err != nil {
+		return nil, err
+	}
+	if artist.LabelID != artistLabelID {
+		return nil, artistErrors.NewForbiddenError("you are not allowed to edit this artist")
+	}
+	artistName, err := u.artistRepo.GetArtistTitleByID(ctx, artist.ArtistID)
+	if err != nil {
+		return nil, err
+	}
+	artistEdit := model.ArtistEditFromUsecaseToRepository(artist)
+	var artistTitle string
+	if artistEdit.NewTitle != "" {
+		isArtistExist, err := u.artistRepo.CheckArtistNameExist(ctx, artist.ArtistID)
+		if err != nil {
+			return nil, err
+		}
+		if !isArtistExist {
+			return nil, artistErrors.NewNotFoundError("artist not found")
+		}
+		err = u.artistRepo.ChangeArtistTitle(ctx, artistEdit.NewTitle, artist.ArtistID)
+		if err != nil {
+			return nil, err
+		}
+		artistTitle = artistEdit.NewTitle
+	} else {
+		artistTitle = artistName
+	}
+	if artist.Image != nil {
+		avatarURL, err := u.s3Repo.UploadArtistAvatar(ctx, artistTitle, artist.Image)
+		if err != nil {
+			return nil, err
+		}
+		err = u.UploadAvatar(ctx, artist.ArtistID, avatarURL)
+		if err != nil {
+			return nil, err
+		}
+	}
+	artistRepo, err := u.artistRepo.GetArtistByIDWithoutUser(ctx, artist.ArtistID)
+	if err != nil {
+		return nil, err
+	}
+	artistUsecase := model.ArtistFromRepositoryToUsecase(artistRepo)
+	artistUsecase.LabelID = artist.LabelID
+	return artistUsecase, nil
+}
+
+func (u *artistUsecase) GetArtistsLabelID(ctx context.Context, filters *usecaseModel.Filters, labelID int64) (*usecaseModel.ArtistList, error) {
+	repoFilters := model.ArtistFiltersFromUsecaseToRepository(filters)
+	repoArtists, err := u.artistRepo.GetArtistsLabelID(ctx, repoFilters, labelID)
+	if err != nil {
+		return nil, err
+	}
+	return model.ArtistListFromRepositoryToUsecase(repoArtists), nil
+}
+
+func (u *artistUsecase) DeleteArtist(ctx context.Context, artist *usecaseModel.ArtistDelete) error {
+	artistLabelID, err := u.artistRepo.GetArtistLabelID(ctx, artist.ArtistID)
+	if err != nil {
+		return err
+	}
+	if artist.LabelID != artistLabelID {
+		return artistErrors.NewForbiddenError("you are not allowed to edit this artist")
+	}
+	err = u.artistRepo.DeleteArtist(ctx, artist.ArtistID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *artistUsecase) ConnectArtists(ctx context.Context, artistIDs []int64, albumID int64, trackIDs []int64) error {
+	err := u.artistRepo.AddArtistsToAlbum(ctx, artistIDs, albumID)
+	if err != nil {
+		return err
+	}
+	err = u.artistRepo.AddArtistsToTracks(ctx, artistIDs, trackIDs)
+	if err != nil {
+		return err
+	}
+	return nil
 }

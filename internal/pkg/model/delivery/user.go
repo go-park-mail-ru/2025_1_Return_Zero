@@ -7,6 +7,7 @@ type UserToFront struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	Avatar   string `json:"avatar_url"`
+	IsLabel  bool   `json:"is_label"`
 }
 
 type UserDelete struct {
@@ -64,4 +65,10 @@ type UserChangeSettings struct {
 
 type AvatarURL struct {
 	AvatarUrl string `json:"avatar_url"`
+}
+
+type Label struct {
+	Id        int64    `json:"id,omitempty"`
+	Usernames []string `json:"usernames"`
+	LabelName string   `json:"label_name"`
 }

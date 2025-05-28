@@ -78,6 +78,9 @@ func (r *playlistS3Repository) UploadThumbnail(ctx context.Context, file io.Read
 		Body:        bytes.NewReader(buf.Bytes()),
 		ContentType: aws.String("image/" + format),
 		ACL:         aws.String("public-read"),
+		Metadata: map[string]*string{
+			"Cache-Control": aws.String("max-age=86400, public"),
+		},
 	})
 
 	if err != nil {

@@ -24,16 +24,24 @@ import (
 	albumUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/album/usecase"
 	artistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/delivery/http"
 	artistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/artist/usecase"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
+	jamHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/jam/delivery/http"
+	jamRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/jam/repository"
+	jamUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/jam/usecase"
 	playlistHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/playlist/delivery/http"
 	playlistUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/playlist/usecase"
 	trackHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/delivery/http"
 	trackUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/track/usecase"
 	userHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/delivery/http"
 	userUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/user/usecase"
+
+	labelHttp "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/label/delivery/http"
+	labelRepository "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/label/repository"
+	labelUsecase "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/label/usecase"
+
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
 
@@ -59,14 +67,28 @@ func main() {
 	}
 
 	redisPool := redis.NewRedisPool(cfg.Redis)
-	defer redisPool.Close()
+	defer func() {
+		if err := redisPool.Close(); err != nil {
+			logger.Error("Error closing Redis:", zap.Error(err))
+		}
+	}()
 
 	postgresConn, err := postgres.ConnectPostgres(cfg.Postgres)
 	if err != nil {
 		logger.Error("Error connecting to Postgres:", zap.Error(err))
 		return
 	}
-	defer postgresConn.Close()
+	defer func() {
+		if err := postgresConn.Close(); err != nil {
+			logger.Error("Error closing Postgres:", zap.Error(err))
+		}
+	}()
+
+	err = postgres.RunMigrations(cfg.Postgres)
+	if err != nil {
+		logger.Error("Error running migrations:", zap.Error(err))
+		return
+	}
 
 	r := mux.NewRouter()
 	logger.Info("Server starting on port %s...", zap.String("port", fmt.Sprintf(":%d", cfg.Port)))
@@ -101,12 +123,16 @@ func main() {
 	authClient := authProto.NewAuthServiceClient(clients.AuthClient)
 	userClient := userProto.NewUserServiceClient(clients.UserClient)
 
+	labelRepository := labelRepository.NewLabelPostgresRepository(postgresConn)
+	labelUsecase := labelUsecase.NewLabelUsecase(labelRepository, userClient, artistClient, albumClient, trackClient)
+	labelHandler := labelHttp.NewLabelHandler(labelUsecase, cfg)
+
 	r.Use(middleware.LoggerMiddleware(logger))
 	r.Use(middleware.RequestId)
 	r.Use(middleware.AccessLog)
-	r.Use(middleware.Auth(&authClient))
+	r.Use(middleware.Auth(&authClient, &userClient))
 	r.Use(middleware.CorsMiddleware(cfg.Cors))
-	r.Use(middleware.CSRFMiddleware(cfg.CSRF))
+	// r.Use(middleware.CSRFMiddleware(cfg.CSRF))
 	r.Use(middleware.MetricsMiddleware(metrics))
 
 	trackHandler := trackHttp.NewTrackHandler(trackUsecase.NewUsecase(trackClient, artistClient, albumClient, playlistClient, userClient), cfg)
@@ -114,6 +140,7 @@ func main() {
 	artistHandler := artistHttp.NewArtistHandler(artistUsecase.NewUsecase(artistClient, userClient), cfg)
 	userHandler := userHttp.NewUserHandler(userUsecase.NewUserUsecase(&userClient, &authClient, &artistClient, &trackClient, &playlistClient))
 	playlistHandler := playlistHttp.NewPlaylistHandler(playlistUsecase.NewUsecase(&playlistClient, &userClient), cfg)
+	jamHandler := jamHttp.NewJamHandler(jamUsecase.NewUsecase(jamRepository.NewJamRedisRepository(redisPool), userClient), cfg)
 
 	r.HandleFunc("/api/v1/tracks", trackHandler.GetAllTracks).Methods("GET")
 	r.HandleFunc("/api/v1/tracks/{id:[0-9]+}", trackHandler.GetTrackByID).Methods("GET")
@@ -121,6 +148,7 @@ func main() {
 	r.HandleFunc("/api/v1/tracks/{id:[0-9]+}/like", trackHandler.LikeTrack).Methods("POST")
 	r.HandleFunc("/api/v1/tracks/search", trackHandler.SearchTracks).Methods("GET")
 	r.HandleFunc("/api/v1/streams/{id:[0-9]+}", trackHandler.UpdateStreamDuration).Methods("PUT", "PATCH")
+	r.HandleFunc("/api/v1/selection/{selection}", trackHandler.GetSelectionTracks).Methods("GET")
 
 	r.HandleFunc("/api/v1/albums", albumHandler.GetAllAlbums).Methods("GET")
 	r.HandleFunc("/api/v1/albums/{id:[0-9]+}", albumHandler.GetAlbumByID).Methods("GET")
@@ -155,12 +183,28 @@ func main() {
 	r.HandleFunc("/api/v1/user/me/avatar", userHandler.UploadAvatar).Methods("POST")
 	r.HandleFunc("/api/v1/user/me", userHandler.ChangeUserData).Methods("PUT")
 	r.HandleFunc("/api/v1/user/me", userHandler.DeleteUser).Methods("DELETE")
-	r.HandleFunc("/api/v1/user/{username}", userHandler.GetUserData).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username:[a-zA-Z0-9_]+}", userHandler.GetUserData).Methods("GET")
 	r.HandleFunc("/api/v1/user/me/history", trackHandler.GetLastListenedTracks).Methods("GET")
-	r.HandleFunc("/api/v1/user/{username}/artists", artistHandler.GetFavoriteArtists).Methods("GET")
-	r.HandleFunc("/api/v1/user/{username}/tracks", trackHandler.GetFavoriteTracks).Methods("GET")
-	r.HandleFunc("/api/v1/user/{username}/playlists", playlistHandler.GetProfilePlaylists).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username:[a-zA-Z0-9_]+}/artists", artistHandler.GetFavoriteArtists).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username:[a-zA-Z0-9_]+}/tracks", trackHandler.GetFavoriteTracks).Methods("GET")
+	r.HandleFunc("/api/v1/user/{username:[a-zA-Z0-9_]+}/playlists", playlistHandler.GetProfilePlaylists).Methods("GET")
 	r.HandleFunc("/api/v1/user/me/albums", albumHandler.GetFavoriteAlbums).Methods("GET")
+
+	r.HandleFunc("/api/v1/label", labelHandler.CreateLabel).Methods("POST")
+	r.HandleFunc("/api/v1/label", labelHandler.UpdateLabel).Methods("PUT")
+	r.HandleFunc("/api/v1/label/{id:[0-9]+}", labelHandler.GetLabel).Methods("GET")
+
+	r.HandleFunc("/api/v1/label/artist", labelHandler.CreateArtist).Methods("POST")
+	r.HandleFunc("/api/v1/label/artist", labelHandler.EditArtist).Methods("PUT")
+	r.HandleFunc("/api/v1/label/artists", labelHandler.GetArtists).Methods("GET")
+	r.HandleFunc("/api/v1/label/artist", labelHandler.DeleteArtist).Methods("DELETE")
+
+	r.HandleFunc("/api/v1/label/album", labelHandler.CreateAlbum).Methods("POST")
+	r.HandleFunc("/api/v1/label/album", labelHandler.DeleteAlbum).Methods("DELETE")
+	r.HandleFunc("/api/v1/label/albums", labelHandler.GetAlbumsByLabelID).Methods("GET")
+
+	r.HandleFunc("/api/v1/jams", jamHandler.CreateRoom).Methods("POST")
+	r.HandleFunc("/api/v1/jams/{id}", jamHandler.WSHandler).Methods("GET")
 
 	r.Handle("/api/v1/metrics", promhttp.Handler())
 
@@ -181,6 +225,10 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	srv.Shutdown(ctx)
+	err = srv.Shutdown(ctx)
+	if err != nil {
+		logger.Error("Error shutting down server:", zap.Error(err))
+		os.Exit(1)
+	}
 	logger.Info("Composer server stopped")
 }
