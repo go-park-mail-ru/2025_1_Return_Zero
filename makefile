@@ -16,7 +16,7 @@ migrate_up:
 	tern migrate -c db/migrations/tern.conf --migrations db/migrations
 
 migrate_down:
-	tern migrate -c db/migrations/tern.conf --migrations db/migrations -d 0
+	tern migrate -c db/migrations/tern.conf --migrations db/migrations -d 1
 
 populate:
 	make migrate_up

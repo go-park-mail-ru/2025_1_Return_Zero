@@ -26,7 +26,6 @@ INSERT INTO album (title, thumbnail_url, release_date, type) VALUES
     ('Everlasting Summer', 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/everlastingsummer.jpg', '2016-01-01', 'album'),
     ('Music Brings Injures', 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/musicbringsinjures.webp', '2024-01-01', 'album'),
     ('Triumph Of Evilution', 'https://returnzeroimages.fra1.digitaloceanspaces.com/albums/triumphofevilution.webp', '2024-01-01', 'ep')
-    ON CONFLICT DO NOTHING;
 
 INSERT INTO genre (name) VALUES
 	('J-Pop'),
@@ -35,7 +34,6 @@ INSERT INTO genre (name) VALUES
 	('Pop'),
 	('Hip-Hop'),
     ('OST')
-    ON CONFLICT DO NOTHING;
 
 INSERT INTO genre_album (genre_id, album_id) VALUES
 	((SELECT id FROM genre WHERE name = 'J-Pop'), (SELECT id FROM album WHERE title = 'Anticyclone')),
@@ -45,7 +43,6 @@ INSERT INTO genre_album (genre_id, album_id) VALUES
     ((SELECT id FROM genre WHERE name = 'Hip-Hop'), (SELECT id FROM album WHERE title = 'The Eminem Show')),
     ((SELECT id FROM genre WHERE name = 'Rock'), (SELECT id FROM album WHERE title = 'Symphony Soldier')),
     ((SELECT id FROM genre WHERE name = 'OST'), (SELECT id FROM album WHERE title = 'Everlasting Summer'))
-    ON CONFLICT DO NOTHING;
 
 INSERT INTO track (title, album_id, duration, thumbnail_url, file_url, position) VALUES
     ('Gialo', (SELECT id FROM album WHERE title = 'Music Brings Injures'), 212, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/musicbringsinjures.webp', 'gialo.mp3', 1),
@@ -83,7 +80,6 @@ INSERT INTO track (title, album_id, duration, thumbnail_url, file_url, position)
     ('Angel With A Shotgun', (SELECT id FROM album WHERE title = 'Symphony Soldier'), 201, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/symphonysoldier.jpg', 'angelwithashotgun.mp3', 1),
     ('Timid Girl', (SELECT id FROM album WHERE title = 'Everlasting Summer'), 82, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/everlastingsummer.jpg', 'timidgirl.mp3', 1),
     ('Let`s be friends', (SELECT id FROM album WHERE title = 'Everlasting Summer'), 123, 'https://returnzeroimages.fra1.digitaloceanspaces.com/tracks/everlastingsummer.jpg', 'letbefriends.mp3', 2)
-    ON CONFLICT DO NOTHING;
     
 
 
@@ -96,7 +92,6 @@ INSERT INTO genre_track (genre_id, track_id) VALUES
     ((SELECT id FROM genre WHERE name = 'OST'), (SELECT id FROM track WHERE title = 'Timid Girl')),
     ((SELECT id FROM genre WHERE name = 'OST'), (SELECT id FROM track WHERE title = 'Let`s be friends')),
     ((SELECT id FROM genre WHERE name = 'Rock'), (SELECT id FROM track WHERE title = 'Angel With A Shotgun'))
-    ON CONFLICT DO NOTHING;
 
 INSERT INTO track_artist (track_id, artist_id, role) VALUES
     ((SELECT id FROM track WHERE title = 'Lagtrain'), (SELECT id FROM artist WHERE title = 'Inabakumori'), 'main'),
@@ -135,7 +130,6 @@ INSERT INTO track_artist (track_id, artist_id, role) VALUES
     ((SELECT id FROM track WHERE title = 'Carpet Wounding'), (SELECT id FROM artist WHERE title = 'Katalepsy'), 'main'),
     ((SELECT id FROM track WHERE title = 'H. Tearing Sinew'), (SELECT id FROM artist WHERE title = 'Katalepsy'), 'main'),
     ((SELECT id FROM track WHERE title = 'Number Of Death'), (SELECT id FROM artist WHERE title = 'Katalepsy'), 'main')
-    ON CONFLICT DO NOTHING;
 
 
 INSERT INTO album_artist (album_id, artist_id) VALUES
@@ -150,22 +144,12 @@ INSERT INTO album_artist (album_id, artist_id) VALUES
     ((SELECT id FROM album WHERE title = 'Everlasting Summer'), (SELECT id FROM artist WHERE title = 'Sergey Eybog')),
     ((SELECT id FROM album WHERE title = 'Music Brings Injures'), (SELECT id FROM artist WHERE title = 'Katalepsy')),
     ((SELECT id FROM album WHERE title = 'Triumph Of Evilution'), (SELECT id FROM artist WHERE title = 'Katalepsy'))
-    ON CONFLICT DO NOTHING;
 
 REFRESH MATERIALIZED VIEW artist_stats;
 REFRESH MATERIALIZED VIEW album_stats;
 REFRESH MATERIALIZED VIEW track_stats;
 
 ---- create above / drop below ----
-
-TRUNCATE TABLE track CASCADE;
-TRUNCATE TABLE album CASCADE;
-TRUNCATE TABLE artist CASCADE;
-TRUNCATE TABLE genre CASCADE;
-TRUNCATE TABLE genre_album CASCADE;
-TRUNCATE TABLE genre_track CASCADE;
-TRUNCATE TABLE track_artist CASCADE;
-TRUNCATE TABLE album_artist CASCADE;
 
 -- Write your migrate down statements here. If this migration is irreversible
 -- Then delete the separator line above.
