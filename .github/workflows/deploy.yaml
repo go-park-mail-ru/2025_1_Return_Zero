@@ -90,7 +90,7 @@ jobs:
             tag: api
           - name: postgres
             context: ./deploy/images/postgres
-            dockerfile: ./Dockerfile
+            dockerfile: Dockerfile
             tag: postgres
     steps:
       - name: Checkout
