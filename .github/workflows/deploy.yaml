@@ -61,28 +61,36 @@ jobs:
       matrix:
         service:
           - name: artist
+            context: .
             dockerfile: ./deploy/images/artist/Dockerfile
             tag: artist-service
           - name: album
+            context: .
             dockerfile: ./deploy/images/album/Dockerfile
             tag: album-service
           - name: track
+            context: .
             dockerfile: ./deploy/images/track/Dockerfile
             tag: track-service
           - name: auth
+            context: .
             dockerfile: ./deploy/images/auth/Dockerfile
             tag: auth-service
           - name: user
+            context: .
             dockerfile: ./deploy/images/user/Dockerfile
             tag: user-service
           - name: playlist
+            context: .
             dockerfile: ./deploy/images/playlist/Dockerfile
             tag: playlist-service
           - name: api
+            context: .
             dockerfile: ./deploy/images/api/Dockerfile
             tag: api
           - name: postgres
-            dockerfile: ./deploy/images/postgres/Dockerfile
+            context: ./deploy/images/postgres
+            dockerfile: Dockerfile
             tag: postgres
     steps:
       - name: Checkout
@@ -108,7 +116,7 @@ jobs:
       - name: Build and push ${{ matrix.service.name }} service
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ${{ matrix.service.context }}
           file: ${{ matrix.service.dockerfile }}
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.service.tag }}:latest
