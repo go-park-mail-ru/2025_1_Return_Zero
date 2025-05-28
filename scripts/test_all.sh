@@ -11,7 +11,7 @@ rm -f coverage.out coverage.html
 
 touch coverage.tmp
 
-PACKAGES=$(go list ./... | grep -v "mock" | grep -v "/gen/" | grep -v "/pb$" | grep -v "docs" | grep -v "populate")
+PACKAGES=$(go list ./... | grep -v "mock" | grep -v "/gen/" | grep -v "/pb$" | grep -v "docs")
 
 for pkg in $PACKAGES; do
     echo -e "${GREEN}Testing: ${NC}$pkg"
@@ -24,12 +24,14 @@ for pkg in $PACKAGES; do
     fi
     
     if [ -f profile.out ]; then
+        grep -v "_easyjson.go" profile.out > profile_filtered.out 2>/dev/null || cp profile.out profile_filtered.out
+        
         if [ ! -s coverage.tmp ]; then
-            cat profile.out > coverage.tmp
+            cat profile_filtered.out > coverage.tmp
         else
-            tail -n +2 profile.out >> coverage.tmp
+            tail -n +2 profile_filtered.out >> coverage.tmp
         fi
-        rm profile.out
+        rm profile.out profile_filtered.out
     fi
 done
 

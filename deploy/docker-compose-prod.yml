@@ -4,9 +4,7 @@
 
 services:
   postgres:
-    build:
-      context: ./images/postgres
-      dockerfile: Dockerfile
+    image: derletzte256/postgres:latest
     restart: always
     container_name: postgres
     environment:
@@ -69,6 +67,8 @@ services:
       - postgres
     ports:
       - '5001:5001'
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     tty: true
 
   track-grpc:
@@ -79,6 +79,8 @@ services:
       - postgres
     ports:
       - '5002:5002'
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     tty: true
 
   album-grpc:
@@ -89,6 +91,8 @@ services:
       - postgres
     ports:
       - '5003:5003'
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     tty: true
     
   auth-grpc:
@@ -102,6 +106,8 @@ services:
       - redis
     ports:
       - '5004:5004'
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     tty: true
 
   user-grpc:
@@ -112,6 +118,8 @@ services:
       - postgres
     ports:
       - '5005:5005'
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     tty: true
 
   playlist-grpc:
@@ -122,6 +130,8 @@ services:
       - postgres
     ports:
       - '5006:5006'
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
     tty: true
 
   nginx:
@@ -136,8 +146,8 @@ services:
       - '/etc/ssl:/etc/ssl'
       - '../dist:/usr/share/nginx/static'   
     labels:
-      com.centurylinklabs.watchtower.enable: true
-      com.centurylinklabs.watchtowerdepends-on: go-api
+      - "com.centurylinklabs.watchtower.enable=true"
+      - "com.centurylinklabs.watchtower.depends-on=ReturnZeroAPI"
     depends_on:
       - go-api
     tty: true
@@ -195,7 +205,7 @@ services:
       WATCHTOWER_INCLUDE_RESTARTING: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    command: --interval 30 go-api artist-grpc track-grpc album-grpc auth-grpc track-grpc playlist-grpc
+    command: --interval 30 ReturnZeroAPI artist-grpc track-grpc album-grpc auth-grpc user-grpc playlist-grpc
 
 volumes:
   pgdata:
