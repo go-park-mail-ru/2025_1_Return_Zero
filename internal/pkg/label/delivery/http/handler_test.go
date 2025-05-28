@@ -1110,3 +1110,100 @@ func TestLabelHandler_DeleteAlbum(t *testing.T) {
 	}
 }
 
+func TestLabelHandler_GetAlbumsByLabelID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUsecase := mock_label.NewMockUsecase(ctrl)
+	cfg := &config.Config{
+		Pagination: config.PaginationConfig{
+			DefaultLimit: 10,
+			MaxLimit:     100,
+		},
+	}
+
+	handler := NewLabelHandler(mockUsecase, cfg)
+
+	tests := []struct {
+		name           string
+		labelID        int64
+		mockBehavior   func()
+		expectedStatus int
+		expectedBody   map[string]interface{}
+	}{
+		{
+			name:    "Get Albums - not label",
+			labelID: 0,
+			mockBehavior: func() {
+			},
+			expectedStatus: http.StatusUnauthorized,
+			expectedBody: map[string]interface{}{
+				"status": int(http.StatusUnauthorized),
+				"error": map[string]interface{}{
+					"message": "user not in label",
+				},
+			},
+		},
+		{
+			name:    "Get Albums - success",
+			labelID: 1,
+			mockBehavior: func() {
+				mockUsecase.EXPECT().GetAlbumsByLabelID(gomock.Any(), int64(1), gomock.Any()).Return([]*usecase.Album{
+					{
+						ID:            1,
+						Type:          "album",
+						Title:         "Album 1",
+						IsLiked:       false,
+						Thumbnail:     "album1.jpg",
+						Artists: []*usecase.AlbumArtist{
+							{
+								ID:    1,
+								Title: "Artist 1",
+							},
+						},
+					},
+				}, nil)
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody: map[string]interface{}{
+				"status": int(http.StatusOK),
+				"body": []interface{}{
+					map[string]interface{}{
+						"id":            float64(1),
+						"title":         "Album 1",
+						"thumbnail_url": "album1.jpg",
+						"type":          "album",
+						"is_liked":      false,
+						"release_date":  "0001-01-01T00:00:00Z",
+						"artists": []interface{}{
+							map[string]interface{}{
+								"id":    float64(1),
+								"title": "Artist 1",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mockBehavior()
+
+			req, err := http.NewRequest("GET", "/label/albums", nil)
+			assert.NoError(t, err)
+
+			req = setupTestLogger(req)
+			if tt.name != "Get Albums - not label" {
+				req = addAdminToContext(req)
+				req = addLabelToContext(req, tt.labelID)
+			}
+
+			rec := httptest.NewRecorder()
+			handler.GetAlbumsByLabelID(rec, req)
+
+			verifyResponse(t, rec, tt.expectedStatus, tt.expectedBody)
+		})
+	}
+}

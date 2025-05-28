@@ -539,3 +539,52 @@ func TestDeleteUser(t *testing.T) {
 
 	assert.NoError(t, err)
 }
+
+func TestGetLabelIDByUserID(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	userClient := user.UserServiceClient(mockUserClient)
+
+	userClientPtr := &userClient
+
+	userUC := userUsecase.NewUserUsecase(userClientPtr, nil, nil, nil, nil)
+
+	ctx := context.Background()
+	userID := int64(1)
+	expectedLabelID := int64(42)
+
+	mockUserClient.EXPECT().GetLabelIDByUserID(gomock.Any(), &user.UserID{Id: userID}).Return(&user.LabelID{Id: expectedLabelID}, nil)
+
+	labelID, err := userUC.GetLabelIDByUserID(ctx, userID)
+
+	assert.NoError(t, err)
+	assert.Equal(t, expectedLabelID, labelID)
+}
+
+func TestGetLabelIDByUserIDError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	userClient := user.UserServiceClient(mockUserClient)
+
+	userClientPtr := &userClient
+
+	userUC := userUsecase.NewUserUsecase(userClientPtr, nil, nil, nil, nil)
+
+	ctx := context.Background()
+	userID := int64(1)
+	expectedErr := errors.New("label not found")
+
+	mockUserClient.EXPECT().GetLabelIDByUserID(gomock.Any(), &user.UserID{Id: userID}).Return(nil, expectedErr)
+
+	labelID, err := userUC.GetLabelIDByUserID(ctx, userID)
+
+	assert.Error(t, err)
+	assert.Equal(t, expectedErr, err)
+	assert.Equal(t, int64(-1), labelID)
+}
