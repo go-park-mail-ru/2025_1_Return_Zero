@@ -28,12 +28,17 @@ func Auth(authClient *authProto.AuthServiceClient, userClient *userProto.UserSer
 
 			userID := model.UserIDFromProtoToUsecase(userIDProto)
 			ctx := context.WithValue(r.Context(), ctxExtractor.UserContextKey{}, userID)
-			if userID == 1 {
+			userFront, err := (*userClient).GetUserByID(r.Context(), model.UserIDFromUsecaseToProtoUser(userID))
+			if err != nil {
+				next.ServeHTTP(w, r.WithContext(ctx))
+				return
+			}
+			if userFront.Username == "admin" && userFront.Email == "admin@admin.ru" {
 				ctx = context.WithValue(ctx, ctxExtractor.AdminContextKey{}, userID)
 			}
 			labelIDProto, err := (*userClient).GetLabelIDByUserID(r.Context(), model.UserIDFromUsecaseToProtoUser(userID))
 			if err != nil {
-				next.ServeHTTP(w, r)
+				next.ServeHTTP(w, r.WithContext(ctx))
 				return
 			}
 			labelID := model.LabelIDFromProtoToUsecase(labelIDProto)

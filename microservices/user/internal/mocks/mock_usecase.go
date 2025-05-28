@@ -69,6 +69,20 @@ func (mr *MockUsecaseMockRecorder) ChangeUserPrivacySettings(ctx, username, priv
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeUserPrivacySettings", reflect.TypeOf((*MockUsecase)(nil).ChangeUserPrivacySettings), ctx, username, privacySettings)
 }
 
+// CheckUsersByUsernames mocks base method.
+func (m *MockUsecase) CheckUsersByUsernames(ctx context.Context, usernames []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckUsersByUsernames", ctx, usernames)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CheckUsersByUsernames indicates an expected call of CheckUsersByUsernames.
+func (mr *MockUsecaseMockRecorder) CheckUsersByUsernames(ctx, usernames any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckUsersByUsernames", reflect.TypeOf((*MockUsecase)(nil).CheckUsersByUsernames), ctx, usernames)
+}
+
 // CreateUser mocks base method.
 func (m *MockUsecase) CreateUser(ctx context.Context, registerData *usecase.RegisterData) (*usecase.UserFront, error) {
 	m.ctrl.T.Helper()
@@ -143,6 +157,21 @@ func (mr *MockUsecaseMockRecorder) GetIDByUsername(ctx, username any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIDByUsername", reflect.TypeOf((*MockUsecase)(nil).GetIDByUsername), ctx, username)
 }
 
+// GetLabelIDByUserID mocks base method.
+func (m *MockUsecase) GetLabelIDByUserID(ctx context.Context, userID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLabelIDByUserID", ctx, userID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLabelIDByUserID indicates an expected call of GetLabelIDByUserID.
+func (mr *MockUsecaseMockRecorder) GetLabelIDByUserID(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLabelIDByUserID", reflect.TypeOf((*MockUsecase)(nil).GetLabelIDByUserID), ctx, userID)
+}
+
 // GetUserByID mocks base method.
 func (m *MockUsecase) GetUserByID(ctx context.Context, id int64) (*usecase.UserFront, error) {
 	m.ctrl.T.Helper()
@@ -173,6 +202,21 @@ func (mr *MockUsecaseMockRecorder) GetUserPrivacySettings(ctx, id any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPrivacySettings", reflect.TypeOf((*MockUsecase)(nil).GetUserPrivacySettings), ctx, id)
 }
 
+// GetUsersByLabelID mocks base method.
+func (m *MockUsecase) GetUsersByLabelID(ctx context.Context, labelID int64) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsersByLabelID", ctx, labelID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsersByLabelID indicates an expected call of GetUsersByLabelID.
+func (mr *MockUsecaseMockRecorder) GetUsersByLabelID(ctx, labelID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByLabelID", reflect.TypeOf((*MockUsecase)(nil).GetUsersByLabelID), ctx, labelID)
+}
+
 // LoginUser mocks base method.
 func (m *MockUsecase) LoginUser(ctx context.Context, loginData *usecase.LoginData) (*usecase.UserFront, error) {
 	m.ctrl.T.Helper()
@@ -186,6 +230,34 @@ func (m *MockUsecase) LoginUser(ctx context.Context, loginData *usecase.LoginDat
 func (mr *MockUsecaseMockRecorder) LoginUser(ctx, loginData any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoginUser", reflect.TypeOf((*MockUsecase)(nil).LoginUser), ctx, loginData)
+}
+
+// RemoveUsersFromLabel mocks base method.
+func (m *MockUsecase) RemoveUsersFromLabel(ctx context.Context, labelID int64, usernames []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveUsersFromLabel", ctx, labelID, usernames)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveUsersFromLabel indicates an expected call of RemoveUsersFromLabel.
+func (mr *MockUsecaseMockRecorder) RemoveUsersFromLabel(ctx, labelID, usernames any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveUsersFromLabel", reflect.TypeOf((*MockUsecase)(nil).RemoveUsersFromLabel), ctx, labelID, usernames)
+}
+
+// UpdateUsersLabelID mocks base method.
+func (m *MockUsecase) UpdateUsersLabelID(ctx context.Context, labelID int64, usernames []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUsersLabelID", ctx, labelID, usernames)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUsersLabelID indicates an expected call of UpdateUsersLabelID.
+func (mr *MockUsecaseMockRecorder) UpdateUsersLabelID(ctx, labelID, usernames any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUsersLabelID", reflect.TypeOf((*MockUsecase)(nil).UpdateUsersLabelID), ctx, labelID, usernames)
 }
 
 // UploadAvatar mocks base method.

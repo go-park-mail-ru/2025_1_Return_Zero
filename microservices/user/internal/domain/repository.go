@@ -23,6 +23,8 @@ type Repository interface {
 	CheckUsersByUsernames(ctx context.Context, usernames []string) error
 	GetUsersByLabelID(ctx context.Context, labelID int64) ([]string, error)
 	RemoveUsersFromLabel(ctx context.Context, labelID int64, usernames []string) error
+	UpdateLabel(ctx context.Context, newName string, labelID int64) error
+	GetLabelById(ctx context.Context, labelID int64) (string, error)
 }
 
 type S3Repository interface {

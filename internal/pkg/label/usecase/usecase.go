@@ -237,7 +237,7 @@ func (u *labelUsecase) CreateAlbum(ctx context.Context, album *usecaseModel.Crea
 }
 
 func (u *labelUsecase) UpdateLabel(ctx context.Context, labelID int64, toAdd, toRemove []string) error {
-	_, err := u.userProto.RemoveUsersLabelID(ctx, &userProto.RequestRemoveUserLabelID{
+	_, err := u.userProto.RemoveUsersFromLabel(ctx, &userProto.RequestRemoveUserLabelID{
 		LabelId:   labelID,
 		Usernames: toRemove,
 	})

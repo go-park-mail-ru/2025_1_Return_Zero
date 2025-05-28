@@ -465,3 +465,150 @@ func TestCheckAlbumExistsError(t *testing.T) {
 
 	require.Error(t, err)
 }
+
+func TestCreateAlbum(t *testing.T) {
+    db, mock, ctx := setupTest(t)
+    defer db.Close()
+
+    repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
+
+    album := &repoModel.CreateAlbumRequest{
+        Title:     "New Album",
+        Type:      repoModel.AlbumTypeAlbum,
+        Thumbnail: "thumbnail_url",
+        Image:     nil,
+        LabelID:   1,
+    }
+
+    rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
+
+    mock.ExpectPrepare("INSERT INTO album").
+        ExpectQuery().
+        WithArgs(album.Title, album.Type, album.Thumbnail, album.LabelID).
+        WillReturnRows(rows)
+
+    id, err := repo.CreateAlbum(ctx, album)
+
+    require.NoError(t, err)
+    assert.Equal(t, int64(1), id)
+}
+
+func TestCreateAlbumError(t *testing.T) {
+    db, mock, ctx := setupTest(t)
+    defer db.Close()
+
+    repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
+
+    album := &repoModel.CreateAlbumRequest{
+        Title:     "New Album",
+        Type:      repoModel.AlbumTypeAlbum,
+        Thumbnail: "thumbnail_url",
+        Image:     nil,
+        LabelID:   1,
+    }
+
+    mock.ExpectPrepare("INSERT INTO album").
+        ExpectQuery().
+        WithArgs(album.Title, album.Image, album.Thumbnail, album.LabelID).
+        WillReturnError(errors.New("database error"))
+
+    id, err := repo.CreateAlbum(ctx, album)
+
+    require.Error(t, err)
+    assert.Equal(t, int64(0), id)
+}
+
+func TestDeleteAlbum(t *testing.T) {
+	db, mock, ctx := setupTest(t)
+	defer db.Close()
+
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
+
+	albumID := int64(1)
+
+	mock.ExpectPrepare("DELETE FROM album").
+		ExpectExec().
+		WithArgs(albumID).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+
+	err := repo.DeleteAlbum(ctx, albumID)
+
+	require.NoError(t, err)
+}
+
+func TestDeleteAlbumError(t *testing.T) {
+	db, mock, ctx := setupTest(t)
+	defer db.Close()
+
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
+
+	albumID := int64(1)
+
+	mock.ExpectPrepare("DELETE FROM album").
+		ExpectExec().
+		WithArgs(albumID).
+		WillReturnError(errors.New("database error"))
+
+	err := repo.DeleteAlbum(ctx, albumID)
+
+	require.Error(t, err)
+}
+
+func TestGetAlbumsLabelID(t *testing.T) {
+    db, mock, ctx := setupTest(t)
+    defer db.Close()
+
+    repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
+
+    labelID := int64(2)
+    filters := &repoModel.AlbumFilters{
+        Pagination: &repoModel.Pagination{
+            Limit:  10,
+            Offset: 0,
+        },
+    }
+    releaseDate := time.Now()
+
+    rows := sqlmock.NewRows([]string{"id", "title", "type", "thumbnail_url", "release_date", "is_favorite"}).
+        AddRow(1, "Album 1", "album", "url1", releaseDate, false).
+        AddRow(2, "Album 2", "album", "url2", releaseDate, false)
+
+    mock.ExpectPrepare("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+        ExpectQuery().
+        WithArgs(labelID, filters.Pagination.Limit, filters.Pagination.Offset).
+        WillReturnRows(rows)
+
+    albums, err := repo.GetAlbumsLabelID(ctx, filters, labelID)
+
+    require.NoError(t, err)
+    assert.Len(t, albums, 2)
+    assert.Equal(t, int64(1), albums[0].ID)
+    assert.Equal(t, "Album 1", albums[0].Title)
+    assert.Equal(t, int64(2), albums[1].ID)
+    assert.Equal(t, "Album 2", albums[1].Title)
+}
+
+func TestGetAlbumsLabelIDError(t *testing.T) {
+	db, mock, ctx := setupTest(t)
+	defer db.Close()
+
+	repo := NewAlbumPostgresRepository(db, metrics.NewMockMetrics())
+
+	labelID := int64(2)
+	filters := &repoModel.AlbumFilters{
+		Pagination: &repoModel.Pagination{
+			Limit:  10,
+			Offset: 0,
+		},
+	}
+
+	expectedErr := errors.New("database error")
+	mock.ExpectPrepare("SELECT a.id, a.title, a.type, a.thumbnail_url, a.release_date").
+		ExpectQuery().
+		WithArgs(labelID, filters.Pagination.Limit, filters.Pagination.Offset).
+		WillReturnError(expectedErr)
+
+	_, err := repo.GetAlbumsLabelID(ctx, filters, labelID)
+
+	require.Error(t, err)
+}

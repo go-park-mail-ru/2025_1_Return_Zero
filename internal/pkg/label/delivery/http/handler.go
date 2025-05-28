@@ -1,4 +1,4 @@
-package label
+package http
 
 import (
 	"io"
@@ -40,9 +40,9 @@ func NewLabelHandler(usecase domain.Usecase, cfg *config.Config) *LabelHandler {
 // @Security AdminAuth
 // @Param label body delivery.Label true "Label information"
 // @Success 201 {object} delivery.Label "Created label"
-// @Failure 400 {string} delivery.APIBadRequestErrorResponse "Bad request - invalid input"
-// @Failure 401 {string} delivery.APIUnauthorizedErrorResponse "Unauthorized - admin access required"
-// @Failure 500 {string} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid input"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized - admin access required"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /api/v1/label [post]
 func (h *LabelHandler) CreateLabel(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -50,7 +50,7 @@ func (h *LabelHandler) CreateLabel(w http.ResponseWriter, r *http.Request) {
 	isAdmin := ctxExtractor.AdminFromContext(ctx)
 	if !isAdmin {
 		logger.Error("Unauthorized access attempt")
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		json.WriteErrorResponse(w, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
 
@@ -70,7 +70,7 @@ func (h *LabelHandler) CreateLabel(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newLabelDelivery := model.LabelFromUsecaseToDelivery(newLabel)
-	json.WriteJSON(w, http.StatusCreated, newLabelDelivery, nil)
+	json.WriteSuccessResponse(w, http.StatusCreated, newLabelDelivery, nil)
 }
 
 // GetLabel godoc
@@ -82,9 +82,9 @@ func (h *LabelHandler) CreateLabel(w http.ResponseWriter, r *http.Request) {
 // @Security AdminAuth
 // @Param id path integer true "Label ID"
 // @Success 200 {object} delivery.Label "Label information"
-// @Failure 400 {string} delivery.APIBadRequestErrorResponse "Bad request - invalid label ID"
-// @Failure 401 {string} delivery.APIUnauthorizedErrorResponse "Unauthorized - admin access required"
-// @Failure 500 {string} delivery.APIInternalServerErrorResponse "Internal server error"
+// @Failure 400 {object} delivery.APIBadRequestErrorResponse "Bad request - invalid label ID"
+// @Failure 401 {object} delivery.APIUnauthorizedErrorResponse "Unauthorized - admin access required"
+// @Failure 500 {object} delivery.APIInternalServerErrorResponse "Internal server error"
 // @Router /api/v1/label/{id} [get]
 func (h *LabelHandler) GetLabel(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -111,7 +111,7 @@ func (h *LabelHandler) GetLabel(w http.ResponseWriter, r *http.Request) {
 	}
 
 	labelDelivery := model.LabelFromUsecaseToDelivery(label)
-	json.WriteJSON(w, http.StatusOK, labelDelivery, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, labelDelivery, nil)
 }
 
 // CreateArtist godoc
@@ -351,7 +351,7 @@ func (h *LabelHandler) DeleteArtist(w http.ResponseWriter, r *http.Request) {
 	labelID, isLabel := ctxExtractor.LabelFromContext(ctx)
 	if !isLabel {
 		logger.Error("failed to get labelID")
-		json.WriteErrorResponse(w, http.StatusForbidden, "user not in label", nil)
+		json.WriteErrorResponse(w, http.StatusUnauthorized, "user not in label", nil)
 		return
 	}
 
@@ -403,7 +403,7 @@ func (h *LabelHandler) CreateAlbum(w http.ResponseWriter, r *http.Request) {
 	labelID, isLabel := ctxExtractor.LabelFromContext(ctx)
 	if !isLabel {
 		logger.Error("failed to get labelID")
-		json.WriteErrorResponse(w, http.StatusForbidden, "user not in label", nil)
+		json.WriteErrorResponse(w, http.StatusUnauthorized, "user not in label", nil)
 		return
 	}
 
@@ -590,7 +590,7 @@ func (h *LabelHandler) UpdateLabel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.WriteJSON(w, http.StatusOK, delivery.Message{Message: "Label edited successfully"}, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, "Label edited succesfully", nil)
 }
 
 // DeleteAlbum godoc
@@ -616,7 +616,7 @@ func (h *LabelHandler) DeleteAlbum(w http.ResponseWriter, r *http.Request) {
 	labelID, isLabel := ctxExtractor.LabelFromContext(ctx)
 	if !isLabel && !isAdmin {
 		logger.Error("failed to authorize user")
-		json.WriteErrorResponse(w, http.StatusForbidden, "user not in label", nil)
+		json.WriteErrorResponse(w, http.StatusUnauthorized, "user not in label", nil)
 		return
 	}
 
@@ -642,7 +642,7 @@ func (h *LabelHandler) DeleteAlbum(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.WriteJSON(w, http.StatusOK, delivery.Message{Message: "Album deleted successfully"}, nil)
+	json.WriteSuccessResponse(w, http.StatusOK, "Album deleted successfully", nil)
 }
 
 // GetAlbumsByLabelID godoc
@@ -667,7 +667,7 @@ func (h *LabelHandler) GetAlbumsByLabelID(w http.ResponseWriter, r *http.Request
 	labelID, isLabel := ctxExtractor.LabelFromContext(ctx)
 	if !isLabel {
 		logger.Error("failed to get labelID")
-		json.WriteErrorResponse(w, http.StatusForbidden, "user not in label", nil)
+		json.WriteErrorResponse(w, http.StatusUnauthorized, "user not in label", nil)
 		return
 	}
 

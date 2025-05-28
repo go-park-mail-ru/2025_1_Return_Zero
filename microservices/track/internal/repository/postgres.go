@@ -957,6 +957,11 @@ func (r *TrackPostgresRepository) AddTracksToAlbum(ctx context.Context, tracksLi
 		return nil, trackErrors.NewInternalError("failed to commit transaction: %v", err)
 	}
 
+	_, err = r.db.ExecContext(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY track_stats")
+	if err != nil {
+		logger.Warn("failed to refresh track_stats view, new tracks may not be visible in statistics for up to 1 hour", zap.Error(err))
+	}
+
 	duration := time.Since(start).Seconds()
 	r.metrics.DatabaseDuration.WithLabelValues("AddTracksToAlbum").Observe(duration)
 
