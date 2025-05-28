@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - dev
+      - rk4_cicd
 
 jobs:
   test:
