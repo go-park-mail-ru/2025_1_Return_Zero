@@ -76,6 +76,13 @@ func NewFailedToUploadAvatarError(format string, args ...interface{}) error {
 	}
 }
 
+func NewLabelExistError(format string, args ...interface{}) error {
+	return &UserError{
+		Code:    codes.AlreadyExists,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
 var (
 	ErrUserNotFound           = NewNotFoundError("user not found")
 	ErrUserExist              = NewUserExistError("user already exist")
@@ -85,4 +92,5 @@ var (
 	ErrEmptyS3Key             = NewEmptyS3KeyError("s3 key is empty")
 	ErrUnsupportedImageFormat = NewUnsupportedImageFormatError("unsupported image format")
 	ErrFailedToUploadAvatar   = NewFailedToUploadAvatarError("failed to upload avatar")
+	ErrLabelExist             = NewLabelExistError("label already exist")
 )

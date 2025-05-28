@@ -16,4 +16,7 @@ type Usecase interface {
 	LikeAlbum(ctx context.Context, request *usecaseModel.LikeRequest) error
 	GetFavoriteAlbums(ctx context.Context, filters *usecaseModel.AlbumFilters, userID int64) ([]*usecaseModel.Album, error)
 	SearchAlbums(ctx context.Context, query string, userID int64) ([]*usecaseModel.Album, error)
+	CreateAlbum(ctx context.Context, album *usecaseModel.CreateAlbumRequest) (int64, string, error)
+	DeleteAlbum(ctx context.Context, albumID int64) error
+	GetAlbumsLabelID(ctx context.Context, filters *usecaseModel.AlbumFilters, labelID int64) ([]*usecaseModel.Album, error)
 }

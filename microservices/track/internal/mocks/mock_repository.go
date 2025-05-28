@@ -41,6 +41,21 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// AddTracksToAlbum mocks base method.
+func (m *MockRepository) AddTracksToAlbum(ctx context.Context, tracksList []*repository.Track) ([]int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddTracksToAlbum", ctx, tracksList)
+	ret0, _ := ret[0].([]int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddTracksToAlbum indicates an expected call of AddTracksToAlbum.
+func (mr *MockRepositoryMockRecorder) AddTracksToAlbum(ctx, tracksList any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddTracksToAlbum", reflect.TypeOf((*MockRepository)(nil).AddTracksToAlbum), ctx, tracksList)
+}
+
 // CheckTrackExists mocks base method.
 func (m *MockRepository) CheckTrackExists(ctx context.Context, trackID int64) (bool, error) {
 	m.ctrl.T.Helper()
@@ -69,6 +84,20 @@ func (m *MockRepository) CreateStream(ctx context.Context, stream *repository.Tr
 func (mr *MockRepositoryMockRecorder) CreateStream(ctx, stream any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStream", reflect.TypeOf((*MockRepository)(nil).CreateStream), ctx, stream)
+}
+
+// DeleteTracksByAlbumID mocks base method.
+func (m *MockRepository) DeleteTracksByAlbumID(ctx context.Context, albumID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteTracksByAlbumID", ctx, albumID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteTracksByAlbumID indicates an expected call of DeleteTracksByAlbumID.
+func (mr *MockRepositoryMockRecorder) DeleteTracksByAlbumID(ctx, albumID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteTracksByAlbumID", reflect.TypeOf((*MockRepository)(nil).DeleteTracksByAlbumID), ctx, albumID)
 }
 
 // GetAlbumIDByTrackID mocks base method.
@@ -129,6 +158,66 @@ func (m *MockRepository) GetMinutesListenedByUserID(ctx context.Context, userID 
 func (mr *MockRepositoryMockRecorder) GetMinutesListenedByUserID(ctx, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMinutesListenedByUserID", reflect.TypeOf((*MockRepository)(nil).GetMinutesListenedByUserID), ctx, userID)
+}
+
+// GetMostLikedLastWeekTracks mocks base method.
+func (m *MockRepository) GetMostLikedLastWeekTracks(ctx context.Context, userID int64) ([]*repository.Track, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMostLikedLastWeekTracks", ctx, userID)
+	ret0, _ := ret[0].([]*repository.Track)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostLikedLastWeekTracks indicates an expected call of GetMostLikedLastWeekTracks.
+func (mr *MockRepositoryMockRecorder) GetMostLikedLastWeekTracks(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostLikedLastWeekTracks", reflect.TypeOf((*MockRepository)(nil).GetMostLikedLastWeekTracks), ctx, userID)
+}
+
+// GetMostLikedTracks mocks base method.
+func (m *MockRepository) GetMostLikedTracks(ctx context.Context, userID int64) ([]*repository.Track, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMostLikedTracks", ctx, userID)
+	ret0, _ := ret[0].([]*repository.Track)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostLikedTracks indicates an expected call of GetMostLikedTracks.
+func (mr *MockRepositoryMockRecorder) GetMostLikedTracks(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostLikedTracks", reflect.TypeOf((*MockRepository)(nil).GetMostLikedTracks), ctx, userID)
+}
+
+// GetMostListenedLastMonthTracks mocks base method.
+func (m *MockRepository) GetMostListenedLastMonthTracks(ctx context.Context, userID int64) ([]*repository.Track, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMostListenedLastMonthTracks", ctx, userID)
+	ret0, _ := ret[0].([]*repository.Track)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostListenedLastMonthTracks indicates an expected call of GetMostListenedLastMonthTracks.
+func (mr *MockRepositoryMockRecorder) GetMostListenedLastMonthTracks(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostListenedLastMonthTracks", reflect.TypeOf((*MockRepository)(nil).GetMostListenedLastMonthTracks), ctx, userID)
+}
+
+// GetMostRecentTracks mocks base method.
+func (m *MockRepository) GetMostRecentTracks(ctx context.Context, userID int64) ([]*repository.Track, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMostRecentTracks", ctx, userID)
+	ret0, _ := ret[0].([]*repository.Track)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMostRecentTracks indicates an expected call of GetMostRecentTracks.
+func (mr *MockRepositoryMockRecorder) GetMostRecentTracks(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMostRecentTracks", reflect.TypeOf((*MockRepository)(nil).GetMostRecentTracks), ctx, userID)
 }
 
 // GetStreamByID mocks base method.
@@ -330,4 +419,33 @@ func (m *MockS3Repository) GetPresignedURL(trackKey string) (string, error) {
 func (mr *MockS3RepositoryMockRecorder) GetPresignedURL(trackKey any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPresignedURL", reflect.TypeOf((*MockS3Repository)(nil).GetPresignedURL), trackKey)
+}
+
+// UploadTrack mocks base method.
+func (m *MockS3Repository) UploadTrack(ctx context.Context, fileKey string, file []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UploadTrack", ctx, fileKey, file)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UploadTrack indicates an expected call of UploadTrack.
+func (mr *MockS3RepositoryMockRecorder) UploadTrack(ctx, fileKey, file any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadTrack", reflect.TypeOf((*MockS3Repository)(nil).UploadTrack), ctx, fileKey, file)
+}
+
+// UploadTrackAvatar mocks base method.
+func (m *MockS3Repository) UploadTrackAvatar(ctx context.Context, trackTitle string, file []byte) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UploadTrackAvatar", ctx, trackTitle, file)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UploadTrackAvatar indicates an expected call of UploadTrackAvatar.
+func (mr *MockS3RepositoryMockRecorder) UploadTrackAvatar(ctx, trackTitle, file any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadTrackAvatar", reflect.TypeOf((*MockS3Repository)(nil).UploadTrackAvatar), ctx, trackTitle, file)
 }

@@ -34,6 +34,27 @@ func NewInternalError(format string, args ...interface{}) error {
 	}
 }
 
+func NewEmptyS3KeyError(format string, args ...interface{}) error {
+	return &AlbumError{
+		Code:    codes.InvalidArgument,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
+func NewUnsupportedImageFormatError(format string, args ...interface{}) error {
+	return &AlbumError{
+		Code:    codes.InvalidArgument,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
+func NewFailedToUploadAvatarError(format string, args ...interface{}) error {
+	return &AlbumError{
+		Code:    codes.Internal,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
 var (
 	ErrAlbumNotFound = NewNotFoundError("album not found")
 )

@@ -41,6 +41,48 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 	return m.recorder
 }
 
+// AddArtistsToAlbum mocks base method.
+func (m *MockRepository) AddArtistsToAlbum(ctx context.Context, artistsIDs []int64, albumID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddArtistsToAlbum", ctx, artistsIDs, albumID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddArtistsToAlbum indicates an expected call of AddArtistsToAlbum.
+func (mr *MockRepositoryMockRecorder) AddArtistsToAlbum(ctx, artistsIDs, albumID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddArtistsToAlbum", reflect.TypeOf((*MockRepository)(nil).AddArtistsToAlbum), ctx, artistsIDs, albumID)
+}
+
+// AddArtistsToTracks mocks base method.
+func (m *MockRepository) AddArtistsToTracks(ctx context.Context, artistsIDs, trackIDs []int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddArtistsToTracks", ctx, artistsIDs, trackIDs)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddArtistsToTracks indicates an expected call of AddArtistsToTracks.
+func (mr *MockRepositoryMockRecorder) AddArtistsToTracks(ctx, artistsIDs, trackIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddArtistsToTracks", reflect.TypeOf((*MockRepository)(nil).AddArtistsToTracks), ctx, artistsIDs, trackIDs)
+}
+
+// ChangeArtistTitle mocks base method.
+func (m *MockRepository) ChangeArtistTitle(ctx context.Context, newTitle string, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeArtistTitle", ctx, newTitle, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangeArtistTitle indicates an expected call of ChangeArtistTitle.
+func (mr *MockRepositoryMockRecorder) ChangeArtistTitle(ctx, newTitle, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeArtistTitle", reflect.TypeOf((*MockRepository)(nil).ChangeArtistTitle), ctx, newTitle, id)
+}
+
 // CheckArtistExists mocks base method.
 func (m *MockRepository) CheckArtistExists(ctx context.Context, id int64) (bool, error) {
 	m.ctrl.T.Helper()
@@ -56,6 +98,36 @@ func (mr *MockRepositoryMockRecorder) CheckArtistExists(ctx, id any) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckArtistExists", reflect.TypeOf((*MockRepository)(nil).CheckArtistExists), ctx, id)
 }
 
+// CheckArtistNameExist mocks base method.
+func (m *MockRepository) CheckArtistNameExist(ctx context.Context, id int64) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckArtistNameExist", ctx, id)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckArtistNameExist indicates an expected call of CheckArtistNameExist.
+func (mr *MockRepositoryMockRecorder) CheckArtistNameExist(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckArtistNameExist", reflect.TypeOf((*MockRepository)(nil).CheckArtistNameExist), ctx, id)
+}
+
+// CreateArtist mocks base method.
+func (m *MockRepository) CreateArtist(ctx context.Context, artist *repository.Artist) (*repository.Artist, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateArtist", ctx, artist)
+	ret0, _ := ret[0].(*repository.Artist)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateArtist indicates an expected call of CreateArtist.
+func (mr *MockRepositoryMockRecorder) CreateArtist(ctx, artist any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArtist", reflect.TypeOf((*MockRepository)(nil).CreateArtist), ctx, artist)
+}
+
 // CreateStreamsByArtistIDs mocks base method.
 func (m *MockRepository) CreateStreamsByArtistIDs(ctx context.Context, data *repository.ArtistStreamCreateDataList) error {
 	m.ctrl.T.Helper()
@@ -68,6 +140,20 @@ func (m *MockRepository) CreateStreamsByArtistIDs(ctx context.Context, data *rep
 func (mr *MockRepositoryMockRecorder) CreateStreamsByArtistIDs(ctx, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateStreamsByArtistIDs", reflect.TypeOf((*MockRepository)(nil).CreateStreamsByArtistIDs), ctx, data)
+}
+
+// DeleteArtist mocks base method.
+func (m *MockRepository) DeleteArtist(ctx context.Context, artistID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteArtist", ctx, artistID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteArtist indicates an expected call of DeleteArtist.
+func (mr *MockRepositoryMockRecorder) DeleteArtist(ctx, artistID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteArtist", reflect.TypeOf((*MockRepository)(nil).DeleteArtist), ctx, artistID)
 }
 
 // GetAlbumIDsByArtistID mocks base method.
@@ -113,6 +199,36 @@ func (m *MockRepository) GetArtistByID(ctx context.Context, id, userID int64) (*
 func (mr *MockRepositoryMockRecorder) GetArtistByID(ctx, id, userID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtistByID", reflect.TypeOf((*MockRepository)(nil).GetArtistByID), ctx, id, userID)
+}
+
+// GetArtistByIDWithoutUser mocks base method.
+func (m *MockRepository) GetArtistByIDWithoutUser(ctx context.Context, id int64) (*repository.Artist, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArtistByIDWithoutUser", ctx, id)
+	ret0, _ := ret[0].(*repository.Artist)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArtistByIDWithoutUser indicates an expected call of GetArtistByIDWithoutUser.
+func (mr *MockRepositoryMockRecorder) GetArtistByIDWithoutUser(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtistByIDWithoutUser", reflect.TypeOf((*MockRepository)(nil).GetArtistByIDWithoutUser), ctx, id)
+}
+
+// GetArtistLabelID mocks base method.
+func (m *MockRepository) GetArtistLabelID(ctx context.Context, artistID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArtistLabelID", ctx, artistID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArtistLabelID indicates an expected call of GetArtistLabelID.
+func (mr *MockRepositoryMockRecorder) GetArtistLabelID(ctx, artistID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtistLabelID", reflect.TypeOf((*MockRepository)(nil).GetArtistLabelID), ctx, artistID)
 }
 
 // GetArtistStats mocks base method.
@@ -205,6 +321,21 @@ func (mr *MockRepositoryMockRecorder) GetArtistsByTrackIDs(ctx, trackIDs any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtistsByTrackIDs", reflect.TypeOf((*MockRepository)(nil).GetArtistsByTrackIDs), ctx, trackIDs)
 }
 
+// GetArtistsLabelID mocks base method.
+func (m *MockRepository) GetArtistsLabelID(ctx context.Context, filters *repository.Filters, labelID int64) ([]*repository.Artist, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArtistsLabelID", ctx, filters, labelID)
+	ret0, _ := ret[0].([]*repository.Artist)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArtistsLabelID indicates an expected call of GetArtistsLabelID.
+func (mr *MockRepositoryMockRecorder) GetArtistsLabelID(ctx, filters, labelID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtistsLabelID", reflect.TypeOf((*MockRepository)(nil).GetArtistsLabelID), ctx, filters, labelID)
+}
+
 // GetArtistsListenedByUserID mocks base method.
 func (m *MockRepository) GetArtistsListenedByUserID(ctx context.Context, userID int64) (int64, error) {
 	m.ctrl.T.Helper()
@@ -291,4 +422,72 @@ func (m *MockRepository) UnlikeArtist(ctx context.Context, request *repository.L
 func (mr *MockRepositoryMockRecorder) UnlikeArtist(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnlikeArtist", reflect.TypeOf((*MockRepository)(nil).UnlikeArtist), ctx, request)
+}
+
+// UploadAvatar mocks base method.
+func (m *MockRepository) UploadAvatar(ctx context.Context, artistID int64, avatarURL string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UploadAvatar", ctx, artistID, avatarURL)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UploadAvatar indicates an expected call of UploadAvatar.
+func (mr *MockRepositoryMockRecorder) UploadAvatar(ctx, artistID, avatarURL any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadAvatar", reflect.TypeOf((*MockRepository)(nil).UploadAvatar), ctx, artistID, avatarURL)
+}
+
+// MockS3Repository is a mock of S3Repository interface.
+type MockS3Repository struct {
+	ctrl     *gomock.Controller
+	recorder *MockS3RepositoryMockRecorder
+	isgomock struct{}
+}
+
+// MockS3RepositoryMockRecorder is the mock recorder for MockS3Repository.
+type MockS3RepositoryMockRecorder struct {
+	mock *MockS3Repository
+}
+
+// NewMockS3Repository creates a new mock instance.
+func NewMockS3Repository(ctrl *gomock.Controller) *MockS3Repository {
+	mock := &MockS3Repository{ctrl: ctrl}
+	mock.recorder = &MockS3RepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockS3Repository) EXPECT() *MockS3RepositoryMockRecorder {
+	return m.recorder
+}
+
+// GetAvatarURL mocks base method.
+func (m *MockS3Repository) GetAvatarURL(ctx context.Context, fileKey string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAvatarURL", ctx, fileKey)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAvatarURL indicates an expected call of GetAvatarURL.
+func (mr *MockS3RepositoryMockRecorder) GetAvatarURL(ctx, fileKey any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvatarURL", reflect.TypeOf((*MockS3Repository)(nil).GetAvatarURL), ctx, fileKey)
+}
+
+// UploadArtistAvatar mocks base method.
+func (m *MockS3Repository) UploadArtistAvatar(ctx context.Context, artistTitle string, file []byte) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UploadArtistAvatar", ctx, artistTitle, file)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UploadArtistAvatar indicates an expected call of UploadArtistAvatar.
+func (mr *MockS3RepositoryMockRecorder) UploadArtistAvatar(ctx, artistTitle, file any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadArtistAvatar", reflect.TypeOf((*MockS3Repository)(nil).UploadArtistAvatar), ctx, artistTitle, file)
 }

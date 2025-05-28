@@ -245,3 +245,54 @@ func LikeRequestFromUsecaseToRepository(request *usecaseModel.LikeRequest) *repo
 		UserID:   request.UserID,
 	}
 }
+
+func ArtistLoadFromUsecaseToRepository(artist *usecaseModel.ArtistLoad) *repoModel.Artist {
+	return &repoModel.Artist{
+		Title:   artist.Title,
+		LabelID: artist.LabelID,
+	}
+}
+
+func ArtistLoadFromProtoToUsecase(artist *protoModel.ArtistLoad) *usecaseModel.ArtistLoad {
+	return &usecaseModel.ArtistLoad{
+		Title:   artist.Title,
+		Image:   artist.Image,
+		LabelID: artist.LabelId,
+	}
+}
+
+func ArtistEditFromProtoToUsecase(artist *protoModel.ArtistEdit) *usecaseModel.ArtistEdit {
+	return &usecaseModel.ArtistEdit{
+		ArtistID: artist.ArtistId,
+		NewTitle: artist.NewTitle,
+		Image:    artist.Image,
+		LabelID:  artist.LabelId,
+	}
+}
+func ArtistEditFromUsecaseToRepository(artist *usecaseModel.ArtistEdit) *repoModel.ArtistEdit {
+	return &repoModel.ArtistEdit{
+		ArtistID: artist.ArtistID,
+		NewTitle: artist.NewTitle,
+		Image:    artist.Image,
+		LabelID:  artist.LabelID,
+	}
+}
+
+func ArtistDeleteFromProtoToUsecase(artist *protoModel.ArtistDelete) *usecaseModel.ArtistDelete {
+	return &usecaseModel.ArtistDelete{
+		ArtistID: artist.ArtistId,
+		LabelID:  artist.LabelId,
+	}
+}
+
+func ArtistsIDWithAlbumIDFromProtoToUsecase(artists *protoModel.ArtistsIDWithAlbumID) ([]int64, int64, []int64) {
+	var artistIDs []int64
+	for _, id := range artists.ArtistIds.Ids {
+		artistIDs = append(artistIDs, id.Id)
+	}
+	var tracksIDs []int64
+	for _, id := range artists.TrackIds.Ids {
+		tracksIDs = append(tracksIDs, id.Id)
+	}
+	return artistIDs, artists.AlbumId.Id, tracksIDs
+}

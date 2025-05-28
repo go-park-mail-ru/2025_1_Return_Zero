@@ -27,22 +27,36 @@ func NewAuthRedisRepository(redisPool *redis.Pool, metrics *metrics.Metrics) dom
 	return &authRedisRepository{redisPool: redisPool, metrics: metrics}
 }
 
-func generateSessionID() string {
+func generateSessionID() (string, error) {
 	b := make([]byte, 32)
-	rand.Read(b)
-	return base64.StdEncoding.EncodeToString(b)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(b), nil
 }
 
 func (r *authRedisRepository) CreateSession(ctx context.Context, userID int64) (string, error) {
 	start := time.Now()
 	conn := r.redisPool.Get()
-	defer conn.Close()
-	SID := generateSessionID()
+
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Creating session")
 	expiration := int(SessionTTL.Seconds())
 
-	_, err := redis.DoContext(conn, ctx, "SETEX", SID, expiration, userID)
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
+
+	SID, err := generateSessionID()
+	if err != nil {
+		logger.Error("failed to generate session ID", zap.Error(err))
+		return "", authErrors.NewCreateSessionError("failed to generate session ID: %v", err)
+	}
+
+	_, err = redis.DoContext(conn, ctx, "SETEX", SID, expiration, userID)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("CreateSession").Inc()
 		logger.Error("failed to create session", zap.Error(err))
@@ -56,9 +70,14 @@ func (r *authRedisRepository) CreateSession(ctx context.Context, userID int64) (
 func (r *authRedisRepository) DeleteSession(ctx context.Context, sessionID string) error {
 	start := time.Now()
 	conn := r.redisPool.Get()
-	defer conn.Close()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Deleting session")
+
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	_, err := redis.DoContext(conn, ctx, "DEL", sessionID)
 	if err != nil {
@@ -74,9 +93,14 @@ func (r *authRedisRepository) DeleteSession(ctx context.Context, sessionID strin
 func (r *authRedisRepository) GetSession(ctx context.Context, sessionID string) (int64, error) {
 	start := time.Now()
 	conn := r.redisPool.Get()
-	defer conn.Close()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Getting session")
+
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
 
 	id, err := redis.Int64(redis.DoContext(conn, ctx, "GET", sessionID))
 	if err != nil {

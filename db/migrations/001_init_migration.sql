@@ -1,5 +1,4 @@
 -- Write your migrate up statements here
-
 CREATE EXTENSION IF NOT EXISTS pg_cron;
 
 -- user microservice
@@ -239,7 +238,7 @@ CREATE TABLE IF NOT EXISTS track_stream (
 );
 
 -- track microservice
-CREATE MATERIALIZED VIEW track_stats AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS track_stats AS
 SELECT 
     t.id AS track_id,
     COUNT(DISTINCT ts.user_id) AS listeners_count,
@@ -251,7 +250,7 @@ FROM
 GROUP BY 
     t.id;
 
-CREATE UNIQUE INDEX track_stats_track_id_idx ON track_stats (track_id);
+CREATE UNIQUE INDEX IF NOT EXISTS track_stats_track_id_idx ON track_stats (track_id);
 
 -- album microservice
 CREATE TABLE IF NOT EXISTS album_stream (
@@ -267,7 +266,7 @@ CREATE TABLE IF NOT EXISTS album_stream (
 );
 
 -- album microservice
-CREATE MATERIALIZED VIEW album_stats AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS album_stats AS
 SELECT 
     a.id AS album_id,
     COUNT(DISTINCT abs.user_id) AS listeners_count,
@@ -279,7 +278,7 @@ FROM
 GROUP BY 
     a.id;
 
-CREATE UNIQUE INDEX album_stats_album_id_idx ON album_stats (album_id);
+CREATE UNIQUE INDEX IF NOT EXISTS album_stats_album_id_idx ON album_stats (album_id);
 
 -- artist microservice
 CREATE TABLE IF NOT EXISTS artist_stream (
@@ -294,7 +293,7 @@ CREATE TABLE IF NOT EXISTS artist_stream (
         ON UPDATE CASCADE
 );
 
-CREATE MATERIALIZED VIEW artist_stats AS
+CREATE MATERIALIZED VIEW IF NOT EXISTS artist_stats AS
 SELECT 
     a.id AS artist_id,
     COUNT(DISTINCT astr.user_id) AS listeners_count,
@@ -306,12 +305,12 @@ FROM
 GROUP BY 
     a.id;
 
-CREATE UNIQUE INDEX artist_stats_artist_id_idx ON artist_stats (artist_id);
+CREATE UNIQUE INDEX IF NOT EXISTS artist_stats_artist_id_idx ON artist_stats (artist_id);
 
 
-SELECT cron.schedule('refresh_artist_stats', '0 * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY artist_stats');
-SELECT cron.schedule('refresh_album_stats', '0 * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY album_stats');
-SELECT cron.schedule('refresh_track_stats', '0 * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY track_stats');
+SELECT cron.schedule('refresh_artist_stats', '* * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY artist_stats');
+SELECT cron.schedule('refresh_album_stats', '* * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY album_stats');
+SELECT cron.schedule('refresh_track_stats', '* * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY track_stats');
 
 ---- create above / drop below ----
 

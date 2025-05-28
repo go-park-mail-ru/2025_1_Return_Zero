@@ -21,4 +21,9 @@ type Usecase interface {
 	LikeArtist(ctx context.Context, request *usecaseModel.LikeRequest) error
 	GetFavoriteArtists(ctx context.Context, filters *usecaseModel.Filters, userID int64) (*usecaseModel.ArtistList, error)
 	SearchArtists(ctx context.Context, query string, userID int64) (*usecaseModel.ArtistList, error)
+	CreateArtist(ctx context.Context, artist *usecaseModel.ArtistLoad) (*usecaseModel.Artist, error)
+	EditArtist(ctx context.Context, artist *usecaseModel.ArtistEdit) (*usecaseModel.Artist, error)
+	GetArtistsLabelID(ctx context.Context, filters *usecaseModel.Filters, labelID int64) (*usecaseModel.ArtistList, error)
+	DeleteArtist(ctx context.Context, artist *usecaseModel.ArtistDelete) error
+	ConnectArtists(ctx context.Context, artistIDs []int64, albumID int64, trackIDs []int64) error
 }

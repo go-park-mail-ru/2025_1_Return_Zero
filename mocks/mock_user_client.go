@@ -82,6 +82,26 @@ func (mr *MockUserServiceClientMockRecorder) ChangeUserPrivacySettings(ctx, in a
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeUserPrivacySettings", reflect.TypeOf((*MockUserServiceClient)(nil).ChangeUserPrivacySettings), varargs...)
 }
 
+// ChecksUsersByUsernames mocks base method.
+func (m *MockUserServiceClient) ChecksUsersByUsernames(ctx context.Context, in *user.Usernames, opts ...grpc.CallOption) (*user.Nothing, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ChecksUsersByUsernames", varargs...)
+	ret0, _ := ret[0].(*user.Nothing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChecksUsersByUsernames indicates an expected call of ChecksUsersByUsernames.
+func (mr *MockUserServiceClientMockRecorder) ChecksUsersByUsernames(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChecksUsersByUsernames", reflect.TypeOf((*MockUserServiceClient)(nil).ChecksUsersByUsernames), varargs...)
+}
+
 // CreateUser mocks base method.
 func (m *MockUserServiceClient) CreateUser(ctx context.Context, in *user.RegisterData, opts ...grpc.CallOption) (*user.UserFront, error) {
 	m.ctrl.T.Helper()
@@ -140,6 +160,26 @@ func (mr *MockUserServiceClientMockRecorder) GetIDByUsername(ctx, in any, opts .
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIDByUsername", reflect.TypeOf((*MockUserServiceClient)(nil).GetIDByUsername), varargs...)
+}
+
+// GetLabelIDByUserID mocks base method.
+func (m *MockUserServiceClient) GetLabelIDByUserID(ctx context.Context, in *user.UserID, opts ...grpc.CallOption) (*user.LabelID, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetLabelIDByUserID", varargs...)
+	ret0, _ := ret[0].(*user.LabelID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLabelIDByUserID indicates an expected call of GetLabelIDByUserID.
+func (mr *MockUserServiceClientMockRecorder) GetLabelIDByUserID(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLabelIDByUserID", reflect.TypeOf((*MockUserServiceClient)(nil).GetLabelIDByUserID), varargs...)
 }
 
 // GetUserAvatarURL mocks base method.
@@ -222,6 +262,26 @@ func (mr *MockUserServiceClientMockRecorder) GetUserPrivacyByID(ctx, in any, opt
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPrivacyByID", reflect.TypeOf((*MockUserServiceClient)(nil).GetUserPrivacyByID), varargs...)
 }
 
+// GetUsersByLabelID mocks base method.
+func (m *MockUserServiceClient) GetUsersByLabelID(ctx context.Context, in *user.LabelID, opts ...grpc.CallOption) (*user.Usernames, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetUsersByLabelID", varargs...)
+	ret0, _ := ret[0].(*user.Usernames)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsersByLabelID indicates an expected call of GetUsersByLabelID.
+func (mr *MockUserServiceClientMockRecorder) GetUsersByLabelID(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByLabelID", reflect.TypeOf((*MockUserServiceClient)(nil).GetUsersByLabelID), varargs...)
+}
+
 // LoginUser mocks base method.
 func (m *MockUserServiceClient) LoginUser(ctx context.Context, in *user.LoginData, opts ...grpc.CallOption) (*user.UserFront, error) {
 	m.ctrl.T.Helper()
@@ -240,6 +300,46 @@ func (mr *MockUserServiceClientMockRecorder) LoginUser(ctx, in any, opts ...any)
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, in}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoginUser", reflect.TypeOf((*MockUserServiceClient)(nil).LoginUser), varargs...)
+}
+
+// RemoveUsersFromLabel mocks base method.
+func (m *MockUserServiceClient) RemoveUsersFromLabel(ctx context.Context, in *user.RequestRemoveUserLabelID, opts ...grpc.CallOption) (*user.Nothing, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "RemoveUsersFromLabel", varargs...)
+	ret0, _ := ret[0].(*user.Nothing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RemoveUsersFromLabel indicates an expected call of RemoveUsersFromLabel.
+func (mr *MockUserServiceClientMockRecorder) RemoveUsersFromLabel(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveUsersFromLabel", reflect.TypeOf((*MockUserServiceClient)(nil).RemoveUsersFromLabel), varargs...)
+}
+
+// UpdateUsersLabelID mocks base method.
+func (m *MockUserServiceClient) UpdateUsersLabelID(ctx context.Context, in *user.RequestUpdateUserLabelID, opts ...grpc.CallOption) (*user.Nothing, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateUsersLabelID", varargs...)
+	ret0, _ := ret[0].(*user.Nothing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUsersLabelID indicates an expected call of UpdateUsersLabelID.
+func (mr *MockUserServiceClientMockRecorder) UpdateUsersLabelID(ctx, in any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUsersLabelID", reflect.TypeOf((*MockUserServiceClient)(nil).UpdateUsersLabelID), varargs...)
 }
 
 // UploadAvatar mocks base method.
@@ -336,6 +436,21 @@ func (mr *MockUserServiceServerMockRecorder) ChangeUserPrivacySettings(arg0, arg
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeUserPrivacySettings", reflect.TypeOf((*MockUserServiceServer)(nil).ChangeUserPrivacySettings), arg0, arg1)
 }
 
+// ChecksUsersByUsernames mocks base method.
+func (m *MockUserServiceServer) ChecksUsersByUsernames(arg0 context.Context, arg1 *user.Usernames) (*user.Nothing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChecksUsersByUsernames", arg0, arg1)
+	ret0, _ := ret[0].(*user.Nothing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ChecksUsersByUsernames indicates an expected call of ChecksUsersByUsernames.
+func (mr *MockUserServiceServerMockRecorder) ChecksUsersByUsernames(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChecksUsersByUsernames", reflect.TypeOf((*MockUserServiceServer)(nil).ChecksUsersByUsernames), arg0, arg1)
+}
+
 // CreateUser mocks base method.
 func (m *MockUserServiceServer) CreateUser(arg0 context.Context, arg1 *user.RegisterData) (*user.UserFront, error) {
 	m.ctrl.T.Helper()
@@ -379,6 +494,21 @@ func (m *MockUserServiceServer) GetIDByUsername(arg0 context.Context, arg1 *user
 func (mr *MockUserServiceServerMockRecorder) GetIDByUsername(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIDByUsername", reflect.TypeOf((*MockUserServiceServer)(nil).GetIDByUsername), arg0, arg1)
+}
+
+// GetLabelIDByUserID mocks base method.
+func (m *MockUserServiceServer) GetLabelIDByUserID(arg0 context.Context, arg1 *user.UserID) (*user.LabelID, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLabelIDByUserID", arg0, arg1)
+	ret0, _ := ret[0].(*user.LabelID)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLabelIDByUserID indicates an expected call of GetLabelIDByUserID.
+func (mr *MockUserServiceServerMockRecorder) GetLabelIDByUserID(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLabelIDByUserID", reflect.TypeOf((*MockUserServiceServer)(nil).GetLabelIDByUserID), arg0, arg1)
 }
 
 // GetUserAvatarURL mocks base method.
@@ -441,6 +571,21 @@ func (mr *MockUserServiceServerMockRecorder) GetUserPrivacyByID(arg0, arg1 any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPrivacyByID", reflect.TypeOf((*MockUserServiceServer)(nil).GetUserPrivacyByID), arg0, arg1)
 }
 
+// GetUsersByLabelID mocks base method.
+func (m *MockUserServiceServer) GetUsersByLabelID(arg0 context.Context, arg1 *user.LabelID) (*user.Usernames, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsersByLabelID", arg0, arg1)
+	ret0, _ := ret[0].(*user.Usernames)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsersByLabelID indicates an expected call of GetUsersByLabelID.
+func (mr *MockUserServiceServerMockRecorder) GetUsersByLabelID(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByLabelID", reflect.TypeOf((*MockUserServiceServer)(nil).GetUsersByLabelID), arg0, arg1)
+}
+
 // LoginUser mocks base method.
 func (m *MockUserServiceServer) LoginUser(arg0 context.Context, arg1 *user.LoginData) (*user.UserFront, error) {
 	m.ctrl.T.Helper()
@@ -454,6 +599,36 @@ func (m *MockUserServiceServer) LoginUser(arg0 context.Context, arg1 *user.Login
 func (mr *MockUserServiceServerMockRecorder) LoginUser(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoginUser", reflect.TypeOf((*MockUserServiceServer)(nil).LoginUser), arg0, arg1)
+}
+
+// RemoveUsersFromLabel mocks base method.
+func (m *MockUserServiceServer) RemoveUsersFromLabel(arg0 context.Context, arg1 *user.RequestRemoveUserLabelID) (*user.Nothing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveUsersFromLabel", arg0, arg1)
+	ret0, _ := ret[0].(*user.Nothing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RemoveUsersFromLabel indicates an expected call of RemoveUsersFromLabel.
+func (mr *MockUserServiceServerMockRecorder) RemoveUsersFromLabel(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveUsersFromLabel", reflect.TypeOf((*MockUserServiceServer)(nil).RemoveUsersFromLabel), arg0, arg1)
+}
+
+// UpdateUsersLabelID mocks base method.
+func (m *MockUserServiceServer) UpdateUsersLabelID(arg0 context.Context, arg1 *user.RequestUpdateUserLabelID) (*user.Nothing, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUsersLabelID", arg0, arg1)
+	ret0, _ := ret[0].(*user.Nothing)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateUsersLabelID indicates an expected call of UpdateUsersLabelID.
+func (mr *MockUserServiceServerMockRecorder) UpdateUsersLabelID(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUsersLabelID", reflect.TypeOf((*MockUserServiceServer)(nil).UpdateUsersLabelID), arg0, arg1)
 }
 
 // UploadAvatar mocks base method.

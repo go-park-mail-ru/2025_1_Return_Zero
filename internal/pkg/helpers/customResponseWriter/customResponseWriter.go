@@ -1,6 +1,8 @@
 package customResponseWriter
 
 import (
+	"bufio"
+	"net"
 	"net/http"
 )
 
@@ -19,4 +21,11 @@ func NewResponseWriter(w http.ResponseWriter) *ResponseWriter {
 func (rw *ResponseWriter) WriteHeader(code int) {
 	rw.StatusCode = code
 	rw.ResponseWriter.WriteHeader(code)
+}
+
+func (rw *ResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if hijacker, ok := rw.ResponseWriter.(http.Hijacker); ok {
+		return hijacker.Hijack()
+	}
+	return nil, nil, http.ErrNotSupported
 }

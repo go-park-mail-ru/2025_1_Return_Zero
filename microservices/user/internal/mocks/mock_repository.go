@@ -69,6 +69,35 @@ func (mr *MockRepositoryMockRecorder) ChangeUserPrivacySettings(ctx, username, p
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeUserPrivacySettings", reflect.TypeOf((*MockRepository)(nil).ChangeUserPrivacySettings), ctx, username, privacySettings)
 }
 
+// CheckLabelNameUnique mocks base method.
+func (m *MockRepository) CheckLabelNameUnique(ctx context.Context, name string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckLabelNameUnique", ctx, name)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckLabelNameUnique indicates an expected call of CheckLabelNameUnique.
+func (mr *MockRepositoryMockRecorder) CheckLabelNameUnique(ctx, name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckLabelNameUnique", reflect.TypeOf((*MockRepository)(nil).CheckLabelNameUnique), ctx, name)
+}
+
+// CheckUsersByUsernames mocks base method.
+func (m *MockRepository) CheckUsersByUsernames(ctx context.Context, usernames []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckUsersByUsernames", ctx, usernames)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CheckUsersByUsernames indicates an expected call of CheckUsersByUsernames.
+func (mr *MockRepositoryMockRecorder) CheckUsersByUsernames(ctx, usernames any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckUsersByUsernames", reflect.TypeOf((*MockRepository)(nil).CheckUsersByUsernames), ctx, usernames)
+}
+
 // CreateUser mocks base method.
 func (m *MockRepository) CreateUser(ctx context.Context, regData *repository.RegisterData) (*repository.User, error) {
 	m.ctrl.T.Helper()
@@ -128,6 +157,36 @@ func (mr *MockRepositoryMockRecorder) GetIDByUsername(ctx, username any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIDByUsername", reflect.TypeOf((*MockRepository)(nil).GetIDByUsername), ctx, username)
 }
 
+// GetLabelById mocks base method.
+func (m *MockRepository) GetLabelById(ctx context.Context, labelID int64) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLabelById", ctx, labelID)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLabelById indicates an expected call of GetLabelById.
+func (mr *MockRepositoryMockRecorder) GetLabelById(ctx, labelID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLabelById", reflect.TypeOf((*MockRepository)(nil).GetLabelById), ctx, labelID)
+}
+
+// GetLabelIDByUserID mocks base method.
+func (m *MockRepository) GetLabelIDByUserID(ctx context.Context, userID int64) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLabelIDByUserID", ctx, userID)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLabelIDByUserID indicates an expected call of GetLabelIDByUserID.
+func (mr *MockRepositoryMockRecorder) GetLabelIDByUserID(ctx, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLabelIDByUserID", reflect.TypeOf((*MockRepository)(nil).GetLabelIDByUserID), ctx, userID)
+}
+
 // GetUserByID mocks base method.
 func (m *MockRepository) GetUserByID(ctx context.Context, ID int64) (*repository.User, error) {
 	m.ctrl.T.Helper()
@@ -158,6 +217,21 @@ func (mr *MockRepositoryMockRecorder) GetUserPrivacy(ctx, id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserPrivacy", reflect.TypeOf((*MockRepository)(nil).GetUserPrivacy), ctx, id)
 }
 
+// GetUsersByLabelID mocks base method.
+func (m *MockRepository) GetUsersByLabelID(ctx context.Context, labelID int64) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsersByLabelID", ctx, labelID)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsersByLabelID indicates an expected call of GetUsersByLabelID.
+func (mr *MockRepositoryMockRecorder) GetUsersByLabelID(ctx, labelID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByLabelID", reflect.TypeOf((*MockRepository)(nil).GetUsersByLabelID), ctx, labelID)
+}
+
 // LoginUser mocks base method.
 func (m *MockRepository) LoginUser(ctx context.Context, logData *repository.LoginData) (*repository.User, error) {
 	m.ctrl.T.Helper()
@@ -171,6 +245,48 @@ func (m *MockRepository) LoginUser(ctx context.Context, logData *repository.Logi
 func (mr *MockRepositoryMockRecorder) LoginUser(ctx, logData any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LoginUser", reflect.TypeOf((*MockRepository)(nil).LoginUser), ctx, logData)
+}
+
+// RemoveUsersFromLabel mocks base method.
+func (m *MockRepository) RemoveUsersFromLabel(ctx context.Context, labelID int64, usernames []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveUsersFromLabel", ctx, labelID, usernames)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveUsersFromLabel indicates an expected call of RemoveUsersFromLabel.
+func (mr *MockRepositoryMockRecorder) RemoveUsersFromLabel(ctx, labelID, usernames any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveUsersFromLabel", reflect.TypeOf((*MockRepository)(nil).RemoveUsersFromLabel), ctx, labelID, usernames)
+}
+
+// UpdateLabel mocks base method.
+func (m *MockRepository) UpdateLabel(ctx context.Context, newName string, labelID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateLabel", ctx, newName, labelID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateLabel indicates an expected call of UpdateLabel.
+func (mr *MockRepositoryMockRecorder) UpdateLabel(ctx, newName, labelID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateLabel", reflect.TypeOf((*MockRepository)(nil).UpdateLabel), ctx, newName, labelID)
+}
+
+// UpdateUsersLabel mocks base method.
+func (m *MockRepository) UpdateUsersLabel(ctx context.Context, labelID int64, usernames []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUsersLabel", ctx, labelID, usernames)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUsersLabel indicates an expected call of UpdateUsersLabel.
+func (mr *MockRepositoryMockRecorder) UpdateUsersLabel(ctx, labelID, usernames any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUsersLabel", reflect.TypeOf((*MockRepository)(nil).UpdateUsersLabel), ctx, labelID, usernames)
 }
 
 // UploadAvatar mocks base method.

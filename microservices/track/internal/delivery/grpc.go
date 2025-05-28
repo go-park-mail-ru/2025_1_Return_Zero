@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"context"
+	"fmt"
 
 	trackProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/track"
 	domain "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/internal/domain"
@@ -24,6 +25,12 @@ func (s *TrackService) GetAllTracks(ctx context.Context, req *trackProto.UserIDW
 	tracks, err := s.trackUsecase.GetAllTracks(ctx, model.FiltersFromProtoToUsecase(req.Filters), req.UserId.Id)
 	if err != nil {
 		return nil, err
+	}
+	for i := range tracks {
+		fmt.Println(tracks[i].Title)
+		fmt.Println(tracks[i].Thumbnail)
+		fmt.Println(tracks[i].Duration)
+		fmt.Println(tracks[i].AlbumID)
 	}
 	return model.TrackListFromUsecaseToProto(tracks), nil
 }
@@ -128,6 +135,55 @@ func (s *TrackService) GetFavoriteTracks(ctx context.Context, req *trackProto.Fa
 
 func (s *TrackService) SearchTracks(ctx context.Context, req *trackProto.Query) (*trackProto.TrackList, error) {
 	tracks, err := s.trackUsecase.SearchTracks(ctx, req.Query, req.UserId.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromUsecaseToProto(tracks), nil
+}
+
+func (s *TrackService) AddTracksToAlbum(ctx context.Context, req *trackProto.TracksListWithAlbumID) (*trackProto.TrackIdsList, error) {
+	tracksList := model.TracksListWithAlbumIDFromProtoToUsecase(req)
+	trackIDs, err := s.trackUsecase.AddTracksToAlbum(ctx, tracksList)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackIdsListFromUsecaseToProto(trackIDs), nil
+}
+
+func (s *TrackService) DeleteTracksByAlbumID(ctx context.Context, req *trackProto.AlbumID) (*emptypb.Empty, error) {
+	err := s.trackUsecase.DeleteTracksByAlbumID(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *TrackService) GetMostLikedTracks(ctx context.Context, req *trackProto.UserID) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.GetMostLikedTracks(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromUsecaseToProto(tracks), nil
+}
+
+func (s *TrackService) GetMostRecentTracks(ctx context.Context, req *trackProto.UserID) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.GetMostRecentTracks(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromUsecaseToProto(tracks), nil
+}
+
+func (s *TrackService) GetMostListenedLastMonthTracks(ctx context.Context, req *trackProto.UserID) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.GetMostListenedLastMonthTracks(ctx, req.Id)
+	if err != nil {
+		return nil, err
+	}
+	return model.TrackListFromUsecaseToProto(tracks), nil
+}
+
+func (s *TrackService) GetMostLikedLastWeekTracks(ctx context.Context, req *trackProto.UserID) (*trackProto.TrackList, error) {
+	tracks, err := s.trackUsecase.GetMostLikedLastWeekTracks(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}

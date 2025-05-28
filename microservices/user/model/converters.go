@@ -20,6 +20,7 @@ func UserFromRepositoryToUsecase(data *repoModel.User) *usecaseModel.UserFront {
 		Email:     data.Email,
 		Thumbnail: data.Thumbnail,
 		Id:        data.ID,
+		LabelId:   data.LabelId,
 	}
 }
 
@@ -94,6 +95,7 @@ func UserFrontFromUsecaseToProto(data *usecaseModel.UserFront) *protoModel.UserF
 		Email:    data.Email,
 		Avatar:   data.Thumbnail,
 		Id:       data.Id,
+		LabelId:  data.LabelId,
 	}
 }
 
@@ -171,4 +173,44 @@ func FileKeyFromUsecaseToProto(fileKey string) *protoModel.FileKey {
 		FileKey: fileKey,
 	}
 
+}
+
+func LabelIDFromUsecaseToProto(id int64) *protoModel.LabelID {
+	return &protoModel.LabelID{
+		Id: id,
+	}
+}
+
+func LabelFromUsecaseToProto(label *usecaseModel.Label) *protoModel.Label {
+	return &protoModel.Label{
+		Id:        label.ID,
+		Name:      label.Name,
+		Usernames: label.Members,
+	}
+}
+
+func UserToFrontFromRepositoryToUsecase(user *repoModel.User) *usecaseModel.UserFront {
+	return &usecaseModel.UserFront{
+		Username:  user.Username,
+		Email:     user.Email,
+		Thumbnail: user.Thumbnail,
+		Id:        user.ID,
+	}
+}
+
+func UsersToFrontFromRepositoryToUsecase(users []*repoModel.User) []*usecaseModel.UserFront {
+	userFronts := make([]*usecaseModel.UserFront, len(users))
+	for i, user := range users {
+		userFronts[i] = UserToFrontFromRepositoryToUsecase(user)
+	}
+	return userFronts
+}
+
+func UserToFrontFromUsecaseToProto(user *usecaseModel.UserFront) *protoModel.UserFront {
+	return &protoModel.UserFront{
+		Username: user.Username,
+		Email:    user.Email,
+		Avatar:   user.Thumbnail,
+		Id:       user.Id,
+	}
 }

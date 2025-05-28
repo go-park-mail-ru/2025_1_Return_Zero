@@ -104,3 +104,43 @@ func (u *userUsecase) UploadUserAvatar(ctx context.Context, username string, fil
 	}
 	return avatarURL, nil
 }
+
+func (u *userUsecase) GetLabelIDByUserID(ctx context.Context, userID int64) (int64, error) {
+	labelID, err := u.userRepo.GetLabelIDByUserID(ctx, userID)
+	if err != nil {
+		return 0, err
+	}
+	return labelID, nil
+}
+
+func (u *userUsecase) CheckUsersByUsernames(ctx context.Context, usernames []string) error {
+	err := u.userRepo.CheckUsersByUsernames(ctx, usernames)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *userUsecase) UpdateUsersLabelID(ctx context.Context, labelID int64, usernames []string) error {
+	err := u.userRepo.UpdateUsersLabel(ctx, labelID, usernames)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *userUsecase) GetUsersByLabelID(ctx context.Context, labelID int64) ([]string, error) {
+	users, err := u.userRepo.GetUsersByLabelID(ctx, labelID)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
+func (u *userUsecase) RemoveUsersFromLabel(ctx context.Context, labelID int64, usernames []string) error {
+	err := u.userRepo.RemoveUsersFromLabel(ctx, labelID, usernames)
+	if err != nil {
+		return err
+	}
+	return nil
+}

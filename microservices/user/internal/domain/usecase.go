@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/user/model/usecase"
 )
 
@@ -18,4 +19,9 @@ type Usecase interface {
 	GetUserPrivacySettings(ctx context.Context, id int64) (*usecaseModel.PrivacySettings, error)
 	GetAvatarURL(ctx context.Context, fileKey string) (string, error)
 	UploadUserAvatar(ctx context.Context, username string, file []byte) (string, error)
+	GetLabelIDByUserID(ctx context.Context, userID int64) (int64, error)
+	UpdateUsersLabelID(ctx context.Context, labelID int64, usernames []string) error
+	CheckUsersByUsernames(ctx context.Context, usernames []string) error
+	GetUsersByLabelID(ctx context.Context, labelID int64) ([]string, error)
+	RemoveUsersFromLabel(ctx context.Context, labelID int64, usernames []string) error
 }

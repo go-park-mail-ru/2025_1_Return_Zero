@@ -41,6 +41,20 @@ func NewPermissionDeniedError(format string, args ...interface{}) error {
 	}
 }
 
+func NewUnsupportedImageFormatError(format string, args ...interface{}) error {
+	return &TrackError{
+		Code:    codes.InvalidArgument,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
+func NewFailedToUploadAvatarError(format string, args ...interface{}) error {
+	return &TrackError{
+		Code:    codes.Internal,
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
 var (
 	ErrTrackNotFound                = NewNotFoundError("track not found")
 	ErrStreamPermissionDenied       = NewPermissionDeniedError("user does not have permission to update this stream")

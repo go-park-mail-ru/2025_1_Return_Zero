@@ -1,0 +1,55 @@
+port: 8080
+cors:
+  allowed_origins:
+    - http://returnzero.ru
+    - http://127.0.0.1:3000
+    - http://localhost:3000
+  allowed_methods:
+    - GET
+    - POST
+    - PUT
+    - PATCH
+    - DELETE
+    - HEAD
+    - OPTIONS
+  allowed_headers:
+    - Origin
+    - Content-Length
+    - Content-Type
+    - Authorization
+  allow_credentials: true
+  max_age: 86400
+pagination:
+  max_offset: 10000
+  max_limit: 1000
+  default_limit: 100
+  default_offset: 0
+s3:
+  s3_duration: 60m
+csrf:
+  csrf_header_name: X-Csrf-Token
+  csrf_cookie_name: csrf_token
+  csrf_token_length: 32
+services:
+  artist_service:
+    port: 5001
+  track_service:
+    port: 5002
+  album_service:
+    port: 5003
+  auth_service:
+    port: 5004
+  user_service:
+    port: 5005
+  playlist_service:
+    port: 5006
+prometheus:
+  prometheus_port: 9090
+  artist_port: 9091
+  track_port: 9092
+  album_port: 9093
+  auth_port: 9094
+  user_port: 9095
+  api_port: 9096
+  playlist_port: 9097
+  

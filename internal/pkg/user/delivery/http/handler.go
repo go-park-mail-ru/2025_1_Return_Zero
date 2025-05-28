@@ -1,4 +1,4 @@
-package user
+package http
 
 import (
 	"errors"
@@ -51,10 +51,15 @@ func loginToUsecaseModel(user *deliveryModel.LoginData) *usecaseModel.User {
 }
 
 func toUserToFront(user *usecaseModel.User) *deliveryModel.UserToFront {
+	isLabel := false
+	if user.LabelID > 0 {
+		isLabel = true
+	}
 	return &deliveryModel.UserToFront{
 		Username: user.Username,
 		Email:    user.Email,
 		Avatar:   user.AvatarUrl,
+		IsLabel:  isLabel,
 	}
 }
 
@@ -269,7 +274,11 @@ func (h *UserHandler) UploadAvatar(w http.ResponseWriter, r *http.Request) {
 		json.WriteErrorResponse(w, http.StatusBadRequest, "failed to get file from form", nil)
 		return
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			logger.Error("failed to close file", zap.Error(err))
+		}
+	}()
 
 	if fileHeader.Size > maxUploadSize {
 		logger.Error("file size exceeds limit", zap.Error(err))
