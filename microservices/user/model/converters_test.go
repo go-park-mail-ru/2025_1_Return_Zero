@@ -287,3 +287,76 @@ func TestFileKeyFromUsecaseToProto(t *testing.T) {
 
 	assert.Equal(t, protoData.FileKey, usecaseData)
 }
+
+func TestLabelIDFromUsecaseToProto(t *testing.T) {
+	usecaseData := int64(1)
+
+	protoData := LabelIDFromUsecaseToProto(usecaseData)
+
+	assert.Equal(t, protoData.Id, usecaseData)
+}
+
+func TestLabelFromUsecaseToProto(t *testing.T) {
+	usecaseData := &usecaseModel.Label{
+		ID:      1,
+		Name:    "Test Label",
+		Members: []string{"1", "2", "3"},
+	}
+
+	protoData := LabelFromUsecaseToProto(usecaseData)
+
+	assert.Equal(t, protoData.Id, usecaseData.ID)
+	assert.Equal(t, protoData.Name, usecaseData.Name)
+	assert.Equal(t, protoData.Usernames, usecaseData.Members)
+}
+
+func TestUserToFrontFromRepositoryToUsecase(t *testing.T) {
+	repoData := &repoModel.User{
+		ID:        1,
+		Username:  "test",
+		Email:     "test@test.com",
+		Thumbnail: "test.jpg",
+		LabelId:   1,
+	}
+
+	usecaseData := UserToFrontFromRepositoryToUsecase(repoData)
+
+	assert.Equal(t, usecaseData.Id, repoData.ID)
+	assert.Equal(t, usecaseData.Username, repoData.Username)
+	assert.Equal(t, usecaseData.Email, repoData.Email)
+	assert.Equal(t, usecaseData.Thumbnail, repoData.Thumbnail)
+}
+
+func TestUsersToFrontFromRepositoryToUsecase(t *testing.T) {
+	repoData := []*repoModel.User{
+		{
+			ID:        1,
+			Username:  "test",
+			Email:     "test@test.com",
+			Thumbnail: "test.jpg",
+		},
+	}
+
+	usecaseData := UsersToFrontFromRepositoryToUsecase(repoData)
+
+	assert.Equal(t, usecaseData[0].Id, repoData[0].ID)
+	assert.Equal(t, usecaseData[0].Username, repoData[0].Username)
+	assert.Equal(t, usecaseData[0].Email, repoData[0].Email)
+	assert.Equal(t, usecaseData[0].Thumbnail, repoData[0].Thumbnail)
+}
+
+func TestUserFromUsecaseToProto(t *testing.T) {
+	usecaseData := &usecaseModel.UserFront{
+		Id:		1,
+		Username:  "test",
+		Email:     "test@test.com",
+		Thumbnail: "test.jpg",
+	}
+
+	protoData := UserToFrontFromUsecaseToProto(usecaseData)
+
+	assert.Equal(t, protoData.Id, usecaseData.Id)
+	assert.Equal(t, protoData.Username, usecaseData.Username)
+	assert.Equal(t, protoData.Email, usecaseData.Email)
+	assert.Equal(t, protoData.Avatar, usecaseData.Thumbnail)
+}

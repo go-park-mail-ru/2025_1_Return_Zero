@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
@@ -305,4 +306,229 @@ func TestUploadAvatar(t *testing.T) {
 	err := usecase.UploadAvatar(ctx, avatarURL, userID)
 
 	require.NoError(t, err)
+}
+
+func TestGetAvatarURL(t *testing.T) {
+	mockRepo, ctx := setupTest(t)
+	mockS3Repo := mock_domain.NewMockS3Repository(gomock.NewController(t))
+
+	usecase := NewUserUsecase(mockRepo, mockS3Repo)
+
+	fileKey := "test.jpg"
+	expectedAvatarURL := mockAvatarURL
+
+	mockS3Repo.EXPECT().GetAvatarURL(ctx, fileKey).Return(expectedAvatarURL, nil)
+
+	result, err := usecase.GetAvatarURL(ctx, fileKey)
+
+	require.NoError(t, err)
+	assert.Equal(t, expectedAvatarURL, result)
+}
+
+func TestGetAvatarURLError(t *testing.T) {
+	mockRepo, ctx := setupTest(t)
+	mockS3Repo := mock_domain.NewMockS3Repository(gomock.NewController(t))
+
+	usecase := NewUserUsecase(mockRepo, mockS3Repo)
+
+	fileKey := "test.jpg"
+
+	mockS3Repo.EXPECT().GetAvatarURL(ctx, fileKey).Return("", errors.New("not found"))
+
+	result, err := usecase.GetAvatarURL(ctx, fileKey)
+
+	require.Error(t, err)
+	assert.Empty(t, result)
+}
+
+func TestUploadUserAvatar(t *testing.T) {
+	mockRepo, ctx := setupTest(t)
+	mockS3Repo := mock_domain.NewMockS3Repository(gomock.NewController(t))
+
+	usecase := NewUserUsecase(mockRepo, mockS3Repo)
+
+	fileKey := "test.jpg"
+	file := []byte("test file content")
+
+	mockS3Repo.EXPECT().UploadUserAvatar(ctx, fileKey, file).Return("test.jpg", nil)
+
+	_, err := usecase.UploadUserAvatar(ctx, fileKey, file)
+
+	require.NoError(t, err)
+}
+
+func TestUploadUserAvatarError(t *testing.T) {
+	mockRepo, ctx := setupTest(t)
+	mockS3Repo := mock_domain.NewMockS3Repository(gomock.NewController(t))
+
+	usecase := NewUserUsecase(mockRepo, mockS3Repo)
+
+	fileKey := "test.jpg"
+	file := []byte("test file content")
+
+	mockS3Repo.EXPECT().UploadUserAvatar(ctx, fileKey, file).Return("", errors.New("upload failed"))
+
+	_, err := usecase.UploadUserAvatar(ctx, fileKey, file)
+
+	require.Error(t, err)
+}
+
+func TestGetLabelIDByUserID(t *testing.T) {
+	mockRepo, ctx := setupTest(t)
+	mockS3Repo := mock_domain.NewMockS3Repository(gomock.NewController(t))
+
+	usecase := NewUserUsecase(mockRepo, mockS3Repo)
+
+	userID := int64(mockUserID)
+	expectedLabelID := int64(42)
+
+	mockRepo.EXPECT().GetLabelIDByUserID(ctx, userID).Return(expectedLabelID, nil)
+
+	labelID, err := usecase.GetLabelIDByUserID(ctx, userID)
+
+	require.NoError(t, err)
+	assert.Equal(t, expectedLabelID, labelID)
+}
+
+func TestGetLabelIDByUserIDError(t *testing.T) {
+	mockRepo, ctx := setupTest(t)
+	mockS3Repo := mock_domain.NewMockS3Repository(gomock.NewController(t))
+
+	usecase := NewUserUsecase(mockRepo, mockS3Repo)
+
+	userID := int64(mockUserID)
+
+	mockRepo.EXPECT().GetLabelIDByUserID(ctx, userID).Return(int64(-1), errors.New("not found"))
+
+	labelID, err := usecase.GetLabelIDByUserID(ctx, userID)
+
+	require.Error(t, err)
+	assert.Equal(t, int64(0), labelID)
+}
+
+func TestCheckUsersByUsernames(t *testing.T) {
+	mockRepo, ctx := setupTest(t)
+	mockS3Repo := mock_domain.NewMockS3Repository(gomock.NewController(t))
+
+	usecase := NewUserUsecase(mockRepo, mockS3Repo)
+
+	usernames := []string{mockUsername, mockExistingUsername}
+
+	mockRepo.EXPECT().CheckUsersByUsernames(ctx, usernames).Return(nil)
+
+	err := usecase.CheckUsersByUsernames(ctx, usernames)
+
+	require.NoError(t, err)
+}
+
+func TestCheckUsersByUsernamesError(t *testing.T) {
+	mockRepo, ctx := setupTest(t)
+	mockS3Repo := mock_domain.NewMockS3Repository(gomock.NewController(t))
+
+	usecase := NewUserUsecase(mockRepo, mockS3Repo)
+
+	usernames := []string{mockUsername, mockExistingUsername}
+
+	mockRepo.EXPECT().CheckUsersByUsernames(ctx, usernames).Return(errors.New("some error"))
+
+	err := usecase.CheckUsersByUsernames(ctx, usernames)
+
+	require.Error(t, err)
+}
+
+func TestUpdateUsersLabelID(t *testing.T) {
+	mockRepo, ctx := setupTest(t)
+	mockS3Repo := mock_domain.NewMockS3Repository(gomock.NewController(t))
+
+	usecase := NewUserUsecase(mockRepo, mockS3Repo)
+
+	labelID := int64(42)
+	usernames := []string{mockUsername, mockExistingUsername}
+
+	mockRepo.EXPECT().UpdateUsersLabel(ctx, labelID, gomock.Any()).Return(nil)
+
+	err := usecase.UpdateUsersLabelID(ctx, labelID, usernames)
+
+	require.NoError(t, err)
+}
+
+func TestUpdateUsersLabelIDError(t *testing.T) {
+	mockRepo, ctx := setupTest(t)
+	mockS3Repo := mock_domain.NewMockS3Repository(gomock.NewController(t))
+
+	usecase := NewUserUsecase(mockRepo, mockS3Repo)
+
+	labelID := int64(42)
+	usernames := []string{mockUsername, mockExistingUsername}
+
+	mockRepo.EXPECT().UpdateUsersLabel(ctx, labelID, gomock.Any()).Return(errors.New("some error"))
+
+	err := usecase.UpdateUsersLabelID(ctx, labelID, usernames)
+
+	require.Error(t, err)
+}
+
+func TestGetUsersByLabelID(t *testing.T) {
+	mockRepo, ctx := setupTest(t)
+	mockS3Repo := mock_domain.NewMockS3Repository(gomock.NewController(t))
+
+	usecase := NewUserUsecase(mockRepo, mockS3Repo)
+
+	labelID := int64(42)
+	expectedUsernames := []string{mockUsername, mockExistingUsername}
+
+	mockRepo.EXPECT().GetUsersByLabelID(ctx, labelID).Return(expectedUsernames, nil)
+
+	usernames, err := usecase.GetUsersByLabelID(ctx, labelID)
+
+	require.NoError(t, err)
+	assert.Equal(t, expectedUsernames, usernames)
+}
+
+func TestGetUsersByLabelIDError(t *testing.T) {
+	mockRepo, ctx := setupTest(t)
+	mockS3Repo := mock_domain.NewMockS3Repository(gomock.NewController(t))
+
+	usecase := NewUserUsecase(mockRepo, mockS3Repo)
+
+	labelID := int64(42)
+
+	mockRepo.EXPECT().GetUsersByLabelID(ctx, labelID).Return(nil, errors.New("not found"))
+
+	usernames, err := usecase.GetUsersByLabelID(ctx, labelID)
+
+	require.Error(t, err)
+	assert.Nil(t, usernames)
+}
+
+func TestRemoveUsersFromLabel(t *testing.T) {
+	mockRepo, ctx := setupTest(t)
+	mockS3Repo := mock_domain.NewMockS3Repository(gomock.NewController(t))
+
+	usecase := NewUserUsecase(mockRepo, mockS3Repo)
+
+	labelID := int64(42)
+	usernames := []string{mockUsername, mockExistingUsername}
+
+	mockRepo.EXPECT().RemoveUsersFromLabel(ctx, labelID, usernames).Return(nil)
+
+	err := usecase.RemoveUsersFromLabel(ctx, labelID, usernames)
+
+	require.NoError(t, err)
+}
+
+func TestRemoveUsersFromLabelError(t *testing.T) {
+	mockRepo, ctx := setupTest(t)
+	mockS3Repo := mock_domain.NewMockS3Repository(gomock.NewController(t))
+
+	usecase := NewUserUsecase(mockRepo, mockS3Repo)
+
+	labelID := int64(42)
+	usernames := []string{mockUsername, mockExistingUsername}
+
+	mockRepo.EXPECT().RemoveUsersFromLabel(ctx, labelID, usernames).Return(errors.New("some error"))
+
+	err := usecase.RemoveUsersFromLabel(ctx, labelID, usernames)
+
+	require.Error(t, err)
 }
