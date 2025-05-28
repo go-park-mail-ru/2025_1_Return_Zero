@@ -40,6 +40,7 @@ mv coverage.tmp coverage.out
 go tool cover -html=coverage.out -o coverage.html
 
 total_coverage=$(go tool cover -func=coverage.out | grep "total:" | awk '{print $3}')
+echo "$total_coverage" > coverage_percent.txt
 echo -e "${GREEN}Total test coverage: ${NC}$total_coverage"
 
 echo -e "${GREEN}Testing completed successfully!${NC}"
