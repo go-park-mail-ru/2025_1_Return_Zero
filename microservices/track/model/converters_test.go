@@ -398,3 +398,33 @@ func TestFavoriteRequestFromUsecaseToRepository(t *testing.T) {
 	assert.Equal(t, usecaseFavoriteRequest.Filters.Pagination.Limit, result.Filters.Pagination.Limit)
 	assert.Equal(t, usecaseFavoriteRequest.Filters.Pagination.Offset, result.Filters.Pagination.Offset)
 }
+
+func TestTracksIDWithAlbumIDFromProtoToUsecase(t *testing.T) {
+	protoTracks := []*trackProto.TrackLoad{
+		{Title: "Track 1", File: []byte("file1.mp3")},
+		{Title: "Track 2", File: []byte("file2.mp3")},
+	}
+
+	result := TracksIDWithAlbumIDFromProtoToUsecase(protoTracks)
+
+	assert.Len(t, result, len(protoTracks))
+	for i, track := range protoTracks {
+		assert.Equal(t, track.Title, result[i].Title)
+		assert.Equal(t, track.File, result[i].File)
+	}
+}
+
+func TestTrackLoadFromUsecaseToRepository(t *testing.T) {
+	usecaseTrack := &usecaseModel.TrackLoad{
+		Title:    "Test Track",
+		File:     []byte("file.mp3"),
+		Position: 1,
+	}
+
+	result := TrackLoadFromUsecaseToRepository(usecaseTrack)
+
+	assert.Equal(t, usecaseTrack.Title, result.Title)
+	assert.Equal(t, usecaseTrack.File, result.File)
+	assert.Equal(t, usecaseTrack.Position, result.Position)
+}
+
