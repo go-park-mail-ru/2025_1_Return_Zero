@@ -7,7 +7,6 @@ on:
       - dev
       - rk4_cicd
 
-
 jobs:
   test:
     runs-on: ubuntu-latest
