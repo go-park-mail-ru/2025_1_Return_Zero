@@ -1074,3 +1074,15 @@ func TestSearchTracksError(t *testing.T) {
 	assert.Equal(t, expectedErr, err)
 	assert.Nil(t, tracks)
 }
+
+func TestDeleteTracksByAlbumID(t *testing.T) {
+	mockRepo, mockS3Repo, ctx := setupTest(t)
+	u := NewTrackUsecase(mockRepo, mockS3Repo)
+
+	albumID := int64(1)
+
+	mockRepo.EXPECT().DeleteTracksByAlbumID(ctx, albumID).Return(nil)
+
+	err := u.DeleteTracksByAlbumID(ctx, albumID)
+	require.NoError(t, err)
+}
