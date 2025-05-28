@@ -663,3 +663,81 @@ func TestGetFavoriteTracksPrivate(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(tracks))
 }
+
+func TestGetSelectionTracks(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
+	ctx := context.Background()
+
+	trackList := &track.TrackList{
+		Tracks: []*track.Track{
+			{
+				Id:      1,
+				Title:   "Test Track",
+				AlbumId: 1,
+			},
+		},
+	}
+
+	albumTitleMap := &album.AlbumTitleMap{
+		Titles: map[int64]*album.AlbumTitle{
+			1: {Title: "Test Album"},
+		},
+	}
+
+	artistsMap := &artist.ArtistWithRoleMap{
+		Artists: map[int64]*artist.ArtistWithRoleList{
+			1: {
+				Artists: []*artist.ArtistWithRole{
+					{
+						Id:   1,
+						Role: "singer",
+					},
+				},
+			},
+		},
+	}
+
+	
+	mockTrackClient.EXPECT().GetMostRecentTracks(gomock.Any(), gomock.Any()).Return(trackList, nil)
+	mockAlbumClient.EXPECT().GetAlbumTitleByIDs(gomock.Any(), gomock.Any()).Return(albumTitleMap, nil)
+	mockArtistClient.EXPECT().GetArtistsByTrackIDs(gomock.Any(), gomock.Any()).Return(artistsMap, nil)
+
+	tracks, err := trackUC.GetSelectionTracks(ctx, "most-recent")
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(tracks))
+	assert.Equal(t, int64(1), tracks[0].ID)
+	assert.Equal(t, "Test Track", tracks[0].Title)
+}
+
+func TestGetSelectionTracksError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockTrackClient := mocks.NewMockTrackServiceClient(ctrl)
+	mockArtistClient := mocks.NewMockArtistServiceClient(ctrl)
+	mockAlbumClient := mocks.NewMockAlbumServiceClient(ctrl)
+	mockPlaylistClient := mocks.NewMockPlaylistServiceClient(ctrl)
+	mockUserClient := mocks.NewMockUserServiceClient(ctrl)
+
+	trackUC := trackUsecase.NewUsecase(mockTrackClient, mockArtistClient, mockAlbumClient, mockPlaylistClient, mockUserClient)
+
+	ctx := context.Background()
+
+	mockTrackClient.EXPECT().GetMostRecentTracks(gomock.Any(), gomock.Any()).Return(nil, errors.New("test error"))
+
+	tracks, err := trackUC.GetSelectionTracks(ctx, "most-recent")
+
+	assert.Error(t, err)
+	assert.Nil(t, tracks)
+}
