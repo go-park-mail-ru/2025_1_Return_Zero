@@ -26,6 +26,22 @@ jobs:
         run: |
           make test
 
+      - name: Display coverage percentage
+        if: always()
+        run: |
+          if [ -f coverage_percent.txt ]; then
+            COVERAGE=$(cat coverage_percent.txt)
+            if [ "${{ job.status }}" = "success" ]; then
+              echo "## <span style='color: green'>Test Coverage: $COVERAGE</span>" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "## <span style='color: red'>Test Coverage: $COVERAGE</span>" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "Coverage percentage: $COVERAGE"
+          else
+            echo "## <span style='color: red'>Coverage percentage file not found</span>" >> $GITHUB_STEP_SUMMARY
+            echo "Coverage percentage file not found"
+          fi
+
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         if: always()

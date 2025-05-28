@@ -32,9 +32,14 @@ jobs:
         run: |
           if [ -f coverage_percent.txt ]; then
             COVERAGE=$(cat coverage_percent.txt)
-            echo "## 📊 Test Coverage: $COVERAGE" >> $GITHUB_STEP_SUMMARY
+            if [ "${{ job.status }}" = "success" ]; then
+              echo "## <span style='color: green'>Test Coverage: $COVERAGE</span>" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "## <span style='color: red'>Test Coverage: $COVERAGE</span>" >> $GITHUB_STEP_SUMMARY
+            fi
             echo "Coverage percentage: $COVERAGE"
           else
+            echo "## <span style='color: red'>Coverage percentage file not found</span>" >> $GITHUB_STEP_SUMMARY
             echo "Coverage percentage file not found"
           fi
 
