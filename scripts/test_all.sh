@@ -37,7 +37,6 @@ done
 
 cp coverage.tmp coverage.out
 
-grep -v "delivery_easyjson.go" coverage.out > coverage.tmp && mv coverage.tmp coverage.out
 
 go tool cover -html=coverage.out -o coverage.html
 
