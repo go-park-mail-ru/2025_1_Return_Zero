@@ -528,6 +528,7 @@ func (r *albumPostgresRepository) SearchAlbums(ctx context.Context, query string
 }
 
 func (r *albumPostgresRepository) CreateAlbum(ctx context.Context, album *repoModel.CreateAlbumRequest) (int64, error) {
+	start := time.Now()
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Creating album in db", zap.Any("album", album), zap.String("query", "CreateAlbum"))
 
@@ -549,6 +550,14 @@ func (r *albumPostgresRepository) CreateAlbum(ctx context.Context, album *repoMo
 		logger.Error("failed to create album", zap.Error(err))
 		return 0, albumErrors.NewInternalError("failed to create album: %v", err)
 	}
+
+	_, err = r.db.ExecContext(ctx, "REFRESH MATERIALIZED VIEW CONCURRENTLY album_stats")
+    if err != nil {
+        logger.Warn("failed to refresh album_stats view, album may not be visible for up to 1 minute", zap.Error(err))
+    }
+
+	r.metrics.DatabaseDuration.WithLabelValues("CreateAlbum").Observe(time.Since(start).Seconds())
+	logger.Info("Album created successfully", zap.Int64("albumID", albumID))
 
 	return albumID, nil
 }

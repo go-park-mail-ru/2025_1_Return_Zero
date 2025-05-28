@@ -21,7 +21,7 @@ service UserService {
     rpc UpdateUsersLabelID(RequestUpdateUserLabelID) returns (Nothing);
     rpc ChecksUsersByUsernames(Usernames) returns (Nothing);
     rpc GetUsersByLabelID(LabelID) returns (Usernames);
-    rpc RemoveUsersLabelID(RequestRemoveUserLabelID) returns (Nothing);
+    rpc RemoveUsersFromLabel(RequestRemoveUserLabelID) returns (Nothing);
 }
 
 message RequestRemoveUserLabelID {
