@@ -3,3 +3,5 @@
 .vscode
 coverage.html
 coverage.out
+coverage.tmp
+profile.out
