@@ -1,11 +1,9 @@
-name: workflow 
+name: deploy 
 
 on:
   push:
     branches:
       - main
-      - dev
-      - rk4_cicd
 
 jobs:
   test:

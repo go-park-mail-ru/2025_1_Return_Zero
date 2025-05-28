@@ -12,6 +12,7 @@ import (
 	userProto "github.com/go-park-mail-ru/2025_1_Return_Zero/gen/user"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/delivery"
+	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/repository"
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/model/usecase"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -1660,4 +1661,421 @@ func TestAlbumFromProtoToUsecaseEdgeCases(t *testing.T) {
 			assert.Equal(t, protoAlbum.IsFavorite, ucAlbum.IsLiked)
 		})
 	}
+}
+
+func TestTrackRequestFromDeliveryToUsecase(t *testing.T) {
+	deliveryTrack := &delivery.CreateTrackRequest{
+		Title: mockTrackTitle,
+		Track: []byte("track-data"),
+	}
+
+	ucTrack := model.TrackRequestFromDeliveryToUsecase(deliveryTrack)
+
+	assert.Equal(t, deliveryTrack.Title, ucTrack.Title)
+	assert.Equal(t, deliveryTrack.Track, ucTrack.Track)
+}
+
+func TestNewAlbumFromDeliveryToUsecase(t *testing.T) {
+	deliveryTracks := []*delivery.CreateTrackRequest{
+		{
+			Title: "Track 1",
+			Track: []byte("track1-data"),
+		},
+		{
+			Title: "Track 2",
+			Track: []byte("track2-data"),
+		},
+	}
+
+	deliveryAlbum := &delivery.CreateAlbumRequest{
+		Title:      mockAlbumTitle,
+		Image:      []byte("album-image"),
+		Type:       "album",
+		LabelID:    1,
+		Tracks:     deliveryTracks,
+		ArtistsIDs: []int64{1, 2},
+	}
+
+	ucAlbum := model.NewAlbumFromDeliveryToUsecase(deliveryAlbum)
+
+	assert.Equal(t, deliveryAlbum.Title, ucAlbum.Title)
+	assert.Equal(t, deliveryAlbum.Image, ucAlbum.Image)
+	assert.Equal(t, deliveryAlbum.Type, ucAlbum.Type)
+	assert.Equal(t, deliveryAlbum.LabelID, ucAlbum.LabelID)
+	assert.Equal(t, deliveryAlbum.ArtistsIDs, ucAlbum.ArtistsIDs)
+	assert.Len(t, ucAlbum.Tracks, 2)
+	assert.Equal(t, deliveryTracks[0].Title, ucAlbum.Tracks[0].Title)
+	assert.Equal(t, deliveryTracks[0].Track, ucAlbum.Tracks[0].Track)
+	assert.Equal(t, deliveryTracks[1].Title, ucAlbum.Tracks[1].Title)
+	assert.Equal(t, deliveryTracks[1].Track, ucAlbum.Tracks[1].Track)
+}
+
+func TestAlbumTypeConverter(t *testing.T) {
+	tests := []struct {
+		name      string
+		albumType string
+		expected  delivery.AlbumType
+	}{
+		{
+			name:      "AlbumTypeAlbum",
+			albumType: string(usecase.AlbumTypeAlbum),
+			expected:  delivery.AlbumTypeAlbum,
+		},
+		{
+			name:      "AlbumTypeEP",
+			albumType: string(usecase.AlbumTypeEP),
+			expected:  delivery.AlbumTypeEP,
+		},
+		{
+			name:      "AlbumTypeSingle",
+			albumType: string(usecase.AlbumTypeSingle),
+			expected:  delivery.AlbumTypeSingle,
+		},
+		{
+			name:      "AlbumTypeCompilation",
+			albumType: string(usecase.AlbumTypeCompilation),
+			expected:  delivery.AlbumTypeCompilation,
+		},
+		{
+			name:      "Unknown type defaults to AlbumTypeAlbum",
+			albumType: "unknown",
+			expected:  delivery.AlbumTypeAlbum,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := model.AlbumTypeConverter(tt.albumType)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestArtistLoadFromUsecaseToProto(t *testing.T) {
+	ucArtist := &usecase.ArtistLoad{
+		Title:   mockArtistTitle,
+		Image:   []byte("artist-image"),
+		LabelID: 123,
+	}
+
+	protoArtist := model.ArtistLoadFromUsecaseToProto(ucArtist)
+
+	assert.Equal(t, ucArtist.Title, protoArtist.Title)
+	assert.Equal(t, ucArtist.Image, protoArtist.Image)
+	assert.Equal(t, ucArtist.LabelID, protoArtist.LabelId)
+}
+
+func TestArtistLoadFromDeliveryToUsecase(t *testing.T) {
+	deliveryArtist := &delivery.CreateArtistRequest{
+		Title:   mockArtistTitle,
+		Image:   []byte("artist-image"),
+		LabelID: 123,
+	}
+
+	ucArtist := model.ArtistLoadFromDeliveryToUsecase(deliveryArtist)
+
+	assert.Equal(t, deliveryArtist.Title, ucArtist.Title)
+	assert.Equal(t, deliveryArtist.Image, ucArtist.Image)
+	assert.Equal(t, deliveryArtist.LabelID, ucArtist.LabelID)
+}
+
+func TestArtistDeleteFromDeliveryToUsecase(t *testing.T) {
+	deleteArtist := &delivery.DeleteArtistRequest{
+		ArtistID: mockArtistID,
+	}
+
+	ucArtistDelete := model.ArtistDeleteFromDeliveryToUsecase(deleteArtist)
+
+	assert.Equal(t, deleteArtist.ArtistID, ucArtistDelete.ArtistID)
+}
+
+func TestLabelIDFromUsecaseToProto(t *testing.T) {
+	labelID := int64(123)
+
+	protoLabelID := model.LabelIDFromUsecaseToProto(labelID)
+
+	assert.Equal(t, labelID, protoLabelID.Id)
+}
+
+func TestLabelIDFromProtoToUsecase(t *testing.T) {
+	protoLabelID := &userProto.LabelID{
+		Id: 123,
+	}
+
+	labelID := model.LabelIDFromProtoToUsecase(protoLabelID)
+
+	assert.Equal(t, protoLabelID.Id, labelID)
+}
+
+func TestLabelFromUsecaseToProto(t *testing.T) {
+	ucLabel := &usecase.Label{
+		Id:      123,
+		Name:    "Test Label",
+		Members: []string{"user1", "user2"},
+	}
+
+	protoLabel := model.LabelFromUsecaseToProto(ucLabel)
+
+	assert.Equal(t, ucLabel.Id, protoLabel.Id)
+	assert.Equal(t, ucLabel.Name, protoLabel.Name)
+	assert.Equal(t, ucLabel.Members, protoLabel.Usernames)
+}
+
+func TestLabelFromProtoToUsecase(t *testing.T) {
+	protoLabel := &userProto.Label{
+		Id:        123,
+		Name:      "Test Label",
+		Usernames: []string{"user1", "user2"},
+	}
+
+	ucLabel := model.LabelFromProtoToUsecase(protoLabel)
+
+	assert.Equal(t, protoLabel.Id, ucLabel.Id)
+	assert.Equal(t, protoLabel.Name, ucLabel.Name)
+	assert.Equal(t, protoLabel.Usernames, ucLabel.Members)
+}
+
+func TestLabelFromDeliveryToUsecase(t *testing.T) {
+	deliveryLabel := &delivery.Label{
+		Id:        123,
+		LabelName: "Test Label",
+		Usernames: []string{"user1", "user2"},
+	}
+
+	ucLabel := model.LabelFromDeliveryToUsecase(deliveryLabel)
+
+	assert.Equal(t, deliveryLabel.Id, ucLabel.Id)
+	assert.Equal(t, deliveryLabel.LabelName, ucLabel.Name)
+	assert.Equal(t, deliveryLabel.Usernames, ucLabel.Members)
+}
+
+func TestLabelFromUsecaseToDelivery(t *testing.T) {
+	ucLabel := &usecase.Label{
+		Id:      123,
+		Name:    "Test Label",
+		Members: []string{"user1", "user2"},
+	}
+
+	deliveryLabel := model.LabelFromUsecaseToDelivery(ucLabel)
+
+	assert.Equal(t, ucLabel.Id, deliveryLabel.Id)
+	assert.Equal(t, ucLabel.Name, deliveryLabel.LabelName)
+	assert.Equal(t, ucLabel.Members, deliveryLabel.Usernames)
+}
+
+func TestMembersFromProtoToUsecase(t *testing.T) {
+	protoUsers := &userProto.UsersToFront{
+		Users: []*userProto.UserFront{
+			{
+				Id:       1,
+				Username: "user1",
+				Email:    "user1@example.com",
+				Avatar:   "avatar1.jpg",
+			},
+			{
+				Id:       2,
+				Username: "user2",
+				Email:    "user2@example.com",
+				Avatar:   "avatar2.jpg",
+			},
+		},
+	}
+
+	ucUsers := model.MembersFromProtoToUsecase(protoUsers)
+
+	assert.Len(t, ucUsers, 2)
+	assert.Equal(t, protoUsers.Users[0].Id, ucUsers[0].ID)
+	assert.Equal(t, protoUsers.Users[0].Username, ucUsers[0].Username)
+	assert.Equal(t, protoUsers.Users[0].Email, ucUsers[0].Email)
+	assert.Equal(t, protoUsers.Users[0].Avatar, ucUsers[0].AvatarUrl)
+	assert.Equal(t, protoUsers.Users[1].Id, ucUsers[1].ID)
+	assert.Equal(t, protoUsers.Users[1].Username, ucUsers[1].Username)
+	assert.Equal(t, protoUsers.Users[1].Email, ucUsers[1].Email)
+	assert.Equal(t, protoUsers.Users[1].Avatar, ucUsers[1].AvatarUrl)
+}
+
+func TestArtistEditFromDeliveryToUsecase(t *testing.T) {
+	editRequest := &delivery.EditArtistRequest{
+		ArtistID: mockArtistID,
+		NewTitle: "New Artist Title",
+		Image:    []byte("new-image"),
+		LabelID:  123,
+	}
+
+	ucArtistEdit := model.ArtistEditFromDeliveryToUsecase(editRequest)
+
+	assert.Equal(t, editRequest.ArtistID, ucArtistEdit.ArtistID)
+	assert.Equal(t, editRequest.NewTitle, ucArtistEdit.NewTitle)
+	assert.Equal(t, editRequest.Image, ucArtistEdit.Image)
+	assert.Equal(t, editRequest.LabelID, ucArtistEdit.LabelID)
+}
+
+func TestTrackLoadFromUsecaseToProto(t *testing.T) {
+	ucTrack := &usecase.CreateTrackRequest{
+		Title: mockTrackTitle,
+		Track: []byte("track-data"),
+	}
+
+	protoTrack := model.TrackLoadFromUsecaseToProto(ucTrack)
+
+	assert.Equal(t, ucTrack.Title, protoTrack.Title)
+	assert.Equal(t, ucTrack.Track, protoTrack.File)
+}
+
+func TestTrackListLoadFromUsecaseToProto(t *testing.T) {
+	ucTracks := []*usecase.CreateTrackRequest{
+		{
+			Title: "Track 1",
+			Track: []byte("track1-data"),
+		},
+		{
+			Title: "Track 2",
+			Track: []byte("track2-data"),
+		},
+	}
+
+	protoTracks := model.TrackListLoadFromUsecaseToProto(ucTracks)
+
+	assert.Len(t, protoTracks, 2)
+	assert.Equal(t, ucTracks[0].Title, protoTracks[0].Title)
+	assert.Equal(t, ucTracks[0].Track, protoTracks[0].File)
+	assert.Equal(t, ucTracks[1].Title, protoTracks[1].Title)
+	assert.Equal(t, ucTracks[1].Track, protoTracks[1].File)
+}
+
+func TestTracksIdsFromProtoToUsecase(t *testing.T) {
+	protoTracks := &trackProto.TrackIdsList{
+		Ids: []*trackProto.TrackID{
+			{Id: 1},
+			{Id: 2},
+			{Id: 3},
+		},
+	}
+
+	trackIds := model.TracksIdsFromProtoToUsecase(protoTracks)
+
+	assert.Len(t, trackIds, 3)
+	assert.Equal(t, protoTracks.Ids[0].Id, trackIds[0])
+	assert.Equal(t, protoTracks.Ids[1].Id, trackIds[1])
+	assert.Equal(t, protoTracks.Ids[2].Id, trackIds[2])
+}
+
+func TestTracksIdsFromUsecaseToProtoArtist(t *testing.T) {
+	trackIDs := []int64{1, 2, 3}
+
+	protoTrackIDList := model.TracksIdsFromUsecaseToProtoArtist(trackIDs)
+
+	assert.Len(t, protoTrackIDList.Ids, 3)
+	assert.Equal(t, trackIDs[0], protoTrackIDList.Ids[0].Id)
+	assert.Equal(t, trackIDs[1], protoTrackIDList.Ids[1].Id)
+	assert.Equal(t, trackIDs[2], protoTrackIDList.Ids[2].Id)
+}
+
+func TestCreateJamResponseFromUsecaseToDelivery(t *testing.T) {
+	ucCreateJam := &usecase.CreateJamResponse{
+		RoomID: "room123",
+		HostID: "host456",
+	}
+
+	deliveryCreateJam := model.CreateJamResponseFromUsecaseToDelivery(ucCreateJam)
+
+	assert.Equal(t, ucCreateJam.RoomID, deliveryCreateJam.RoomID)
+	assert.Equal(t, ucCreateJam.HostID, deliveryCreateJam.HostID)
+}
+
+func TestCreateJamRequestFromDeliveryToUsecase(t *testing.T) {
+	deliveryRequest := &delivery.CreateJamRequest{
+		TrackID:  "track123",
+		Position: 100,
+	}
+
+	ucRequest := model.CreateJamRequestFromDeliveryToUsecase(deliveryRequest, "user123")
+
+	assert.Equal(t, "user123", ucRequest.UserID)
+	assert.Equal(t, deliveryRequest.TrackID, ucRequest.TrackID)
+	assert.Equal(t, deliveryRequest.Position, ucRequest.Position)
+}
+
+func TestJamMessageFromUsecaseToDelivery(t *testing.T) {
+	ucJamMessage := &usecase.JamMessage{
+		Type:       "play",
+		TrackID:    "track123",
+		Position:   100,
+		Paused:     false,
+		UserID:     "user123",
+		HostID:     "host123",
+		Users:      []string{"user1", "user2"},
+		Loaded:     map[string]bool{"user1": true, "user2": false},
+		UserImages: map[string]string{"user1": "image1", "user2": "image2"},
+		UserNames:  map[string]string{"user1": "name1", "user2": "name2"},
+	}
+
+	deliveryJamMessage := model.JamMessageFromUsecaseToDelivery(ucJamMessage)
+
+	assert.Equal(t, ucJamMessage.Type, deliveryJamMessage.Type)
+	assert.Equal(t, ucJamMessage.TrackID, deliveryJamMessage.TrackID)
+	assert.Equal(t, ucJamMessage.Position, deliveryJamMessage.Position)
+	assert.Equal(t, ucJamMessage.Paused, deliveryJamMessage.Paused)
+	assert.Equal(t, ucJamMessage.UserID, deliveryJamMessage.UserID)
+	assert.Equal(t, ucJamMessage.HostID, deliveryJamMessage.HostID)
+	assert.Equal(t, ucJamMessage.Users, deliveryJamMessage.Users)
+	assert.Equal(t, ucJamMessage.Loaded, deliveryJamMessage.Loaded)
+	assert.Equal(t, ucJamMessage.UserImages, deliveryJamMessage.UserImages)
+	assert.Equal(t, ucJamMessage.UserNames, deliveryJamMessage.UserNames)
+}
+
+func TestJamMessageFromRepositoryToUsecase(t *testing.T) {
+	repoJamMessage := &repository.JamMessage{
+		Type:       "play",
+		TrackID:    "track123",
+		Position:   100,
+		Paused:     false,
+		UserID:     "user123",
+		HostID:     "host123",
+		Users:      []string{"user1", "user2"},
+		Loaded:     map[string]bool{"user1": true, "user2": false},
+		UserImages: map[string]string{"user1": "image1", "user2": "image2"},
+		UserNames:  map[string]string{"user1": "name1", "user2": "name2"},
+	}
+
+	ucJamMessage := model.JamMessageFromRepositoryToUsecase(repoJamMessage)
+
+	assert.Equal(t, repoJamMessage.Type, ucJamMessage.Type)
+	assert.Equal(t, repoJamMessage.TrackID, ucJamMessage.TrackID)
+	assert.Equal(t, repoJamMessage.Position, ucJamMessage.Position)
+	assert.Equal(t, repoJamMessage.Paused, ucJamMessage.Paused)
+	assert.Equal(t, repoJamMessage.UserID, ucJamMessage.UserID)
+	assert.Equal(t, repoJamMessage.HostID, ucJamMessage.HostID)
+	assert.Equal(t, repoJamMessage.Users, ucJamMessage.Users)
+	assert.Equal(t, repoJamMessage.Loaded, ucJamMessage.Loaded)
+	assert.Equal(t, repoJamMessage.UserImages, ucJamMessage.UserImages)
+	assert.Equal(t, repoJamMessage.UserNames, ucJamMessage.UserNames)
+}
+
+func TestJamMessageFromDeliveryToUsecase(t *testing.T) {
+	deliveryJamMessage := &delivery.JamMessage{
+		Type:       "play",
+		TrackID:    "track123",
+		Position:   100,
+		Paused:     false,
+		UserID:     "user123",
+		HostID:     "host123",
+		Users:      []string{"user1", "user2"},
+		Loaded:     map[string]bool{"user1": true, "user2": false},
+		UserImages: map[string]string{"user1": "image1", "user2": "image2"},
+		UserNames:  map[string]string{"user1": "name1", "user2": "name2"},
+	}
+
+	ucJamMessage := model.JamMessageFromDeliveryToUsecase(deliveryJamMessage)
+
+	assert.Equal(t, deliveryJamMessage.Type, ucJamMessage.Type)
+	assert.Equal(t, deliveryJamMessage.TrackID, ucJamMessage.TrackID)
+	assert.Equal(t, deliveryJamMessage.Position, ucJamMessage.Position)
+	assert.Equal(t, deliveryJamMessage.Paused, ucJamMessage.Paused)
+	assert.Equal(t, "", ucJamMessage.UserID)
+	assert.Equal(t, deliveryJamMessage.HostID, ucJamMessage.HostID)
+	assert.Equal(t, deliveryJamMessage.Users, ucJamMessage.Users)
+	assert.Equal(t, deliveryJamMessage.Loaded, ucJamMessage.Loaded)
+	assert.Equal(t, deliveryJamMessage.UserImages, ucJamMessage.UserImages)
+	assert.Equal(t, deliveryJamMessage.UserNames, ucJamMessage.UserNames)
 }

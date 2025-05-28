@@ -1,4 +1,4 @@
-package artist
+package http
 
 import (
 	"encoding/json"
