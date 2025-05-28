@@ -24,15 +24,10 @@ func ConnectPostgres(cfg config.PostgresConfig) (*sql.DB, error) {
 
 	fmt.Println("Connected to Postgres")
 
-	err = runMigrations(cfg)
-	if err != nil {
-		return nil, err
-	}
-
 	return db, nil
 }
 
-func runMigrations(cfg config.PostgresConfig) error {
+func RunMigrations(cfg config.PostgresConfig) error {
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		cfg.PostgresUser, cfg.PostgresPassword, cfg.PostgresHost, cfg.PostgresPort, cfg.PostgresDB)
 

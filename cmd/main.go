@@ -84,6 +84,12 @@ func main() {
 		}
 	}()
 
+	err = postgres.RunMigrations(cfg.Postgres)
+	if err != nil {
+		logger.Error("Error running migrations:", zap.Error(err))
+		return
+	}
+
 	r := mux.NewRouter()
 	logger.Info("Server starting on port %s...", zap.String("port", fmt.Sprintf(":%d", cfg.Port)))
 
