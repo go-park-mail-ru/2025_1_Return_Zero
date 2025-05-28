@@ -59,8 +59,8 @@ func main() {
 
 	server := grpc.NewServer(
 		grpc.UnaryInterceptor(accessInterceptor.UnaryServerInterceptor()),
-		grpc.MaxRecvMsgSize(50*1024*1024), // 50 MB
-		grpc.MaxSendMsgSize(50*1024*1024), // 50 MB
+		grpc.MaxRecvMsgSize(500*1024*1024), // 500 MB
+		grpc.MaxSendMsgSize(500*1024*1024), // 500 MB
 	)
 
 	postgresPool, err := postgres.ConnectPostgres(cfg.Postgres)
