@@ -7,7 +7,7 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
-COPY --exclude=microservices --exclude=deploy . .
+COPY . . 
 
 RUN go build -o main cmd/main.go
 
