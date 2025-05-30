@@ -75,7 +75,7 @@ const (
 		FROM artist a
 		JOIN album_artist aa ON a.id = aa.artist_id
 		WHERE aa.album_id = $1
-		ORDER BY aa.created_at DESC, aa.id DESC
+		ORDER BY aa.created_at ASC, aa.id ASC
 	`
 
 	GetArtistsByAlbumIDsQuery = `
@@ -83,7 +83,7 @@ const (
 		FROM artist a
 		JOIN album_artist aa ON a.id = aa.artist_id
 		WHERE aa.album_id = ANY($1)
-		ORDER BY aa.created_at DESC, aa.id DESC
+		ORDER BY aa.created_at ASC, aa.id ASC
 	`
 
 	GetAlbumIDsByArtistIDQuery = `
