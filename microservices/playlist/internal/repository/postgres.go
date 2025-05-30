@@ -483,6 +483,18 @@ func (r *PlaylistPostgresRepository) UpdatePlaylist(ctx context.Context, request
 		}
 	}()
 
+	stmt2, err := r.db.PrepareContext(ctx, UpdatePlaylistWithoutThumbnailQuery)
+	if err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylist").Inc()
+		logger.Error("Failed to prepare statement", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
+	}
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			logger.Error("Error closing statement:", zap.Error(err))
+		}
+	}()
+
 	var id int64
 	if request.Thumbnail != "" {
 		err := stmt.QueryRowContext(ctx, request.PlaylistID, request.Title, request.Thumbnail, request.UserID).Scan(&id)
@@ -492,7 +504,7 @@ func (r *PlaylistPostgresRepository) UpdatePlaylist(ctx context.Context, request
 			return nil, playlistErrors.NewInternalError("failed to update playlist: %v", err)
 		}
 	} else {
-		err := stmt.QueryRowContext(ctx, request.PlaylistID, request.Title, request.UserID).Scan(&id)
+		err := stmt2.QueryRowContext(ctx, request.PlaylistID, request.Title, request.UserID).Scan(&id)
 		if err != nil {
 			r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylist").Inc()
 			logger.Error("Failed to update playlist", zap.Error(err))
