@@ -766,6 +766,7 @@ func TestUpdatePlaylistWithThumbnail(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
 	mock.ExpectPrepare("UPDATE playlist")
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.Thumbnail, request.UserID).
 		WillReturnRows(rows)
@@ -805,6 +806,7 @@ func TestUpdatePlaylistWithThumbnailError(t *testing.T) {
 	}
 
 	mock.ExpectPrepare("UPDATE playlist")
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.Thumbnail, request.UserID).
 		WillReturnError(stderrors.New("db error"))
@@ -834,6 +836,7 @@ func TestUpdatePlaylistWithoutThumbnail(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.UserID).
@@ -873,6 +876,7 @@ func TestUpdatePlaylistWithoutThumbnailError(t *testing.T) {
 		UserID:     1,
 	}
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.UserID).
@@ -1559,6 +1563,7 @@ func TestUpdatePlaylistGetPlaylistError(t *testing.T) {
 
 	rows := sqlmock.NewRows([]string{"id"}).AddRow(1)
 
+	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectPrepare("UPDATE playlist")
 	mock.ExpectQuery("UPDATE playlist").
 		WithArgs(request.PlaylistID, request.Title, request.Thumbnail, request.UserID).
