@@ -255,3 +255,18 @@ func (mr *MockRepositoryMockRecorder) SubscribeToJamMessages(ctx, roomID any) *g
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeToJamMessages", reflect.TypeOf((*MockRepository)(nil).SubscribeToJamMessages), ctx, roomID)
 }
+
+// UserInJamAlready mocks base method.
+func (m *MockRepository) UserInJamAlready(ctx context.Context, roomID, userID string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UserInJamAlready", ctx, roomID, userID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UserInJamAlready indicates an expected call of UserInJamAlready.
+func (mr *MockRepositoryMockRecorder) UserInJamAlready(ctx, roomID, userID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserInJamAlready", reflect.TypeOf((*MockRepository)(nil).UserInJamAlready), ctx, roomID, userID)
+}

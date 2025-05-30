@@ -22,4 +22,5 @@ type Repository interface {
 	StoreUserInfo(ctx context.Context, roomID string, userID string, username string, avatarURL string) error
 	GetUserInfo(ctx context.Context, roomID string, userID string) (string, string, error)
 	SubscribeToJamMessages(ctx context.Context, roomID string) (<-chan []byte, error)
+	UserInJamAlready(ctx context.Context, roomID string, userID string) (bool, error)
 }

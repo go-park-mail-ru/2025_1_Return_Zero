@@ -67,6 +67,14 @@ func (u *Usecase) JoinJam(ctx context.Context, request *usecase.JoinJamRequest) 
 	}
 
 	if hostID != request.UserID {
+		userInJamAlready, err := u.jamRepository.UserInJamAlready(ctx, request.RoomID, request.UserID)
+		if err != nil {
+			logger.Error("failed to check if user is in jam", zap.Error(err))
+			return nil, err
+		}
+		if userInJamAlready {
+			return nil, errors.New("user already in jam")
+		}
 		err = u.storeUserInfo(ctx, request.RoomID, request.UserID)
 		if err != nil {
 			logger.Error("failed to store user info", zap.Error(err))

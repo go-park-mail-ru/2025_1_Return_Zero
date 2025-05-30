@@ -135,6 +135,7 @@ func TestJoinJam_Success(t *testing.T) {
 
 	mockRepo.EXPECT().ExistsRoom(ctx, "room123").Return(true, nil)
 	mockRepo.EXPECT().GetHostID(ctx, "room123").Return("123", nil)
+	mockRepo.EXPECT().UserInJamAlready(ctx, "room123", "456").Return(false, nil)
 	mockUserClient.EXPECT().GetUserByID(ctx, &userProto.UserID{Id: 456}).Return(userProtoData, nil)
 	mockRepo.EXPECT().StoreUserInfo(ctx, "room123", "456", "joiner", "").Return(nil)
 	mockRepo.EXPECT().AddUser(ctx, "room123", "456").Return(nil)
@@ -230,9 +231,49 @@ func TestJoinJam_AddUserError(t *testing.T) {
 	expectedErr := errors.New("add user error")
 	mockRepo.EXPECT().ExistsRoom(ctx, "room123").Return(true, nil)
 	mockRepo.EXPECT().GetHostID(ctx, "room123").Return("123", nil)
+	mockRepo.EXPECT().UserInJamAlready(ctx, "room123", "456").Return(false, nil)
 	mockUserClient.EXPECT().GetUserByID(ctx, &userProto.UserID{Id: 456}).Return(userProtoData, nil)
 	mockRepo.EXPECT().StoreUserInfo(ctx, "room123", "456", "joiner", "").Return(nil)
 	mockRepo.EXPECT().AddUser(ctx, "room123", "456").Return(expectedErr)
+
+	response, err := uc.JoinJam(ctx, request)
+
+	assert.Error(t, err)
+	assert.Equal(t, expectedErr, err)
+	assert.Nil(t, response)
+}
+
+func TestJoinJam_UserAlreadyInJam(t *testing.T) {
+	mockRepo, _, uc, ctx := setupTest(t)
+
+	request := &usecase.JoinJamRequest{
+		RoomID: "room123",
+		UserID: "456",
+	}
+
+	mockRepo.EXPECT().ExistsRoom(ctx, "room123").Return(true, nil)
+	mockRepo.EXPECT().GetHostID(ctx, "room123").Return("123", nil)
+	mockRepo.EXPECT().UserInJamAlready(ctx, "room123", "456").Return(true, nil)
+
+	response, err := uc.JoinJam(ctx, request)
+
+	assert.Error(t, err)
+	assert.Equal(t, "user already in jam", err.Error())
+	assert.Nil(t, response)
+}
+
+func TestJoinJam_UserInJamAlreadyError(t *testing.T) {
+	mockRepo, _, uc, ctx := setupTest(t)
+
+	request := &usecase.JoinJamRequest{
+		RoomID: "room123",
+		UserID: "456",
+	}
+
+	expectedErr := errors.New("database error")
+	mockRepo.EXPECT().ExistsRoom(ctx, "room123").Return(true, nil)
+	mockRepo.EXPECT().GetHostID(ctx, "room123").Return("123", nil)
+	mockRepo.EXPECT().UserInJamAlready(ctx, "room123", "456").Return(false, expectedErr)
 
 	response, err := uc.JoinJam(ctx, request)
 

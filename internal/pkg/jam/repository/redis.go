@@ -604,3 +604,22 @@ func (r *jamRedisRepository) SubscribeToJamMessages(ctx context.Context, roomID 
 
 	return messageChan, nil
 }
+
+func (r *jamRedisRepository) UserInJamAlready(ctx context.Context, roomID string, userID string) (bool, error) {
+	logger := loggerPkg.LoggerFromContext(ctx)
+	conn, err := r.getConn()
+	if err != nil {
+		return false, err
+	}
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error("Error closing connection:", zap.Error(err))
+		}
+	}()
+
+	exists, err := redis.Bool(redis.DoContext(conn, ctx, "SISMEMBER", "jam:"+roomID+":users", userID))
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}
