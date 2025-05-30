@@ -490,7 +490,7 @@ func (r *PlaylistPostgresRepository) UpdatePlaylist(ctx context.Context, request
 		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
 	}
 	defer func() {
-		if err := stmt.Close(); err != nil {
+		if err := stmt2.Close(); err != nil {
 			logger.Error("Error closing statement:", zap.Error(err))
 		}
 	}()
