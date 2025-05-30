@@ -60,7 +60,7 @@ var (
 	ErrPlaylistPermissionDenied = NewPermissionDeniedError("user does not have permission to update this playlist")
 	ErrUnsupportedImageFormat   = NewBadRequestError("unsupported image format: only JPEG and PNG are allowed")
 	ErrImageTooBig              = NewBadRequestError("image size exceeds 5MB limit")
-	ErrFailedToParseImage       = NewInternalError("failed to parse image")
+	ErrFailedToParseImage       = NewBadRequestError("failed to parse image")
 	ErrFailedToUploadImage      = NewInternalError("failed to upload image")
 	ErrPlaylistDuplicate        = NewAlreadyExistsError("playlist with this title by you already exists")
 	ErrPlaylistTrackNotFound    = NewNotFoundError("track not found in playlist")

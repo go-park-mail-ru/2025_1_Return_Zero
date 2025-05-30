@@ -95,7 +95,7 @@ const (
 	checkIsEmailUniqueQuery = `
 			SELECT 1 
 			FROM "user"
-			WHERE username = $1 AND id != $2
+			WHERE email = $1 AND id != $2
 	`
 	changePrivacySettingsQuery = `
 			UPDATE "user_settings"
@@ -550,10 +550,9 @@ func (r *userPostgresRepository) DeleteUser(ctx context.Context, userRepo *repoM
 	return nil
 }
 
-func (r *userPostgresRepository) CheckIsUsernameUnique(ctx context.Context, username string) (bool, error) {
+func (r *userPostgresRepository) CheckIsUsernameUnique(ctx context.Context, username string, id int64) (bool, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Checking username uniqueness", zap.String("username", username))
-
 	stmt, err := r.db.PrepareContext(ctx, checkIsUsernameUniqueQuery)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("CheckIsUsernameUnique").Inc()
@@ -567,7 +566,7 @@ func (r *userPostgresRepository) CheckIsUsernameUnique(ctx context.Context, user
 	}()
 
 	var exists bool
-	err = stmt.QueryRowContext(ctx, username).Scan(&exists)
+	err = stmt.QueryRowContext(ctx, username, id).Scan(&exists)
 	if err != nil && err != sql.ErrNoRows {
 		return false, err
 	}
@@ -592,7 +591,7 @@ func (r *userPostgresRepository) changeUsername(ctx context.Context, id int64, n
 		}
 	}()
 
-	isExist, err := r.CheckIsUsernameUnique(ctx, newLowerUsername)
+	isExist, err := r.CheckIsUsernameUnique(ctx, newLowerUsername, id)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("СhangeUsername").Inc()
 		logger.Error("failed to check username uniqueness", zap.Error(err))
@@ -616,7 +615,7 @@ func (r *userPostgresRepository) changeUsername(ctx context.Context, id int64, n
 	return nil
 }
 
-func (r *userPostgresRepository) CheckIsEmailUnique(ctx context.Context, email string) (bool, error) {
+func (r *userPostgresRepository) CheckIsEmailUnique(ctx context.Context, email string, id int64) (bool, error) {
 	logger := loggerPkg.LoggerFromContext(ctx)
 	logger.Info("Checking email uniqueness", zap.String("email", email))
 
@@ -633,7 +632,7 @@ func (r *userPostgresRepository) CheckIsEmailUnique(ctx context.Context, email s
 	}()
 
 	var exists bool
-	err = stmt.QueryRowContext(ctx, email).Scan(&exists)
+	err = stmt.QueryRowContext(ctx, email, id).Scan(&exists)
 	if err != nil && err != sql.ErrNoRows {
 		return false, err
 	}
@@ -657,7 +656,7 @@ func (r *userPostgresRepository) changeEmail(ctx context.Context, id int64, newE
 		}
 	}()
 
-	isExist, err := r.CheckIsEmailUnique(ctx, newEmail)
+	isExist, err := r.CheckIsEmailUnique(ctx, newEmail, id)
 	if err != nil {
 		r.metrics.DatabaseErrors.WithLabelValues("changeEmail").Inc()
 		logger.Error("failed to check email uniqueness", zap.Error(err))
