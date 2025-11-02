@@ -36,6 +36,8 @@ services:
   go-api:
     image: derletzte256/api:latest
     container_name: ReturnZeroAPI
+    env_file:
+      - ../.env
     environment:
       ARTIST_SERVICE_HOST: artist-grpc
       ALBUM_SERVICE_HOST: album-grpc
@@ -43,6 +45,8 @@ services:
       PLAYLIST_SERVICE_HOST: playlist-grpc
       AUTH_SERVICE_HOST: auth-grpc
       USER_SERVICE_HOST: user-grpc
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     restart: always
     ports:
       - '8080:8080'
@@ -62,11 +66,15 @@ services:
   artist-grpc:
     image: derletzte256/artist-service:latest
     container_name: artist-grpc
+    env_file:
+      - ../.env
     restart: always
     depends_on:
       - postgres
     ports:
       - '5001:5001'
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     tty: true
@@ -74,11 +82,15 @@ services:
   track-grpc:
     image: derletzte256/track-service:latest
     container_name: track-grpc
+    env_file:
+      - ../.env
     restart: always
     depends_on:
       - postgres
     ports:
       - '5002:5002'
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     tty: true
@@ -86,17 +98,23 @@ services:
   album-grpc:
     image: derletzte256/album-service:latest
     container_name: album-grpc
+    env_file:
+      - ../.env
     restart: always
     depends_on:
       - postgres
     ports:
       - '5003:5003'
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     tty: true
     
   auth-grpc:
     image: derletzte256/auth-service:latest
+    env_file:
+      - ../.env
     environment:
       REDIS_PORT: ${REDIS_PORT}
       REDIS_HOST: redis
@@ -106,6 +124,8 @@ services:
       - redis
     ports:
       - '5004:5004'
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     tty: true
@@ -113,11 +133,15 @@ services:
   user-grpc:
     image: derletzte256/user-service:latest
     container_name: user-grpc
+    env_file:
+      - ../.env
     restart: always
     depends_on:
       - postgres
     ports:
       - '5005:5005'
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     tty: true
@@ -125,11 +149,15 @@ services:
   playlist-grpc:
     image: derletzte256/playlist-service:latest
     container_name: playlist-grpc
+    env_file:
+      - ../.env
     restart: always
     depends_on:
       - postgres
     ports:
       - '5006:5006'
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
     tty: true

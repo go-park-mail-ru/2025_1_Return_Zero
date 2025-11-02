@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - redeploy
 
 jobs:
   test:
@@ -109,11 +110,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Create .env file
-        run: |
-          echo '${{ secrets.ENV_FILE }}' > .env
-          chmod 644 .env
 
       - name: Login to DockerHub
         uses: docker/login-action@v3

@@ -50,7 +50,7 @@ func (r *artistS3Repository) GetAvatarURL(ctx context.Context, fileKey string) (
 	duration := time.Since(start).Seconds()
 	r.metrics.DatabaseDuration.WithLabelValues("GetAvatarURL").Observe(duration)
 	return fmt.Sprintf(
-		"https://%s.fra1.digitaloceanspaces.com/artists%s",
+		"https://%s.s3.cloud.ru/artists%s",
 		r.bucketName,
 		fileKey,
 	), nil
@@ -101,5 +101,5 @@ func (r *artistS3Repository) UploadArtistAvatar(ctx context.Context, artistTitle
 	duration := time.Since(start).Seconds()
 	r.metrics.DatabaseDuration.WithLabelValues("UploadArtistAvatar").Observe(duration)
 
-	return fmt.Sprintf("https://%s.fra1.digitaloceanspaces.com/artists%s", r.bucketName, fileKey), nil
+	return fmt.Sprintf("https://%s.s3.cloud.ru/artists%s", r.bucketName, fileKey), nil
 }

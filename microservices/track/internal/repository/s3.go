@@ -132,5 +132,5 @@ func (r *trackS3Repository) UploadTrackAvatar(ctx context.Context, trackTitle st
 	duration := time.Since(start).Seconds()
 	r.metrics.DatabaseDuration.WithLabelValues("UploadTrackAvatar").Observe(duration)
 
-	return fmt.Sprintf("https://%s.fra1.digitaloceanspaces.com/tracks%s", r.bucketName, fileKey), nil
+	return fmt.Sprintf("https://%s.s3.cloud.ru/tracks%s", r.bucketName, fileKey), nil
 }

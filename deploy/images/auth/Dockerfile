@@ -16,9 +16,7 @@ WORKDIR /app
 
 COPY --from=builder /app/main .
 
-COPY --from=builder /app/config.yaml . 
-
-COPY --from=builder /app/.env .
+## config and environment provided at runtime via mounts/env_file
 
 EXPOSE 5004
 

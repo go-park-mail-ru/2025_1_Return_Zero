@@ -43,6 +43,8 @@ services:
   go-api:
     image: derletzte256/api:latest
     container_name: ReturnZeroAPI
+    env_file:
+      - ../.env
     environment:
       ARTIST_SERVICE_HOST: artist-grpc
       ALBUM_SERVICE_HOST: album-grpc
@@ -50,6 +52,8 @@ services:
       PLAYLIST_SERVICE_HOST: playlist-grpc
       AUTH_SERVICE_HOST: auth-grpc
       USER_SERVICE_HOST: user-grpc
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     restart: always
     ports:
       - '8080:8080'
@@ -69,11 +73,15 @@ services:
       context: ..
       dockerfile: deploy/images/artist/Dockerfile
     container_name: artist-grpc
+    env_file:
+      - ../.env
     restart: always
     depends_on:
       - postgres
     ports:
       - '5001:5001'
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     tty: true
 
   track-grpc:
@@ -81,11 +89,15 @@ services:
       context: ..
       dockerfile: deploy/images/track/Dockerfile
     container_name: track-grpc
+    env_file:
+      - ../.env
     restart: always
     depends_on:
       - postgres
     ports:
       - '5002:5002'
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     tty: true
 
   album-grpc:
@@ -93,17 +105,23 @@ services:
       context: ..
       dockerfile: deploy/images/album/Dockerfile
     container_name: album-grpc
+    env_file:
+      - ../.env
     restart: always
     depends_on:
       - postgres
     ports:
       - '5003:5003'
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     tty: true
     
   auth-grpc:
     build:
       context: ..
       dockerfile: deploy/images/auth/Dockerfile
+    env_file:
+      - ../.env
     environment:
       REDIS_PORT: ${REDIS_PORT}
       REDIS_HOST: redis
@@ -113,6 +131,8 @@ services:
       - redis
     ports:
       - '5004:5004'
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     tty: true
 
   user-grpc:
@@ -120,11 +140,15 @@ services:
       context: ..
       dockerfile: deploy/images/user/Dockerfile
     container_name: user-grpc
+    env_file:
+      - ../.env
     restart: always
     depends_on:
       - postgres
     ports:
       - '5005:5005'
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     tty: true
 
   playlist-grpc:
@@ -132,11 +156,15 @@ services:
       context: ..
       dockerfile: deploy/images/playlist/Dockerfile
     container_name: playlist-grpc
+    env_file:
+      - ../.env
     restart: always
     depends_on:
       - postgres
     ports:
       - '5006:5006'
+    volumes:
+      - ../config.yaml:/app/config.yaml:ro
     tty: true
 
   nginx:
