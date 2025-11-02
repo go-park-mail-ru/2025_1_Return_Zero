@@ -91,7 +91,7 @@ func main() {
 	}
 
 	trackRepository := repository.NewTrackPostgresRepository(postgresPool, metrics)
-	trackS3Repository := repository.NewTrackS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3Duration, metrics)
+	trackS3Repository := repository.NewTrackS3Repository(s3, cfg.S3.S3TracksBucket, cfg.S3.S3ImagesBucket, cfg.S3.S3Duration, metrics)
 	trackUsecase := usecase.NewTrackUsecase(trackRepository, trackS3Repository)
 	trackService := delivery.NewTrackService(trackUsecase)
 	trackProto.RegisterTrackServiceServer(server, trackService)

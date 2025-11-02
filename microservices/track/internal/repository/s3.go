@@ -23,16 +23,24 @@ import (
 )
 
 type trackS3Repository struct {
-	s3         *s3.S3
-	bucketName string
-	uploader   *s3manager.Uploader
-	expiration time.Duration
-	metrics    *metrics.Metrics
+	s3              *s3.S3
+	trackBucketName string
+	imageBucketName string
+	uploader        *s3manager.Uploader
+	expiration      time.Duration
+	metrics         *metrics.Metrics
 }
 
-func NewTrackS3Repository(s3 *s3.S3, bucketName string, expiration time.Duration, metrics *metrics.Metrics) domain.S3Repository {
+func NewTrackS3Repository(s3 *s3.S3, trackBucketName string, imageBucketName string, expiration time.Duration, metrics *metrics.Metrics) domain.S3Repository {
 	uploader := s3manager.NewUploaderWithClient(s3)
-	return &trackS3Repository{s3: s3, bucketName: bucketName, expiration: expiration, uploader: uploader, metrics: metrics}
+	return &trackS3Repository{
+		s3:              s3,
+		trackBucketName: trackBucketName,
+		imageBucketName: imageBucketName,
+		expiration:      expiration,
+		uploader:        uploader,
+		metrics:         metrics,
+	}
 }
 
 func (r *trackS3Repository) GetPresignedURL(trackKey string) (string, error) {
@@ -45,7 +53,7 @@ func (r *trackS3Repository) GetPresignedURL(trackKey string) (string, error) {
 	}
 
 	input := &s3.GetObjectInput{
-		Bucket: aws.String(r.bucketName),
+		Bucket: aws.String(r.trackBucketName),
 		Key:    aws.String(trackKey),
 	}
 
@@ -69,7 +77,7 @@ func (r *trackS3Repository) UploadTrack(ctx context.Context, fileKey string, fil
 	}
 
 	input := &s3manager.UploadInput{
-		Bucket: aws.String(r.bucketName),
+		Bucket: aws.String(r.trackBucketName),
 		Key:    aws.String(fmt.Sprintf("%s.mp3", fileKey)),
 		Body:   bytes.NewReader(file),
 	}
@@ -117,7 +125,7 @@ func (r *trackS3Repository) UploadTrackAvatar(ctx context.Context, trackTitle st
 	s3Key := fmt.Sprintf("tracks%s", fileKey)
 
 	_, err = r.uploader.UploadWithContext(ctx, &s3manager.UploadInput{
-		Bucket:      aws.String(r.bucketName),
+		Bucket:      aws.String(r.imageBucketName),
 		Key:         aws.String(s3Key),
 		Body:        bytes.NewReader(file),
 		ContentType: aws.String("image/" + format),
@@ -132,5 +140,5 @@ func (r *trackS3Repository) UploadTrackAvatar(ctx context.Context, trackTitle st
 	duration := time.Since(start).Seconds()
 	r.metrics.DatabaseDuration.WithLabelValues("UploadTrackAvatar").Observe(duration)
 
-	return fmt.Sprintf("https://%s.s3.cloud.ru/tracks%s", r.bucketName, fileKey), nil
+	return fmt.Sprintf("https://%s.s3.cloud.ru/tracks%s", r.imageBucketName, fileKey), nil
 }

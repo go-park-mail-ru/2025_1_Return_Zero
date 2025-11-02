@@ -18,6 +18,11 @@ services:
     volumes:
       - 'pgdata:/var/lib/postgresql/data'
       - './_postgres:/docker-entrypoint-initdb.d'
+    command: [
+      "postgres",
+      "-c",
+      "config_file=/etc/postgresql/postgresql.conf"
+    ]
     tty: true
 
   redis:
@@ -170,6 +175,7 @@ services:
     restart: always
     ports:
       - '443:443'
+      - '80:80'
     volumes:
       - '/etc/ssl:/etc/ssl'
       - '../dist:/usr/share/nginx/static'   
