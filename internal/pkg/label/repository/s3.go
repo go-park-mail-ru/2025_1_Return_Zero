@@ -84,7 +84,7 @@
 // 	duration := time.Since(start).Seconds()
 // 	r.metrics.DatabaseDuration.WithLabelValues("UploadAlbumAvatar").Observe(duration)
 
-// 	return fmt.Sprintf("https://%s.fra1.digitaloceanspaces.com/albums%s", r.bucketName, fileKey), nil
+// 	return fmt.Sprintf("https://%s.s3.cloud.ru/albums%s", r.bucketName, fileKey), nil
 // }
 
 // func (r *labelS3Repository) UploadTrackAvatar(ctx context.Context, trackTitle string, file []byte) (string, error) {
@@ -126,7 +126,7 @@
 // 	duration := time.Since(start).Seconds()
 // 	r.metrics.DatabaseDuration.WithLabelValues("UploadTrackAvatar").Observe(duration)
 
-// 	return fmt.Sprintf("https://%s.fra1.digitaloceanspaces.com/tracks%s", r.bucketName, fileKey), nil
+// 	return fmt.Sprintf("https://%s.s3.cloud.ru/tracks%s", r.bucketName, fileKey), nil
 // }
 
 // func (r *labelS3Repository) UploadTrack(ctx context.Context, trackTitle string, file []byte) (string, error) {

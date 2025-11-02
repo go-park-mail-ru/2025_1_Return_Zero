@@ -50,7 +50,7 @@ func (r *userS3Repository) GetAvatarURL(ctx context.Context, fileKey string) (st
 	duration := time.Since(start).Seconds()
 	r.metrics.DatabaseDuration.WithLabelValues("GetAvatarURL").Observe(duration)
 	return fmt.Sprintf(
-		"https://%s.fra1.digitaloceanspaces.com/avatars%s",
+		"https://%s.s3.cloud.ru/avatars%s",
 		r.bucketName,
 		fileKey,
 	), nil

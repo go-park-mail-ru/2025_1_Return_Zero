@@ -471,33 +471,22 @@ func (r *PlaylistPostgresRepository) UpdatePlaylist(ctx context.Context, request
 
 	start := time.Now()
 
-	stmt, err := r.db.PrepareContext(ctx, UpdatePlaylistWithThumbnailQuery)
-	if err != nil {
-		r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylist").Inc()
-		logger.Error("Failed to prepare statement", zap.Error(err))
-		return nil, playlistErrors.NewInternalError("failed to prepare statement: %v", err)
-	}
-	defer func() {
-		if err := stmt.Close(); err != nil {
-			logger.Error("Error closing statement:", zap.Error(err))
-		}
-	}()
-
 	var id int64
+	query := UpdatePlaylistWithThumbnailQuery
+	args := []any{request.PlaylistID, request.Title, request.Thumbnail, request.UserID}
+
 	if request.Thumbnail != "" {
-		err := stmt.QueryRowContext(ctx, request.PlaylistID, request.Title, request.Thumbnail, request.UserID).Scan(&id)
-		if err != nil {
-			r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylist").Inc()
-			logger.Error("Failed to update playlist", zap.Error(err))
-			return nil, playlistErrors.NewInternalError("failed to update playlist: %v", err)
-		}
+		logger.Debug("Updating playlist with thumbnail")
 	} else {
-		err := stmt.QueryRowContext(ctx, request.PlaylistID, request.Title, request.UserID).Scan(&id)
-		if err != nil {
-			r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylist").Inc()
-			logger.Error("Failed to update playlist", zap.Error(err))
-			return nil, playlistErrors.NewInternalError("failed to update playlist: %v", err)
-		}
+		query = UpdatePlaylistWithoutThumbnailQuery
+		args = []any{request.PlaylistID, request.Title, request.UserID}
+		logger.Debug("Updating playlist without thumbnail")
+	}
+
+	if err := r.db.QueryRowContext(ctx, query, args...).Scan(&id); err != nil {
+		r.metrics.DatabaseErrors.WithLabelValues("UpdatePlaylist").Inc()
+		logger.Error("Failed to update playlist", zap.Error(err))
+		return nil, playlistErrors.NewInternalError("failed to update playlist: %v", err)
 	}
 
 	playlist, err := r.GetPlaylistByID(ctx, id)
