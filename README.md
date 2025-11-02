@@ -19,24 +19,15 @@
 
 - UX
 
-
 ## Ссылки
 
 [Фронтенд проекта](https://github.com/frontend-park-mail-ru/2025_1_Return_Zero)
 
-[Сайт](http://returnzero.ru/)
-
-## Запуск
-
-
-```bash
-make 
-```
+[Сайт](http://returnzero.live/)
 
 ## Документация
 
-[Документация на Swagger](https://returnzero.ru/api/v1/docs/)
-После запуска сервера, документация доступна по ссылке выше.
+[Документация API на Swagger](https://returnzero.live/api/v1/docs/)
 
 Для регенерации документации используйте следующие команды:
 
@@ -58,11 +49,4 @@ cd deploy
 make deploy-prod
 ```
 
-## Создание и заполнение базы данных
-
-Для создания и заполнения базы данных используйте следующую команду:
-
-```bash
-cd deploy
-make updeploy
-```
+Далее watchtower будет подхватывать новые версии с docker hub
