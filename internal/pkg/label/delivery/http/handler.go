@@ -447,16 +447,30 @@ func (h *LabelHandler) CreateAlbum(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ArtistIDs := r.FormValue("artists_ids")
-	ArtistIDsSlice := strings.Split(ArtistIDs, ",")
+	artistsRaw := strings.TrimSpace(r.FormValue("artists_ids"))
+	if artistsRaw == "" {
+		logger.Error("artists_ids is empty")
+		json.WriteErrorResponse(w, http.StatusBadRequest, "artists_ids is empty", nil)
+		return
+	}
+	ArtistIDsSlice := strings.Split(artistsRaw, ",")
 	for _, id := range ArtistIDsSlice {
-		parsedID, err := strconv.ParseInt(id, 10, 64)
+		trimmedID := strings.TrimSpace(id)
+		if trimmedID == "" {
+			continue
+		}
+		parsedID, err := strconv.ParseInt(trimmedID, 10, 64)
 		if err != nil {
 			logger.Error("failed to parse artists_ids", zap.Error(err))
 			json.WriteErrorResponse(w, http.StatusBadRequest, "failed to parse artists_ids", nil)
 			return
 		}
 		request.ArtistsIDs = append(request.ArtistsIDs, parsedID)
+	}
+	if len(request.ArtistsIDs) == 0 {
+		logger.Error("artists_ids is empty")
+		json.WriteErrorResponse(w, http.StatusBadRequest, "artists_ids is empty", nil)
+		return
 	}
 
 	file, _, err := r.FormFile("thumbnail")
