@@ -786,22 +786,26 @@ func TestLabelHandler_DeleteArtist(t *testing.T) {
 	}
 }
 
-func concatenateArtistIDs(artistIDs []int64) string {
+func concatenateArtistIDs(artistIDs []int64, withSpaces bool) string {
 	var result string
+	separator := ","
+	if withSpaces {
+		separator = ", "
+	}
 	for i, id := range artistIDs {
 		if i > 0 {
-			result += ","
+			result += separator
 		}
 		result += strconv.FormatInt(id, 10)
 	}
 	return result
 }
 
-func createAlbumMultipartFormData(t *testing.T, artistIDs []int64, albumType string, title string, image []byte, tracks []*delivery.CreateTrackRequest) (bytes.Buffer, string) {
+func createAlbumMultipartFormData(t *testing.T, artistIDs []int64, albumType string, title string, image []byte, tracks []*delivery.CreateTrackRequest, artistIDsWithSpaces bool) (bytes.Buffer, string) {
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
 
-	err := w.WriteField("artists_ids", concatenateArtistIDs(artistIDs))
+	err := w.WriteField("artists_ids", concatenateArtistIDs(artistIDs, artistIDsWithSpaces))
 	assert.NoError(t, err)
 
 	err = w.WriteField("type", albumType)
@@ -850,6 +854,7 @@ func TestLabelHandler_CreateAlbum(t *testing.T) {
 	tests := []struct {
 		name           string
 		artistIDs      []int64
+		artistIDsSpace bool
 		Type           string
 		title          string
 		image          []byte
@@ -865,6 +870,47 @@ func TestLabelHandler_CreateAlbum(t *testing.T) {
 			Type:      "album",
 			title:     "Test Album",
 			image:     []byte("fake image data"),
+			tracks: []*delivery.CreateTrackRequest{
+				{
+					Title: "Track 1",
+					Track: []byte("fake track data 1"),
+				},
+			},
+			mockBehavior: func() {
+				mockUsecase.EXPECT().CreateAlbum(
+					gomock.Any(),
+					gomock.Any(),
+				).Return(int64(1), "album-url.jpg", nil)
+			},
+			expectedStatus: http.StatusCreated,
+			expectedBody: map[string]interface{}{
+				"status": int(http.StatusCreated),
+				"body": map[string]interface{}{
+					"id":            float64(1),
+					"title":         "Test Album",
+					"type":          "album",
+					"thumbnail_url": "album-url.jpg",
+					"is_liked":      false,
+					"artists": []interface{}{
+						map[string]interface{}{
+							"id":    float64(1),
+							"title": "",
+						},
+						map[string]interface{}{
+							"id":    float64(2),
+							"title": "",
+						},
+					},
+				},
+			},
+		},
+		{
+			name:           "Create Album Success With Spaces",
+			artistIDs:      []int64{1, 2},
+			artistIDsSpace: true,
+			Type:           "album",
+			title:          "Test Album",
+			image:          []byte("fake image data"),
 			tracks: []*delivery.CreateTrackRequest{
 				{
 					Title: "Track 1",
@@ -1003,7 +1049,7 @@ func TestLabelHandler_CreateAlbum(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.mockBehavior()
 
-			body, str := createAlbumMultipartFormData(t, tt.artistIDs, tt.Type, tt.title, tt.image, tt.tracks)
+			body, str := createAlbumMultipartFormData(t, tt.artistIDs, tt.Type, tt.title, tt.image, tt.tracks, tt.artistIDsSpace)
 			req, err := http.NewRequest("POST", "/label/album", &body)
 			req.Header.Set("Content-Type", str)
 			assert.NoError(t, err)
@@ -1055,7 +1101,7 @@ func TestLabelHandler_DeleteAlbum(t *testing.T) {
 			expectedStatus: http.StatusOK,
 			expectedBody: map[string]interface{}{
 				"status": int(http.StatusOK),
-				"body": "Album deleted successfully",
+				"body":   "Album deleted successfully",
 			},
 		},
 		{
@@ -1072,9 +1118,9 @@ func TestLabelHandler_DeleteAlbum(t *testing.T) {
 			},
 		},
 		{
-			name:     "Delete Album - wrong json",
-			albumID:  1,
-			body:     `{"album_id": 1`,
+			name:    "Delete Album - wrong json",
+			albumID: 1,
+			body:    `{"album_id": 1`,
 			mockBehavior: func() {
 				mockUsecase.EXPECT().DeleteAlbum(gomock.Any(), gomock.Any(), gomock.Any()).Times(0)
 			},
@@ -1150,11 +1196,11 @@ func TestLabelHandler_GetAlbumsByLabelID(t *testing.T) {
 			mockBehavior: func() {
 				mockUsecase.EXPECT().GetAlbumsByLabelID(gomock.Any(), int64(1), gomock.Any()).Return([]*usecase.Album{
 					{
-						ID:            1,
-						Type:          "album",
-						Title:         "Album 1",
-						IsLiked:       false,
-						Thumbnail:     "album1.jpg",
+						ID:        1,
+						Type:      "album",
+						Title:     "Album 1",
+						IsLiked:   false,
+						Thumbnail: "album1.jpg",
 						Artists: []*usecase.AlbumArtist{
 							{
 								ID:    1,

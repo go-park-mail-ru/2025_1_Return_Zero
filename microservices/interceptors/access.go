@@ -2,6 +2,7 @@ package interceptors
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/proto"
 )
 
 type AccessInterceptor struct {
@@ -36,9 +38,10 @@ func (i *AccessInterceptor) UnaryServerInterceptor() grpc.UnaryServerInterceptor
 
 		startTime := time.Now()
 
+		reqSummary := summarizeRequest(req)
 		ctxLogger.Infow("gRPC request received",
 			"method", info.FullMethod,
-			"request", req,
+			"request_summary", reqSummary,
 		)
 
 		resp, err := handler(newCtx, req)
@@ -65,4 +68,15 @@ func (i *AccessInterceptor) UnaryServerInterceptor() grpc.UnaryServerInterceptor
 
 		return resp, err
 	}
+}
+
+func summarizeRequest(req interface{}) string {
+	if req == nil {
+		return "<nil>"
+	}
+	base := fmt.Sprintf("%T", req)
+	if msg, ok := req.(proto.Message); ok {
+		return fmt.Sprintf("%s (size=%d bytes)", base, proto.Size(msg))
+	}
+	return base
 }
