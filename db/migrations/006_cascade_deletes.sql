@@ -1,5 +1,30 @@
 -- Add cascading foreign keys to ensure dependent rows are cleaned up automatically
 
+-- Remove orphaned rows so new constraints can be validated
+DELETE FROM track_artist ta WHERE NOT EXISTS (
+    SELECT 1 FROM track t WHERE t.id = ta.track_id
+);
+
+DELETE FROM album_artist aa WHERE NOT EXISTS (
+    SELECT 1 FROM album a WHERE a.id = aa.album_id
+);
+
+DELETE FROM playlist_track pt WHERE NOT EXISTS (
+    SELECT 1 FROM track t WHERE t.id = pt.track_id
+);
+
+DELETE FROM genre_track gt WHERE NOT EXISTS (
+    SELECT 1 FROM track t WHERE t.id = gt.track_id
+);
+
+DELETE FROM genre_album ga WHERE NOT EXISTS (
+    SELECT 1 FROM album a WHERE a.id = ga.album_id
+);
+
+DELETE FROM track t WHERE NOT EXISTS (
+    SELECT 1 FROM album a WHERE a.id = t.album_id
+);
+
 ALTER TABLE track
 ADD CONSTRAINT fk_track_album
 FOREIGN KEY (album_id) REFERENCES album (id)
