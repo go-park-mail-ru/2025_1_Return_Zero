@@ -3,6 +3,7 @@ package usecase
 import (
 	"bytes"
 	"context"
+	"io"
 	"time"
 
 	loggerPkg "github.com/go-park-mail-ru/2025_1_Return_Zero/internal/pkg/helpers/logger"
@@ -10,7 +11,7 @@ import (
 	"github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/model"
 	trackErrors "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/model/errors"
 	usecaseModel "github.com/go-park-mail-ru/2025_1_Return_Zero/microservices/track/model/usecase"
-	"github.com/hajimehoshi/go-mp3"
+	"github.com/tcolgate/mp3"
 	"go.uber.org/zap"
 )
 
@@ -221,15 +222,21 @@ func (u *TrackUsecase) SearchTracks(ctx context.Context, query string, userID in
 
 func getMp3Duration(fileData []byte) (int64, error) {
 	reader := bytes.NewReader(fileData)
+	decoder := mp3.NewDecoder(reader)
+	var frame mp3.Frame
+	var skipped int
+	var duration time.Duration
 
-	decoder, err := mp3.NewDecoder(reader)
-	if err != nil {
-		return 0, err
+	for {
+		err := decoder.Decode(&frame, &skipped)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return 0, err
+		}
+		duration += frame.Duration()
 	}
-
-	samples := decoder.Length() / 4
-	sampleRate := decoder.SampleRate()
-	duration := time.Duration(float64(samples) / float64(sampleRate) * float64(time.Second))
 
 	return int64(duration.Seconds()), nil
 }
